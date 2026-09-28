@@ -1,0 +1,18 @@
+MOMENTURIES · subir a Netlify
+=============================
+Copia generada con _build_netlify.py a partir de los archivos de trabajo.
+
+Para ACTUALIZAR el sitio que ya tienes (el link no cambia):
+  app.netlify.com > tu sitio > Deploys > arrastra la carpeta _netlify entera
+  (o momenturies-web.zip) al recuadro "Drag and drop your site output folder here".
+
+Para un sitio NUEVO sin cuenta: https://app.netlify.com/drop y arrastrar lo mismo.
+
+Páginas
+  /                      landing (index.html = momenturies.html)
+  /versiones.html        las 3 versiones del personalizador de paredes
+  /pared2d.html          versión 2D tipo Mixtiles
+  /paredes.html          Paredes de ensueño (3D)
+  /cuadro.html  /sobremesa.html  /iman.html   editor por producto
+
+No cobra: el carrito y el checkout son maqueta.

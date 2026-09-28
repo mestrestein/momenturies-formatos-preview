@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Momenturies · Versiones del personalizador de paredes</title>
+<meta name="robots" content="noindex"/>
+<style>
+:root{--black:#1a1a1a;--mid:#666;--gray:#f5f3f0;--gray2:#e0dbd4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;color:var(--black);background:#fff;padding:40px 16px 60px}
+main{max-width:960px;margin:0 auto}
+h1{font-family:Georgia,serif;font-size:30px;margin-bottom:6px}
+p.sub{color:var(--mid);font-size:14px;margin-bottom:28px}
+.v{display:grid;grid-template-columns:64px 1fr;gap:18px;padding:22px 0;border-top:1px solid var(--gray2)}
+.v .n{font-family:Georgia,serif;font-size:40px;line-height:1;color:var(--gray2)}
+.v h2{font-size:18px;margin-bottom:6px}
+.v p{font-size:14px;color:var(--mid);line-height:1.5;margin-bottom:12px}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{display:inline-block;padding:9px 14px;border-radius:20px;background:var(--black);color:#fff;text-decoration:none;font-size:13px;font-weight:600}
+.links a.sec{background:var(--gray);color:var(--black)}
+.tag{display:inline-block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:6px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Personalizador de paredes: las dos vistas</h1>
+  <p class="sub">Todo en local (servidor en la carpeta <code>momenturies/</code>). Las dos usan las mismas 32 composiciones con medidas de Futsides.
+    Desde el 19-sep las fotos de habitación se ven SOLO en 2D, y el 3D es siempre habitación dibujada.</p>
+
+  <div class="v">
+    <div class="n">1</div>
+    <div>
+      <span class="tag">3D · habitación dibujada</span>
+      <h2>Escenas 3D: Salón y Habitación</h2>
+      <p>Habitación construida en 3D (pared, suelo, rodapié, muebles, alfombra, luz de ventana sobre la pared que cae también sobre los cuadros).
+        Se orbita de verdad arrastrando. Se cambia con el botón <b>Entorno</b> o con <code>?entorno=salon|dormitorio|salon-real|despacho-real|salon-sofa</code>. Las "reales" usan muebles 3D de verdad (Poly Haven, CC0, comprimidos a .glb), y el sofá y el escritorio los montamos nosotros con telas y maderas CC0 porque no hay ninguno moderno que descargar. Todo eso se baja solo al elegir esa escena.
+        "Ver en mi pared" (la foto del cliente) sigue aquí, porque ahí la foto es suya.</p>
+      <div class="links">
+        <a href="cuadro.html?pared=P12&entorno=salon">Abrir · Cruz (5) · Salón</a>
+        <a class="sec" href="cuadro.html?pared=P22&entorno=dormitorio">Panal (7) · Habitación</a>
+        <a class="sec" href="cuadro.html?pared=P01&entorno=dormitorio">Tríptico (3) · Habitación</a>
+        <a class="sec" href="cuadro.html?pared=P32&entorno=salon">Gran salón (10) · Salón</a>
+        <a class="sec" href="cuadro.html?pared=P12&entorno=salon-real">Cruz (5) · Salón real (muebles 3D descargados)</a>
+        <a class="sec" href="cuadro.html?pared=P22&entorno=despacho-real">Panal (7) · Escritorio (mesa de roble)</a>
+        <a class="sec" href="cuadro.html?pared=P12&entorno=salon-sofa">Cruz (5) · Salón con sofá de bouclé</a>
+        <a class="sec" href="paredes.html">Página "Paredes de ensueño"</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="v">
+    <div class="n">2</div>
+    <div>
+      <span class="tag">2D · patrón Mixtiles</span>
+      <h2>Fotos de habitación con los cuadros planos encima</h2>
+      <p>Sin 3D: la foto de una habitación (solo fondos con la pared de frente) y los huecos dibujados encima a escala real.
+        Tocas cada uno y pones la foto; en móvil se acerca a la pared. En "Luz de tarde" la luz de la ventana cae también sobre los cuadros.
+        Con <code>?calib=1</code> salen los controles para ajustar escala y posición de cada fondo.</p>
+      <div class="links">
+        <a href="pared2d.html?pared=P12&entorno=salon-luz">Abrir · Cruz (5) · Luz de tarde</a>
+        <a class="sec" href="pared2d.html?pared=P22">Panal (7) · Salón</a>
+        <a class="sec" href="pared2d.html?pared=P12&entorno=salon-claro">Cruz · Salón claro</a>
+        <a class="sec" href="pared2d.html?pared=P01&entorno=aparador">Tríptico · Aparador</a>
+        <a class="sec" href="pared2d.html?pared=P12&entorno=pared-oscura">Cruz · Pared oscura</a>
+        <a class="sec" href="pared2d.html?pared=P22&entorno=pared-beige&calib=1">Modo calibración</a>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

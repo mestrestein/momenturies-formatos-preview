@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Momenturies — Tus fotos en aluminio HD</title>
+<meta name="description" content="Convierte tus fotos en cuadros de aluminio HD. Sube la foto, la ves en 3D y la recibes lista para colgar sin agujeros. Cuadro, sobremesa e imán."/>
+<link rel="canonical" href="https://momenturies.com/"/>
+<meta name="robots" content="noindex"/> <!-- borrador de reestructuración; quitar al sustituir a la landing -->
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Momenturies — Tus fotos en aluminio HD"/>
+<meta property="og:description" content="Sube tu foto, la ves en 3D y la recibes en aluminio HD lista para colgar sin agujeros."/>
+<meta property="og:image" content="https://momenturies.com/fotos/hero-salon-1.jpg"/>
+<meta property="og:url" content="https://momenturies.com/"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpolygon points='14,2 22,8 22,20 14,26 6,20 6,8' fill='none' stroke='%230d0d0d' stroke-width='1.6'/%3E%3Cpolygon points='14,8 18,11 18,17 14,20 10,17 10,11' fill='%230d0d0d'/%3E%3C/svg%3E"/>
+<meta name="theme-color" content="#080808"/>
+<!-- TODO analítica: pegar aquí GA4 (G-XXXXXXX) + Meta Pixel cuando estén las cuentas. Requiere banner de cookies (ver cookies.html). -->
+
+<!-- rendimiento: la tipografía no bloquea el primer render; las fotos de stock viven en fotos/stock/ (WebP a 2x, localizadas 11-sep-2026) -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preload" as="image" href="fotos/hero-salon-1.jpg" fetchpriority="high"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"/></noscript>
+
+<!-- datos estructurados: sin afirmar disponibilidad de compra, la tienda aún no procesa pedidos -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Momenturies",
+  "url": "https://momenturies.com/",
+  "logo": "https://momenturies.com/fotos/hero-salon-1.jpg",
+  "sameAs": []
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Momenturies",
+  "url": "https://momenturies.com/"
+}
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --beige:#f0ebe3;--beige2:#e8e0d5;
+  --black:#0d0d0d;--dark:#1a1a1a;
+  --mid:#6b7280;--light:#9ca3af;
+  --white:#fff;--gray:#f7f5f2;--gray2:#e2ddd6;
+  --accent:#c8922a;--accent2:#e8aa3a;
+  --topbar:#080808;
+  --font-serif:Georgia,'Times New Roman',serif;
+  --font-sans:'Inter','Helvetica Neue',Arial,sans-serif;
+  --menu-w:min(420px,78vw);
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);color:var(--black);background:var(--white);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+[data-lang="en"] .es{display:none!important}
+[data-lang="es"] .en{display:none!important}
+
+#sp{
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:10000;pointer-events:none;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),rgba(255,240,180,.7));
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:#0a0804;color:rgba(255,255,255,.78);
+  text-align:center;padding:11px 16px;font-size:12.5px;letter-spacing:.35px;
+  position:relative;z-index:800;overflow:hidden;
+}
+.topbar::after{
+  content:'';position:absolute;left:-100%;top:0;bottom:0;width:60%;
+  background:linear-gradient(90deg,transparent,rgba(200,146,42,.07),transparent);
+  animation:topbarShim 6s linear infinite;
+}
+@keyframes topbarShim{to{left:200%}}
+.topbar-code{
+  display:inline-block;border:1px solid rgba(200,146,42,.45);
+  border-radius:4px;padding:1px 8px;margin-left:6px;
+  font-family:monospace;font-size:11.5px;letter-spacing:1.5px;
+  color:var(--accent2);background:rgba(200,146,42,.07);
+}
+
+/* ── NAV ── */
+/* ── BARRA DE ÁNGULOS DE VENTA (herramienta de revisión, se puede quitar entera junto con angles.js) ── */
+.angle-bar{
+  position:sticky;top:0;z-index:1000;height:38px;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  background:#111;border-bottom:1px solid rgba(200,146,42,.35);
+  padding:0 14px;
+}
+.angle-arrow{
+  width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.18);
+  background:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;line-height:1;transition:background .15s,border-color .15s;flex-shrink:0;
+}
+.angle-arrow:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.4)}
+.angle-mid{display:flex;align-items:center;gap:10px;min-width:0}
+.angle-eyebrow{font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);white-space:nowrap;flex-shrink:0}
+.angle-select{
+  background:none;border:1px solid rgba(255,255,255,.22);border-radius:20px;color:#fff;
+  font-size:12.5px;font-weight:600;padding:4px 26px 4px 12px;cursor:pointer;
+  max-width:46vw;text-overflow:ellipsis;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:14px;
+}
+.angle-select option{background:#111;color:#fff}
+.angle-counter{font-size:11px;color:rgba(255,255,255,.45);white-space:nowrap;flex-shrink:0}
+@media(max-width:580px){
+  .angle-eyebrow{display:none}
+  .angle-select{max-width:52vw}
+}
+
+.nav{
+  position:sticky;top:0;z-index:900;height:62px;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:0 24px;
+  background:rgba(255,255,255,.88);
+  border-bottom:1px solid rgba(226,221,214,.5);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  transition:box-shadow .3s var(--ease),border-color .3s;
+}
+.nav.floating{box-shadow:0 4px 32px rgba(0,0,0,.08);border-color:rgba(226,221,214,.9)}
+.nav-left{display:flex;align-items:center}
+.nav-right-slot{display:flex;align-items:center;justify-content:flex-end;gap:2px}
+.nav-logo{display:flex;align-items:center;gap:9px}
+.nav-logo-mark{flex-shrink:0}
+.nav-logo-word{
+  font-family:var(--font-serif);font-size:14px;font-weight:700;
+  letter-spacing:2.5px;color:var(--black);text-transform:uppercase;
+}
+
+/* Hamburger */
+.hbg{
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+  width:40px;height:40px;background:none;border:none;cursor:pointer;
+  padding:9px;border-radius:3px;transition:background .15s;
+}
+.hbg:hover{background:var(--gray)}
+.hbg span{display:block;height:1.5px;border-radius:2px;background:var(--black);transition:transform .28s var(--ease),opacity .2s;transform-origin:center}
+.hbg.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hbg.open span:nth-child(2){opacity:0}
+.hbg.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+/* Nav icon buttons */
+.nav-icon-btn{
+  width:38px;height:38px;border-radius:3px;border:none;background:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--black);transition:background .15s;
+}
+.nav-icon-btn:hover{background:var(--gray)}
+
+/* Search overlay */
+.nav-search{
+  display:none;position:absolute;left:0;right:0;top:0;bottom:0;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(20px);
+  align-items:center;padding:0 16px;gap:12px;z-index:10;
+}
+.nav-search.open{display:flex}
+.nav-search input{flex:1;border:none;outline:none;font-size:15px;background:transparent;color:var(--black);font-family:var(--font-sans)}
+.nav-search input::placeholder{color:var(--light)}
+
+/* ── SLIDE-IN MENU ── */
+.menu-panel{
+  position:fixed;top:0;left:0;bottom:0;width:var(--menu-w);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  z-index:950;transform:translateX(-100%);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;display:flex;flex-direction:column;
+  border-right:1px solid var(--gray2);
+}
+.menu-panel.open{transform:translateX(0)}
+.menu-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--gray2);min-height:60px;
+}
+.menu-header-brand{font-family:var(--font-serif);font-size:14px;font-weight:700;letter-spacing:2px}
+.menu-close{
+  width:36px;height:36px;border-radius:50%;background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--mid);
+  transition:background .15s,color .15s;
+}
+.menu-close:hover{background:var(--gray);color:var(--black)}
+.menu-body{flex:1;padding:8px 0}
+.menu-item{
+  display:block;padding:13px 20px;
+  cursor:pointer;transition:background .15s,padding-left .2s var(--ease);text-decoration:none;
+  color:var(--black);font-size:15.5px;font-weight:500;letter-spacing:-.01em;
+}
+.menu-item:hover{background:var(--gray);padding-left:26px}
+.menu-sep{height:1px;background:var(--gray2);margin:6px 0}
+.menu-small{display:block;padding:9px 20px;font-size:13px;color:var(--mid);transition:color .15s;text-decoration:none}
+.menu-small:hover{color:var(--black)}
+.menu-footer{padding:16px 20px 32px;border-top:1px solid var(--gray2)}
+.lang-btn{display:flex;align-items:center;gap:8px;font-size:15px;cursor:pointer;padding:10px 0}
+.lang-btn span{color:var(--mid);font-size:12px}
+
+.menu-overlay{
+  position:fixed;inset:0;z-index:940;
+  background:rgba(0,0,0,.28);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.menu-overlay.open{opacity:1;pointer-events:all}
+
+/* ── HERO ── */
+.hero{
+  min-height:calc(100vh - 100px);
+  display:grid;grid-template-columns:1fr 1fr;
+  background:var(--beige);overflow:hidden;
+}
+.hero-left{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:80px 56px 80px 72px;gap:22px;
+}
+.hero-h1{
+  font-family:var(--font-serif);
+  font-size:clamp(30px,3.8vw,52px);
+  font-weight:700;line-height:1.15;color:var(--black);letter-spacing:-.4px;
+}
+.hero-sub{font-size:15px;color:var(--mid);line-height:1.65;max-width:400px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero-cta-arr{transition:transform .25s var(--ease)}
+
+
+/* ── SECTIONS COMMON ── */
+section{padding:100px 0}
+.container{max-width:1180px;margin:0 auto;padding:0 40px}
+.s-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:10.5px;letter-spacing:3.5px;text-transform:uppercase;
+  color:var(--mid);font-weight:600;margin-bottom:16px;
+}
+.s-tag::before{content:'';width:18px;height:1px;background:currentColor;opacity:.5;flex-shrink:0}
+.s-h2{
+  font-family:var(--font-serif);font-size:clamp(26px,3vw,44px);
+  font-weight:700;line-height:1.12;letter-spacing:-.4px;margin-bottom:16px;
+}
+.s-lead{font-size:15.5px;color:var(--mid);line-height:1.75;max-width:540px}
+
+/* ── PRESS BAR ── */
+.press{background:var(--white);padding:36px 0;border-bottom:1px solid var(--gray2);overflow:hidden}
+.press-label{font-size:10.5px;letter-spacing:3.5px;text-transform:uppercase;color:var(--light);text-align:center;margin-bottom:24px}
+.press-track-wrap{overflow:hidden;position:relative}
+.press-track-wrap::before,.press-track-wrap::after{
+  content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;
+}
+.press-track-wrap::before{left:0;background:linear-gradient(90deg,#fff,transparent)}
+.press-track-wrap::after{right:0;background:linear-gradient(-90deg,#fff,transparent)}
+.press-logos{
+  display:flex;align-items:center;gap:64px;
+  animation:pressMarquee 22s linear infinite;width:max-content;
+}
+@keyframes pressMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.press-logo{font-family:var(--font-serif);font-size:17px;font-weight:700;color:#c8c0b8;letter-spacing:1px;transition:color .3s;cursor:default;white-space:nowrap;flex-shrink:0}
+.press-logo:hover{color:#888}
+
+/* ── PRODUCT SECTIONS ── */
+.psec-alt{background:var(--gray)}
+.psec-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+.psec-inner.flip .psec-copy{order:2}
+.psec-price{font-size:16px;font-weight:700;margin:28px 0 24px}
+.psec-price>span:last-child{font-weight:400;color:var(--mid);font-size:13px;margin-left:8px}
+.psec-cta{
+  display:inline-flex;align-items:center;gap:10px;background:var(--black);color:var(--white);
+  font-size:14px;font-weight:600;padding:15px 30px;border-radius:3px;text-decoration:none;
+  transition:background .2s,transform .2s var(--ease);
+}
+.psec-cta:hover{background:#2a2a2a;transform:translateX(3px)}
+.psec-visual{position:relative}
+.psec-card{
+  aspect-ratio:4/5;border-radius:4px;overflow:hidden;background:var(--gray);
+  box-shadow:0 40px 80px rgba(0,0,0,.18);transition:transform .5s var(--ease);
+}
+.psec-card img{width:100%;height:100%;object-fit:cover;display:block}
+.psec-card.psec-wide{aspect-ratio:19/10}
+.psec-visual:hover .psec-card{transform:scale(1.03) rotate(-1deg)}
+.psec-dims{
+  position:absolute;left:18px;bottom:18px;background:rgba(13,13,13,.85);color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 14px;border-radius:20px;
+}
+@media(max-width:860px){
+  .psec-inner{grid-template-columns:1fr;gap:36px}
+  .psec-inner.flip .psec-copy{order:0}
+}
+
+/* ── PRODUCTOS: CARRUSEL ── */
+.products-carousel-section{background:var(--white);padding:100px 0}
+.pc-header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:40px}
+/* PC: los 3 formatos uno al lado del otro, quietos. Móvil (abajo): carrusel a dedo. */
+.pc-track-wrap{margin:0 -4px}
+.pc-track{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:6px 4px 10px}
+.pc-track::-webkit-scrollbar{display:none}
+.pc-header .carousel-arrows{display:none}
+.pc-dots{display:none}
+.pc-card{
+  display:flex;flex-direction:column;border-radius:16px;overflow:hidden;
+  background:var(--white);box-shadow:0 4px 28px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.045);
+  transition:box-shadow .3s var(--ease),transform .3s var(--ease);
+}
+.pc-card:hover{box-shadow:0 26px 56px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.05);transform:translateY(-4px)}
+.pc-media{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;background:var(--gray)}
+.pc-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease)}
+.pc-card:hover .pc-media img{transform:scale(1.045)}
+.pc-badge{
+  position:absolute;left:14px;top:14px;background:rgba(13,13,13,.82);color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;
+  padding:6px 13px;border-radius:20px;backdrop-filter:blur(6px);
+}
+.pc-body{padding:22px 22px 24px;display:flex;flex-direction:column;flex:1}
+.pc-body h3{font-family:var(--font-serif);font-size:21px;font-weight:700;margin-bottom:8px;letter-spacing:-.2px}
+.pc-body p{font-size:13.5px;color:var(--mid);line-height:1.55;margin-bottom:18px;flex:1}
+.pc-meta{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:18px;padding-top:14px;border-top:1px solid var(--gray2)}
+.pc-price{font-size:16px;font-weight:700;color:var(--black);white-space:nowrap}
+.pc-dims{font-size:11.5px;color:var(--light);text-align:right}
+.pc-cta{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--black);color:var(--white);font-size:13.5px;font-weight:600;
+  padding:13px 20px;border-radius:24px;transition:background .2s,transform .2s var(--ease);
+}
+.pc-cta:hover{background:#2a2a2a;transform:translateX(2px)}
+.pc-dots{justify-content:center;gap:9px;margin-top:30px}
+.pc-dot{width:7px;height:7px;border-radius:50%;background:var(--gray2);border:none;padding:0;cursor:pointer;transition:background .25s,width .25s,border-radius .25s}
+.pc-dot.active{background:var(--black);width:22px;border-radius:4px}
+@media(max-width:640px){
+  .products-carousel-section{padding:64px 0}
+  .pc-header{flex-direction:column;align-items:flex-start;gap:16px}
+  .pc-track-wrap{overflow:hidden}
+  .pc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .pc-card{scroll-snap-align:start;flex:0 0 82vw}
+  .pc-dots{display:flex}
+  .pc-meta{flex-direction:column;align-items:flex-start;gap:4px}
+  .pc-dims{text-align:left}
+}
+
+/* ── HOW IT WORKS ── */
+.how-section{background:linear-gradient(140deg,#f5efe7 0%,#ede5d8 100%)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:56px;position:relative}
+.steps-grid::before{
+  content:'';position:absolute;top:23px;left:calc(16.66% + 12px);
+  right:calc(16.66% + 12px);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,0,0,.1) 20%,rgba(0,0,0,.1) 80%,transparent);
+  pointer-events:none;
+}
+.step{display:flex;flex-direction:column;gap:18px;padding:0 32px}
+.step-num{
+  width:48px;height:48px;background:var(--black);color:var(--white);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-size:16px;font-weight:700;
+  box-shadow:0 8px 28px rgba(0,0,0,.18);position:relative;z-index:1;flex-shrink:0;
+}
+.step h3{font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.step p{font-size:14px;color:var(--mid);line-height:1.68}
+
+/* ── COMPARE SLIDER ── */
+.compare-section{background:var(--white)}
+.compare-section .s-h2,.compare-section .s-tag,.compare-section .s-lead{text-align:center}
+.compare-section .s-tag{justify-content:center}
+.compare-section .s-tag::before{display:none}
+.compare-section .s-lead{margin:0 auto 52px}
+.compare-wrap{
+  position:relative;max-width:900px;margin:0 auto;
+  border-radius:4px;overflow:hidden;
+  aspect-ratio:16/9;cursor:ew-resize;
+  user-select:none;-webkit-user-select:none;
+  box-shadow:0 28px 72px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.06);
+}
+.compare-before,.compare-after{
+  position:absolute;inset:0;
+  background-image:url('fotos/stock/1474552226712-1200x675.webp');
+  background-size:cover;background-position:center;
+}
+.compare-before{filter:blur(2.5px) saturate(0.8) brightness(1.04)}
+.compare-after{clip-path:inset(0 0 0 50%)}
+.compare-label{
+  position:absolute;top:16px;z-index:4;
+  font-size:10.5px;font-weight:700;letter-spacing:2.5px;
+  color:var(--white);background:rgba(0,0,0,.5);
+  padding:6px 12px;border-radius:3px;
+  pointer-events:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.compare-label-l{left:16px}
+.compare-label-r{right:16px}
+.compare-divider{
+  position:absolute;top:0;bottom:0;left:50%;
+  width:2px;background:rgba(255,255,255,.92);
+  transform:translateX(-50%);z-index:3;pointer-events:none;
+  box-shadow:0 0 14px rgba(255,255,255,.4);
+}
+.compare-handle{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:48px;height:48px;border-radius:50%;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(0,0,0,.3),0 0 0 2px rgba(255,255,255,.6);
+  pointer-events:none;
+}
+
+/* ── FINISHES ── */
+.finishes-grid{display:grid;grid-template-columns:minmax(0,480px);gap:22px;margin-top:48px;justify-content:center}
+.finish-card{border:1px solid var(--gray2);border-radius:4px;overflow:hidden;transition:box-shadow .2s}
+.finish-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.finish-preview{height:160px;position:relative}
+.f-brushed .finish-preview{background:repeating-linear-gradient(90deg,#c0bcb8 0px,#d4d0cc 2px,#b8b4b0 4px,#cccac6 6px)}
+.f-gloss .finish-preview{background:linear-gradient(135deg,#e4e0dc 0%,#f8f4f0 30%,#fff 50%,#e0dcd8 70%,#c8c4c0 100%)}
+.f-reactive .finish-preview{background:linear-gradient(135deg,#28202c 0%,#3c2c40 30%,#583858 50%,#884e6e 70%,#c07c8c 100%)}
+.finish-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 55%,rgba(0,0,0,.08) 100%)}
+.finish-info{padding:18px}
+.finish-info h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.finish-info p{font-size:13px;color:var(--mid);line-height:1.5}
+
+/* ── GLOSS HERO ── */
+.gloss-hero{
+  position:relative;min-height:100vh;background:#060606;
+  display:flex;align-items:center;overflow:hidden;
+}
+.gh-bg-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 65% 65% at 72% 50%,#1c0f06 0%,#080808 55%,#030303 100%),
+    radial-gradient(ellipse 38% 42% at 74% 50%,rgba(200,146,42,.07) 0%,transparent 70%);
+}
+.gh-inner{
+  position:relative;z-index:2;max-width:1200px;width:100%;
+  margin:0 auto;padding:110px 40px;
+  display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;
+}
+.gh-tag-wrap{display:inline-flex;align-items:center;gap:9px;margin-bottom:22px}
+.gh-pulse{
+  width:7px;height:7px;border-radius:50%;background:#c8922a;flex-shrink:0;
+  animation:ghPulse 2.4s ease-in-out infinite;
+}
+@keyframes ghPulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,146,42,.5)}
+  50%{opacity:.55;box-shadow:0 0 0 6px rgba(200,146,42,0)}
+}
+.gh-tag-text{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:600}
+.gh-heading{
+  font-family:var(--font-serif);
+  font-size:clamp(40px,5.2vw,72px);
+  font-weight:700;line-height:1.06;
+  color:var(--white);letter-spacing:-.6px;margin-bottom:24px;
+}
+.gh-body{font-size:15px;color:rgba(255,255,255,.46);line-height:1.72;max-width:410px;margin-bottom:36px}
+.gh-stats{
+  display:flex;align-items:center;gap:22px;
+  padding:20px 0;margin-bottom:36px;
+  border-top:1px solid rgba(255,255,255,.07);
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.gh-stat{display:flex;flex-direction:column;gap:4px}
+.gh-stat-n{font-family:var(--font-serif);font-size:24px;font-weight:700;color:var(--white);line-height:1}
+.gh-stat-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.gh-stat-sep{width:1px;height:34px;background:rgba(255,255,255,.09)}
+.gh-actions{display:flex;gap:12px;flex-wrap:wrap}
+.gh-btn-primary{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:14px 28px;background:var(--white);color:var(--black);
+  border-radius:3px;font-size:14px;font-weight:700;
+  text-decoration:none;transition:background .2s,transform .2s;letter-spacing:.2px;
+}
+.gh-btn-primary:hover{background:#e8e0d5;transform:translateY(-2px)}
+.gh-arr{transition:transform .2s}
+.gh-btn-primary:hover .gh-arr{transform:translateX(4px)}
+.gh-btn-ghost{
+  display:inline-flex;align-items:center;
+  padding:14px 28px;border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.72);border-radius:3px;font-size:14px;
+  font-weight:500;text-decoration:none;
+  transition:border-color .2s,color .2s,transform .2s;
+}
+.gh-btn-ghost:hover{border-color:rgba(255,255,255,.45);color:var(--white);transform:translateY(-2px)}
+.gh-visual{
+  position:relative;display:flex;align-items:center;
+  justify-content:center;padding:48px 0;
+}
+.gh-halo{
+  position:absolute;width:520px;height:440px;
+  background:radial-gradient(ellipse,rgba(200,145,42,.11) 0%,transparent 68%);
+  border-radius:50%;pointer-events:none;
+}
+.gh-print-wrap{
+  position:relative;width:min(440px,100%);aspect-ratio:3/4;
+  border-radius:3px;overflow:hidden;
+  transform:perspective(1400px) rotateY(-14deg) rotateX(5deg);
+  box-shadow:
+    0 70px 140px rgba(0,0,0,.8),
+    0 24px 48px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.055),
+    inset 0 1px 0 rgba(255,255,255,.1);
+  cursor:pointer;
+  transition:transform .55s cubic-bezier(.4,0,.2,1),box-shadow .5s;
+}
+.gh-photo{
+  position:absolute;inset:0;
+  background:#111 center/cover no-repeat;
+}
+.gh-photo::before{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to bottom,rgba(0,0,0,.08) 0%,rgba(0,0,0,.0) 35%,rgba(0,0,0,.28) 100%),
+    radial-gradient(ellipse 120% 60% at 50% 110%,rgba(0,0,0,.45) 0%,transparent 70%);
+}
+.gh-shine-a{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(112deg,
+    transparent 0%,transparent 28%,
+    rgba(255,255,255,.02) 36%,rgba(255,255,255,.22) 43%,
+    rgba(255,255,255,.52) 49%,rgba(255,255,255,.22) 55%,
+    rgba(255,255,255,.02) 62%,transparent 70%,transparent 100%);
+  animation:ghSweep 5.5s cubic-bezier(.4,0,.6,1) infinite;
+}
+.gh-shine-b{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(112deg,
+    transparent 0%,transparent 18%,
+    rgba(255,255,255,.01) 28%,rgba(255,255,255,.1) 37%,
+    rgba(255,255,255,.18) 43%,rgba(255,255,255,.1) 49%,
+    rgba(255,255,255,.01) 56%,transparent 64%,transparent 100%);
+  animation:ghSweep 5.5s cubic-bezier(.4,0,.6,1) infinite;animation-delay:.55s;
+}
+@keyframes ghSweep{
+  0%{transform:translateX(-130%) skewX(-10deg)}
+  42%,100%{transform:translateX(175%) skewX(-10deg)}
+}
+.gh-edge-top{
+  position:absolute;top:0;left:0;right:0;height:2px;z-index:4;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.22) 25%,rgba(255,255,255,.42) 50%,rgba(255,255,255,.2) 75%,transparent 100%);
+}
+.gh-edge-left{
+  position:absolute;top:0;left:0;bottom:0;width:2px;z-index:4;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.28) 0%,rgba(255,255,255,.08) 55%,transparent 100%);
+}
+.gh-shadow{
+  position:absolute;bottom:-18px;left:8%;right:8%;height:36px;
+  background:radial-gradient(ellipse,rgba(0,0,0,.65) 0%,transparent 70%);
+  filter:blur(8px);pointer-events:none;transform:scaleY(.5);
+}
+.gh-chip{
+  position:absolute;display:flex;align-items:center;gap:8px;
+  background:rgba(10,8,6,.78);border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:3px;padding:9px 16px;
+  font-size:12px;color:rgba(255,255,255,.7);white-space:nowrap;pointer-events:none;
+}
+.gh-chip-icon{color:#c8922a;font-size:14px}
+.gh-chip-a{top:-14px;right:-18px;animation:chipFloat 4s ease-in-out infinite}
+.gh-chip-b{bottom:28px;left:-22px;animation:chipFloat 4s ease-in-out infinite;animation-delay:2s}
+@keyframes chipFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.gh-bottom-fade{
+  position:absolute;bottom:0;left:0;right:0;height:80px;z-index:3;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(8,8,8,.55));
+}
+@media(max-width:900px){
+  .gh-inner{grid-template-columns:1fr;padding:80px 32px;gap:52px}
+  .gh-print-wrap{transform:perspective(1400px) rotateY(0deg) rotateX(0deg)!important;margin:0 auto}
+  .gh-chip-a{right:0}.gh-chip-b{left:0}
+}
+@media(max-width:580px){
+  .gh-inner{padding:60px 20px}
+  .gh-chip{display:none}
+}
+
+/* ── GALLERY CAROUSEL ── */
+.gallery-section{background:linear-gradient(140deg,#f0ebe3 0%,#e8e0d5 100%)}
+.gallery-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px}
+.carousel-arrows{display:flex;gap:8px}
+.c-btn{
+  width:42px;height:42px;border-radius:50%;
+  border:1.5px solid rgba(26,26,26,.18);
+  background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;transition:background .2s,border-color .2s,transform .2s;
+}
+.c-btn:hover{background:var(--black);color:var(--white);border-color:var(--black);transform:scale(1.07)}
+.gallery-track-wrap{overflow:hidden}
+.gallery-track{display:flex;gap:14px;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform}
+.g-card{
+  flex-shrink:0;width:230px;border-radius:4px;overflow:hidden;
+  aspect-ratio:3/4;position:relative;cursor:pointer;
+  transition:transform .35s var(--ease),box-shadow .35s;
+}
+.g-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 28px 56px rgba(0,0,0,.2)}
+.g-card-bg{position:absolute;inset:0}
+.gc1{background:linear-gradient(160deg,#1a1008 0%,#4a2c18 100%)}
+.gc2{background:linear-gradient(160deg,#c0b09a 0%,#887060 100%)}
+.gc3{background:linear-gradient(160deg,#283848 0%,#486478 100%)}
+.gc4{background:linear-gradient(160deg,#883830 0%,#c45c40 100%)}
+.gc5{background:linear-gradient(160deg,#382848 0%,#684878 100%)}
+.gc6{background:linear-gradient(160deg,#687840 0%,#98b060 100%)}
+.g-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%)}
+
+/* ── TRUST ── */
+.trust-section{background:#0d0d0d;color:var(--white);padding:80px 0}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.trust-item{
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:48px 32px;background:rgba(255,255,255,.025);transition:background .2s;
+}
+.trust-item:hover{background:rgba(255,255,255,.045)}
+.trust-icon{
+  width:52px;height:52px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);
+  transition:border-color .2s;color:rgba(255,255,255,.65);
+}
+.trust-item:hover .trust-icon{border-color:rgba(255,255,255,.14)}
+.trust-item h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.trust-item p{font-size:13.5px;opacity:.5;line-height:1.65;max-width:210px}
+
+/* ── FAQ ── */
+.faq-section{background:var(--white);padding:112px 0}
+.faq-list{margin-top:52px;max-width:720px;margin-left:auto;margin-right:auto}
+.faq-item{border-bottom:1px solid var(--gray2)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;width:100%;padding:22px 0;cursor:pointer;gap:24px;
+  background:none;border:none;text-align:left;font-family:inherit;color:inherit}
+.faq-q:focus-visible{outline:2px solid var(--black);outline-offset:4px;border-radius:2px}
+.faq-q-h{margin:0}
+.faq-q,.faq-q-h{font-size:15px;font-weight:600;line-height:1.45;letter-spacing:-.01em}
+.faq-icon{
+  flex-shrink:0;width:30px;height:30px;border-radius:50%;
+  background:var(--gray);border:1px solid var(--gray2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--dark);line-height:1;
+  transition:transform .32s var(--ease),background .2s,border-color .2s;
+}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:var(--black);color:var(--white);border-color:var(--black)}
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height .38s var(--ease),padding .35s;
+  font-size:14.5px;color:var(--mid);line-height:1.78;
+}
+.faq-item.open .faq-a{max-height:340px;padding-bottom:22px}
+
+/* ── NEWSLETTER ── */
+.newsletter-section{
+  background:linear-gradient(140deg,#0c0c0c 0%,#180f06 50%,#0c0c0c 100%);
+  text-align:center;padding:112px 0;position:relative;overflow:hidden;
+}
+.newsletter-section::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 70% at 50% 50%,rgba(200,146,42,.08) 0%,transparent 68%);
+}
+.newsletter-section .s-tag{color:rgba(255,255,255,.32);justify-content:center}
+.newsletter-section .s-tag::before{background:rgba(255,255,255,.18)}
+.newsletter-section .s-h2{color:var(--white);margin-left:auto;margin-right:auto}
+.newsletter-section .s-lead{color:rgba(255,255,255,.42);margin-left:auto;margin-right:auto}
+.nl-form{
+  display:flex;max-width:456px;margin:36px auto 0;
+  border-radius:4px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);backdrop-filter:blur(10px);
+}
+.nl-form input{
+  flex:1;border:none;outline:none;padding:15px 18px;
+  font-size:14px;background:transparent;color:var(--white);font-family:var(--font-sans);
+}
+.nl-form input::placeholder{color:rgba(255,255,255,.28)}
+.nl-form button{
+  padding:15px 24px;background:var(--white);color:var(--black);
+  border:none;cursor:pointer;font-size:13px;font-weight:700;
+  transition:background .2s;font-family:var(--font-sans);border-radius:0 11px 11px 0;
+}
+.nl-form button:hover{background:#e8e0d5}
+
+/* ── FOOTER ── */
+footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px solid rgba(255,255,255,.055)}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:52px;margin-bottom:56px}
+.footer-logo{font-family:var(--font-serif);font-size:17px;font-weight:700;letter-spacing:2px;margin-bottom:14px}
+.footer-tagline{font-size:13px;opacity:.42;line-height:1.68;max-width:240px}
+.footer-col h4{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600;margin-bottom:18px;opacity:.32}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:12px}
+.footer-col a{font-size:13.5px;opacity:.52;transition:opacity .15s}
+.footer-col a:hover{opacity:1}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.06);padding-top:24px;
+  display:flex;align-items:center;justify-content:space-between;font-size:12px;opacity:.38;
+}
+.footer-lang-btn{
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.12);border-radius:3px;padding:6px 12px;
+  transition:border-color .2s;opacity:1;
+}
+.footer-lang-btn:hover{border-color:rgba(255,255,255,.38)}
+
+/* ── ANIMATIONS ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .72s var(--ease),transform .72s var(--ease)}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-right{height:auto;min-height:auto;padding:32px 20px 52px}
+  .hero-left{padding:56px 32px}
+  .steps-grid{grid-template-columns:1fr;gap:32px}
+  .steps-grid::before{display:none}
+  .trust-grid{grid-template-columns:1fr;gap:2px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:36px}
+}
+@media(max-width:580px){
+  .container{padding:0 20px}
+  section{padding:72px 0}
+  .hero-left{padding:44px 20px}
+  .footer-grid{grid-template-columns:1fr}
+}
+
+/* ── HERO v2 — phone mockup ── */
+.hero{
+  grid-template-columns:55fr 45fr;align-items:center;
+  background:linear-gradient(140deg,#f5efe7 0%,#ede5d8 50%,#e8dfd4 100%);
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 80% at 15% 50%,rgba(200,146,42,.05) 0%,transparent 70%);
+}
+.hero-left{padding:80px 48px 80px 72px;gap:26px;position:relative;z-index:1}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-weight:700;
+  background:rgba(200,146,42,.09);border:1px solid rgba(200,146,42,.2);
+  border-radius:3px;padding:5px 14px;width:fit-content;
+}
+.hero-h1{font-size:clamp(34px,4vw,60px);line-height:1.07;letter-spacing:-.55px}
+.hero-cta{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:14px 28px;border-radius:3px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  color:var(--white);background:var(--black);
+  border:none;text-decoration:none;
+  transition:transform .25s var(--ease),box-shadow .25s;
+  position:relative;overflow:hidden;
+}
+.hero-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 55%);pointer-events:none}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,0,0,.24)}
+.hero-cta-outline{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:13px 26px;border-radius:3px;
+  font-size:14px;font-weight:600;color:var(--black);
+  background:transparent;cursor:pointer;text-decoration:none;
+  border:1.5px solid rgba(26,26,26,.22);
+  transition:border-color .2s,background .2s,transform .25s;
+}
+.hero-cta-outline:hover{border-color:var(--black);background:rgba(0,0,0,.04);transform:translateY(-2px)}
+.hero-trust{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:#888;padding-top:2px}
+.hero-trust-item{display:flex;align-items:center;gap:4px;font-weight:500}
+.hero-trust-sep{color:#ccc}
+.hero-right,.up-demo{position:relative;overflow:visible;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:18px}
+
+/* Phone shell */
+.phone-mockup{
+  width:272px;height:544px;background:#0c0c0c;border-radius:38px;
+  position:relative;flex-shrink:0;
+  box-shadow:0 48px 96px rgba(0,0,0,.22),0 12px 32px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.09),0 0 0 1px rgba(0,0,0,.12);
+}
+.phone-notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:64px;height:5px;background:#1a1a1a;border-radius:3px;z-index:10}
+.phone-screen{position:absolute;top:10px;left:10px;right:10px;bottom:10px;background:#f5f5f5;border-radius:30px;overflow:hidden}
+.ps-wrap{position:relative;width:100%;height:100%;overflow:hidden}
+
+/* Screen slides */
+.ps-screen-content{position:absolute;top:0;left:0;width:100%;height:100%;transform:translateX(100%);opacity:0;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s;background:#f5f5f5;display:flex;flex-direction:column;padding:22px 0 0}
+.ps-screen-content.ps-active{transform:translateX(0);opacity:1}
+.ps-screen-content.ps-exit{transform:translateX(-100%);opacity:0}
+
+/* Screen 1 — Galería */
+.ps-screen-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0;padding:0 10px}
+.ps-screen-title{font-size:11px;font-weight:700;color:#1a1a1a}
+.ps-badge{font-size:9px;font-weight:700;background:#1a1a1a;color:#fff;padding:2px 7px;border-radius:10px}
+.ps-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);gap:2px;flex:1;min-height:0;margin-bottom:6px}
+.ps-thumb{border-radius:0;position:relative;overflow:hidden;background-size:cover;background-position:center}
+.ps-sel::after{content:'';position:absolute;inset:0;background:rgba(26,26,26,.45)}
+.ps-check{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700;z-index:2}
+
+/* Footer CTA (shared) */
+.ps-footer-cta{background:#1a1a1a;color:#fff;text-align:center;padding:10px 10px;border-radius:0;font-size:9.5px;font-weight:700;letter-spacing:.2px;flex-shrink:0;cursor:pointer;margin-top:0}
+
+/* Screen 2 — Carousel por foto */
+.ps-cards-carousel{display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;height:310px;flex-shrink:0;gap:6px;padding:0 8px;scrollbar-width:none;-ms-overflow-style:none;box-sizing:border-box}
+.ps-cards-carousel::-webkit-scrollbar{display:none}
+.ps-card-slide{flex:0 0 46%;display:flex;flex-direction:column;gap:5px;scroll-snap-align:start;flex-shrink:0}
+.ps-card-photo{height:240px;flex-shrink:0;border-radius:4px;background-size:cover;background-position:center;box-shadow:0 4px 14px rgba(0,0,0,.24)}
+.ps-card-bottom{flex-shrink:0}
+.ps-card-name{font-size:8.5px;font-weight:700;color:#1a1a1a;text-align:center;margin-bottom:5px}
+.ps-card-sizes{display:flex;gap:3px}
+.ps-carousel-dots{display:flex;justify-content:center;gap:5px;padding:5px 0;flex-shrink:0}
+.ps-carousel-dot{width:5px;height:5px;border-radius:50%;background:#d4cfc8;display:block;transition:background .2s,width .2s,border-radius .2s}
+.ps-carousel-dot.active{background:#1a1a1a;width:14px;border-radius:3px}
+.ps-sz{flex:1;text-align:center;padding:5px 2px;border-radius:2px;font-size:8px;font-weight:700;color:#666;border:1px solid #ddd;line-height:1.3;cursor:pointer;transition:background .1s}
+.ps-sz.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.ps-sz span{display:block;font-size:7px;font-weight:400;opacity:.75}
+.ps-total-cta{background:#1a1a1a;color:#fff;text-align:center;padding:10px 10px;font-size:9.5px;font-weight:700;letter-spacing:.2px;flex-shrink:0;cursor:pointer;display:flex;justify-content:center;gap:8px}
+.ps-total-amt{opacity:.6;font-weight:400}
+
+/* Screen 3 — Pedido */
+.ps-order-header{background:#1a1a1a;color:#fff;text-align:center;padding:9px 10px;font-size:10px;font-weight:700;flex-shrink:0}
+.ps-order-items-list{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:0;padding:0 10px}
+.ps-order-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #ebe6df;flex-shrink:0}
+.ps-order-row:last-child{border-bottom:none}
+.ps-order-thumb{width:38px;height:52px;flex-shrink:0;border-radius:2px;background-size:cover;background-position:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.ps-order-info{flex:1;min-width:0}
+.ps-order-name{font-size:9px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
+.ps-order-detail{font-size:7.5px;color:#888}
+.ps-order-check{font-size:11px;color:#16a34a;flex-shrink:0}
+.ps-summary{padding:8px 10px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.ps-summary-label{font-size:8.5px;color:#666}
+.ps-summary-price{font-size:11px;font-weight:800;color:#1a1a1a}
+.ps-delivery-row{font-size:8.5px;color:#1a1a1a;font-weight:500;padding:0 10px 6px;flex-shrink:0}
+.ps-gift-box{background:#f0ebe3;padding:8px 10px;font-size:8.5px;color:#666;flex-shrink:0}
+
+/* Dots + labels */
+.phone-dots{display:flex;gap:8px;align-items:center}
+.pd{height:6px;width:6px;border-radius:50%;background:#d4cfc8;display:block;transition:background .3s var(--ease),width .3s var(--ease),border-radius .3s var(--ease)}
+.pd.active{background:var(--black);width:18px;border-radius:3px}
+.phone-labels{display:flex;gap:10px}
+.pl{font-size:10px;color:#aaa;white-space:nowrap}
+
+/* Phone hint (mensaje de indicación por paso) */
+.phone-hint{font-size:12px;color:#1a1a1a;font-weight:600;letter-spacing:.2px;text-align:center;max-width:240px;min-height:16px}
+
+/* Screen 2 — Colgado */
+.ps-hang{display:flex;align-items:center;gap:5px;padding:6px 10px 2px;flex-shrink:0}
+.ps-hang-label{font-size:8px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-right:2px}
+.ps-hang-opt{flex:1;font-size:8px;font-weight:700;color:#666;border:1px solid #ddd;border-radius:3px;padding:5px 4px;background:#fff;cursor:pointer;line-height:1.2}
+.ps-hang-opt em{font-style:normal;font-weight:400;opacity:.7}
+.ps-hang-opt.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+/* Screen 3 — Editar (filtros + frase) */
+.ps-edit-photo{margin:0 10px 8px;height:196px;flex-shrink:0;border-radius:6px;background-size:cover;background-position:center;position:relative;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.ps-edit-caption{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#fff;font-size:10px;font-weight:700;letter-spacing:.3px;text-shadow:0 1px 6px rgba(0,0,0,.65);font-style:italic}
+.ps-filters{display:flex;gap:5px;padding:0 10px;flex-shrink:0;margin-bottom:8px}
+.ps-filter{flex:1;height:34px;border-radius:4px;background-size:cover;background-position:center;position:relative;border:2px solid transparent;cursor:pointer;overflow:hidden}
+.ps-filter span{position:absolute;left:0;right:0;bottom:0;font-size:6px;font-weight:700;color:#fff;text-align:center;background:rgba(0,0,0,.45);padding:1px 0}
+.ps-filter.on{border-color:#1a1a1a}
+.ps-fil-bn{filter:grayscale(1)}
+.ps-fil-warm{filter:sepia(.4) saturate(1.3)}
+.ps-fil-cool{filter:saturate(1.2) hue-rotate(-12deg) brightness(1.05)}
+.ps-phrase{margin:0 10px 8px;flex:1;min-height:0}
+.ps-phrase-label{font-size:8px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.ps-phrase-input{margin-top:4px;border:1px solid #ddd;border-radius:4px;padding:7px 8px;font-size:9.5px;color:#1a1a1a;font-style:italic;display:flex;align-items:center}
+.ps-caret{display:inline-block;width:1px;height:11px;background:#1a1a1a;margin-left:1px;animation:psblink 1s steps(1) infinite}
+@keyframes psblink{50%{opacity:0}}
+
+/* Screen 4 — Listo / 3D */
+.ps-3d-screen{padding:0;background:#0b0b0f}
+.ps-3d-frame{width:100%;height:100%;border:0;display:block;background:#0b0b0f}
+
+/* ── VS: PÓSTER PAPEL vs METÁLICO ── */
+.vs-section{padding:112px 0;background:var(--white);text-align:center}
+.vs-section .s-tag{justify-content:center}
+.vs-section .s-tag::before{display:none}
+.vs-section .s-h2,.vs-section .s-lead{margin-left:auto;margin-right:auto}
+.vs-stage{margin-top:54px;display:flex;justify-content:center;perspective:1400px}
+.vs-poster{position:relative;width:min(360px,80vw);aspect-ratio:3/4;cursor:pointer;transition:transform .6s var(--ease)}
+.vs-layer{position:absolute;inset:0;border-radius:4px;background-size:cover;background-position:center;
+  transition:opacity .6s var(--ease),transform .6s var(--ease),box-shadow .6s var(--ease),filter .6s}
+.vs-paper{filter:contrast(.92) brightness(.97) saturate(.72) sepia(.12);transform:rotate(-1.6deg);box-shadow:0 6px 14px rgba(0,0,0,.16);z-index:1}
+.vs-paper::after{content:'';position:absolute;inset:0;border-radius:4px;mix-blend-mode:multiply;
+  background:linear-gradient(105deg,rgba(255,255,255,.10) 0%,transparent 18%,rgba(0,0,0,.07) 52%,transparent 82%),
+  radial-gradient(120% 80% at 50% 120%,rgba(0,0,0,.12),transparent 60%)}
+.vs-tape{position:absolute;width:56px;height:20px;background:rgba(226,221,203,.55);box-shadow:0 1px 3px rgba(0,0,0,.12);z-index:3;transition:opacity .5s}
+.vs-tape-tl{top:-9px;left:16px;transform:rotate(-38deg)}
+.vs-tape-tr{top:-9px;right:16px;transform:rotate(38deg)}
+.vs-metal{opacity:0;z-index:2;filter:contrast(1.08) saturate(1.16) brightness(1.05);box-shadow:0 26px 60px rgba(0,0,0,.34)}
+.vs-shine{position:absolute;inset:0;z-index:4;border-radius:4px;opacity:0;pointer-events:none;
+  background:linear-gradient(125deg,transparent 32%,rgba(255,255,255,.55) 47%,rgba(255,255,255,0) 62%);transform:translateX(-30%);transition:opacity .5s}
+.vs-hint{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#bbb;transition:opacity .4s;z-index:5}
+.vs-tag{position:absolute;z-index:5;left:50%;transform:translateX(-50%);bottom:-34px;font-size:12px;font-weight:700;letter-spacing:.5px;padding:5px 14px;border-radius:20px;white-space:nowrap;transition:opacity .4s}
+.vs-tag-paper{background:#ece7df;color:#8a8178;opacity:1}
+.vs-tag-metal{background:#1a1a1a;color:#fff;opacity:0}
+.vs-poster:hover,.vs-poster.vs-on{transform:rotate(0deg)}
+.vs-poster:hover .vs-paper,.vs-poster.vs-on .vs-paper{opacity:0;transform:rotate(0deg) scale(1.01)}
+.vs-poster:hover .vs-tape,.vs-poster.vs-on .vs-tape{opacity:0}
+.vs-poster:hover .vs-metal,.vs-poster.vs-on .vs-metal{opacity:1}
+.vs-poster:hover .vs-shine,.vs-poster.vs-on .vs-shine{opacity:1;animation:vsShine 1.1s var(--ease) forwards}
+.vs-poster:hover .vs-hint,.vs-poster.vs-on .vs-hint{opacity:0}
+.vs-poster:hover .vs-tag-paper,.vs-poster.vs-on .vs-tag-paper{opacity:0}
+.vs-poster:hover .vs-tag-metal,.vs-poster.vs-on .vs-tag-metal{opacity:1}
+@keyframes vsShine{0%{transform:translateX(-40%)}100%{transform:translateX(45%)}}
+@media(max-width:580px){.vs-section{padding:72px 0}}
+
+/* Reseñas con foto */
+.review-photo{height:170px;border-radius:8px;background-size:cover;background-position:center;margin-bottom:14px;box-shadow:0 6px 16px rgba(0,0,0,.10)}
+
+/* Responsive overrides for new hero */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr}
+  .hero-right{height:auto;min-height:auto;padding:32px 20px 52px}
+}
+@media(max-width:580px){
+  .hero-left{padding:44px 20px}
+  .phone-mockup{width:220px;height:440px}
+  .phone-screen{border-radius:26px}
+  .phone-labels{display:none}
+  .hero::before{display:none}
+}
+
+/* ── BENEFITS ── */
+.benefits-section{background:var(--white);padding:112px 0}
+.ben-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.ben-poster-col{display:flex;align-items:center;justify-content:center}
+.ben-poster-wrap{position:relative;padding:20px 52px 20px 36px}
+@keyframes posterFloat{
+  0%,100%{transform:perspective(1200px) rotateY(-18deg) rotateX(6deg) translateY(0)}
+  50%{transform:perspective(1200px) rotateY(-18deg) rotateX(6deg) translateY(-14px)}
+}
+.ben-poster{
+  width:240px;aspect-ratio:1/1.414;
+  background:linear-gradient(160deg,#d4a574 0%,#9a5530 50%,#5a2010 100%);
+  box-shadow:28px 48px 90px rgba(0,0,0,.38),inset 0 0 0 1px rgba(255,255,255,.08);
+  animation:posterFloat 4s ease-in-out infinite;
+  position:relative;overflow:hidden;border-radius:2px;
+}
+.ben-badge{
+  position:absolute;
+  background:rgba(26,26,26,.85);color:var(--white);
+  border-radius:3px;padding:6px 14px;font-size:11px;
+  border:1px solid rgba(255,255,255,.12);white-space:nowrap;
+  animation:chipFloat 4s ease-in-out infinite;
+}
+.ben-badge-tr{top:-8px;right:6px;animation-delay:0s}
+.ben-badge-bl{bottom:90px;left:6px;animation-delay:1.3s}
+.ben-badge-br{bottom:10px;right:6px;animation-delay:2.6s}
+
+/* ── 3D VIEWER EMBED ── */
+.ben-3d-wrap{
+  position:relative;width:100%;max-width:360px;
+  aspect-ratio:3/4;
+  border-radius:4px;overflow:hidden;
+  box-shadow:0 48px 96px rgba(0,0,0,.36),0 16px 40px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.1);
+  background:#0b0b0f;
+}
+.ben-3d-iframe{
+  position:absolute;inset:0;width:100%;height:100%;
+  border:none;display:block;
+}
+.ben-3d-label{
+  position:absolute;top:14px;left:14px;z-index:2;pointer-events:none;
+  background:rgba(255,255,255,.1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.88);
+  font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  padding:5px 13px;border-radius:3px;
+}
+.ben-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin:16px 0 0;padding:0}
+.ben-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:14px 16px;border-radius:4px;border:1px solid transparent;
+  transition:border-color .2s var(--ease),background .2s;cursor:default;
+}
+.ben-item:hover{border-color:var(--gray2);background:var(--gray)}
+.ben-item-icon{font-size:14px;color:var(--mid);flex-shrink:0;margin-top:3px;line-height:1;font-weight:300;letter-spacing:-1px}
+.ben-item-title{font-size:14px;font-weight:700;color:var(--black);margin-bottom:3px}
+.ben-item-desc{font-size:13px;color:var(--mid);line-height:1.55}
+.ben-table-wrap{margin-top:28px;border-radius:4px;overflow:hidden;border:1px solid var(--gray2)}
+.ben-table{width:100%;border-collapse:collapse;font-size:13px}
+.ben-table th{padding:10px 14px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;text-align:center}
+.ben-table th:first-child{visibility:hidden}
+.ben-th-paper{background:#f5f3f0;color:#999}
+.ben-th-metal{background:#1a1a1a;color:#fff}
+.ben-table td{padding:9px 14px;vertical-align:middle;background:#fff}
+.ben-table tr:nth-child(even) td{background:#faf8f5}
+.ben-table td:first-child{font-size:12px;color:var(--mid);font-weight:500}
+.ben-table td:nth-child(2){text-align:center;color:#666}
+.ben-table td:nth-child(3){text-align:center;font-weight:700}
+.ben-yes{color:#16a34a}
+.ben-no{color:#dc2626}
+@media(max-width:900px){
+  .ben-grid{grid-template-columns:1fr;gap:48px}
+  .ben-poster-col{order:-1}
+}
+@media(max-width:580px){
+  .benefits-section{padding:60px 0}
+  .ben-poster-wrap{transform:scale(.82);transform-origin:center top}
+}
+
+/* ── DI ADIÓS A LOS MARTILLOS Y CLAVOS ── */
+.adios-section{background:#090909;color:#fff;padding:112px 0;position:relative;overflow:hidden}
+.adios-section::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 50% 60% at 50% 50%,rgba(200,146,42,.05) 0%,transparent 70%);
+}
+.adios-tag{text-align:center;font-size:10.5px;letter-spacing:3.5px;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:600;margin-bottom:18px}
+.adios-h2{text-align:center;font-family:var(--font-serif);font-size:clamp(28px,3.5vw,52px);font-weight:700;line-height:1.1;letter-spacing:-.4px;color:#fff;margin-bottom:16px}
+.adios-sub{text-align:center;font-size:15px;color:rgba(255,255,255,.42);margin-bottom:72px;max-width:460px;margin-left:auto;margin-right:auto}
+.adios-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:3px;
+  max-width:940px;margin:0 auto;overflow:hidden;
+}
+.adios-col{display:flex;flex-direction:column;gap:20px;padding:40px 36px}
+.adios-col-bad{background:rgba(255,70,70,.03);border:1px solid rgba(255,80,80,.08)}
+.adios-col-good{background:rgba(74,222,128,.03);border:1px solid rgba(74,222,128,.1)}
+.adios-col-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.adios-col-title{display:flex;align-items:center;gap:10px;font-family:var(--font-serif);font-size:18px;font-weight:700}
+.adios-col-badge{font-size:10.5px;font-weight:700;padding:4px 12px;border-radius:3px;letter-spacing:.3px;white-space:nowrap}
+.adios-badge-bad{background:rgba(255,80,80,.1);color:#f87171;border:1px solid rgba(255,80,80,.18)}
+.adios-badge-good{background:rgba(74,222,128,.09);color:#4ade80;border:1px solid rgba(74,222,128,.15)}
+.adios-steps-bad{list-style:none;display:flex;flex-direction:column;gap:10px;padding:0;margin:0}
+.adios-steps-bad li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(255,255,255,.52);line-height:1.55}
+.adios-x{flex-shrink:0;margin-top:1px;line-height:1.5}
+.adios-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.adios-pill-bad{background:rgba(160,40,40,.22);color:rgba(255,120,120,.85);border-radius:3px;padding:5px 14px;font-size:11.5px;font-weight:500;border:1px solid rgba(180,40,40,.25)}
+.adios-pill-good{background:rgba(22,58,40,.6);color:#4ade80;border-radius:3px;padding:5px 14px;font-size:11.5px;font-weight:500;border:1px solid rgba(74,222,128,.18)}
+.adios-steps-good{list-style:none;display:flex;flex-direction:column;gap:20px;padding:0;margin:0}
+.adios-step-good{display:flex;align-items:flex-start;gap:16px}
+.adios-step-num{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;margin-top:2px;
+  background:rgba(200,146,42,.08);border:1.5px solid rgba(200,146,42,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-serif);font-size:14px;font-weight:700;color:var(--accent);
+}
+.adios-step-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.adios-step-desc{font-size:13px;color:rgba(255,255,255,.42);line-height:1.6}
+@media(max-width:768px){
+  .adios-section{padding:72px 0}
+  .adios-grid{grid-template-columns:1fr;gap:3px}
+  .adios-col-bad{order:2}
+  .adios-col-good{order:1}
+}
+
+/* ── PERSONA CAROUSELS ── */
+.persona-section{background:var(--beige);padding:112px 0}
+.persona-tabs{
+  display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;
+  margin:40px 0 28px;padding-bottom:4px;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.persona-tabs::-webkit-scrollbar{display:none}
+.persona-tab{
+  flex-shrink:0;border-radius:3px;padding:9px 22px;
+  font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;
+  background:rgba(255,255,255,.65);border:1.5px solid rgba(226,221,214,.9);color:var(--black);
+  backdrop-filter:blur(8px);
+  transition:background .2s,color .2s,border-color .2s,transform .15s;
+}
+.persona-tab:hover:not(.active){transform:translateY(-1px)}
+.persona-tab.active{background:var(--black);color:var(--white);border-color:var(--black)}
+.persona-panel{
+  display:none;flex-direction:row;overflow-x:auto;gap:16px;
+  padding-bottom:16px;scroll-behavior:smooth;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.persona-panel::-webkit-scrollbar{display:none}
+.persona-panel.active{display:flex}
+.moment-card{
+  width:240px;flex-shrink:0;aspect-ratio:3/4;border-radius:4px;
+  overflow:hidden;cursor:pointer;position:relative;
+  transition:transform .35s var(--ease),box-shadow .35s;
+}
+.mc-img{position:absolute;inset:0;background:#1a1a1a center/cover no-repeat}
+.moment-card:hover{transform:translateY(-5px);box-shadow:0 24px 52px rgba(0,0,0,.18)}
+.mc-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.76) 0%,transparent 62%);
+}
+.mc-content{position:absolute;bottom:0;left:0;right:0;padding:22px 18px}
+.mc-badge{
+  display:inline-block;background:rgba(255,255,255,.12);color:var(--white);
+  border-radius:3px;font-size:10px;padding:3px 9px;
+  text-transform:uppercase;letter-spacing:.5px;font-weight:600;backdrop-filter:blur(4px);
+}
+.mc-content h3{color:var(--white);font-size:15.5px;font-weight:700;margin:7px 0 4px;line-height:1.22}
+.mc-content p{color:rgba(255,255,255,.68);font-size:12px;line-height:1.45}
+@media(max-width:580px){
+  .persona-section{padding:72px 0}
+  .moment-card{width:200px}
+}
+
+/* ── ADIOS CLAIM ── */
+.adios-claim{text-align:center;font-size:clamp(17px,2vw,22px);font-weight:600;color:#fff;margin:0 auto 36px;max-width:620px;line-height:1.3}
+
+/* ── REVIEWS ── */
+.reviews-section{background:var(--gray);padding:112px 0}
+.reviews-header{text-align:center;max-width:580px;margin:0 auto}
+.reviews-aggregate{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0 28px;flex-wrap:wrap}
+.reviews-stars-big{font-size:22px;line-height:1;letter-spacing:2px}
+.reviews-score{font-family:var(--font-serif);font-size:26px;font-weight:700;color:var(--black)}
+.reviews-count{font-size:14px;color:var(--mid)}
+.reviews-bars{max-width:300px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.rbar-row{display:flex;align-items:center;gap:10px}
+.rbar-label{font-size:11.5px;color:var(--mid);width:34px;flex-shrink:0;text-align:right}
+.rbar-track{flex:1;height:5px;background:var(--gray2);border-radius:4px;overflow:hidden}
+.rbar-fill{height:100%;background:var(--black);border-radius:4px}
+.rbar-pct{font-size:11.5px;color:var(--mid);width:28px;flex-shrink:0}
+.reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px}
+.review-card{
+  background:var(--white);border:1px solid rgba(226,221,214,.6);border-radius:4px;padding:28px;
+  transition:box-shadow .25s var(--ease),transform .25s;
+}
+.review-card:hover{box-shadow:0 16px 40px rgba(0,0,0,.09);transform:translateY(-3px)}
+.review-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.review-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0}
+.review-meta{display:flex;flex-direction:column;gap:4px}
+.review-name{font-size:14px;font-weight:700;color:var(--black)}
+.review-occasion{font-size:11px;background:var(--gray);color:var(--mid);padding:2px 9px;border-radius:3px;width:fit-content}
+.review-stars{color:var(--accent);font-size:13px;margin-bottom:6px;letter-spacing:1px}
+.review-quote{font-size:14px;line-height:1.7;color:#3a3a3a;margin:8px 0}
+.review-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-top:10px}
+.review-date{color:var(--light);font-size:12px}
+.review-verified{font-size:11px;color:#16a34a;font-weight:600}
+@media(max-width:900px){.reviews-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.reviews-grid{grid-template-columns:1fr}}
+/* ══════════ HERO v3: la foto del salón manda ══════════ */
+.hero{
+  position:relative;display:grid;grid-template-columns:1fr;align-items:center;
+  min-height:min(78vh,640px);background:#efe9e1;overflow:hidden;
+}
+.hero::before{display:none}
+.hero-media{position:absolute;inset:0;z-index:0}
+.hero-slide{
+  position:absolute;inset:0;background-size:cover;background-position:66% center;
+  opacity:0;transition:opacity 1.8s var(--ease);
+}
+.hero-slide.is-on{opacity:1}
+.hero-media::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(250,247,243,.96) 0%,rgba(250,247,243,.9) 18%,
+             rgba(250,247,243,.5) 32%,rgba(250,247,243,.06) 46%,rgba(250,247,243,0) 100%);
+}
+.hero-left{
+  position:relative;z-index:1;max-width:585px;
+  padding:0 48px 0 72px;display:flex;flex-direction:column;gap:22px;
+}
+
+/* ══════════ SUBE TU FOTO (con la demo al lado) ══════════ */
+.upload-section{background:var(--white)}
+.up-inner{display:grid;grid-template-columns:1.04fr .96fr;gap:56px;align-items:center}
+.up-copy .s-h2{margin-bottom:16px}
+.up-steps{list-style:none;margin:30px 0 32px;display:flex;flex-direction:column;gap:19px}
+.up-steps li{display:flex;gap:14px;align-items:flex-start}
+.up-n{
+  flex:0 0 26px;height:26px;border-radius:50%;background:var(--black);color:#fff;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.up-steps b{display:block;font-size:15px;font-weight:700;margin-bottom:3px}
+.up-steps li>div>span{display:block;font-size:13.5px;color:var(--mid);line-height:1.55}
+.up-steps li>div>span.en,.up-steps li>div>span.es{display:block}
+[data-lang="en"] .up-steps li>div>span.es,[data-lang="es"] .up-steps li>div>span.en{display:none!important}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;grid-template-rows:auto auto;min-height:0}
+  .hero-media{position:relative;height:308px}
+  .hero-media::after{background:linear-gradient(180deg,rgba(250,247,243,0) 52%,rgba(250,247,243,.55) 78%,rgba(250,247,243,.96) 100%)}
+  .hero-left{max-width:none;padding:22px 32px 48px}
+  .up-inner{grid-template-columns:1fr;gap:30px}
+  .up-demo{padding:0}
+}
+@media(max-width:580px){
+  .hero-media{height:262px}
+  .hero-left{padding:18px 20px 44px}
+}
+
+/* ══════════ ALUMINIO vs MARCO ══════════ */
+.mvm-section{background:var(--white)}
+.mvm-h2{text-align:center}
+.mvm-sub{text-align:center;font-size:15px;color:var(--mid);max-width:640px;margin:12px auto 40px;line-height:1.6}
+.mvm-photo{border-radius:14px;overflow:hidden;background:var(--gray)}
+.mvm-photo img{width:100%;height:auto;display:block}
+.mvm-grid{
+  list-style:none;display:grid;grid-template-columns:repeat(5,1fr);margin-top:26px;
+  border:1px solid var(--gray2);border-radius:14px;overflow:hidden;
+}
+.mvm-grid li{padding:26px 20px;text-align:center;border-right:1px solid var(--gray2)}
+.mvm-grid li:last-child{border-right:none}
+.mvm-ico{
+  width:38px;height:38px;border-radius:50%;background:var(--gray);color:var(--black);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 12px;
+}
+.mvm-ico svg{width:19px;height:19px}
+.mvm-grid b{display:block;font-size:13.5px;font-weight:700;margin-bottom:5px}
+.mvm-grid li>span:not(.mvm-ico){font-size:12.5px;color:var(--mid);line-height:1.5}
+@media(max-width:900px){
+  .mvm-grid{grid-template-columns:repeat(2,1fr)}
+  .mvm-grid li{border-bottom:1px solid var(--gray2)}
+  .mvm-grid li:nth-child(2n){border-right:none}
+  .mvm-grid li:last-child{grid-column:1 / -1;border-bottom:none}
+}
+@media(max-width:520px){
+  .mvm-sub{margin-bottom:26px}
+  .mvm-grid li{padding:20px 14px}
+}
+
+/* ── REESTRUCTURACIÓN 11-sep-2026 ── */
+.ben-mvm{margin-top:56px}
+.trust-section .reviews-header{margin-bottom:44px}
+.trust-section .s-tag{color:rgba(255,255,255,.5)}
+.trust-section .s-h2{color:#fff}
+.trust-section .s-lead{color:rgba(255,255,255,.62)}
+.trust-section .s-lead a{color:#fff}
+@media(max-width:580px){.ben-mvm{margin-top:36px}}
+</style>
+</head>
+<body>
+<div id="sp"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="es">Tus fotos en aluminio HD · Se cuelgan sin agujeros · Envío a España y Europa</span>
+  <span class="en">Your photos on HD aluminium · Hang without holes · Shipping to Spain and Europe</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <button class="hbg" id="hbgBtn" onclick="openMenu()" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <a href="./" class="nav-logo">
+    <svg class="nav-logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <polygon points="14,2 22,8 22,20 14,26 6,20 6,8" stroke="#1a1a1a" stroke-width="1.4" fill="none"/>
+      <polygon points="14,8 18,11 18,17 14,20 10,17 10,11" fill="#1a1a1a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies <small style="font-weight:600;font-size:.55em;letter-spacing:.06em;opacity:.6;vertical-align:middle">FORMATOS</small></span>
+  </a>
+
+  <div class="nav-right-slot">
+    <button class="nav-icon-btn" onclick="toggleSearch()" aria-label="Buscar">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="nav-icon-btn" aria-label="Mi cuenta">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <button class="nav-icon-btn" aria-label="Carrito">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-search" id="navSearch">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Buscar impresiones, tamaños, acabados…"/>
+    <button class="nav-icon-btn" onclick="toggleSearch()">✕</button>
+  </div>
+</nav>
+
+<!-- SLIDE-IN MENU -->
+<div class="menu-panel" id="menuPanel" role="dialog" aria-label="Menú">
+  <div class="menu-header">
+    <div class="menu-header-brand">Momenturies</div>
+    <button class="menu-close" onclick="closeMenu()" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="menu-body">
+    <a href="cuadro.html" class="menu-item">
+      <span class="es">Cuadro</span><span class="en">Wall print</span>
+    </a>
+    <a href="sobremesa.html" class="menu-item">
+      <span class="es">Sobremesa</span><span class="en">Desk print</span>
+    </a>
+    <a href="iman.html" class="menu-item">
+      <span class="es">Imán</span><span class="en">Fridge magnet</span>
+    </a>
+    <a href="producto.html" class="menu-item">
+      <span class="es">Todos los formatos</span><span class="en">All formats</span>
+    </a>
+    <div class="menu-sep"></div>
+    <a href="#como-funciona" class="menu-item" onclick="closeMenu()">
+      <span class="es">Cómo funciona</span><span class="en">How it works</span>
+    </a>
+    <a href="#faq" class="menu-item" onclick="closeMenu()">
+      <span class="es">Preguntas frecuentes</span><span class="en">FAQ</span>
+    </a>
+    <a href="contacto.html" class="menu-item">
+      <span class="es">Contacto</span><span class="en">Contact</span>
+    </a>
+    <div class="menu-sep"></div>
+    <a href="aviso-legal.html" class="menu-small"><span class="es">Aviso legal</span><span class="en">Legal notice</span></a>
+    <a href="privacidad.html" class="menu-small"><span class="es">Política de privacidad</span><span class="en">Privacy policy</span></a>
+    <a href="terminos.html" class="menu-small"><span class="es">Términos de compra</span><span class="en">Terms of sale</span></a>
+    <a href="cookies.html" class="menu-small"><span class="es">Política de cookies</span><span class="en">Cookie policy</span></a>
+  </div>
+  <div class="menu-footer">
+    <div class="lang-btn" onclick="toggleLang()">
+      <span id="lang-flag"></span>
+      <span id="lang-text">Español</span>
+      <span>▾</span>
+    </div>
+  </div>
+</div>
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-media" aria-hidden="true">
+    <div class="hero-slide is-on" style="background-image:url('fotos/hero-salon-1.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('fotos/hero-salon-2.jpg')"></div>
+  </div>
+  <div class="hero-left">
+    <p class="hero-tag reveal"><span class="es" id="angleHeroTag-es">IMPRESIÓN EN ALUMINIO HD</span><span class="en" id="angleHeroTag-en">HD ALUMINIUM PRINT</span></p>
+    <h1 class="hero-h1 reveal"><span class="es" id="angleHeroH1-es">Tus fotos en aluminio,<br>listas para colgar</span><span class="en" id="angleHeroH1-en">Your photos on aluminium,<br>ready to hang</span></h1>
+    <p class="hero-sub reveal"><span class="es" id="angleHeroSub-es">Sube la foto, la ves en 3D y la recibes impresa en aluminio HD. Se cuelga sin agujeros, con el imán incluido.</span><span class="en" id="angleHeroSub-en">Upload your photo, see it in 3D and get it printed on HD aluminium. Hangs without holes, magnet included.</span></p>
+    <div class="hero-btns reveal">
+      <a href="cuadro.html" class="hero-cta" data-photo-pick><span class="es" id="angleHeroCta-es">Crear mi cuadro</span><span class="en" id="angleHeroCta-en">Create my wall print</span> <span class="hero-cta-arr">→</span></a>
+      <a href="#productos" class="hero-cta-outline"><span class="es" id="angleHeroCta2-es">Ver formatos y precios</span><span class="en" id="angleHeroCta2-en">See formats and prices</span></a>
+    </div>
+    <div class="hero-trust reveal">
+      <span class="hero-trust-item"><span class="es" id="angleTrust1-es">Sin agujeros ni marco</span><span class="en" id="angleTrust1-en">No holes, no frame</span></span>
+      <span class="hero-trust-sep">·</span>
+      <span class="hero-trust-item"><span class="es" id="angleTrust2-es">Vista previa en 3D</span><span class="en" id="angleTrust2-en">3D preview</span></span>
+      <span class="hero-trust-sep">·</span>
+      <span class="hero-trust-item"><span class="es" id="angleTrust3-es">Imán incluido</span><span class="en" id="angleTrust3-en">Magnet included</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTOS: carrusel -->
+<section class="products-carousel-section" id="productos">
+  <div class="container">
+    <div class="pc-header">
+      <div>
+        <p class="s-tag reveal"><span class="es" id="anglePcTag-es">Nuestros formatos</span><span class="en" id="anglePcTag-en">Our formats</span></p>
+        <h2 class="s-h2 reveal"><span class="es" id="anglePcH2-es">El mismo aluminio HD,<br>tres formas de tenerlo</span><span class="en" id="anglePcH2-en">The same HD aluminium,<br>three ways to have it</span></h2>
+      </div>
+      <div class="carousel-arrows">
+        <button class="c-btn" onclick="productsSlide(-1)" aria-label="Formato anterior">←</button>
+        <button class="c-btn" onclick="productsSlide(1)" aria-label="Formato siguiente">→</button>
+      </div>
+    </div>
+
+    <div class="pc-track-wrap">
+      <div class="pc-track" id="pcTrack">
+
+        <article class="pc-card">
+          <a class="pc-media" href="cuadro.html" tabindex="-1" aria-hidden="true">
+            <img src="fotos/producto-metalico.jpg" alt="Los tres tamaños del cuadro colgados en la pared" loading="lazy" width="1120" height="1400">
+            <span class="pc-badge"><span class="es">El favorito</span><span class="en">The favourite</span></span>
+          </a>
+          <div class="pc-body">
+            <h3><span class="es">Cuadro</span><span class="en">Wall print</span></h3>
+            <p><span class="es">Se cuelga sin agujeros, con el imán premium incluido.</span><span class="en">Hangs without holes, premium magnet included.</span></p>
+            <div class="pc-meta">
+              <span class="pc-price"><span class="es">Desde 29,99€</span><span class="en">From €29.99</span></span>
+              <span class="pc-dims"><span class="es">3 tamaños · 21×29,7–30,5×43 cm</span><span class="en">3 sizes · 21×29.7–30.5×43 cm</span></span>
+            </div>
+            <a href="cuadro.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
+          </div>
+        </article>
+
+        <article class="pc-card">
+          <a class="pc-media" href="sobremesa.html" tabindex="-1" aria-hidden="true">
+            <img src="fotos/producto-sobremesa.jpg" alt="Sobremesa de aluminio de pie sobre su peana de bambú" loading="lazy" width="900" height="1125">
+            <span class="pc-badge"><span class="es">Para tu mesa</span><span class="en">For your desk</span></span>
+          </a>
+          <div class="pc-body">
+            <h3><span class="es">Sobremesa</span><span class="en">Desk print</span></h3>
+            <p><span class="es">De pie sobre tu mesa, con peana de bambú incluida.</span><span class="en">Standing on your desk, bamboo stand included.</span></p>
+            <div class="pc-meta">
+              <span class="pc-price">28,99€</span>
+              <span class="pc-dims">10,2×15,2 cm</span>
+            </div>
+            <a href="sobremesa.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
+          </div>
+        </article>
+
+        <article class="pc-card">
+          <a class="pc-media" href="iman.html" tabindex="-1" aria-hidden="true">
+            <img src="fotos/producto-iman-nevera.jpg" alt="Imán de aluminio sujeto con la mano" loading="lazy" width="900" height="1125">
+            <span class="pc-badge"><span class="es">El detalle diario</span><span class="en">The everyday detail</span></span>
+          </a>
+          <div class="pc-body">
+            <h3><span class="es">Imán</span><span class="en">Fridge magnet</span></h3>
+            <p><span class="es">En la puerta de la nevera. El que ves cada día.</span><span class="en">On the fridge door. The one you see every day.</span></p>
+            <div class="pc-meta">
+              <span class="pc-price">9,99€</span>
+              <span class="pc-dims">7×10 cm</span>
+            </div>
+            <a href="iman.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <div class="pc-dots" id="pcDots"></div>
+  </div>
+</section>
+
+<!-- SUBE TU FOTO (la demo, al lado) -->
+<section class="upload-section" id="como-funciona">
+  <div class="container up-inner">
+    <div class="up-copy reveal">
+      <p class="s-tag"><span class="es" id="angleUpTag-es">Así de simple</span><span class="en" id="angleUpTag-en">That simple</span></p>
+      <h2 class="s-h2"><span class="es" id="angleUpH2-es">Tú subes la foto.<br>Nosotros la imprimimos en aluminio.</span><span class="en" id="angleUpH2-en">You upload the photo.<br>We print it on aluminium.</span></h2>
+      <p class="s-lead">
+        <span class="es" id="angleUpLead-es">No necesitas saber de diseño ni de impresión. Eliges una foto del móvil, la encuadras y la ves en 3D antes de pedirla. Lo demás lo hacemos nosotros.</span>
+        <span class="en" id="angleUpLead-en">You don't need to know about design or printing. Pick a photo from your phone, frame it and see it in 3D before ordering. We do the rest.</span>
+      </p>
+      <ol class="up-steps">
+        <li>
+          <span class="up-n">1</span>
+          <div><b><span class="es">Sube tu foto</span><span class="en">Upload your photo</span></b>
+          <span class="es">Desde el móvil, el ordenador o tus redes. Nosotros la preparamos para imprimir.</span>
+          <span class="en">From your phone, your computer or your socials. We get it ready to print.</span></div>
+        </li>
+        <li>
+          <span class="up-n">2</span>
+          <div><b><span class="es">Elige tamaño y encuadre</span><span class="en">Choose size and crop</span></b>
+          <span class="es">Cuadro, sobremesa o imán. Con una frase delante y una dedicatoria detrás, si quieres.</span>
+          <span class="en">Wall print, desk print or magnet. With a caption in front and a dedication on the back, if you like.</span></div>
+        </li>
+        <li>
+          <span class="up-n">3</span>
+          <div><b><span class="es">La recibes lista para colgar</span><span class="en">It arrives ready to hang</span></b>
+          <span class="es">En unos días, con el imán puesto. Sin taladro, sin marco y sin marcas en la pared.</span>
+          <span class="en">Within days, magnet included. No drill, no frame, no marks on the wall.</span></div>
+        </li>
+      </ol>
+      <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Subir mi foto</span><span class="en">Upload my photo</span> <span>→</span></a>
+    </div>
+  <div class="up-demo">
+    <div class="phone-mockup">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="ps-wrap">
+
+          <!-- PANTALLA 1: Galería -->
+          <div class="ps-screen-content ps-active" id="ps0">
+            <div class="ps-screen-header">
+              <span class="ps-screen-title">Galería</span>
+              <span class="ps-badge">3 selec.</span>
+            </div>
+            <div class="ps-gallery-grid">
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1518568814500-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1529156069898-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1544005313-160x160.webp')"></div>
+              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1474552226712-160x160.webp')"><span class="ps-check">✓</span></div>
+              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1519689373023-160x160.webp')"><span class="ps-check">✓</span></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1438761681033-160x160.webp')"></div>
+              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1491013516836-160x160.webp')"><span class="ps-check">✓</span></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1507003211169-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1555685812-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1499714608240-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1518568814500-160x160.webp')"></div>
+              <div class="ps-thumb" style="background-image:url('fotos/stock/1502759683299-160x160.webp')"></div>
+            </div>
+            <div class="ps-footer-cta">Continuar con 3 fotos →</div>
+          </div>
+
+          <!-- PANTALLA 2: Elige tamaño de cada poster -->
+          <div class="ps-screen-content" id="ps1">
+            <div class="ps-screen-header">
+              <span class="ps-screen-title">Elige tamaños</span>
+              <span class="ps-badge">3 fotos</span>
+            </div>
+            <div class="ps-cards-carousel" id="psCarousel">
+              <div class="ps-card-slide">
+                <div class="ps-card-photo" style="background-image:url('fotos/stock/1474552226712-300x420.webp')"></div>
+                <div class="ps-card-bottom">
+                  <div class="ps-card-name">Foto familiar</div>
+                  <div class="ps-card-sizes">
+                    <div class="ps-sz on" data-price="29.99">M<span>29,99€</span></div>
+                    <div class="ps-sz" data-price="49.99">L<span>49,99€</span></div>
+                    <div class="ps-sz" data-price="69.99">XL<span>69,99€</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ps-card-slide">
+                <div class="ps-card-photo" style="background-image:url('fotos/stock/1519689373023-300x420.webp')"></div>
+                <div class="ps-card-bottom">
+                  <div class="ps-card-name">Retrato</div>
+                  <div class="ps-card-sizes">
+                    <div class="ps-sz" data-price="29.99">M<span>29,99€</span></div>
+                    <div class="ps-sz on" data-price="49.99">L<span>49,99€</span></div>
+                    <div class="ps-sz" data-price="69.99">XL<span>69,99€</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ps-card-slide">
+                <div class="ps-card-photo" style="background-image:url('fotos/stock/1491013516836-300x420.webp')"></div>
+                <div class="ps-card-bottom">
+                  <div class="ps-card-name">Bebé</div>
+                  <div class="ps-card-sizes">
+                    <div class="ps-sz" data-price="29.99">M<span>29,99€</span></div>
+                    <div class="ps-sz" data-price="49.99">L<span>49,99€</span></div>
+                    <div class="ps-sz on" data-price="69.99">XL<span>69,99€</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ps-carousel-dots">
+              <span class="ps-carousel-dot active"></span>
+              <span class="ps-carousel-dot"></span>
+            </div>
+            <div class="ps-hang">
+              <span class="ps-hang-label">Colgado</span>
+              <button class="ps-hang-opt on">🧲 Imán <em>incl.</em></button>
+              <button class="ps-hang-opt">📏 Tiras <em>incl.</em></button>
+            </div>
+            <div class="ps-total-cta" id="psTotalCta">
+              <span>Añadir al carrito</span>
+              <span class="ps-total-amt" id="psTotalAmt">149,97€</span>
+            </div>
+          </div>
+
+          <!-- PANTALLA 3: Editar (filtros + frase) -->
+          <div class="ps-screen-content" id="ps2">
+            <div class="ps-screen-header">
+              <span class="ps-screen-title">Editar</span>
+              <span class="ps-badge">Filtros</span>
+            </div>
+            <div class="ps-edit-photo" style="background-image:url('fotos/stock/1491013516836-300x420.webp')">
+              <span class="ps-edit-caption">Para siempre juntos</span>
+            </div>
+            <div class="ps-filters">
+              <div class="ps-filter on" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Original</span></div>
+              <div class="ps-filter ps-fil-bn" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>B/N</span></div>
+              <div class="ps-filter ps-fil-warm" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Cálido</span></div>
+              <div class="ps-filter ps-fil-cool" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Frío</span></div>
+            </div>
+            <div class="ps-phrase">
+              <span class="ps-phrase-label">Tu frase</span>
+              <div class="ps-phrase-input">Para siempre juntos<span class="ps-caret"></span></div>
+            </div>
+            <div class="ps-footer-cta">Ver en 3D →</div>
+          </div>
+
+          <!-- PANTALLA 4: Listo — visor 3D -->
+          <div class="ps-screen-content ps-3d-screen" id="ps3">
+            <iframe class="ps-3d-frame" data-src="momenturies%20-%20visor%203D.html?embed=1&autorotate=1&posters=fotos%2Fstock%2F1474552226712-620x877.webp,fotos%2Fstock%2F1519689373023-620x877.webp,fotos%2Fstock%2F1491013516836-620x877.webp" title="Vista 3D del póster" loading="lazy"></iframe>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="phone-dots">
+      <span class="pd active" id="pd0"></span>
+      <span class="pd" id="pd1"></span>
+      <span class="pd" id="pd2"></span>
+      <span class="pd" id="pd3"></span>
+    </div>
+    <div class="phone-hint" id="phoneHint">1 · Selecciona tus fotos favoritas</div>
+  </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="benefits-section">
+  <div class="container">
+    <div class="ben-grid">
+
+      <!-- COLUMNA IZQUIERDA — VISOR 3D INTERACTIVO -->
+      <div class="ben-poster-col">
+        <div class="ben-3d-wrap">
+          <iframe
+            id="visor3d"
+            src="momenturies%20-%20visor%203D.html?embed=1&autorotate=1&poster=fotos%2Fstock%2F1474552226712-620x877.webp"
+            class="ben-3d-iframe"
+            loading="lazy"
+            frameborder="0"
+            title="Visor 3D — Momenturies"
+          ></iframe>
+          <div class="ben-3d-label">3D · Interactivo</div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA — COPY + TABLA -->
+      <div class="ben-copy">
+        <div>
+          <p class="s-tag">POR QUÉ EN ALUMINIO</p>
+          <h2 class="s-h2">La diferencia que se ve y se siente</h2>
+        </div>
+
+        <ul class="ben-list">
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">Impresión directa sobre metal</div>
+              <div class="ben-item-desc">La tinta se funde en el aluminio. No hay papel que se transparente ni pierda definición.</div>
+            </div>
+          </li>
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">Se limpia con un paño</div>
+              <div class="ben-item-desc">La superficie es lisa y sellada. Un paño húmedo y queda como el primer día.</div>
+            </div>
+          </li>
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">No se dobla ni se arruga</div>
+              <div class="ben-item-desc">Es una plancha rígida de aluminio, no una lámina. Aguanta la luz y la humedad mejor que el papel.</div>
+            </div>
+          </li>
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">Sin marco</div>
+              <div class="ben-item-desc">Se cuelga tal cual. Limpio y actual, el aluminio ya es el acabado.</div>
+            </div>
+          </li>
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">Brillo con profundidad</div>
+              <div class="ben-item-desc">La luz rebota en el metal y da a la foto un brillo que el papel mate no tiene.</div>
+            </div>
+          </li>
+          <li class="ben-item">
+            <span class="ben-item-icon">—</span>
+            <div>
+              <div class="ben-item-title">Colgado en segundos</div>
+              <div class="ben-item-desc">Base adhesiva a la pared, el cuadro se engancha con imán. Sin clavos ni herramientas.</div>
+            </div>
+          </li>
+        </ul>
+
+        <div class="ben-table-wrap">
+          <table class="ben-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="ben-th-paper">Papel / lienzo</th>
+                <th class="ben-th-metal">✦ Aluminio HD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Soporte</td>
+                <td>Papel montado</td>
+                <td><strong>Plancha de aluminio</strong></td>
+              </tr>
+              <tr>
+                <td>Se dobla o arruga</td>
+                <td>Sí</td>
+                <td><strong>No</strong></td>
+              </tr>
+              <tr>
+                <td>Limpieza</td>
+                <td>Con cuidado, no mojar</td>
+                <td><strong>Paño húmedo</strong></td>
+              </tr>
+              <tr>
+                <td>Colgado</td>
+                <td>Marco y clavo</td>
+                <td><strong>Imán, sin agujeros</strong></td>
+              </tr>
+              <tr>
+                <td>Acabado</td>
+                <td>Mate</td>
+                <td><strong>Brillo con reflejo</strong></td>
+              </tr>
+              <tr>
+                <td>Marco</td>
+                <td>Necesario</td>
+                <td><strong>No hace falta</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="ben-mvm">
+<div class="mvm-photo reveal">
+      <img src="fotos/metal-vs-marco.jpg" alt="Un cuadro de aluminio HD al lado de una lámina enmarcada tradicional" loading="lazy" width="1800" height="771">
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- DI ADIÓS A LOS MARTILLOS Y CLAVOS -->
+<section class="adios-section">
+  <div class="container">
+    <p class="adios-tag">COLGADO FÁCIL</p>
+    <h2 class="adios-h2">Di adiós a los<br>martillos y clavos</h2>
+    <p class="adios-sub">Móntalo fácil en segundos, sin herramientas.</p>
+
+    <h3 class="adios-claim">Hasta tu abuela o tu hijo de 5 años sabe montarlo 🤷‍♂️</h3>
+
+    <div class="adios-grid">
+
+      <!-- Cuadro tradicional -->
+      <div class="adios-col adios-col-bad">
+        <div class="adios-col-header">
+          <div class="adios-col-title">Cuadro tradicional</div>
+          <span class="adios-col-badge adios-badge-bad">El método antiguo</span>
+        </div>
+        <ul class="adios-steps-bad">
+          <li><span class="adios-x">×</span> Comprar marco y clavo</li>
+          <li><span class="adios-x">×</span> Marcar la pared (y equivocarte)</li>
+          <li><span class="adios-x">×</span> Clavar (y dejar marca permanente)</li>
+          <li><span class="adios-x">×</span> Rezar para que no se caiga</li>
+        </ul>
+        <div class="adios-pills">
+          <span class="adios-pill-bad">Agujeros permanentes</span>
+          <span class="adios-pill-bad">Difícil de mover</span>
+          <span class="adios-pill-bad">Herramientas necesarias</span>
+        </div>
+      </div>
+
+      <!-- Sistema Magnético -->
+      <div class="adios-col adios-col-good">
+        <div class="adios-col-header">
+          <div class="adios-col-title">Sistema Magnético</div>
+          <span class="adios-col-badge adios-badge-good">Momenturies</span>
+        </div>
+        <ul class="adios-steps-good">
+          <li class="adios-step-good">
+            <div class="adios-step-num">1</div>
+            <div>
+              <div class="adios-step-title">Pega el adhesivo en la pared</div>
+              <div class="adios-step-desc">Incluido en el pedido. Se adhiere en cualquier superficie.</div>
+            </div>
+          </li>
+          <li class="adios-step-good">
+            <div class="adios-step-num">2</div>
+            <div>
+              <div class="adios-step-title">Coloca el cuadro sobre el imán</div>
+              <div class="adios-step-desc">Clic. Se engancha solo. Perfectamente centrado.</div>
+            </div>
+          </li>
+          <li class="adios-step-good">
+            <div class="adios-step-num">3</div>
+            <div>
+              <div class="adios-step-title">¡Listo!</div>
+              <div class="adios-step-desc">10 segundos. Sin herramientas. Sin marcas. Para siempre.</div>
+            </div>
+          </li>
+        </ul>
+        <div class="adios-pills">
+          <span class="adios-pill-good">Sin marcas en la pared</span>
+          <span class="adios-pill-good">Intercambiable en segundos</span>
+          <span class="adios-pill-good">Sin herramientas</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUIÉN (fusión de Persona + Ocasiones + Entornos, 11-sep-2026) -->
+<section class="persona-section" id="para-quien">
+  <div class="container">
+    <p class="s-tag"><span class="es">PARA QUIÉN</span><span class="en">WHO IT'S FOR</span></p>
+    <h2 class="s-h2"><span class="es">Un regalo que no<br>acaba en un cajón</span><span class="en">A gift that doesn't<br>end up in a drawer</span></h2>
+    <p class="s-lead"><span class="es">La foto que ya tienes en el móvil, en la pared de la persona que sale en ella.</span><span class="en">The photo already on your phone, on the wall of the person in it.</span></p>
+
+    <div class="persona-tabs" id="personaTabs">
+      <button class="persona-tab active" data-tab="pareja"><span class="es">Pareja</span><span class="en">Partner</span></button>
+      <button class="persona-tab" data-tab="familia"><span class="es">Familia</span><span class="en">Family</span></button>
+      <button class="persona-tab" data-tab="mascota"><span class="es">Mascotas</span><span class="en">Pets</span></button>
+      <button class="persona-tab" data-tab="ocasiones"><span class="es">Ocasiones</span><span class="en">Occasions</span></button>
+    </div>
+
+    <div class="persona-panels">
+
+      <!-- PAREJA -->
+      <div class="persona-panel active" id="panel-pareja">
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1750076912832-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Aniversario</span><span class="en">Anniversary</span></span>
+            <h3><span class="es">El día que lo dijisteis todo</span><span class="en">The day you said it all</span></h3>
+            <p><span class="es">La foto que mirará cada mañana con una sonrisa</span><span class="en">The photo they'll smile at every morning</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1738956952892-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">San Valentín</span><span class="en">Valentine's</span></span>
+            <h3><span class="es">La foto que os define</span><span class="en">The photo that defines you</span></h3>
+            <p><span class="es">Vuestra historia en la pared, no en una carpeta del móvil</span><span class="en">Your story on the wall, not in a phone folder</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1472719674214-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Boda</span><span class="en">Wedding</span></span>
+            <h3><span class="es">El «sí, quiero», en aluminio</span><span class="en">Your "I do", on aluminium</span></h3>
+            <p><span class="es">De las 800 fotos del fotógrafo, la que de verdad cuelga</span><span class="en">Of the 800 photos from the photographer, the one that actually hangs</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAMILIA -->
+      <div class="persona-panel" id="panel-familia">
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1624272864537-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Toda la familia</span><span class="en">The whole family</span></span>
+            <h3><span class="es">La foto que nos define a todos</span><span class="en">The photo that defines us all</span></h3>
+            <p><span class="es">Esa navidad, ese verano, ese día que no quieres olvidar</span><span class="en">That Christmas, that summer, that day you don't want to forget</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1758686254601-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Abuelos</span><span class="en">Grandparents</span></span>
+            <h3><span class="es">Sus nietos, en su casa</span><span class="en">Their grandkids, in their home</span></h3>
+            <p><span class="es">Una foto reciente, no la de hace diez años. Y sin taladro</span><span class="en">A recent photo, not the one from ten years ago. No drilling</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1770831208268-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Bebé</span><span class="en">Baby</span></span>
+            <h3><span class="es">El día que llegaste al mundo</span><span class="en">The day you arrived</span></h3>
+            <p><span class="es">Esa foto merece algo mejor que el carrete del móvil</span><span class="en">That photo deserves better than the camera roll</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1752652011858-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Mamá y papá</span><span class="en">Mum and dad</span></span>
+            <h3><span class="es">El regalo que no pedirían</span><span class="en">The gift they'd never ask for</span></h3>
+            <p><span class="es">Pero que guardarán toda la vida</span><span class="en">But will keep for life</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MASCOTAS -->
+      <div class="persona-panel" id="panel-mascota">
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1548858806-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Perro</span><span class="en">Dog</span></span>
+            <h3><span class="es">Mi mejor compañero</span><span class="en">My best mate</span></h3>
+            <p><span class="es">La foto que ya tienes mil veces en el móvil, por fin en la pared</span><span class="en">The photo you already have a thousand times on your phone, finally on the wall</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1557495235-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Gato</span><span class="en">Cat</span></span>
+            <h3><span class="es">La huella que se queda</span><span class="en">The paw print that stays</span></h3>
+            <p><span class="es">En la nevera como imán, o en la pared como cuadro</span><span class="en">On the fridge as a magnet, or on the wall as a print</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- OCASIONES -->
+      <div class="persona-panel" id="panel-ocasiones">
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1606983340126-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Cumpleaños</span><span class="en">Birthday</span></span>
+            <h3><span class="es">Sopla las velas una vez</span><span class="en">Blow out the candles once</span></h3>
+            <p><span class="es">Y recuérdalo cada día</span><span class="en">And remember it every day</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1655141011386-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Graduación</span><span class="en">Graduation</span></span>
+            <h3><span class="es">Años de esfuerzo, en su pared</span><span class="en">Years of work, on their wall</span></h3>
+            <p><span class="es">Celebra lo que tanto le costó conseguir</span><span class="en">Celebrate what they worked so hard for</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1603367563698-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Comunión</span><span class="en">Communion</span></span>
+            <h3><span class="es">Su gran día, guardado</span><span class="en">Their big day, kept</span></h3>
+            <p><span class="es">Un recuerdo a la altura de un momento único</span><span class="en">A keepsake worthy of a one-off moment</span></p>
+          </div>
+        </div>
+        <div class="moment-card">
+          <div class="mc-img" style="background-image:url('fotos/stock/1586498024141-480x640.webp')"></div>
+          <div class="mc-overlay"></div>
+          <div class="mc-content">
+            <span class="mc-badge"><span class="es">Navidad</span><span class="en">Christmas</span></span>
+            <h3><span class="es">El regalo que se abre y se cuelga</span><span class="en">The gift you unwrap and hang</span></h3>
+            <p><span class="es">Sin pilas, sin talla, sin ticket regalo</span><span class="en">No batteries, no size, no gift receipt</span></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- RECIÉN EMPEZAMOS + GARANTÍAS (fusión de reviews + trust) -->
+<section class="trust-section" id="opiniones">
+  <div class="container">
+    <div class="reviews-header">
+      <p class="s-tag"><span class="es">Recién empezamos</span><span class="en">We're just starting</span></p>
+      <h2 class="s-h2"><span class="es">Somos una marca nueva.<br>Todavía no tenemos reseñas.</span><span class="en">We're a new brand.<br>No reviews yet.</span></h2>
+      <p class="s-lead" style="margin:16px auto 0">
+        <span class="es">Preferimos decírtelo antes que inventarnos estrellas. Si haces uno de los primeros pedidos y nos mandas una foto de cómo queda en tu casa, te devolvemos el 50%. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
+        <span class="en">We'd rather tell you than invent star ratings. If you place one of the first orders and send us a photo of it on your wall, we refund you 50%. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
+      </p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-item reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <h3><span class="es">Lo ves antes de pedirlo</span><span class="en">See it before you order</span></h3>
+        <p><span class="es">Giras el cuadro en 3D con tu foto ya puesta. Lo que ves es lo que llega.</span><span class="en">Rotate the print in 3D with your photo on it. What you see is what ships.</span></p>
+      </div>
+      <div class="trust-item reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        </div>
+        <h3><span class="es">Colgado sin obras</span><span class="en">No drilling</span></h3>
+        <p><span class="es">Base adhesiva e imán incluidos. Sin taladro y sin marcas en la pared.</span><span class="en">Adhesive base and magnet included. No drill, no marks on the wall.</span></p>
+      </div>
+      <div class="trust-item reveal">
+        <div class="trust-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3><span class="es">Si algo sale mal</span><span class="en">If something's wrong</span></h3>
+        <p><span class="es">Si llega defectuoso o dañado en el envío, lo reimprimimos sin coste.</span><span class="en">If it arrives faulty or damaged in transit, we reprint it at no cost.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <p class="s-tag" style="text-align:center">FAQ</p>
+    <h2 class="s-h2" style="text-align:center"><span class="es">Preguntas frecuentes</span><span class="en">Frequently asked questions</span></h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Qué tamaños están disponibles?</span><span class="en">What sizes are available?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">El cuadro va en tres tamaños: 21×29,7, 25,5×36 y 30,5×43 cm. Aparte tienes la sobremesa (10,2×15,2) y el imán (7×10). Todos, en vertical o en horizontal. <a href="cuadro.html#tallas">Ver los tamaños a escala</a>.</span><span class="en">The wall print comes in three sizes: 21×29.7, 25.5×36 and 30.5×43 cm. There's also the desk print (10.2×15.2) and the fridge magnet (7×10). All of them portrait or landscape. <a href="cuadro.html#tallas">See the sizes to scale</a>.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Cuánto tarda en llegar mi pedido?</span><span class="en">How long does delivery take?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Lo preparamos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; al resto de Europa, algo más. Verás el plazo y el precio exactos en el checkout antes de pagar.</span><span class="en">We make it in 1-2 working days. Shipping within Spain usually adds 3-5 working days; longer for the rest of Europe. You'll see the exact time and price at checkout before paying.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Cómo es el acabado?</span><span class="en">What's the finish like?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Acabado brillo. La foto se imprime directamente sobre la plancha de aluminio, sin papel de por medio, así que la luz rebota en el metal y da profundidad y reflejo. Las fotos con buena luz y contraste son las que más lucen.</span><span class="en">Gloss finish. The photo is printed straight onto the aluminium sheet, no paper in between, so light bounces off the metal and gives depth and reflection. Photos with good light and contrast look best.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Puedo devolver mi pedido?</span><span class="en">Can I return my order?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Si llega con un defecto de fabricación o dañado en el transporte, lo reimprimimos y reenviamos sin coste: escríbenos con una foto en los 14 días siguientes a recibirlo.</span><span class="en">Each piece is made with your photo, so the standard right of withdrawal doesn't apply (art. 103.c of the Spanish Consumer Act). If it arrives with a manufacturing defect or damaged in transit, we reprint and reship it at no cost: write to us with a photo within 14 days of delivery.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Cómo funciona el colgado magnético?</span><span class="en">How does the magnetic mounting work?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Cada pedido incluye una base adhesiva que pegas en la pared sin clavos ni herramientas. El cuadro se engancha encima con un imán. Sin marcas ni agujeros, y se recoloca cuando quieras.</span><span class="en">Every order includes an adhesive base you stick to the wall, no nails or tools. The print attaches on top with a magnet. No marks, no holes, and you can move it whenever.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Puedo enviarlo directamente como regalo?</span><span class="en">Can I ship it straight as a gift?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Sí. Puedes poner una dirección de entrega distinta a la tuya y añadir una nota en los comentarios del pedido. El precio no aparece dentro del paquete.</span><span class="en">Yes. You can enter a delivery address different from yours and add a note in the order comments. The price is not shown inside the parcel.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Cambian los colores al imprimirse en aluminio?</span><span class="en">Do colours shift when printed on aluminium?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">El brillo del aluminio realza los colores y el contraste frente a una impresión en papel mate. Puede haber pequeñas diferencias respecto a lo que ves en tu pantalla, que no está calibrada. Te recomendamos una foto con buena luz natural.</span><span class="en">The aluminium's gloss lifts colour and contrast compared with a matte paper print. There can be small differences from what you see on your screen, which isn't colour-calibrated. We recommend a photo with good natural light.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Vale cualquier foto del móvil?</span><span class="en">Will any phone photo do?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Casi todas. Lo que importa es la resolución: una foto hecha con el móvil a tamaño completo va bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si la foto se queda corta para el tamaño que elijas, el editor te lo avisa antes de pagar.</span><span class="en">Almost all of them. What matters is resolution: a full-size photo taken with your phone works up to the large size. What doesn't work are screenshots or photos forwarded on WhatsApp, which arrive compressed. If your photo falls short for the size you pick, the editor warns you before you pay.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Puedo añadir un texto o una dedicatoria?</span><span class="en">Can I add text or a dedication?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Sí. En el editor puedes poner una frase corta por delante, sobre la foto, y una dedicatoria en el dorso que solo ve quien lo descuelga. Las dos son opcionales y no cuestan más.</span><span class="en">Yes. In the editor you can add a short line on the front, over the photo, and a dedication on the back that only the person who takes it down will see. Both are optional and free.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Cómo se limpia?</span><span class="en">How do I clean it?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Con un paño suave, seco o un poco húmedo. Sin productos ni estropajos. Al ser aluminio, no absorbe humedad ni se ondula como el papel, así que aguanta bien en cocina o baño.</span><span class="en">With a soft cloth, dry or slightly damp. No cleaning products or scourers. Being aluminium, it doesn't absorb moisture or warp like paper, so it holds up well in a kitchen or bathroom.</span></div>
+      </div>
+      <div class="faq-item">
+        <h4 class="faq-q-h">
+          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
+          <span class="es">¿Y si llega dañado o hay un error de impresión?</span><span class="en">What if it arrives damaged or misprinted?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        </h4>
+        <div class="faq-a"><span class="es">Nos escribes a hola@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta que nos devuelvas el primero.</span><span class="en">Email us at hola@momenturies.com with a photo of the problem and we'll reprint it at no cost. You don't need to send the first one back.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER — Netlify Forms (funciona al desplegar en Netlify; en local solo no envía) -->
+<section class="newsletter-section">
+  <div class="container">
+    <p class="s-tag"><span class="es" id="angleNlTag-es">Aviso de lanzamiento</span><span class="en" id="angleNlTag-en">Launch notice</span></p>
+    <h2 class="s-h2"><span class="es" id="angleNlH2-es">Te avisamos cuando abramos</span><span class="en" id="angleNlH2-en">We'll tell you when we open</span></h2>
+    <p class="s-lead"><span class="es" id="angleNlLead-es">Un solo correo cuando la tienda esté lista, con descuento para los primeros pedidos. Nada más.</span><span class="en" id="angleNlLead-en">One email when the store is live, with a discount for the first orders. Nothing else.</span></p>
+    <form class="nl-form" name="lanzamiento" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="lanzamiento"/>
+      <p hidden><label>No rellenar: <input name="bot-field"/></label></p>
+      <input type="email" name="email" required placeholder="tu@email.com"/>
+      <button type="submit"><span class="es">Avísame</span><span class="en">Notify me</span></button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">Momenturies</div>
+        <p class="footer-tagline"><span class="es">Tus fotos impresas en aluminio HD. Se cuelgan sin agujeros.</span><span class="en">Your photos printed on HD aluminium. They hang without holes.</span></p>
+      </div>
+      <div class="footer-col">
+        <h4><span class="es">Productos</span><span class="en">Products</span></h4>
+        <ul>
+          <li><a href="cuadro.html"><span class="es">Cuadro</span><span class="en">Wall print</span></a></li>
+          <li><a href="sobremesa.html"><span class="es">Sobremesa</span><span class="en">Desk print</span></a></li>
+          <li><a href="iman.html"><span class="es">Imán</span><span class="en">Fridge magnet</span></a></li>
+          <li><a href="producto.html"><span class="es">Todos los formatos</span><span class="en">All formats</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><span class="es">Ayuda</span><span class="en">Help</span></h4>
+        <ul>
+          <li><a href="#como-funciona"><span class="es">Cómo funciona</span><span class="en">How it works</span></a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="contacto.html"><span class="es">Contacto</span><span class="en">Contact</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><span class="es">Legal</span><span class="en">Legal</span></h4>
+        <ul>
+          <li><a href="aviso-legal.html"><span class="es">Aviso legal</span><span class="en">Legal notice</span></a></li>
+          <li><a href="privacidad.html"><span class="es">Privacidad</span><span class="en">Privacy</span></a></li>
+          <li><a href="terminos.html"><span class="es">Términos de compra</span><span class="en">Terms of sale</span></a></li>
+          <li><a href="cookies.html"><span class="es">Cookies</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Momenturies</span>
+      <div class="footer-lang-btn" onclick="toggleLang()"><span id="footer-lang-text">Español</span> ▾</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── MENU ──
+function openMenu(){
+  document.getElementById('menuPanel').classList.add('open');
+  document.getElementById('menuOverlay').classList.add('open');
+  document.getElementById('hbgBtn').classList.add('open');
+  document.getElementById('hbgBtn').setAttribute('aria-expanded','true');
+  document.body.style.overflow='hidden';
+}
+function closeMenu(){
+  document.getElementById('menuPanel').classList.remove('open');
+  document.getElementById('menuOverlay').classList.remove('open');
+  document.getElementById('hbgBtn').classList.remove('open');
+  document.getElementById('hbgBtn').setAttribute('aria-expanded','false');
+  document.body.style.overflow='';
+}
+
+// ── SEARCH ──
+function toggleSearch(){
+  const s=document.getElementById('navSearch');
+  s.classList.toggle('open');
+  if(s.classList.contains('open')) s.querySelector('input').focus();
+}
+
+// ── SCROLL ──
+window.addEventListener('scroll',()=>{
+  const s=document.documentElement.scrollTop||document.body.scrollTop;
+  document.getElementById('nav').classList.toggle('floating',s>20);
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  document.getElementById('sp').style.width=(h>0?s/h*100:0)+'%';
+},{passive:true});
+
+// ── LANGUAGE ──
+function toggleLang(){
+  const html=document.documentElement;
+  const lang=html.getAttribute('data-lang')==='es'?'en':'es';
+  html.setAttribute('data-lang',lang);
+  html.setAttribute('lang',lang);
+  const txt=lang==='es'?'Español':'English';
+  document.getElementById('lang-text').textContent=txt;
+  document.getElementById('footer-lang-text').textContent=txt;
+}
+
+
+// ── CARRUSEL DE PRODUCTOS (scroll-snap nativo: funciona igual de bien a dedo que con flechas) ──
+(function(){
+  const track=document.getElementById('pcTrack');
+  const dotsWrap=document.getElementById('pcDots');
+  // en PC es una rejilla quieta: los puntos y las flechas solo tienen sentido en móvil
+  if(!window.matchMedia('(max-width:640px)').matches){ window.productsSlide=function(){}; return; }
+  if(!track||!dotsWrap) return;
+  const cards=Array.from(track.querySelectorAll('.pc-card'));
+
+  cards.forEach((c,i)=>{
+    const d=document.createElement('button');
+    d.className='pc-dot'+(i===0?' active':'');
+    d.type='button';
+    d.setAttribute('aria-label','Ir al formato '+(i+1)+' de '+cards.length);
+    d.addEventListener('click',()=>c.scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'}));
+    dotsWrap.appendChild(d);
+  });
+  const dots=Array.from(dotsWrap.children);
+
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const idx=cards.indexOf(e.target);
+        dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+      }
+    });
+  },{root:track,threshold:.6});
+  cards.forEach(c=>io.observe(c));
+
+  window.productsSlide=function(dir){
+    const step=cards[0].getBoundingClientRect().width+22;
+    track.scrollBy({left:dir*step,behavior:'smooth'});
+  };
+})();
+
+// ── REVEAL ──
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}});
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── FAQ ──
+function toggleFaq(btn){
+  const item=btn.closest('.faq-item');
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>{
+    i.classList.remove('open');
+    const b=i.querySelector('.faq-q'); if(b) b.setAttribute('aria-expanded','false');
+  });
+  if(!wasOpen){ item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+}
+
+// ── COMPARE SLIDER ──
+(function(){
+  const wrap=document.getElementById('compareWrap');
+  const after=document.getElementById('compareAfter');
+  const divider=document.getElementById('compareDivider');
+  if(!wrap)return;
+  let dragging=false;
+
+  function setPos(clientX){
+    const rect=wrap.getBoundingClientRect();
+    const pct=Math.min(100,Math.max(0,(clientX-rect.left)/rect.width*100));
+    after.style.clipPath=`inset(0 0 0 ${pct}%)`;
+    divider.style.left=pct+'%';
+  }
+
+  wrap.addEventListener('mousedown',e=>{dragging=true;setPos(e.clientX);e.preventDefault()});
+  document.addEventListener('mousemove',e=>{if(dragging)setPos(e.clientX)});
+  document.addEventListener('mouseup',()=>{dragging=false});
+
+  wrap.addEventListener('touchstart',e=>{dragging=true;setPos(e.touches[0].clientX)},{passive:true});
+  document.addEventListener('touchmove',e=>{if(dragging)setPos(e.touches[0].clientX)},{passive:true});
+  document.addEventListener('touchend',()=>{dragging=false});
+})();
+
+// ── GLOSS PRINT INTERACTION ──
+(function(){
+  const print=document.getElementById('ghPrint');
+  if(!print)return;
+  const shineA=print.querySelector('.gh-shine-a');
+  print.addEventListener('mousemove',e=>{
+    const r=print.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width)*100;
+    const y=((e.clientY-r.top)/r.height)*100;
+    const tX=(y-50)*.1,tY=-(x-50)*.1;
+    print.style.transform=`perspective(1400px) rotateY(${-14+tY}deg) rotateX(${5+tX}deg) scale(1.015)`;
+    shineA.style.cssText=`animation:none;background:radial-gradient(ellipse 60% 40% at ${x}% ${y}%,rgba(255,255,255,.52) 0%,rgba(255,255,255,.17) 40%,transparent 70%)`;
+  });
+  print.addEventListener('mouseleave',()=>{
+    print.style.transform='';
+    shineA.style.cssText='';
+  });
+})();
+
+// ── ESC ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeMenu();document.getElementById('navSearch').classList.remove('open')}
+});
+
+// ── PERSONA TABS ──
+(function(){
+  var tabs=Array.from(document.querySelectorAll('.persona-tab'));
+  var panelIds=['pareja','familia','mascota','ocasiones'];
+
+  function activateTab(idx){
+    tabs.forEach(function(t){t.classList.remove('active')});
+    panelIds.forEach(function(id){
+      var p=document.getElementById('panel-'+id);
+      if(p)p.classList.remove('active');
+    });
+    tabs[idx].classList.add('active');
+    var p=document.getElementById('panel-'+panelIds[idx]);
+    if(p)p.classList.add('active');
+  }
+
+  tabs.forEach(function(tab,i){
+    tab.addEventListener('click',function(){activateTab(i)});
+  });
+
+  // Swipe support on each panel
+  panelIds.forEach(function(id){
+    var panel=document.getElementById('panel-'+id);
+    if(!panel)return;
+    var sx=0;
+    panel.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
+    panel.addEventListener('touchend',function(e){
+      var dx=sx-e.changedTouches[0].clientX;
+      if(Math.abs(dx)>30)panel.scrollLeft+=dx*1.5;
+    });
+  });
+})();
+
+
+// ── TAMAÑO PILLS INTERACTIVOS ──
+(function(){
+  function calcTotal(){
+    var t=0;
+    document.querySelectorAll('#ps1 .ps-card-slide').forEach(function(slide){
+      var on=slide.querySelector('.ps-sz.on');
+      if(on) t+=parseFloat(on.dataset.price||0);
+    });
+    var el=document.getElementById('psTotalAmt');
+    if(el) el.textContent=t.toFixed(2).replace('.',',')+'€';
+  }
+  document.querySelectorAll('#ps1 .ps-card-slide').forEach(function(slide){
+    slide.querySelectorAll('.ps-sz').forEach(function(pill){
+      pill.addEventListener('click',function(){
+        slide.querySelectorAll('.ps-sz').forEach(function(p){p.classList.remove('on')});
+        pill.classList.add('on');
+        calcTotal();
+      });
+    });
+  });
+})();
+
+// ── PHONE SCREEN CYCLER ──
+(function(){
+  var screens=Array.from(document.querySelectorAll('.ps-screen-content'));
+  var dots=Array.from(document.querySelectorAll('.pd'));
+  var hintEl=document.getElementById('phoneHint');
+  var HINTS=[
+    '1 · Selecciona tus fotos favoritas',
+    '2 · Elige medidas y sistema de colgado',
+    '3 · Edítala a tu gusto: filtros y tu frase',
+    '4 · ¡Listo! Gírala en 3D'
+  ];
+  var cur=0;
+
+  function syncStep(){
+    dots.forEach(function(d,i){d.classList.toggle('active',i===cur)});
+    if(hintEl&&HINTS[cur])hintEl.textContent=HINTS[cur];
+    var s=screens[cur];
+    if(s){
+      var f=s.querySelector('iframe[data-src]');
+      if(f){f.src=f.getAttribute('data-src');f.removeAttribute('data-src');}
+    }
+  }
+
+  function advance(){
+    var old=screens[cur];
+    old.classList.remove('ps-active');
+    old.classList.add('ps-exit');
+    setTimeout(function(){old.classList.remove('ps-exit')},600);
+    cur=(cur+1)%screens.length;
+    screens[cur].classList.add('ps-active');
+    syncStep();
+    scheduleNext();
+  }
+
+  function updateCarouselDots(idx){
+    document.querySelectorAll('.ps-carousel-dot').forEach(function(d,i){
+      d.classList.toggle('active',i===idx);
+    });
+  }
+
+  function runCarousel(onDone){
+    var c=document.getElementById('psCarousel');
+    if(!c){setTimeout(onDone,3000);return;}
+    c.scrollLeft=0;
+    updateCarouselDots(0);
+    setTimeout(function(){
+      var slideW=Math.round(c.scrollWidth/3);
+      c.scrollTo({left:slideW+6,behavior:'smooth'});
+      updateCarouselDots(1);
+      setTimeout(onDone,1800);
+    },1800);
+  }
+
+  function scheduleNext(){
+    if(cur===1){
+      runCarousel(function(){advance();});
+    }else if(cur===screens.length-1){
+      setTimeout(advance,5200);   // más tiempo para apreciar el 3D
+    }else{
+      setTimeout(advance,2600);
+    }
+  }
+
+  function init(){
+    if(!screens.length)return;
+    syncStep();
+    setTimeout(advance,2600);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();
+
+// ── VS PAPEL/METAL — toggle táctil (sin hover) ──
+(function(){
+  var p=document.getElementById('vsPoster');
+  if(p)p.addEventListener('click',function(){p.classList.toggle('vs-on')});
+})();
+
+// ── HERO — las dos fotos del salón se van turnando ──
+(function(){
+  var s=[].slice.call(document.querySelectorAll('.hero-slide'));
+  if(s.length<2) return;
+  var i=0;
+  setInterval(function(){
+    s[i].classList.remove('is-on');
+    i=(i+1)%s.length;
+    s[i].classList.add('is-on');
+  },6500);
+})();
+</script>
+<script src="photo-handoff.js?v=6b7a4858"></script>
+</body>
+</html>

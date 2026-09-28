@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://momenturies.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://momenturies.com/producto.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://momenturies.com/cuadro.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://momenturies.com/sobremesa.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://momenturies.com/iman.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://momenturies.com/contacto.html</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://momenturies.com/aviso-legal.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
+  <url><loc>https://momenturies.com/privacidad.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
+  <url><loc>https://momenturies.com/terminos.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
+  <url><loc>https://momenturies.com/cookies.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
+</urlset>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Momenturys · Visor 3D</title>
+<style>
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0B0B0F;touch-action:none;overscroll-behavior:none}
+  body{position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-family:-apple-system,Segoe UI,sans-serif}
+  canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-drag:none;opacity:0;transition:opacity .18s ease}
+  body.is-ready canvas{opacity:1}
+  #placeholder{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;background:#0B0B0F;transition:opacity .18s ease,visibility .18s ease}
+  body.is-ready #placeholder{opacity:0;visibility:hidden}
+  #placeholder-card{width:min(52%,280px);aspect-ratio:.707/1;border-radius:6px;background:#15151a center/cover no-repeat;box-shadow:0 18px 42px rgba(0,0,0,.38)}
+  #info{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.56);font:12px/1.2 monospace;pointer-events:none;white-space:nowrap;z-index:4;background:rgba(0,0,0,.18);padding:5px 9px;border-radius:999px;backdrop-filter:blur(2px)}
+  /* controles */
+  .bar{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:10px;align-items:center;
+    background:rgba(20,20,24,.82);border:1px solid rgba(255,255,255,.14);border-radius:30px;padding:8px 10px;backdrop-filter:blur(8px)}
+  .bar button{border:0;border-radius:30px;padding:9px 16px;font-size:13px;font-weight:800;cursor:pointer;
+    background:linear-gradient(90deg,#d4af37,#8d6b16);color:#111}
+  .bar button:hover{filter:brightness(1.08)}
+  .bar label{display:flex;align-items:center;gap:6px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;padding-right:6px}
+  .bar input{accent-color:#d4af37;cursor:pointer}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button id="btn-load">📤 Cargar tu póster (alta resolución)</button>
+  <label><input type="checkbox" id="chk-sharp" checked> Nitidez extra</label>
+</div>
+<div id="placeholder"><div id="placeholder-card" id="ph-card"></div></div>
+<div id="info">Desliza · Acerca o aleja para hacer zoom</div>
+<input type="file" id="file-input" accept="image/*">
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   FUTSIDES — Visor 3D ORIGINAL (portado a local, idéntico al de la tienda)
+   Mismo material metálico, reflejos, imán, logos traseros y QR.
+   + Mejoras de nitidez: supersampling de render, anisotropía máxima,
+     textura a resolución completa y "nitidez extra" (unsharp mask) opcional.
+   ════════════════════════════════════════════════════════════════════════ */
+const LOGO_DATA='';
+const QR_DATA='';
+/* fallback solo si se abre el visor sin ?poster= ; la landing siempre pasa uno */
+const DEFAULT_POSTER='fotos/stock/1474552226712-620x877.webp';
+
+if(window.THREE){
+  const backColor='#d0d0d0';
+  const scene=new THREE.Scene();scene.background=new THREE.Color('#0B0B0F');
+  let width=Math.max(window.innerWidth||380,320), height=Math.max(window.innerHeight||520,320);
+  const camera=new THREE.PerspectiveCamera(35,width/height,0.1,100);camera.position.set(0,0,5.35);
+
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
+  // ── NITIDEZ: supersampling. En pantallas normales (dpr=1) renderiza a 2x → letras nítidas.
+  renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio||1,2),3));
+  renderer.setSize(width,height);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.NoToneMapping;
+  document.body.appendChild(renderer.domElement);
+  renderer.domElement.style.touchAction='none';
+  const maxAniso=renderer.capabilities.getMaxAnisotropy();
+
+  let frontReady=false,backReady=false,revealed=false;
+  function reveal(){if(revealed||!frontReady||!backReady)return;revealed=true;renderFrame();document.body.classList.add('is-ready');}
+
+  // ── ENTORNO (idéntico al original: da los reflejos metálicos que te gustan) ──
+  function buildEnvMap(){
+    const c=document.createElement('canvas');c.width=1024;c.height=512;const ctx=c.getContext('2d');const W=c.width,H=c.height;
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#49505f');g.addColorStop(.23,'#2b313d');g.addColorStop(.60,'#171b22');g.addColorStop(1,'#090a0d');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(248,250,255,1)';ctx.fillRect(W*0.05,H*0.07,W*0.28,H*0.50);
+    ctx.fillStyle='rgba(225,235,255,0.78)';ctx.fillRect(W*0.34,H*0.10,W*0.035,H*0.43);
+    let glow=ctx.createRadialGradient(W*0.18,H*0.30,20,W*0.18,H*0.30,280);glow.addColorStop(0,'rgba(220,238,255,0.46)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+    let warm=ctx.createRadialGradient(W*0.58,H*0.14,10,W*0.58,H*0.14,170);warm.addColorStop(0,'rgba(255,228,180,0.70)');warm.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=warm;ctx.fillRect(0,0,W,H);
+    const tex=new THREE.CanvasTexture(c);tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.SRGBColorSpace;return tex;
+  }
+  // Entorno SOLO para la CARA: negro + luces pequeñas (bombillas + tubo) → reflejo en destellos nítidos,
+  // sin lavar ni levantar las sombras. El resto de la imagen conserva todo su contraste y color.
+  function buildReflEnv(){
+    const c=document.createElement('canvas');c.width=1024;c.height=512;const ctx=c.getContext('2d');const W=c.width,H=c.height;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    // Tira LED: por ENCIMA del ecuador → no se ve de frente, aparece al inclinar el póster hacia
+    // arriba (como un foco de techo) y justo ahí queda centrada y recta. Núcleo blanco + halo tenue.
+    const yC=H*0.33;
+    let glow=ctx.createLinearGradient(0,yC-H*0.05,0,yC+H*0.05);
+    glow.addColorStop(0,'rgba(255,255,255,0)');glow.addColorStop(.5,'rgba(255,255,255,.16)');glow.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=glow;ctx.fillRect(0,yC-H*0.05,W,H*0.10);
+    let core=ctx.createLinearGradient(0,yC-H*0.011,0,yC+H*0.011);
+    core.addColorStop(0,'rgba(255,255,255,0)');core.addColorStop(.42,'#ffffff');core.addColorStop(.58,'#ffffff');core.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=core;ctx.fillRect(0,yC-H*0.011,W,H*0.022);
+    const tex=new THREE.CanvasTexture(c);tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.SRGBColorSpace;return tex;
+  }
+  const pmrem=new THREE.PMREMGenerator(renderer);pmrem.compileEquirectangularShader();
+  const rawEnv=buildEnvMap();scene.environment=pmrem.fromEquirectangular(rawEnv).texture;rawEnv.dispose();
+  const reflRaw=buildReflEnv();const reflEnv=pmrem.fromEquirectangular(reflRaw).texture;reflRaw.dispose();
+  pmrem.dispose();
+
+  const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';
+
+  // ── PARÁMETROS DE INCRUSTACIÓN (embed) ──
+  // ?poster=<url>            → carga una foto concreta
+  // ?posters=<url1,url2,...> → cicla varias fotos (van rotando)
+  // ?embed=1                 → oculta la barra de controles e info
+  // ?autorotate=1            → giro continuo suave del póster
+  const _params=new URLSearchParams(location.search);
+  const EMBED=_params.has('embed');
+  const AUTOROTATE=_params.has('autorotate');
+  let POSTER_LIST=[];
+  if(_params.get('posters'))POSTER_LIST=_params.get('posters').split(',').map(s=>decodeURIComponent(s.trim())).filter(Boolean);
+  else if(_params.get('poster'))POSTER_LIST=[decodeURIComponent(_params.get('poster'))];
+  if(EMBED){var _bar=document.querySelector('.bar');if(_bar)_bar.style.display='none';var _inf=document.getElementById('info');if(_inf)_inf.style.display='none';}
+
+  // ── NITIDEZ EXTRA: unsharp/sharpen 3x3 sobre la imagen antes de texturizar ──
+  function sharpenToCanvas(img,amount){
+    const cv=document.createElement('canvas');cv.width=img.naturalWidth||img.width;cv.height=img.naturalHeight||img.height;
+    const cx=cv.getContext('2d');cx.drawImage(img,0,0);
+    if(amount<=0)return cv;
+    let src;try{src=cx.getImageData(0,0,cv.width,cv.height);}catch(e){return cv;} // imagen remota sin CORS → sin sharpen
+    const w=cv.width,h=cv.height,s=src.data,out=cx.createImageData(w,h),o=out.data,k=amount,center=1+4*k;
+    for(let y=0;y<h;y++){for(let x=0;x<w;x++){const i=(y*w+x)*4;
+      const xl=x>0?x-1:x, xr=x<w-1?x+1:x, yt=y>0?y-1:y, yb=y<h-1?y+1:y;
+      for(let ch=0;ch<3;ch++){const v=center*s[i+ch]-k*s[(y*w+xl)*4+ch]-k*s[(y*w+xr)*4+ch]-k*s[(yt*w+x)*4+ch]-k*s[(yb*w+x)*4+ch];o[i+ch]=v<0?0:v>255?255:v;}
+      o[i+3]=s[i+3];}}
+    cx.putImageData(out,0,0);return cv;
+  }
+
+  // CARA: la foto se EMITE (color fiel, la luz NO la lava) + clearcoat espejo que SOLO refleja
+  // las luces pequeñas de su entorno oscuro (reflEnv) → destellos nítidos, contraste intacto.
+  const frontMat=new THREE.MeshPhysicalMaterial({
+    color:0x000000, emissive:0xffffff, emissiveIntensity:1.0,
+    side:THREE.FrontSide, roughness:0.06, metalness:0.0,
+    reflectivity:1.0, clearcoat:1.0, clearcoatRoughness:0.014, envMapIntensity:6.5, ior:1.8,
+    envMap:reflEnv
+  });
+  const backMat =new THREE.MeshPhysicalMaterial({color:new THREE.Color(backColor),side:THREE.FrontSide,roughness:0.22,metalness:0.9,reflectivity:1.0,clearcoat:1.0,clearcoatRoughness:0.03,envMapIntensity:2.05,ior:1.8});
+  const sideMat =new THREE.MeshPhysicalMaterial({color:0xd8d8d8,roughness:0.018,metalness:1.0,reflectivity:1.0,clearcoat:1.0,clearcoatRoughness:0.02,envMapIntensity:3.15,ior:2.5});
+
+  const SHEET_WIDTH=2.1,SHEET_HEIGHT=2.97,DEPTH=0.02;
+  const sheet=new THREE.Mesh(new THREE.BoxGeometry(SHEET_WIDTH,SHEET_HEIGHT,DEPTH),[sideMat,sideMat,sideMat,sideMat,frontMat,backMat]);
+  scene.add(sheet);
+
+  // imán trasero
+  const magnetMat=new THREE.MeshPhysicalMaterial({color:0x121212,roughness:0.15,metalness:0.95,reflectivity:1.0,clearcoat:0.6,clearcoatRoughness:0.02,envMapIntensity:2.5});
+  const backMagnet=new THREE.Mesh(new THREE.BoxGeometry(0.84,1.13,0.025),magnetMat);
+  backMagnet.position.set(0,0,-(DEPTH/2+0.025/2));sheet.add(backMagnet);
+
+  // ── CARGA DEL PÓSTER (frontal) con nitidez ──
+  function applyPosterTexture(tex){
+    tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=maxAniso;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;tex.generateMipmaps=true;
+    const old=frontMat.map;frontMat.map=tex;frontMat.emissiveMap=tex;frontMat.needsUpdate=true;if(old&&old!==tex)old.dispose();
+    frontReady=true;renderFrame();reveal();
+  }
+  function loadPoster(src){
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>{
+      const sharpen=document.getElementById('chk-sharp').checked;
+      const srcCanvas=sharpenToCanvas(img,sharpen?0.5:0);
+      applyPosterTexture(new THREE.CanvasTexture(srcCanvas));
+      document.getElementById('placeholder-card').style.backgroundImage=`url(${src})`;
+    };
+    img.onerror=()=>{ // fallback: cargar directo por si CORS bloquea el canvas
+      loader.load(src,(t)=>applyPosterTexture(t));
+    };
+    img.src=src;
+  }
+  // ── Carga inicial + ciclo de varias fotos (si llegan por ?posters=) ──
+  loadPoster(POSTER_LIST[0]||DEFAULT_POSTER);
+  if(POSTER_LIST.length>1){
+    let _pi=0;
+    setInterval(function(){_pi=(_pi+1)%POSTER_LIST.length;loadPoster(POSTER_LIST[_pi]);},2600);
+  }
+
+  // ── LOGOS + QR del reverso (idéntico al original) ──
+  function makePlaneMat(tex){tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=maxAniso;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;tex.generateMipmaps=true;
+    return new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:0.03,side:THREE.DoubleSide,toneMapped:false,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});}
+  function applyLogoPlanes(tex){
+    if(sheet.userData.logoApplied)return;sheet.userData.logoApplied=true;
+    const ratio=(tex.image&&tex.image.width&&tex.image.height)?(tex.image.width/tex.image.height):5.04;
+    const maxW=SHEET_WIDTH*0.40,maxH=SHEET_HEIGHT*0.085;let logoW=maxW,logoH=logoW/ratio;if(logoH>maxH){logoH=maxH;logoW=logoH*ratio;}
+    sheet.userData.logoW=logoW;sheet.userData.logoH=logoH;
+    const mat=makePlaneMat(tex);const BACK_Z=-(DEPTH/2+0.004);const GAP=0.06;const qrEst=logoH;const logoTopX=(GAP+qrEst)/2;
+    const top=new THREE.Mesh(new THREE.PlaneGeometry(logoW,logoH),mat);top.position.set(logoTopX,SHEET_HEIGHT*0.40,BACK_Z);top.rotation.y=Math.PI;top.renderOrder=20;sheet.add(top);
+    const bot=new THREE.Mesh(new THREE.PlaneGeometry(logoW,logoH),mat);bot.position.set(0,-SHEET_HEIGHT*0.40,BACK_Z);bot.rotation.y=Math.PI;bot.renderOrder=20;sheet.add(bot);
+  }
+  function applyQrPlane(tex){
+    if(sheet.userData.qrApplied)return;sheet.userData.qrApplied=true;
+    const logoW=sheet.userData.logoW||SHEET_WIDTH*0.40,logoH=sheet.userData.logoH||SHEET_HEIGHT*0.07;const qrSize=logoH,GAP=0.06,qrX=-(logoW+GAP)/2;
+    const mat=makePlaneMat(tex);const BACK_Z=-(DEPTH/2+0.004);
+    const qr=new THREE.Mesh(new THREE.PlaneGeometry(qrSize,qrSize),mat);qr.position.set(qrX,SHEET_HEIGHT*0.40,BACK_Z);qr.rotation.y=Math.PI;qr.renderOrder=20;sheet.add(qr);
+  }
+  if(LOGO_DATA){loader.load(LOGO_DATA,(t)=>{applyLogoPlanes(t);backReady=true;renderFrame();reveal();},undefined,()=>{backReady=true;reveal();});}else{backReady=true;}
+  if(QR_DATA){loader.load(QR_DATA,(t)=>{applyQrPlane(t);renderFrame();});}
+
+  // ── LUCES (idénticas al original) ──
+  scene.add(new THREE.AmbientLight(0xfff2e2,1.85));
+  const pendant=new THREE.PointLight(0xffebc7,8.7,18);pendant.position.set(0,3.6,0.8);scene.add(pendant);
+  const fill=new THREE.PointLight(0xffdca8,4.35,13);fill.position.set(1.7,2.15,1.4);scene.add(fill);
+  const win=new THREE.DirectionalLight(0xe2f1ff,3.15);win.position.set(-4.2,3.1,2.2);scene.add(win);
+  const backFill=new THREE.DirectionalLight(0xffe9d2,1.18);backFill.position.set(2.2,1.0,-3.0);scene.add(backFill);
+  const frontBoost=new THREE.DirectionalLight(0xffffff,1.15);frontBoost.position.set(0.2,0.4,3.4);scene.add(frontBoost);
+
+  // ── CONTROLES (idénticos al original) ──
+  let targetRotY=0.15,currentRotY=0.15,targetRotX=-0.04,currentRotX=-0.04;
+  const BASE_CAM_Z=5.35,MIN_CAM_Z=2.0,MAX_CAM_Z=7.0;let targetCamZ=BASE_CAM_Z,currentCamZ=BASE_CAM_Z;
+  let isDragging=false,activePointerId=null,startX=0,startY=0,startRotY=0,startRotX=0,pointerCount=0,pinchP1=null,pinchP2=null,lastPinchDist=0;
+  function resizeViewer(){const w=Math.max(document.documentElement.clientWidth||window.innerWidth||380,320),h=Math.max(document.documentElement.clientHeight||window.innerHeight||520,320);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);renderFrame();}
+  function renderFrame(){renderer.render(scene,camera);}
+  function animate(){requestAnimationFrame(animate);if(AUTOROTATE&&!isDragging)targetRotY+=0.0045;currentRotY+=(targetRotY-currentRotY)*0.09;currentRotX+=(targetRotX-currentRotX)*0.09;currentCamZ+=(targetCamZ-currentCamZ)*0.1;sheet.rotation.y=currentRotY;sheet.rotation.x=currentRotX;camera.position.z=currentCamZ;renderFrame();}
+  function pointerDown(e){if(e.cancelable)e.preventDefault();pointerCount++;if(pointerCount===1){isDragging=true;activePointerId=e.pointerId;startX=e.clientX;startY=e.clientY;startRotY=targetRotY;startRotX=targetRotX;pinchP1={id:e.pointerId,x:e.clientX,y:e.clientY};try{renderer.domElement.setPointerCapture(e.pointerId);}catch(_){}}else if(pointerCount===2){isDragging=false;pinchP2={id:e.pointerId,x:e.clientX,y:e.clientY};if(pinchP1)lastPinchDist=Math.hypot(pinchP2.x-pinchP1.x,pinchP2.y-pinchP1.y);}}
+  function pointerMove(e){if(pinchP1&&e.pointerId===pinchP1.id)pinchP1={id:e.pointerId,x:e.clientX,y:e.clientY};if(pinchP2&&e.pointerId===pinchP2.id)pinchP2={id:e.pointerId,x:e.clientX,y:e.clientY};
+    if(pointerCount>=2&&pinchP1&&pinchP2){if(e.cancelable)e.preventDefault();const nd=Math.hypot(pinchP2.x-pinchP1.x,pinchP2.y-pinchP1.y);if(lastPinchDist>0){const sc=lastPinchDist/nd;targetCamZ=Math.max(MIN_CAM_Z,Math.min(MAX_CAM_Z,targetCamZ*sc));}lastPinchDist=nd;return;}
+    if(!isDragging)return;if(activePointerId!==null&&e.pointerId!==activePointerId)return;if(e.cancelable)e.preventDefault();
+    targetRotY=startRotY+(e.clientX-startX)*0.0105;targetRotX=Math.max(-0.55,Math.min(0.55,startRotX+(e.clientY-startY)*0.0065));}
+  function pointerUp(e){pointerCount=Math.max(0,pointerCount-1);if(pinchP1&&e.pointerId===pinchP1.id)pinchP1=null;if(pinchP2&&e.pointerId===pinchP2.id)pinchP2=null;if(pointerCount<2)lastPinchDist=0;if(activePointerId!==null&&e.pointerId===activePointerId){isDragging=false;try{renderer.domElement.releasePointerCapture(e.pointerId);}catch(_){}activePointerId=null;}}
+  renderer.domElement.addEventListener('pointerdown',pointerDown,{passive:false});
+  renderer.domElement.addEventListener('pointermove',pointerMove,{passive:false});
+  renderer.domElement.addEventListener('pointerup',pointerUp,{passive:false});
+  renderer.domElement.addEventListener('pointercancel',pointerUp,{passive:false});
+  renderer.domElement.addEventListener('pointerleave',pointerUp,{passive:false});
+  renderer.domElement.addEventListener('wheel',(e)=>{if(e.cancelable)e.preventDefault();const step=e.deltaY>0?0.25:-0.25;targetCamZ=Math.max(MIN_CAM_Z,Math.min(MAX_CAM_Z,targetCamZ+step));},{passive:false});
+  if(window.ResizeObserver){try{new ResizeObserver(()=>resizeViewer()).observe(document.body);}catch(_){}}
+  window.addEventListener('resize',resizeViewer);
+  resizeViewer();requestAnimationFrame(()=>{resizeViewer();requestAnimationFrame(()=>resizeViewer());});
+  setTimeout(resizeViewer,80);setTimeout(resizeViewer,220);setTimeout(resizeViewer,650);
+  animate();
+
+  // ── UI: cargar póster local + toggle nitidez ──
+  const fileInput=document.getElementById('file-input');
+  document.getElementById('btn-load').onclick=()=>fileInput.click();
+  fileInput.onchange=(e)=>{const f=e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);loadPoster(url);};
+  document.getElementById('chk-sharp').onchange=()=>{/* se aplica al volver a cargar la imagen */};
+}
+</script>
+</body>
+</html>

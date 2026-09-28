@@ -1,0 +1,3 @@
+Muebles CC0 de poly.pizza (dominio publico, sin atribucion obligatoria).
+Autores: Quaternius, Kenney, CreativeTrio. Bajados con _build_modelos_pp.py.
+Vienen SIN textura: el material se lo pone editor.js (addModel -> material).

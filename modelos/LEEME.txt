@@ -1,0 +1,29 @@
+MUEBLES 3D DESCARGADOS · Poly Haven (CC0)
+=========================================
+Modelos reales que usan las escenas "Salón real" y "Escritorio" del visor 3D
+(editor.js → buildSalonReal / buildDespachoReal).
+
+Origen   : polyhaven.com · descargados con su API el 19-sep-2026, formato glTF 1k
+Licencia : CC0 (dominio público). Uso comercial permitido, sin atribución obligatoria.
+           Poly Haven agradece el crédito, no lo exige.
+Peso     : 1k = ~0,4-2 MB por modelo. Hay 2k y 4k si algún día hace falta más detalle.
+Web      : lo que se sirve son los <id>.glb que genera `python _build_modelos.py` (geometría
+           cuantizada + texturas WebP 1024): 21 MB de fuentes -> 5 MB. Las carpetas <id>/ son
+           la fuente y NO se despliegan.
+Tamaño   : los modelos vienen a TAMAÑO REAL en metros; en editor.js se respeta su medida
+           (addModel sin widthCm) y solo se fuerza cuando hace falta.
+Carga    : SOLO al elegir una escena realista. El GLTFLoader (gltf-loader.js, 107 KB)
+           también se baja en ese momento, no en las páginas de producto.
+
+Escala   : el glTF viene en METROS. editor.js escala cada mueble al ancho real en cm
+           (addModel → widthCm) y lo apoya en el suelo por su caja.
+
+Para añadir otro modelo:
+  1. Buscarlo en https://polyhaven.com/models (o la API: api.polyhaven.com/assets?t=models)
+  2. Bajarlo:  api.polyhaven.com/files/<id>  →  gltf.1k.gltf.url + cada archivo de "include"
+     (guardando las rutas relativas: el .bin y textures/ junto al .gltf)
+  3. python _build_modelos.py    (crea modelos/<id>.glb)
+  4. addModel(g, 'modelos/<id>.glb', { xCm, zCm, yCm, back:true, rotY, widthCm })
+
+OJO: el catálogo CC0 de Poly Haven tira a clásico/antiguo. Para muebles modernos hay
+     alternativas low-poly CC0 (kenney.nl, poly.pizza) con otro estilo, más "de juego".

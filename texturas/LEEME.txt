@@ -1,0 +1,13 @@
+TEXTURAS CC0 · Poly Haven (polyhaven.com/textures)
+==================================================
+Telas y maderas reales para los muebles que montamos nosotros (editor.js → addSofaModerno,
+addEscritorioModerno), porque en el catálogo CC0 no hay ni sofá ni escritorio modernos.
+
+  curly_teddy_natural  bouclé crema  → sofá
+  oak_veneer_01        roble claro   → escritorio
+
+Licencia : CC0 (uso comercial, sin atribución obligatoria).
+Formato  : 1k pasado a WebP q82 (color _diff, normal _nor, ARM _arm = AO/rugosidad/metal).
+           Las tres juntas pesan ~350 KB por material; en JPG 1k eran ~2,5 MB.
+OJO      : las UV de ExtrudeGeometry son coordenadas del objeto en unidades 3D (1 ud = 5,37 cm),
+           no 0..1. Por eso `repeat` va en torno a 0,1-0,2 y no 2-5.
