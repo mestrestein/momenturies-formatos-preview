@@ -828,6 +828,19 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 
 /* Phone hint (mensaje de indicación por paso) */
 .phone-hint{font-size:12px;color:#1a1a1a;font-weight:600;letter-spacing:.2px;text-align:center;max-width:240px;min-height:16px}
+/* demo en vídeo (la app real) */
+.dm-tabs{display:flex;gap:6px;background:#efebe5;border-radius:22px;padding:4px}
+.dm-tab{border:none;background:none;border-radius:18px;padding:8px 14px;font:600 12.5px/1 var(--font-sans,inherit);color:#555;cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.dm-tab.on{background:#fff;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.dm-phone{width:300px;height:640px}
+.dm-phone .phone-screen{background:#f4f2ee}
+.dm-video{width:100%;height:100%;object-fit:cover;display:block;background:#f4f2ee}
+.dm-steps{display:flex;gap:5px;align-items:center}
+.dm-steps i{height:4px;width:16px;border-radius:2px;background:#d9d3ca;overflow:hidden;position:relative;display:block}
+.dm-steps i b{position:absolute;inset:0;width:0;background:#1a1a1a}
+.dm-steps i.done b{width:100%}
+.dm-cap{min-height:34px;max-width:300px;font-size:14px;line-height:1.35;transition:opacity .25s}
+@media(max-width:640px){ .dm-phone{width:270px;height:576px} .dm-tab{padding:8px 11px;font-size:12px} }
 
 /* Screen 2 — Colgado */
 .ps-hang{display:flex;align-items:center;gap:5px;padding:6px 10px 2px;flex-shrink:0}
@@ -1343,7 +1356,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
     </button>
   </div>
 
-  <a href="./" class="nav-logo">
+  <a href="/" class="nav-logo">
     <svg class="nav-logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none">
       <polygon points="14,2 22,8 22,20 14,26 6,20 6,8" stroke="#1a1a1a" stroke-width="1.4" fill="none"/>
       <polygon points="14,8 18,11 18,17 14,20 10,17 10,11" fill="#1a1a1a"/>
@@ -1686,128 +1699,20 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Elegir mis fotos</span><span class="en">Pick my photos</span> <span>→</span></a>
     </div>
   <div class="up-demo">
-    <div class="phone-mockup">
-      <div class="phone-notch"></div>
+    <!-- DEMO: la app de verdad grabada en un móvil (_grabar_demos.js). Los rótulos van encima, según el tiempo del vídeo. -->
+    <div class="dm-tabs" role="tablist">
+      <button type="button" class="dm-tab on" data-demo="paredes" role="tab" aria-selected="true"><span class="es">Una pared entera</span><span class="en">A whole wall</span></button>
+      <button type="button" class="dm-tab" data-demo="regalo" role="tab" aria-selected="false"><span class="es">Un regalo con dedicatoria</span><span class="en">A gift with a dedication</span></button>
+    </div>
+    <div class="phone-mockup dm-phone">
       <div class="phone-screen">
-        <div class="ps-wrap">
-
-          <!-- PANTALLA 1: Galería -->
-          <div class="ps-screen-content ps-active" id="ps0">
-            <div class="ps-screen-header">
-              <span class="ps-screen-title">Galería</span>
-              <span class="ps-badge">3 selec.</span>
-            </div>
-            <div class="ps-gallery-grid">
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1518568814500-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1529156069898-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1544005313-160x160.webp')"></div>
-              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1474552226712-160x160.webp')"><span class="ps-check">✓</span></div>
-              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1519689373023-160x160.webp')"><span class="ps-check">✓</span></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1438761681033-160x160.webp')"></div>
-              <div class="ps-thumb ps-sel" style="background-image:url('fotos/stock/1491013516836-160x160.webp')"><span class="ps-check">✓</span></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1507003211169-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1555685812-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1499714608240-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1518568814500-160x160.webp')"></div>
-              <div class="ps-thumb" style="background-image:url('fotos/stock/1502759683299-160x160.webp')"></div>
-            </div>
-            <div class="ps-footer-cta">Continuar con 3 fotos →</div>
-          </div>
-
-          <!-- PANTALLA 2: Elige tamaño de cada poster -->
-          <div class="ps-screen-content" id="ps1">
-            <div class="ps-screen-header">
-              <span class="ps-screen-title">Elige tamaños</span>
-              <span class="ps-badge">3 fotos</span>
-            </div>
-            <div class="ps-cards-carousel" id="psCarousel">
-              <div class="ps-card-slide">
-                <div class="ps-card-photo" style="background-image:url('fotos/stock/1474552226712-300x420.webp')"></div>
-                <div class="ps-card-bottom">
-                  <div class="ps-card-name">Foto familiar</div>
-                  <div class="ps-card-sizes">
-                    <div class="ps-sz on" data-price="29.99">M<span>29,99€</span></div>
-                    <div class="ps-sz" data-price="49.99">L<span>49,99€</span></div>
-                    <div class="ps-sz" data-price="69.99">XL<span>69,99€</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="ps-card-slide">
-                <div class="ps-card-photo" style="background-image:url('fotos/stock/1519689373023-300x420.webp')"></div>
-                <div class="ps-card-bottom">
-                  <div class="ps-card-name">Retrato</div>
-                  <div class="ps-card-sizes">
-                    <div class="ps-sz" data-price="29.99">M<span>29,99€</span></div>
-                    <div class="ps-sz on" data-price="49.99">L<span>49,99€</span></div>
-                    <div class="ps-sz" data-price="69.99">XL<span>69,99€</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="ps-card-slide">
-                <div class="ps-card-photo" style="background-image:url('fotos/stock/1491013516836-300x420.webp')"></div>
-                <div class="ps-card-bottom">
-                  <div class="ps-card-name">Bebé</div>
-                  <div class="ps-card-sizes">
-                    <div class="ps-sz" data-price="29.99">M<span>29,99€</span></div>
-                    <div class="ps-sz" data-price="49.99">L<span>49,99€</span></div>
-                    <div class="ps-sz on" data-price="69.99">XL<span>69,99€</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="ps-carousel-dots">
-              <span class="ps-carousel-dot active"></span>
-              <span class="ps-carousel-dot"></span>
-            </div>
-            <div class="ps-hang">
-              <span class="ps-hang-label">Colgado</span>
-              <button class="ps-hang-opt on">🧲 Imán <em>incl.</em></button>
-              <button class="ps-hang-opt">📏 Tiras <em>incl.</em></button>
-            </div>
-            <div class="ps-total-cta" id="psTotalCta">
-              <span>Añadir al carrito</span>
-              <span class="ps-total-amt" id="psTotalAmt">149,97€</span>
-            </div>
-          </div>
-
-          <!-- PANTALLA 3: Editar (filtros + frase) -->
-          <div class="ps-screen-content" id="ps2">
-            <div class="ps-screen-header">
-              <span class="ps-screen-title">Editar</span>
-              <span class="ps-badge">Filtros</span>
-            </div>
-            <div class="ps-edit-photo" style="background-image:url('fotos/stock/1491013516836-300x420.webp')">
-              <span class="ps-edit-caption">Para siempre juntos</span>
-            </div>
-            <div class="ps-filters">
-              <div class="ps-filter on" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Original</span></div>
-              <div class="ps-filter ps-fil-bn" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>B/N</span></div>
-              <div class="ps-filter ps-fil-warm" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Cálido</span></div>
-              <div class="ps-filter ps-fil-cool" style="background-image:url('fotos/stock/1491013516836-80x80.webp')"><span>Frío</span></div>
-            </div>
-            <div class="ps-phrase">
-              <span class="ps-phrase-label">Tu frase</span>
-              <div class="ps-phrase-input">Para siempre juntos<span class="ps-caret"></span></div>
-            </div>
-            <div class="ps-footer-cta">Ver en 3D →</div>
-          </div>
-
-          <!-- PANTALLA 4: Listo — visor 3D -->
-          <div class="ps-screen-content ps-3d-screen" id="ps3">
-            <iframe class="ps-3d-frame" data-src="momenturies%20-%20visor%203D.html?embed=1&autorotate=1&posters=fotos%2Fstock%2F1474552226712-620x877.webp,fotos%2Fstock%2F1519689373023-620x877.webp,fotos%2Fstock%2F1491013516836-620x877.webp" title="Vista 3D del póster" loading="lazy"></iframe>
-          </div>
-
-        </div>
+        <video class="dm-video" id="dmVideo" muted playsinline preload="none" poster="fotos/demo/demo-paredes.jpg" aria-label="Demo de la app en el móvil"></video>
       </div>
     </div>
-    <div class="phone-dots">
-      <span class="pd active" id="pd0"></span>
-      <span class="pd" id="pd1"></span>
-      <span class="pd" id="pd2"></span>
-      <span class="pd" id="pd3"></span>
-    </div>
-    <div class="phone-hint" id="phoneHint">1 · Selecciona tus fotos favoritas</div>
+    <div class="dm-steps" id="dmSteps"></div>
+    <div class="phone-hint dm-cap" id="dmCap" aria-live="polite"></div>
   </div>
+
   </div>
 </section>
 
@@ -1821,7 +1726,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
         <p class="s-tag reveal"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></p>
         <h2 class="s-h2 reveal"><span class="es">Combínalo como quieras.<br>Mira cómo queda en casa.</span><span class="en">Combine it however you like.<br>See how it looks at home.</span></h2>
       </div>
-      <p class="s-lead reveal"><span class="es">32 composiciones de 3 a 10 cuadros, cada una montada en un entorno real para que la veas antes de decidir. Tocas la que te gusta, pones tus fotos en cada hueco y te la mandamos entera con los imanes.</span><span class="en">32 layouts of 3 to 10 prints with sizes, slots and spacing already worked out. Pick one, tap each print to add its photo, and we ship the whole wall with the magnets.</span></p>
+      <p class="s-lead reveal"><span class="es">50 composiciones de 3 a 20 cuadros, cada una montada en un entorno real para que la veas antes de decidir. Tocas la que te gusta, pones tus fotos en cada hueco y te la mandamos entera con los imanes.</span><span class="en">50 layouts of 3 to 20 prints with sizes, slots and spacing already worked out. Pick one, tap each print to add its photo, and we ship the whole wall with the magnets.</span></p>
     </div>
     <div class="combi-wrap">
       <button class="combi-arrow combi-prev" type="button" onclick="combiSlide(-1)" aria-label="Anterior">←</button>
@@ -1861,8 +1766,8 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
             <h3><span class="es">Cuadro</span><span class="en">Wall print</span></h3>
             <p><span class="es">Se cuelga sin agujeros, con el imán premium incluido.</span><span class="en">Hangs without holes, premium magnet included.</span></p>
             <div class="pc-meta">
-              <span class="pc-price"><span class="es">Desde 29,99€</span><span class="en">From €29.99</span></span>
-              <span class="pc-dims"><span class="es">3 formatos · 10×10–60×80 cm</span><span class="en">3 formats · 10×10–60×80 cm</span></span>
+              <span class="pc-price"><span class="es">Desde 17,99€</span><span class="en">From €17.99</span></span>
+              <span class="pc-dims"><span class="es">3 formatos · 10×10–30×30 cm</span><span class="en">3 formats · 10×10–30×30 cm</span></span>
             </div>
             <a href="cuadro.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
           </div>
@@ -2248,7 +2153,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
           <span class="faq-icon">+</span>
         </button>
         </h4>
-        <div class="faq-a"><span class="es">El cuadro va en tres formatos reales — cuadrado, clásico y retrato — cada uno en varios tamaños, de 10×10 a 60×80 cm. Aparte tienes la sobremesa (10,2×15,2) y el imán (7×10). <a href="cuadro.html#tallas">Ver los formatos a escala</a>.</span><span class="en">The wall print comes in three real formats — square, classic and portrait — each in several sizes, from 10×10 to 60×80 cm. There's also the desk print (10.2×15.2) and the fridge magnet (7×10). <a href="cuadro.html#tallas">See the formats to scale</a>.</span></div>
+        <div class="faq-a"><span class="es">El cuadro va en tres formatos reales — cuadrado, clásico y retrato — cada uno en varios tamaños, de 10×10 a 30×30 cm. Aparte tienes la sobremesa (10,2×15,2) y el imán (7×10). <a href="cuadro.html#tallas">Ver los formatos a escala</a>.</span><span class="en">The wall print comes in three real formats — square, classic and portrait — each in several sizes, from 10×10 to 30×30 cm. There's also the desk print (10.2×15.2) and the fridge magnet (7×10). <a href="cuadro.html#tallas">See the formats to scale</a>.</span></div>
       </div>
       <div class="faq-item">
         <h4 class="faq-q-h">
@@ -2599,102 +2504,53 @@ document.addEventListener('keydown',e=>{
 })();
 
 
-// ── TAMAÑO PILLS INTERACTIVOS ──
+// ── DEMO EN VÍDEO: la app real grabada en el móvil (fotos/demo/, generado con _grabar_demos.js) ──
+// Los rótulos de cada paso salen de demo-<nombre>.json (tiempo en segundos del vídeo).
 (function(){
-  function calcTotal(){
-    var t=0;
-    document.querySelectorAll('#ps1 .ps-card-slide').forEach(function(slide){
-      var on=slide.querySelector('.ps-sz.on');
-      if(on) t+=parseFloat(on.dataset.price||0);
-    });
-    var el=document.getElementById('psTotalAmt');
-    if(el) el.textContent=t.toFixed(2).replace('.',',')+'€';
+  var DEMOS = { paredes: {"duration": 28.8, "caps": [{"t": 0.3, "es": "Elige 4 fotos de tu galería", "en": "Pick 4 photos from your gallery"}, {"t": 8.23, "es": "Las ves al momento, en 3D", "en": "See them instantly, in 3D"}, {"t": 14.43, "es": "Elige dónde colgarlas", "en": "Pick where to hang them"}, {"t": 20.43, "es": "Y la composición que más te guste", "en": "And the layout you like best"}, {"t": 26.06, "es": "Y por detrás, metal de verdad", "en": "And on the back, real metal"}]}, regalo: {"duration": 36.67, "caps": [{"t": 0.31, "es": "Elige 2 fotos", "en": "Pick 2 photos"}, {"t": 11.13, "es": "Míralas en 3D, por delante y por detrás", "en": "See them in 3D, front and back"}, {"t": 21.2, "es": "Escribe tu dedicatoria detrás", "en": "Write your dedication on the back"}, {"t": 29.73, "es": "Listo para regalar", "en": "Ready to give"}]} };
+  var v = document.getElementById('dmVideo'), capEl = document.getElementById('dmCap'), stepsEl = document.getElementById('dmSteps');
+  if(!v) return;
+  var tabs = [].slice.call(document.querySelectorAll('.dm-tab')), cur = 'paredes', started = false, lastCap = -1;
+  var lang = function(){ return document.documentElement.getAttribute('data-lang') === 'en' ? 'en' : 'es'; };
+  function load(name, play){
+    cur = name; lastCap = -1;
+    tabs.forEach(function(t){ var on = t.dataset.demo === name; t.classList.toggle('on', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    v.poster = 'fotos/demo/demo-' + name + '.jpg';
+    v.src = 'fotos/demo/demo-' + name + '.mp4';
+    stepsEl.innerHTML = DEMOS[name].caps.map(function(){ return '<i><b></b></i>'; }).join('');
+    sync();
+    if(play){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
   }
-  document.querySelectorAll('#ps1 .ps-card-slide').forEach(function(slide){
-    slide.querySelectorAll('.ps-sz').forEach(function(pill){
-      pill.addEventListener('click',function(){
-        slide.querySelectorAll('.ps-sz').forEach(function(p){p.classList.remove('on')});
-        pill.classList.add('on');
-        calcTotal();
+  function sync(){
+    var caps = DEMOS[cur].caps, t = v.currentTime || 0, k = 0;
+    for(var i = 0; i < caps.length; i++) if(t >= caps[i].t - 0.15) k = i;
+    if(k !== lastCap){
+      lastCap = k;
+      capEl.style.opacity = 0;
+      setTimeout(function(){ capEl.textContent = (k + 1) + ' · ' + caps[k][lang()]; capEl.style.opacity = 1; }, 180);
+    }
+    var bars = stepsEl.children;
+    for(var j = 0; j < bars.length; j++){
+      var a = caps[j].t, b = j + 1 < caps.length ? caps[j + 1].t : DEMOS[cur].duration;
+      var f = Math.max(0, Math.min(1, (t - a) / (b - a)));
+      bars[j].firstChild.style.width = (f * 100) + '%';
+    }
+  }
+  v.addEventListener('timeupdate', sync);
+  // al acabar una demo pasa a la otra, y así en bucle
+  v.addEventListener('ended', function(){ load(cur === 'paredes' ? 'regalo' : 'paredes', true); });
+  tabs.forEach(function(t){ t.addEventListener('click', function(){ load(t.dataset.demo, true); }); });
+  load('paredes', false);
+  // el vídeo no se descarga ni arranca hasta que la sección se ve
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es, io){
+      es.forEach(function(e){
+        if(e.isIntersecting && !started){ started = true; v.preload = 'auto'; var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+        else if(!e.isIntersecting && started && !v.paused) v.pause();
+        else if(e.isIntersecting && started && v.paused && !v.ended) { var q = v.play(); if(q && q.catch) q.catch(function(){}); }
       });
-    });
-  });
-})();
-
-// ── PHONE SCREEN CYCLER ──
-(function(){
-  var screens=Array.from(document.querySelectorAll('.ps-screen-content'));
-  var dots=Array.from(document.querySelectorAll('.pd'));
-  var hintEl=document.getElementById('phoneHint');
-  var HINTS=[
-    '1 · Elige tus fotos de la galería',
-    '2 · Elige medidas y sistema de colgado',
-    '3 · Añade tu frase y tu dedicatoria',
-    '4 · ¡Listo! Míralo en 3D'
-  ];
-  var cur=0;
-
-  function syncStep(){
-    dots.forEach(function(d,i){d.classList.toggle('active',i===cur)});
-    if(hintEl&&HINTS[cur])hintEl.textContent=HINTS[cur];
-    var s=screens[cur];
-    if(s){
-      var f=s.querySelector('iframe[data-src]');
-      if(f){f.src=f.getAttribute('data-src');f.removeAttribute('data-src');}
-    }
-  }
-
-  function advance(){
-    var old=screens[cur];
-    old.classList.remove('ps-active');
-    old.classList.add('ps-exit');
-    setTimeout(function(){old.classList.remove('ps-exit')},600);
-    cur=(cur+1)%screens.length;
-    screens[cur].classList.add('ps-active');
-    syncStep();
-    scheduleNext();
-  }
-
-  function updateCarouselDots(idx){
-    document.querySelectorAll('.ps-carousel-dot').forEach(function(d,i){
-      d.classList.toggle('active',i===idx);
-    });
-  }
-
-  function runCarousel(onDone){
-    var c=document.getElementById('psCarousel');
-    if(!c){setTimeout(onDone,3000);return;}
-    c.scrollLeft=0;
-    updateCarouselDots(0);
-    setTimeout(function(){
-      var slideW=Math.round(c.scrollWidth/3);
-      c.scrollTo({left:slideW+6,behavior:'smooth'});
-      updateCarouselDots(1);
-      setTimeout(onDone,1800);
-    },1800);
-  }
-
-  function scheduleNext(){
-    if(cur===1){
-      runCarousel(function(){advance();});
-    }else if(cur===screens.length-1){
-      setTimeout(advance,5200);   // más tiempo para apreciar el 3D
-    }else{
-      setTimeout(advance,2600);
-    }
-  }
-
-  function init(){
-    if(!screens.length)return;
-    syncStep();
-    setTimeout(advance,2600);
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',init);
-  }else{
-    init();
-  }
+    }, { threshold: 0.35 }).observe(v);
+  } else { started = true; v.play(); }
 })();
 
 // ── VS PAPEL/METAL — toggle táctil (sin hover) ──
@@ -2716,7 +2572,7 @@ document.addEventListener('keydown',e=>{
 })();
 </script>
 <!-- paredes.js ya no hace falta aquí: el carrusel lo pinta combis.js con imágenes ya montadas -->
-<script src="fotos/combis/combis.js?v=f5caacfa"></script>
+<script src="fotos/combis/combis.js?v=d60c7062"></script>
 <script>
 /* Combinaciones en entorno real (fotos/_build_combis.py). Una misma tarjeta sirve para el
    carrusel de paredes, "a quién regalas" y "momentos": cambia el grupo y el texto de abajo.

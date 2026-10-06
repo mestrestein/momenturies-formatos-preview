@@ -893,6 +893,7 @@ function setOrientation(p, o){
 
 /* ═══════════ PARED (grid Mixtiles) ═══════════ */
 function layout(){
+  let wideFrame = null;   // plano abierto de la habitación (Sobremesa): punto de partida del viaje de entrada
   const n = POSTERS.length;
   let totalH = 0, maxW = 0, fcx = 0, fcy = 0;   // fcx/fcy: centro de la zona a encuadrar (coords del grupo)
   if(WALL){
@@ -940,9 +941,19 @@ function layout(){
       const reveal = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
       // apoyado (Sobremesa): más aire arriba, para que no roce la barra de arriba ni la decoración de la balda
       const top = totalH/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -totalH/2 - (sc.gapCm + reveal)*CM;
+      if(sc.restCm != null){
+        /* Sobremesa: se queda CERCA (el Sobremesa y un trozo del mueble), y la habitación entera
+           (wideFrame) solo se usa como punto de partida del viaje de entrada (_flyIn). */
+        wideFrame = { maxW: Math.max(maxW + 60*CM, sc.viewCm*CM), fcy: (top + bot)/2, totalH: top - bot };
+        const cTop = totalH/2 + 16*CM, cBot = -totalH/2 - 30*CM;
+        maxW = maxW + 70*CM;
+        fcy = (cTop + cBot)/2;
+        totalH = cTop - cBot;
+      } else {
       maxW = Math.max(maxW + 60*CM, sc.viewCm*CM);
       fcy = (top + bot)/2;
       totalH = top - bot;
+      }
     }
   }
   }
@@ -1021,7 +1032,27 @@ function layout(){
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
-  if(!(group.scale.x > 0) || !group.userData.framed){
+  if(_flyIn && wideFrame){
+    /* viaje de entrada (Sobremesa): arranca viendo la habitación, un poco de lado, y se acerca
+       con un solo movimiento suave y continuo hasta tener el Sobremesa delante */
+    _flyIn = false;
+    const sW = Math.min(1, (usableW*0.90)/wideFrame.maxW, (usableH*0.96)/wideFrame.totalH);
+    gsap.killTweensOf(group.scale); gsap.killTweensOf(camFrame); gsap.killTweensOf(window, 'tRy');
+    group.scale.set(sW, sW, sW); group.userData.framed = true;
+    camFrame.x = -visW * (rightPx/(2*wpx)) - fcx*sW;
+    camFrame.y =  visH * ((botPx-topPx)/(2*hpx)) - wideFrame.fcy*sW;
+    const sc = findScene(ROOM_CFG.scene), ry1 = sc.flyRy != null ? sc.flyRy : REST_RY;
+    cRy = tRy = ry1 + (sc.flyRy0 != null ? sc.flyRy0 : 0.42); cRx = tRx = REST_RX;
+    const D = 3.2, E = 'power2.inOut', upd = () => { dirty3D = true; };
+    _flyUntil = performance.now() + D*1000;
+    gsap.to(group.scale, { x:s, y:s, z:s, duration:D, ease:E, onUpdate:upd });
+    gsap.to(camFrame,    { x:px, y:py,    duration:D, ease:E, onUpdate:upd });
+    const rot = { v: tRy }; gsap.to(rot, { v: ry1, duration:D, ease:E, onUpdate:() => { tRy = cRy = rot.v; upd(); } });
+    dirty3D = true;
+  } else if(performance.now() < _flyUntil){
+    /* a mitad del viaje de entrada otro layout() (texturas, modelos que terminan de cargar…) lo
+       cortaba con un ajuste de .45 s y la cámara llegaba de golpe: mientras dura, se deja seguir */
+  } else if(!(group.scale.x > 0) || !group.userData.framed){
     // primer encuadre (o estado raro): directo, sin animar
     gsap.killTweensOf(group.scale); gsap.killTweensOf(camFrame);
     group.scale.set(s, s, s); group.userData.framed = true; dirty3D = true;
@@ -1751,22 +1782,36 @@ async function checkoutWithShopify(){
    medidas que tienen 2 o 3 tallas dentro de la MISMA proporción real — así hay "más grande o
    más pequeño" de verdad dentro del mismo formato. Las medidas sueltas del catálogo (13×18,
    20×25, 18×32cm) no tienen ni una talla más chica ni más grande en su misma proporción, así
-   que se han dejado fuera. */
+   que se han dejado fuera.
+   1-oct-2026: fuera también el clásico 40×60 y el retrato 60×80, porque no caben en nuestra
+   plancha (40×60).
+   stock:false = sin existencias en Brildor (revisado el 1-oct-2026 en su ficha). La talla se
+   sigue enseñando, tachada y con "Sin existencias", pero no se puede elegir. Cuando vuelva,
+   quitar el stock:false aquí Y en OUT_OF_STOCK de paredes/_build_paredes.py (y regenerar). */
 const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
-    sizes:[ {k:'S', d:[10,10], price:14.99},
-            {k:'M', d:[15,15], price:22.99},
+    sizes:[ {k:'S', d:[10,10], price:14.99, stock:false},
+            {k:'M', d:[15,15], price:22.99, stock:false},
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
     sizes:[ {k:'S', d:[10,15], price:17.99},
-            {k:'M', d:[20,30], price:39.99},
-            {k:'L', d:[40,60], price:89.99} ] },
+            {k:'M', d:[20,30], price:39.99, stock:false} ] },
   retrato: { id:'retrato', es:'Retrato', en:'Portrait', ratio:3/4,
     sizes:[ {k:'S', d:[12,16], price:19.99},
             {k:'M', d:[18,24], price:34.99},
-            {k:'L', d:[24,32], price:49.99},
-            {k:'XL',d:[60,80], price:119.99} ] },
+            {k:'L', d:[24,32], price:49.99, stock:false},
+            {k:'XL',d:[30,40], price:69.99} ] },   // 30×40 (1-oct): en stock en Brildor y cabe en la plancha; precio provisional
 };
+const inStock = s => !!s && s.stock !== false;
+/* la talla que se pone al cambiar de formato o al restaurar un diseño: la pedida si hay
+   existencias; si no, la más cercana a ella que sí tenga (o la pedida, si todo está agotado) */
+function pickSize(list, wantK){
+  const want = list.find(s=>s.k===wantK) || list[Math.floor(list.length/2)];
+  if(inStock(want)) return want;
+  const i = list.indexOf(want);
+  return list.filter(inStock).sort((a,b)=>Math.abs(list.indexOf(a)-i)-Math.abs(list.indexOf(b)-i))[0] || want;
+}
+const sizeStockTag = s => inStock(s) ? '' : '<em class="size-soldout"><span class="es">Sin existencias</span><span class="en">Out of stock</span></em>';
 const FORMAT_ORDER = ['cuadrado','clasico','retrato'];
 const FORMAT_DEFAULT = 'retrato', SIZE_DEFAULT = 'M';
 
@@ -1810,7 +1855,7 @@ const refBaseW = p => { const d = maxSizeOf(p).d; return (isLand(p) ? d[1] : d[0
 const refBaseH = p => { const d = maxSizeOf(p).d; return (isLand(p) ? d[0] : d[1]) * CM; };
 function defSizeOf(pr, formatId){
   const list = pr.formats ? pr.formats[formatId||FORMAT_DEFAULT].sizes : pr.sizes;
-  return list.find(s=>s.k===(pr.formats ? SIZE_DEFAULT : pr.def)) || list[Math.floor(list.length/2)];
+  return pickSize(list, pr.formats ? SIZE_DEFAULT : pr.def);
 }
 /* Cambiar de formato o de talla cambia la proporción o el tamaño real del panel: hay que
    rehacer la geometría del póster (no basta con escalarla, como antes con el A4 único). */
@@ -1833,7 +1878,7 @@ function applyProductSize(p, s, formatId){
    si no la primera (y única) talla de su lista de siempre */
 function cheapestPrice(pr){
   if(!pr.formats) return pr.sizes[0].price;
-  return Math.min(...FORMAT_ORDER.map(fid => Math.min(...pr.formats[fid].sizes.map(s => s.price))));
+  return Math.min(...FORMAT_ORDER.map(fid => Math.min(...pr.formats[fid].sizes.filter(inStock).map(s => s.price))));
 }
 function renderPtypes(){
   const box=document.getElementById('ptypeChips'); const p=POSTERS[selected]; if(!box||!p) return;
@@ -1890,8 +1935,7 @@ function renderFormats(){
     b.innerHTML = `<span class="format-chip-shape" style="width:${boxW}px;height:${boxH}px"></span>`
       + `<span class="es">${f.es}</span><span class="en">${f.en}</span>`;
     b.onclick=()=>{
-      const s = f.sizes.find(x=>x.k===SIZE_DEFAULT) || f.sizes[Math.floor(f.sizes.length/2)];
-      applyProductSize(p, s, fid);
+      applyProductSize(p, pickSize(f.sizes, SIZE_DEFAULT), fid);
       renderFormats(); renderSizes(); syncPanelHead(); updateTotal(); applyMountVisual(p);
     };
     box.appendChild(b);
@@ -1906,8 +1950,9 @@ function renderSizes(){
     const b=document.createElement('button');
     b.className='size-btn'+(p.sizeKey===s.k?' active':'');
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
-    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`;
-    b.onclick=()=>{ applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); };
+    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`+sizeStockTag(s);
+    if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
+    b.onclick=()=>{ if(!inStock(s)) return; applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); };
     box.appendChild(b);
   });
 }
@@ -1921,6 +1966,12 @@ function setPtype(k){
   syncPanelHead(); layout(); applySelection(); updateTotal();
   sceneSelectHanger();
   applyMountVisual(p); showMountPose(p);            // peana / imán de nevera / imán de pared
+  /* el Sobremesa se APOYA: si había puesto un entorno de pared (foto o escena para colgar), pasa a
+     la primera escena donde se apoya; y al revés, un cuadro no se queda encima de una mesita */
+  const apoyo = ROOM_CFG.mode === 'geo' && SOBREMESA_SCENES.test(ROOM_CFG.scene);
+  if(k === 'madera' && ROOM_CFG.mode !== 'none' && !apoyo){
+    const sc = SCENES.find(x => SOBREMESA_SCENES.test(x.id)); if(sc) setScene(sc.id);
+  } else if(k !== 'madera' && apoyo) clearRoom();
 }
 
 /* ═══ escena de montaje (colgador-scene de Futsides) en ventana, con la foto del cliente ═══ */
@@ -2042,8 +2093,7 @@ function renderCropFormats(){
       + `<span class="es">${f.es}</span><span class="en">${f.en}</span>`;
     b.onclick=()=>{
       // si la talla actual (S/M/L…) existe también en el formato nuevo, se mantiene
-      const s = f.sizes.find(x=>x.k===p.sizeKey) || f.sizes.find(x=>x.k===SIZE_DEFAULT) || f.sizes[Math.floor(f.sizes.length/2)];
-      applyProductSize(p, s, fid);
+      applyProductSize(p, pickSize(f.sizes, f.sizes.some(x=>x.k===p.sizeKey) ? p.sizeKey : SIZE_DEFAULT), fid);
       renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p);
     };
     box.appendChild(b);
@@ -2056,8 +2106,9 @@ function renderCropFormats(){
     b.type='button';
     b.className='size-btn'+(p.sizeKey===s.k?' active':'');
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
-    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`;
-    b.onclick=()=>{ applyProductSize(p,s); renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p); };
+    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`+sizeStockTag(s);
+    if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
+    b.onclick=()=>{ if(!inStock(s)) return; applyProductSize(p,s); renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p); };
     sbox.appendChild(b);
   });
 }
@@ -2225,6 +2276,10 @@ function syncConfigUI(){
 document.getElementById('addToCart').addEventListener('click', async ()=>{
   const withPhoto = POSTERS.filter(p=>p.srcImg).length;
   if(!withPhoto){ toast('Sube al menos una foto primero'); return; }
+  // red de seguridad: los botones de talla agotada ya están desactivados, pero un diseño
+  // guardado de antes o una pared abierta por URL podrían traer una
+  const agotado = POSTERS.findIndex(p=>p.srcImg && !inStock(sizeOf(p)));
+  if(agotado >= 0){ toast('Uno de los cuadros lleva una talla sin existencias: cámbiala para seguir'); selectPoster(agotado); return; }
   if(WALL && withPhoto < POSTERS.length){
     const faltan = POSTERS.length - withPhoto;
     toast(faltan===1 ? 'Falta 1 foto para completar la pared' : 'Faltan ' + faltan + ' fotos para completar la pared');
@@ -2563,7 +2618,7 @@ async function restoreDesign(saved){
         const pr = prodOf(p);
         const fmt = pr.formats ? (pr.formats[it.format] ? it.format : FORMAT_DEFAULT) : null;
         const list = pr.formats ? pr.formats[fmt].sizes : pr.sizes;
-        applyProductSize(p, list.find(s => s.k === it.sizeKey) || defSizeOf(pr, fmt), fmt);
+        applyProductSize(p, pickSize(list, list.some(s => s.k === it.sizeKey) ? it.sizeKey : (pr.formats ? SIZE_DEFAULT : pr.def)), fmt);
       } else if(PRODUCTS.metal.mounts.includes(it.mount)) p.mount = it.mount;
       Object.assign(p, {
         frontText:it.frontText||'', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:it.frontDate||'',
@@ -2766,7 +2821,16 @@ function placePhotoRoom(compH){
   const m = ensurePhotoRoom(), R = ROOM, U = CM / R.pxPerCm;   // unidades 3D por píxel
   setRoomTextures(R);
   m.scale.set(R.w*U, R.h*U, 1);
-  m.position.set(-(R.anchorX - R.w/2)*U, -compH/2 - (R.h/2 - R.anchorBottomY)*U, -0.22);
+  /* 2-oct-2026: la composición, siempre dentro de la PARED LIBRE de la foto (R.free, ver
+     fotos/_calibracion_entornos.py): si con el anclaje de siempre pisaría una planta o un mueble,
+     se corre lo justo para quedar en la pared lisa. La foto del cliente no trae pared libre. */
+  let ax = R.anchorX, by = R.anchorBottomY;
+  if(R.free && typeof COMP_U !== 'undefined' && COMP_U){
+    const [fx0, fy0, fx1, fy1] = R.free, wpx = COMP_U.w / U, hpx = compH / U;
+    ax = wpx > fx1 - fx0 ? (fx0 + fx1) / 2 : Math.max(fx0 + wpx/2, Math.min(fx1 - wpx/2, ax));
+    by = hpx > fy1 - fy0 ? (fy0 + fy1 + hpx) / 2 : Math.max(fy0 + hpx, Math.min(fy1, by));
+  }
+  m.position.set(-(ax - R.w/2)*U, -compH/2 - (R.h/2 - by)*U, -0.22);
   m.visible = true;
 }
 /* la capa de muebles va fgDepthCm por delante de la pared, escalada y desplazada para que, vista de
@@ -2791,8 +2855,10 @@ function setRoom(room){
   scheduleSave();
 }
 /* una de las habitaciones dibujadas */
+var _flyIn = false, _flyUntil = 0;   // la próxima vez que se encuadre, viaje de la habitación al Sobremesa
 function setScene(id){
   ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(id).id;
+  if(findScene(id).restCm != null) _flyIn = true;
   VIEW = '3d';                            // si es geometría, que se note
   layout(); renderRoomModal(); syncTools(); syncViewerHint();
   scheduleSave();
@@ -3052,7 +3118,7 @@ function addSofaModerno(g, U, o){
      respaldo hasta 88, brazos finos de 14 y 72 de alto, fondo 92. Visto de frente se tiene que
      leer la línea del zócalo, la del asiento y la de los cojines: por eso van por capas. */
   const x0 = (o && o.xCm || 0)*U, z0 = (o && o.zCm || 10)*U;
-  const W = 215*U, D = 92*U;
+  const W = ((o && o.wCm) || 215)*U, D = 92*U;      // wCm: sofá más corto (p. ej. 165, de dos plazas)
   const c1 = (o && o.c1) || '#f6efe4', c2 = (o && o.c2) || '#ddd3c4', c3 = (o && o.c3) || '#e9e0d2';
   const tela  = pbrMat('curly_teddy_natural', 0.18, { color:c1, roughness:1, env:0.30 });
   const telaB = pbrMat('curly_teddy_natural', 0.18, { color:c2, roughness:1, env:0.28 });
@@ -3071,7 +3137,7 @@ function addSofaModerno(g, U, o){
     const leg = new THREE.Mesh(new THREE.CylinderGeometry(1.7*U, 1.4*U, 14*U, 10), metal);
     leg.position.set(sx*(W/2 - 11*U), 7*U, dz); G.add(leg);
   }));
-  addContactShadow(g, U, 255, 135, (o && o.xCm || 0)*U, z0 + D/2, 0.9);
+  addContactShadow(g, U, W/U + 40, 135, (o && o.xCm || 0)*U, z0 + D/2, 0.9);
   return G;
 }
 
@@ -4007,58 +4073,66 @@ const SCENES = [
      donde se pone encima, o una balda entre libros; y mesitas de noche. furnCm
      es aquí la altura REAL de la superficie (la balda, la tapa del aparador o
      de la mesita), casi sin gapCm: el sobremesa se apoya justo encima, no cuelga. */
-  { id:'estanteria-cima', caja:{ w:380, h:270, d:320 }, es:'Estantería alta', en:'Tall shelving unit', des:'de pie encima del mueble', den:'standing on top of the unit',
-    restCm:190, gapCm:4, furnCm:229, viewCm:260, build:(g,U) => {
+  /* 2-oct-2026: rehechas a petición de Marc. Cada una es una HABITACIÓN (dormitorio con cama, salón
+     con sofá pequeño) y al entrar la cámara arranca viendo la habitación y se acerca sola hasta el
+     Sobremesa (flyIn en layout). Sin plantas. restCm = cara de ARRIBA exacta de la superficie (antes
+     iba 1-2 cm por debajo y el Sobremesa parecía metido dentro de la mesita); restZCm = a cuántos cm
+     de la pared queda el centro de esa superficie. */
+  { id:'estanteria-cima', flyRy:0.3, flyRy0:0.5, restZCm:18, caja:{ w:560, h:270, d:420 }, es:'Salón con estantería baja', en:'Living room, low bookcase', des:'encima de la estantería, junto al sofá', den:'on the bookcase, next to the sofa',
+    restCm:84, gapCm:0, furnCm:84, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#efe9df', wall2:'#e1dbcd', floor1:'#c9beac', floor2:'#b5a998', side:'#ece6da', skirt:'#e1dbcd' });
-      addEstanteria(g, U, { xCm:0, zCm:16, wCm:92, dCm:32, hCm:190, shelvesCm:[62,124], color:'#5c4632' });
-      addBookRow(g, U, -24, 62, 32, 5, 34);
-      addModel(g, KIT + 'small_plant_quaternius.glb', { xCm:24, zCm:32, wCm:22, dCm:22, yCm:62, mat:'verde' });
-      addBookRow(g, U, 22, 124, 32, 4, 28);
-      addModel(g, KIT + 'open_book_quaternius.glb', { xCm:-24, zCm:32, wCm:16, dCm:16, yCm:124, mat:'hueso' });
+      addRug(g, U, 260, 170, 150, '#d6cbb8');
+      addEstanteria(g, U, { xCm:0, zCm:2, wCm:96, dCm:32, hCm:84, shelvesCm:[42], color:'#6b4f36' });
+      addBookRow(g, U, -22, 2.2, 18, 6, 40); addBookRow(g, U, 24, 43, 18, 4, 30);
+      addBookRow(g, U, -32, 84, 18, 3, 16);                               // tres libros en la tapa, lejos del cuadro
+      addSofaModerno(g, U, { xCm:150, zCm:8, wCm:165 });
+      addTableLamp(g, U, 30*U, 84*U, 14*U, '#b08d57', '#f3ece0');
     } },
-  { id:'estanteria-hueco', caja:{ w:380, h:270, d:320 }, es:'Estantería con libros', en:'Bookshelf nook', des:'en una balda, entre libros', den:'on a shelf, between books',
-    /* sin trasera y sin balda por delante del propio cuadro (noBack, y las baldas de los libros
-       no cruzan x:0): el cuadro pinta siempre a la profundidad "de la pared", así que cualquier
-       madera que pase por delante de esa misma zona (x≈0) a su altura lo tapa entero. Los libros
-       van en dos repisas cortas, una a cada lado, que nunca llegan al centro. */
-    restCm:128, gapCm:3, furnCm:207, viewCm:240, build:(g,U) => {
+  { id:'estanteria-hueco', flyRy:-0.3, flyRy0:-0.5, restZCm:18, caja:{ w:560, h:270, d:420 }, es:'Salón con estantería', en:'Living room, bookshelf', des:'en una balda, entre libros, junto al sofá', den:'on a shelf between books, next to the sofa',
+    restCm:96, gapCm:0, furnCm:96, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#ede6d9', wall2:'#ddd4c1', floor1:'#c5b9a5', floor2:'#b1a48e', side:'#eae3d5', skirt:'#ddd4c1' });
-      addEstanteria(g, U, { xCm:0, zCm:3, wCm:92, dCm:18, hCm:173, shelvesCm:[55], noBack:true, color:'#4a3826' });
-      const ledgeMat = pbrMat('oak_veneer_01', 0.3, { color:'#4a3826', roughness:0.55, env:0.4 });
-      [-1,1].forEach(sx => { const b = softBox(28*U, 1.8*U, 15*U, 0.3*U, ledgeMat); b.position.set(sx*30*U, 128*U, 12*U); g.add(b); });
-      addBookRow(g, U, -30, 128, 12, 4, 24);
-      addBookRow(g, U, 30, 128, 12, 4, 24);
-      addBookRow(g, U, -8, 55, 12, 6, 56);
-      addModel(g, KIT + 'small_plant_quaternius.glb', { xCm:34, zCm:12, wCm:16, dCm:16, yCm:55, mat:'verde' });
+      addRug(g, U, 260, 170, 150, '#cfc3ae');
+      // balda del cuadro con la cara de arriba en 96 cm (centro 95.07 + medio grosor 0.93)
+      addEstanteria(g, U, { xCm:0, zCm:2, wCm:96, dCm:32, hCm:190, shelvesCm:[48, 95.07, 142], color:'#4a3826', backColor:'#3a2c1e' });
+      addBookRow(g, U, -30, 96, 18, 4, 24); addBookRow(g, U, 30, 96, 18, 4, 24);
+      addBookRow(g, U, -12, 2.2, 18, 6, 56); addBookRow(g, U, 10, 49, 18, 6, 60); addBookRow(g, U, -18, 143, 18, 4, 34);
+      addSofaModerno(g, U, { xCm:-150, zCm:8, wCm:165, c1:'#e9dfcf', c2:'#cfc2ae', c3:'#ddd2c0' });
     } },
-  { id:'aparador-alto', caja:{ w:420, h:260, d:340 }, es:'Aparador alto', en:'Tall sideboard', des:'de pie encima del aparador', den:'standing on top of the sideboard',
-    restCm:96, gapCm:5, furnCm:202, viewCm:280, build:(g,U) => {
+  { id:'aparador-alto', restZCm:35, caja:{ w:420, h:260, d:340 }, es:'Aparador alto', en:'Tall sideboard', des:'de pie encima del aparador', den:'standing on top of the sideboard',
+    restCm:96, gapCm:0, furnCm:96, viewCm:280, build:(g,U) => {
       buildShell(g, U, { wall1:'#e9e3d7', wall2:'#dbd3c1', floor1:'#c4b9a5', floor2:'#b0a48d', side:'#e6e0d3', skirt:'#dbd3c1' });
       addAparadorAlto(g, U, { xCm:0, zCm:14, wCm:150, dCm:42, hCm:96, puertas:3, color:'#4d3a28' });
-      addModel(g, KIT + 'small_plant_quaternius.glb', { xCm:52, zCm:35, wCm:26, dCm:26, yCm:96, mat:'verde' });
+      addBookRow(g, U, 50, 96, 35, 3, 15);
       addModel(g, KIT + 'lamp_round_table_kenney.glb', { xCm:-50, zCm:35, wCm:20, dCm:20, yCm:96, mat:'negro' });
     } },
-  { id:'aparador-consola', caja:{ w:400, h:255, d:330 }, es:'Consola alta', en:'Tall console', des:'de pie encima de la consola', den:'standing on top of the console',
-    restCm:88, gapCm:5, furnCm:191, viewCm:260, build:(g,U) => {
+  { id:'aparador-consola', restZCm:33, caja:{ w:400, h:255, d:330 }, es:'Consola alta', en:'Tall console', des:'de pie encima de la consola', den:'standing on top of the console',
+    restCm:88, gapCm:0, furnCm:88, viewCm:260, build:(g,U) => {
       buildShell(g, U, { wall1:'#e7e2da', wall2:'#d8d2c6', floor1:'#beb3a1', floor2:'#aa9e8b', side:'#e4dfd6', skirt:'#d8d2c6' });
       addAparadorAlto(g, U, { xCm:0, zCm:14, wCm:130, dCm:38, hCm:88, puertas:2, color:'#8a5c3a' });
-      addModel(g, KIT + 'small_plant_quaternius.glb', { xCm:46, zCm:33, wCm:22, dCm:22, yCm:88, mat:'verde' });
+      addBookRow(g, U, 44, 88, 33, 3, 14);
       addModel(g, KIT + 'lamp_round_table_kenney.glb', { xCm:-46, zCm:33, wCm:18, dCm:18, yCm:88, mat:'negro' });
     } },
-  { id:'mesita-boutique', caja:{ w:360, h:250, d:320 }, es:'Mesita de noche', en:'Nightstand', des:'de pie encima de la mesita', den:'standing on the nightstand',
-    /* sin panel de cabecero: a la altura de una mesita (50cm) quedaría justo detrás del propio
-       cuadro y, como el cuadro pinta siempre a la profundidad "de la pared", lo taparía. El tono
-       cálido de la pared ya sugiere el dormitorio sin necesidad del panel. */
-    restCm:50, gapCm:2, furnCm:126, viewCm:220, build:(g,U) => {
+  { id:'mesita-boutique', flyRy:-0.3, flyRy0:-0.5, restZCm:23, caja:{ w:560, h:270, d:430 }, es:'Dormitorio', en:'Bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
+    restCm:52, gapCm:0, furnCm:52, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#e9ddd2', wall2:'#dbcbb8', floor1:'#c2b6a4', floor2:'#ae9f8c', side:'#e6ded2', skirt:'#dbd2c4' });
-      addMesitaModerna(g, U, { xCm:0, zCm:10, color:'#8a5c3a' });
-      addModel(g, KIT + 'lamp_round_table_kenney.glb', { xCm:16, zCm:29, wCm:20, dCm:20, yCm:50, mat:'hueso' });
+      addRug(g, U, 300, 200, 175, '#c9b89a');
+      addCamaModerna(g, U, { xCm:-108, zCm:4, anchoCm:160, largoCm:200, color:'#a8583f', ropa:'#f2ece0' });
+      addMesitaModerna(g, U, { xCm:0,    zCm:4, color:'#8a5c3a' });
+      addMesitaModerna(g, U, { xCm:-216, zCm:4, color:'#8a5c3a' });
+      addTableLamp(g, U, 15*U, 52*U, 13*U, '#b08d57', '#f3ece0');      // al lado del cuadro, un poco detrás
+      addTableLamp(g, U, -216*U, 52*U, 20*U, '#b08d57', '#f3ece0');
     } },
-  { id:'mesita-nordica', caja:{ w:360, h:250, d:320 }, es:'Mesita nórdica', en:'Nordic nightstand', des:'de pie encima de la mesita', den:'standing on the nightstand',
-    restCm:50, gapCm:2, furnCm:126, viewCm:220, build:(g,U) => {
+  { id:'mesita-nordica', flyRy:-0.3, flyRy0:-0.5, restZCm:23, caja:{ w:560, h:270, d:430 }, es:'Dormitorio nórdico', en:'Nordic bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
+    restCm:52, gapCm:0, furnCm:52, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#f1efe9', wall2:'#e5e2da', floor1:'#d3c9b8', floor2:'#bfb4a0', side:'#eeece5', skirt:'#e5e2da' });
-      addMesitaModerna(g, U, { xCm:0, zCm:10, color:'#e8dcc4', tex:'oak_veneer_01' });
-      addModel(g, KIT + 'lamp_round_table_kenney.glb', { xCm:16, zCm:29, wCm:20, dCm:20, yCm:50, mat:'negro' });
+      addCamaModerna(g, U, { xCm:-108, zCm:4, anchoCm:160, largoCm:200, color:'#e4ddcd', ropa:'#faf8f2' });
+      addMesitaModerna(g, U, { xCm:0,    zCm:4, color:'#e8dcc4', tex:'oak_veneer_01' });
+      addMesitaModerna(g, U, { xCm:-216, zCm:4, color:'#e8dcc4', tex:'oak_veneer_01' });
+      const bancoMat = pbrMat('oak_veneer_01', 0.16, { color:'#e0d3b6', roughness:0.55, env:0.45 });
+      const banco = softBox(120*U, 15*U, 40*U, 2*U, bancoMat); banco.position.set(-108*U, 30*U, 230*U); g.add(banco);
+      [-1,1].forEach(sx => { const pata = softBox(3*U, 28*U, 3*U, 0.6*U, bancoMat); pata.position.set((-108 + sx*54)*U, 14*U, 230*U); g.add(pata); });
+      addTableLamp(g, U, 15*U, 52*U, 13*U, '#2b2b2b', '#efeae0');
+      addTableLamp(g, U, -216*U, 52*U, 20*U, '#2b2b2b', '#efeae0');
     } },
 ];
 /* ── MUEBLES DESCARGADOS (Poly Haven, CC0) ─────────────────────────────────
@@ -4200,7 +4274,14 @@ function placeRoom(compH){
   /* restCm = altura REAL de la superficie donde se apoya (solo en las escenas del Sobremesa);
      en el resto furnCm hace las dos cosas (altura del mueble Y cuánto se ve en el encuadre,
      ver layout()) porque ahí el cuadro se CUELGA por encima, no se apoya. */
-  g.position.set(0, -compH/2 - (sc.gapCm + (sc.restCm != null ? sc.restCm : sc.furnCm))*CM, -0.22);
+  /* restZCm (2-oct-2026): a cuántos cm de la pared queda el centro de la superficie donde se apoya
+     el Sobremesa. La escena se retrasa eso para que el Sobremesa quede ENCIMA del mueble, en medio
+     de la balda o la mesita, y no pegado a la pared a la altura del mueble. */
+  /* Sobremesa: lo que hay entre el borde de abajo del póster y la superficie es SOLO la peana de
+     bambú (lo que asoma por debajo del póster: BASE_H - BAMBU_SINK), sin gapCm; con gapCm la peana
+     quedaba 1-4 cm en el aire. Los cuadros colgados siguen con su gapCm. */
+  const below = sc.restCm != null ? (BASE_H - BAMBU_SINK) + sc.restCm*CM : (sc.gapCm + sc.furnCm)*CM;
+  g.position.set(0, -compH/2 - below, -0.22 - (sc.restZCm || 0)*CM);
   g.visible = true;
   // los cuadros reciben la luz de ventana de la pared dibujada (mismo shader que con foto)
   LIGHT_U.uLightTex.value = wallLight(); LIGHT_U.uLightOn.value = 1;
@@ -4237,6 +4318,9 @@ function wallGross(w){
    cliente vería un precio en el selector y otro distinto en el carrito. */
 function wallPct(w){ const t = PACK_TIERS.find(t => w.pieces.length >= t.n); return t ? t.pct : 0; }
 function wallPrice(w){ return Math.round(wallGross(w) * (100 - wallPct(w))) / 100; }
+/* un conjunto solo se puede elegir si TODAS sus tallas tienen existencias */
+function wallInStock(w){ return w.pieces.every(pc => inStock(FORMATS[pc.format].sizes.find(x => x.k === pc.size))); }
+const wallSoldOutTag = '<em class="wall-soldout"><span class="es">Sin existencias</span><span class="en">Out of stock</span></em>';
 
 /* miniatura SVG de una pared: la dibuja paredes.js (compartida con paredes.html y la landing) */
 const wallSVG = window.MOMENTURIES_wallSVG || function(){ return ''; };
@@ -4260,6 +4344,7 @@ function disposePoster(i){
 function applyWall(w, opts){
   opts = opts || {};
   if(!w) return;
+  if(!wallInStock(w)){ toast('La pared «' + w.name + '» no tiene existencias ahora mismo'); return; }
   WALL = w;
   // un conjunto sin entorno queda flotando: si no hay ninguno puesto, se pone el de por defecto
   if(ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; VIEW = '3d'; }
@@ -4356,17 +4441,21 @@ function renderWallModal(){
     + '<b><span class="es">Pared libre</span><span class="en">Free wall</span></b><small><span class="es">Tú eliges cuántos cuadros y de qué tamaño.</span><span class="en">You choose how many prints and which sizes.</span></small>';
   free.onclick = () => { clearWall(); closeWallModal(); };
   if(wallFilter === 'all') grid.appendChild(free);
-  WALLS.filter(w => wallFilter === 'all' || String(w.n) === wallFilter).forEach(w => {
+  // las que tienen existencias primero, las agotadas al final
+  WALLS.filter(w => wallFilter === 'all' || String(w.n) === wallFilter)
+    .sort((a, b) => wallInStock(b) - wallInStock(a)).forEach(w => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'wall-opt' + (WALL && WALL.id === w.id ? ' active' : '');
-    const c = w.counts, parts = ['XL','L','M'].filter(k => c[k]).map(k => c[k] + '× ' + k).join(' · ');
+    const ok = wallInStock(w);
+    b.type = 'button'; b.className = 'wall-opt' + (WALL && WALL.id === w.id ? ' active' : '') + (ok ? '' : ' sold-out'); b.dataset.id = w.id;
+    if(!ok){ b.disabled = true; b.title = 'Sin existencias'; }
     b.innerHTML = '<div class="wall-opt-svg">' + wallSVG(w) + '</div>'
       + '<b>' + w.name + '</b>'
-      + '<small>' + w.n + ' <span class="es">cuadros</span><span class="en">prints</span> · ' + parts + '<br>'
+      + '<small>' + w.n + ' <span class="es">cuadros</span><span class="en">prints</span><br>'
       + '<span class="es">Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</span><span class="en">Takes ' + w.width + ' × ' + w.height + ' cm</span></small>'
       + '<span class="wall-opt-price">' + wallPrice(w).toFixed(2).replace('.', ',') + '€'
-      + (wallPct(w) ? '<s>' + wallGross(w).toFixed(2).replace('.', ',') + '€</s>' : '') + '</span>';
-    b.onclick = () => { applyWall(w); closeWallModal(); };
+      + (wallPct(w) ? '<s>' + wallGross(w).toFixed(2).replace('.', ',') + '€</s>' : '') + '</span>'
+      + (ok ? '' : wallSoldOutTag);
+    b.onclick = () => { if(!ok) return; applyWall(w); closeWallModal(); };
     grid.appendChild(b);
   });
 }
@@ -4390,6 +4479,7 @@ window.MOMENTURIES_openWalls = function(){ openEditorWithType('metal'); openWall
 window.MOMENTURIES_openWall = function(id){
   const w = findWall(id); if(!w){ openEditorWithType('metal'); return; }
   openEditorWithType('metal');
+  if(!wallInStock(w)){ openWallModal(); toast('La pared «' + w.name + '» no tiene existencias ahora mismo. Elige otra'); return; }
   applyWall(w);
 };
 (function wallEntry(){
@@ -4421,6 +4511,7 @@ function roomCard(o){
     + '<b>' + (o.num ? '<i class="room-n">' + o.num + '</i>' : '') + o.title + '</b>'
     + (o.sub ? '<small>' + o.sub + '</small>' : '');
   b.onclick = o.click;
+  if(o.id) b.dataset.id = o.id;          // para localizar la tarjeta (grabación de demos, pruebas)
   return b;
 }
 function sceneCard(sc){
@@ -4431,7 +4522,7 @@ function sceneCard(sc){
     img: 'fotos/escenas/' + sc.id + '.webp', dim: '3D',
     title: '<span class="es">' + sc.es + '</span><span class="en">' + sc.en + '</span>',
     sub: '<span class="es">' + sc.des + '</span><span class="en">' + sc.den + '</span>',
-    click: () => { setScene(sc.id); closeRoomModal(); }
+    click: () => { setScene(sc.id); closeRoomModal(); }, id: sc.id
   });
 }
 function photoCard(r){
@@ -4442,7 +4533,7 @@ function photoCard(r){
     img: r.thumb || r.img, dim: '2D',
     title: r.name,
     sub: '<span class="es">foto real</span><span class="en">real photo</span>',
-    click: () => { setRoom(r); closeRoomModal(); }
+    click: () => { setRoom(r); closeRoomModal(); }, id: r.id
   });
 }
 /* fila de la lista: nombre, cuántas opciones hay y cuál está puesta; al tocar se despliega */
@@ -4450,7 +4541,7 @@ function groupRow(o){
   const row = document.createElement('div');
   row.className = 'room-group' + (o.open ? ' open' : '');
   const head = document.createElement('button');
-  head.type = 'button'; head.className = 'room-group-head';
+  head.type = 'button'; head.className = 'room-group-head'; head.dataset.group = o.id;
   head.innerHTML = '<span class="room-group-name">' + o.title + '</span>'
     + '<span class="room-group-meta">' + (o.active ? '<b>' + o.active + '</b> · ' : '') + o.n + ' <span class="es">opciones</span><span class="en">options</span>'
     + (o.dims ? ' · ' + o.dims : '') + '</span>'

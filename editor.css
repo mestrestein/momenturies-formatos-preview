@@ -98,6 +98,11 @@
 .size-btn:hover{border-color:#aaa}
 .size-btn.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .size-btn small{display:block;font-size:8.5px;font-weight:400;opacity:.7;margin-top:1px}
+/* talla sin existencias: se ve, tachada, pero no se puede tocar */
+.size-btn.sold-out,.size-btn:disabled{cursor:not-allowed;color:#9a9a9a;border-style:dashed;background:#f6f5f2}
+.size-btn.sold-out:hover{border-color:var(--gray2)}
+.size-btn.sold-out small{text-decoration:line-through}
+.size-soldout{display:block;font-style:normal;font-size:8px;font-weight:600;letter-spacing:.02em;color:#b4462f;margin-top:2px;line-height:1.1}
 /* producto: 3 chips (metálico / sobremesa / imán nevera) */
 .ptype-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
 .ptype-chip{padding:8px 3px;border:1.5px solid var(--gray2);border-radius:4px;background:none;cursor:pointer;text-align:center;font-size:11.5px;font-weight:600;transition:border-color .15s,background .15s,color .15s;color:var(--black);font-family:var(--font-sans)}
@@ -382,6 +387,9 @@ html.ed-locked #ptypeLabel{display:none}
 .wall-opt b{font-size:13px;margin-top:2px}
 .wall-opt small{display:block;font-size:11px;color:var(--mid);line-height:1.4}
 .wall-opt-price{font-size:12.5px;font-weight:700}
+.wall-opt.sold-out{cursor:not-allowed;opacity:.55}
+.wall-opt.sold-out:hover{border-color:var(--gray2);transform:none;box-shadow:none}
+.wall-soldout{display:inline-block;font-style:normal;font-size:11px;font-weight:700;color:#b4462f;margin-top:2px}
 .editor.ed-wall #sizeGrid,.editor.ed-wall #ptypeChips,.editor.ed-wall #ptypeLabel{display:none}
 .wall-size-note{font-size:12px;color:var(--mid);margin:-2px 0 16px;line-height:1.45}
 .wall-size-note[hidden]{display:none}

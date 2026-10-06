@@ -1,0 +1,30 @@
+{
+ "duration": 28.8,
+ "caps": [
+  {
+   "t": 0.3,
+   "es": "Elige 4 fotos de tu galería",
+   "en": "Pick 4 photos from your gallery"
+  },
+  {
+   "t": 8.23,
+   "es": "Las ves al momento, en 3D",
+   "en": "See them instantly, in 3D"
+  },
+  {
+   "t": 14.43,
+   "es": "Elige dónde colgarlas",
+   "en": "Pick where to hang them"
+  },
+  {
+   "t": 20.43,
+   "es": "Y la composición que más te guste",
+   "en": "And the layout you like best"
+  },
+  {
+   "t": 26.06,
+   "es": "Y por detrás, metal de verdad",
+   "en": "And on the back, real metal"
+  }
+ ]
+}

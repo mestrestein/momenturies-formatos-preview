@@ -46,9 +46,9 @@ button{font-family:inherit;cursor:pointer}
 
 /* escenario: la foto y los cuadros */
 .stage{position:relative;overflow:hidden;background:#e9e5df;touch-action:pan-y}
-.scene{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;overflow:hidden}
+.scene{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden}   /* sin will-change: con él el navegador pintaba la escena a tamaño 1 y la ampliaba (borrosa) */
 .scene img.bg{display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
-.frame{position:absolute;border-radius:2px;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease);transform:translateZ(0)}
+.frame{position:absolute;border-radius:2px;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
 /* Tarjeta blanca sólida, como el póster en blanco que ya se ve en el visor 3D
    (drawPlaceholder en editor.js): no una zona de "soltar archivo aquí". */
 .frame.empty{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.07) inset,0 2px 8px rgba(0,0,0,.08);
@@ -72,6 +72,9 @@ button{font-family:inherit;cursor:pointer}
 .frame.loading{opacity:.6}
 .stage-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(26,26,26,.82);color:#fff;font-size:12.5px;padding:8px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;transition:opacity .3s}
 .stage-hint.off{opacity:0}
+.zoom2d{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:5}
+.zoom2d button{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.92);box-shadow:0 2px 10px rgba(0,0,0,.14);font:500 22px/1 system-ui,sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zoom2d button:disabled{opacity:.4;cursor:default}
 .stage-badge{position:absolute;left:14px;top:12px;background:rgba(255,255,255,.88);color:var(--black);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 10px;border-radius:14px;font-weight:600;text-decoration:none;z-index:4}
 .stage-badge:hover{background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.12)}
 
@@ -115,6 +118,9 @@ button{font-family:inherit;cursor:pointer}
 .opt{border:1.5px solid var(--gray2);background:#fff;border-radius:12px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,transform .15s}
 .opt:hover{border-color:var(--light);transform:translateY(-1px)}
 .opt.active{border-color:var(--black);box-shadow:0 0 0 1px var(--black)}
+.opt.sold-out{opacity:.55;cursor:not-allowed}
+.opt.sold-out:hover{border-color:var(--gray2);transform:none}
+.opt .soldout{font-style:normal;font-size:11px;font-weight:700;color:#b4462f}
 .opt .svgbox{height:78px;display:flex;align-items:center;justify-content:center;background:var(--gray);border-radius:8px;padding:6px}
 .opt .svgbox svg{max-width:100%;max-height:100%}
 .opt b{font-size:13px}
@@ -155,6 +161,7 @@ button{font-family:inherit;cursor:pointer}
   <main class="stage" id="stage">
     <div class="scene" id="scene"><img class="bg" id="bg" alt=""></div>
     <a class="stage-badge" id="to3d" href="cuadro.html">Vista 2D · ver en 3D →</a>
+    <div class="zoom2d" id="zoom2d"><button type="button" id="zIn" aria-label="Acercar">+</button><button type="button" id="zOut" aria-label="Alejar">&minus;</button></div>
     <div class="stage-hint" id="hint">Toca un cuadro para poner tu foto</div>
     <div class="pop" id="pop">
       <button type="button" id="popChange">Cambiar foto</button>
@@ -204,120 +211,41 @@ button{font-family:inherit;cursor:pointer}
 <div class="toast" id="toast"></div>
 <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
 
-<script src="paredes.js?v=4bad334c"></script>
+<script src="paredes.js?v=2f8f144d"></script>
+<script src="entornos2d.js?v=6f1f574f"></script>
 <script>
 (function(){
 'use strict';
 const WALLS = window.MOMENTURIES_WALLS || [];
 const wallSVG = window.MOMENTURIES_wallSVG;
-const PRICE = { M:29.99, L:49.99, XL:69.99 };
 const eur = n => n.toFixed(2).replace('.', ',') + '€';
 const cm = n => String(n).replace('.', ',');
 
-/* Fondos: fotos de Futsides (mockup pics). Calibración a ojo; ajustar con ?calib=1 */
-const ROOMS = [
-  // Solo fondos con la pared de frente (sin perspectiva): así los cuadros se apoyan planos y no hay que deformar nada.
-  // Salones reales de Momenturies (fotos/entornos). Esas fotos llevan 1100 px de pared extendida arriba para el 3D;
-  // aquí se recorta con `crop` al encuadre de la landing. pxPerCm medido sobre sofá/lámpara/libros (±15%, son renders).
-  { id:'salon',        name:'Salón',        w:2400, h:2250, crop:{x:200,y:530,w:2000,h:1320}, pxPerCm:6.0, anchorX:1400, anchorY:1560, anchorMode:'bottom', minTop:640, maxBottom:1580, minLeft:260,  maxRight:1900, img:'fotos/entornos/salon.jpg',       thumb:'fotos/entornos/salon_thumb.jpg', group:'salon', orient:'h' },
-  { id:'salon-claro',  name:'Salón claro',  w:2400, h:2250, crop:{x:200,y:530,w:2000,h:1320}, pxPerCm:5.0, anchorX:1400, anchorY:1500, anchorMode:'bottom', minTop:640, maxBottom:1520, minLeft:300,  maxRight:1900, img:'fotos/entornos/salon-claro.jpg', thumb:'fotos/entornos/salon-claro_thumb.jpg', group:'salon-claro', orient:'h' },
-  { id:'aparador',     name:'Aparador',     w:2200, h:2271, crop:{x:200,y:530,w:1800,h:1341}, pxPerCm:9.5, anchorX:1100, anchorY:1620, anchorMode:'bottom', minTop:620, maxBottom:1640, minLeft:400,  maxRight:1760, img:'fotos/entornos/aparador.jpg',    thumb:'fotos/entornos/aparador_thumb.jpg', group:'aparador', orient:'h' },
-  // Fotos hechas a propósito (19-sep): traen `light` = mapa de luz de la pared (fotos/_build_entorno.py) que se aplica a los
-  // cuadros por canvas (litRender), con foto o vacíos. Sin relleno a los lados (se veía borroso); 700 px de pared extendida arriba, aquí se dejan 300. zoomMax 1.0 = en PC no se acerca más que "llenar el alto" (se ve el sillón entero).
-  { id:'salon-luz',    name:'Luz de tarde', w:2304, h:2236, crop:{x:0,y:400,w:2304,h:1836}, zoomMax:1.0, pxPerCm:9.75, anchorX:1050, anchorY:1492, anchorMode:'bottom', minTop:420, maxBottom:1500, minLeft:260,  maxRight:1875, img:'fotos/entornos/salon-luz.jpg',   thumb:'fotos/entornos/salon-luz_thumb.jpg', light:'fotos/entornos/salon-luz_light.jpg', group:'salon-luz', orient:'h' },
-  // Cocinas generadas por IA (23-sep-2026), calibradas a mano con la altura real de encimera
-  // de cocina (90 cm) como referencia: se mide en la propia foto la distancia en px entre el
-  // borde superior de la encimera y el suelo, y pxPerCm = esa distancia / 90. anchorY deja el
-  // borde inferior de la composicion a ~105 cm del suelo (encimera + margen, o altura de
-  // galeria si no hay mueble debajo). 6 escenas, cada una en horizontal (PC) y/o vertical (movil).
-  { id:'cocina-marfil', name:'Cocina marfil', w:1536, h:1024, pxPerCm:2.54, anchorX:1080, anchorY:467, anchorMode:'bottom', minTop:40, maxBottom:734, minLeft:760, maxRight:1400, img:'fotos/entornos/cocina-marfil.jpg', thumb:'fotos/entornos/cocina-marfil_thumb.jpg' , group:'cocina-marfil', orient:'h' },
-  { id:'cocina-marfil-isla', name:'Cocina marfil (isla)', w:941, h:1672, pxPerCm:4.65, anchorX:640, anchorY:552, anchorMode:'bottom', minTop:40, maxBottom:1040, minLeft:420, maxRight:860, img:'fotos/entornos/cocina-marfil-isla.jpg', thumb:'fotos/entornos/cocina-marfil-isla_thumb.jpg' , group:'cocina-marfil', orient:'v' },
-  { id:'cocina-roble-claro', name:'Cocina roble claro', w:1536, h:1024, pxPerCm:2.2, anchorX:980, anchorY:497, anchorMode:'bottom', minTop:40, maxBottom:728, minLeft:590, maxRight:1370, img:'fotos/entornos/cocina-roble-claro.jpg', thumb:'fotos/entornos/cocina-roble-claro_thumb.jpg' , group:'cocina-roble-claro', orient:'h' },
-  { id:'cocina-roble-claro-isla', name:'Cocina roble claro (isla)', w:941, h:1672, pxPerCm:3.0, anchorX:605, anchorY:830, anchorMode:'bottom', minTop:30, maxBottom:1145, minLeft:350, maxRight:860, img:'fotos/entornos/cocina-roble-claro-isla.jpg', thumb:'fotos/entornos/cocina-roble-claro-isla_thumb.jpg' , group:'cocina-roble-claro', orient:'v' },
-  { id:'cocina-marmol-negro', name:'Cocina mármol negro', w:1536, h:1024, pxPerCm:3.0, anchorX:895, anchorY:595, anchorMode:'bottom', minTop:30, maxBottom:910, minLeft:420, maxRight:1370, img:'fotos/entornos/cocina-marmol-negro.jpg', thumb:'fotos/entornos/cocina-marmol-negro_thumb.jpg' , group:'cocina-marmol-negro', orient:'h' },
-  { id:'cocina-mediterranea', name:'Cocina mediterránea', w:1536, h:1024, pxPerCm:3.74, anchorX:815, anchorY:504, anchorMode:'bottom', minTop:30, maxBottom:897, minLeft:280, maxRight:1350, img:'fotos/entornos/cocina-mediterranea.jpg', thumb:'fotos/entornos/cocina-mediterranea_thumb.jpg' , group:'cocina-mediterranea', orient:'h' },
-  { id:'cocina-mediterranea-fregadero', name:'Cocina mediterránea (fregadero)', w:941, h:1672, pxPerCm:4.44, anchorX:450, anchorY:874, anchorMode:'bottom', minTop:110, maxBottom:1340, minLeft:150, maxRight:750, img:'fotos/entornos/cocina-mediterranea-fregadero.jpg', thumb:'fotos/entornos/cocina-mediterranea-fregadero_thumb.jpg' , group:'cocina-mediterranea', orient:'v' },
-  { id:'cocina-retro', name:'Cocina retro', w:1536, h:1024, pxPerCm:2.47, anchorX:830, anchorY:553, anchorMode:'bottom', minTop:30, maxBottom:812, minLeft:410, maxRight:1250, img:'fotos/entornos/cocina-retro.jpg', thumb:'fotos/entornos/cocina-retro_thumb.jpg' , group:'cocina-retro', orient:'h' },
-  { id:'cocina-retro-rincon', name:'Cocina retro (rincón)', w:941, h:1672, pxPerCm:3.39, anchorX:555, anchorY:799, anchorMode:'bottom', minTop:30, maxBottom:1155, minLeft:330, maxRight:780, img:'fotos/entornos/cocina-retro-rincon.jpg', thumb:'fotos/entornos/cocina-retro-rincon_thumb.jpg' , group:'cocina-retro', orient:'v' },
-  { id:'cocina-country-verde', name:'Cocina country verde', w:1536, h:1024, pxPerCm:2.33, anchorX:765, anchorY:535, anchorMode:'bottom', minTop:30, maxBottom:780, minLeft:410, maxRight:1120, img:'fotos/entornos/cocina-country-verde.jpg', thumb:'fotos/entornos/cocina-country-verde_thumb.jpg' , group:'cocina-country-verde', orient:'h' },
-  { id:'cocina-country-verde-rincon', name:'Cocina country verde (rincón)', w:941, h:1672, pxPerCm:3.33, anchorX:495, anchorY:830, anchorMode:'bottom', minTop:50, maxBottom:1180, minLeft:230, maxRight:760, img:'fotos/entornos/cocina-country-verde-rincon.jpg', thumb:'fotos/entornos/cocina-country-verde-rincon_thumb.jpg' , group:'cocina-country-verde', orient:'v' },
-  // Aparadores, comedores y salones generados por IA (25-sep-2026), misma calibración a mano que las
-  // cocinas: altura real de un mueble de referencia (consola/aparador ~80cm, banco ~45cm, sofá ~85cm de
-  // respaldo) medida en la propia foto = pxPerCm; anchorY deja el borde inferior a ~105cm del suelo.
-  { id:'aparador-clasico', name:'Aparador clásico', w:1536, h:1024, pxPerCm:2.15, anchorX:830, anchorY:564, anchorMode:'bottom', minTop:30, maxBottom:790, minLeft:260, maxRight:1395, img:'fotos/entornos/aparador-clasico.jpg', thumb:'fotos/entornos/aparador-clasico_thumb.jpg', group:'aparador-clasico', orient:'h' },
-  { id:'aparador-clasico-vert', name:'Aparador clásico', w:941, h:1672, pxPerCm:2.5, anchorX:497, anchorY:950, anchorMode:'bottom', minTop:40, maxBottom:1200, minLeft:95, maxRight:900, img:'fotos/entornos/aparador-clasico-vert.jpg', thumb:'fotos/entornos/aparador-clasico-vert_thumb.jpg', group:'aparador-clasico', orient:'v' },
-  { id:'aparador-moderno', name:'Aparador moderno', w:1536, h:1024, pxPerCm:3.33, anchorX:915, anchorY:395, anchorMode:'bottom', minTop:30, maxBottom:745, minLeft:340, maxRight:1490, img:'fotos/entornos/aparador-moderno.jpg', thumb:'fotos/entornos/aparador-moderno_thumb.jpg', group:'aparador-moderno', orient:'h' },
-  { id:'aparador-moderno-vert', name:'Aparador moderno', w:941, h:1672, pxPerCm:3.0, anchorX:460, anchorY:925, anchorMode:'bottom', minTop:40, maxBottom:1225, minLeft:35, maxRight:900, img:'fotos/entornos/aparador-moderno-vert.jpg', thumb:'fotos/entornos/aparador-moderno-vert_thumb.jpg', group:'aparador-moderno', orient:'v' },
-  { id:'aparador-banco', name:'Aparador con banco', w:1536, h:1024, pxPerCm:4.0, anchorX:830, anchorY:378, anchorMode:'bottom', minTop:30, maxBottom:798, minLeft:280, maxRight:1380, img:'fotos/entornos/aparador-banco.jpg', thumb:'fotos/entornos/aparador-banco_thumb.jpg', group:'aparador-banco', orient:'h' },
-  { id:'aparador-banco-vert', name:'Aparador con banco', w:941, h:1672, pxPerCm:4.2, anchorX:480, anchorY:784, anchorMode:'bottom', minTop:40, maxBottom:1225, minLeft:100, maxRight:780, img:'fotos/entornos/aparador-banco-vert.jpg', thumb:'fotos/entornos/aparador-banco-vert_thumb.jpg', group:'aparador-banco', orient:'v' },
-  { id:'aparador-cestas', name:'Aparador con cestas', w:1536, h:1024, pxPerCm:2.88, anchorX:792, anchorY:548, anchorMode:'bottom', minTop:30, maxBottom:850, minLeft:95, maxRight:1490, img:'fotos/entornos/aparador-cestas.jpg', thumb:'fotos/entornos/aparador-cestas_thumb.jpg', group:'aparador-cestas', orient:'h' },
-  { id:'aparador-cestas-vert', name:'Aparador con cestas', w:941, h:1672, pxPerCm:3.82, anchorX:497, anchorY:824, anchorMode:'bottom', minTop:40, maxBottom:1225, minLeft:95, maxRight:900, img:'fotos/entornos/aparador-cestas-vert.jpg', thumb:'fotos/entornos/aparador-cestas-vert_thumb.jpg', group:'aparador-cestas', orient:'v' },
-  { id:'aparador-elegante', name:'Aparador elegante', w:1536, h:1024, pxPerCm:3.38, anchorX:767, anchorY:540, anchorMode:'bottom', minTop:30, maxBottom:895, minLeft:95, maxRight:1440, img:'fotos/entornos/aparador-elegante.jpg', thumb:'fotos/entornos/aparador-elegante_thumb.jpg', group:'aparador-elegante', orient:'h' },
-  { id:'aparador-elegante-vert', name:'Aparador elegante', w:941, h:1672, pxPerCm:4.02, anchorX:470, anchorY:908, anchorMode:'bottom', minTop:40, maxBottom:1330, minLeft:40, maxRight:900, img:'fotos/entornos/aparador-elegante-vert.jpg', thumb:'fotos/entornos/aparador-elegante-vert_thumb.jpg', group:'aparador-elegante', orient:'v' },
-  { id:'aparador-lujo', name:'Aparador contemporáneo', w:1536, h:1024, pxPerCm:3.12, anchorX:795, anchorY:572, anchorMode:'bottom', minTop:30, maxBottom:900, minLeft:90, maxRight:1500, img:'fotos/entornos/aparador-lujo.jpg', thumb:'fotos/entornos/aparador-lujo_thumb.jpg', group:'aparador-lujo', orient:'h' },
-  { id:'aparador-lujo-vert', name:'Aparador contemporáneo', w:941, h:1672, pxPerCm:4.35, anchorX:470, anchorY:943, anchorMode:'bottom', minTop:40, maxBottom:1400, minLeft:20, maxRight:920, img:'fotos/entornos/aparador-lujo-vert.jpg', thumb:'fotos/entornos/aparador-lujo-vert_thumb.jpg', group:'aparador-lujo', orient:'v' },
-  { id:'comedor-rustico', name:'Comedor rústico', w:1536, h:1024, pxPerCm:2.94, anchorX:775, anchorY:541, anchorMode:'bottom', minTop:30, maxBottom:850, minLeft:100, maxRight:1450, img:'fotos/entornos/comedor-rustico.jpg', thumb:'fotos/entornos/comedor-rustico_thumb.jpg', group:'comedor-rustico', orient:'h' },
-  { id:'comedor-rustico-vert', name:'Comedor rústico', w:941, h:1672, pxPerCm:5.18, anchorX:470, anchorY:856, anchorMode:'bottom', minTop:40, maxBottom:1400, minLeft:40, maxRight:900, img:'fotos/entornos/comedor-rustico-vert.jpg', thumb:'fotos/entornos/comedor-rustico-vert_thumb.jpg', group:'comedor-rustico', orient:'v' },
-  { id:'comedor-midcentury', name:'Comedor midcentury', w:1536, h:1024, pxPerCm:3.49, anchorX:770, anchorY:434, anchorMode:'bottom', minTop:30, maxBottom:800, minLeft:220, maxRight:1320, img:'fotos/entornos/comedor-midcentury.jpg', thumb:'fotos/entornos/comedor-midcentury_thumb.jpg', group:'comedor-midcentury', orient:'h' },
-  { id:'comedor-midcentury-vert', name:'Comedor midcentury', w:941, h:1672, pxPerCm:3.8, anchorX:470, anchorY:791, anchorMode:'bottom', minTop:40, maxBottom:1190, minLeft:30, maxRight:910, img:'fotos/entornos/comedor-midcentury-vert.jpg', thumb:'fotos/entornos/comedor-midcentury-vert_thumb.jpg', group:'comedor-midcentury', orient:'v' },
-  { id:'comedor-moderno', name:'Comedor moderno', w:1536, h:1024, pxPerCm:2.1, anchorX:770, anchorY:579, anchorMode:'bottom', minTop:30, maxBottom:800, minLeft:90, maxRight:1450, img:'fotos/entornos/comedor-moderno.jpg', thumb:'fotos/entornos/comedor-moderno_thumb.jpg', group:'comedor-moderno', orient:'h' },
-  { id:'comedor-moderno-vert', name:'Comedor moderno', w:941, h:1672, pxPerCm:2.625, anchorX:470, anchorY:854, anchorMode:'bottom', minTop:40, maxBottom:1130, minLeft:20, maxRight:920, img:'fotos/entornos/comedor-moderno-vert.jpg', thumb:'fotos/entornos/comedor-moderno-vert_thumb.jpg', group:'comedor-moderno', orient:'v' },
-  { id:'salon-cuero-vert', name:'Salón cuero', w:941, h:1672, pxPerCm:7.24, anchorX:475, anchorY:680, anchorMode:'bottom', minTop:40, maxBottom:1440, minLeft:130, maxRight:820, img:'fotos/entornos/salon-cuero-vert.jpg', thumb:'fotos/entornos/salon-cuero-vert_thumb.jpg', group:'salon-cuero', orient:'v' },
-  { id:'salon-lino', name:'Salón lino', w:1536, h:1024, pxPerCm:3.65, anchorX:800, anchorY:497, anchorMode:'bottom', minTop:30, maxBottom:880, minLeft:230, maxRight:1370, img:'fotos/entornos/salon-lino.jpg', thumb:'fotos/entornos/salon-lino_thumb.jpg', group:'salon-lino', orient:'h' },
-  // Escaleras y escritorios generados por IA (25-sep-2026, segunda tanda), misma calibración a mano:
-  // altura real de un mueble de referencia (banco ~45cm, consola ~38-80cm, escritorio ~75cm) medida
-  // sobre una rejilla en la propia foto = pxPerCm; anchorY deja el borde inferior a ~105-110cm del suelo.
-  { id:'escalera-rustica', name:'Escalera rústica', w:1536, h:1024, pxPerCm:4.49, anchorX:835, anchorY:429, anchorMode:'bottom', minTop:30, maxBottom:900, minLeft:490, maxRight:1180, img:'fotos/entornos/escalera-rustica.jpg', thumb:'fotos/entornos/escalera-rustica_thumb.jpg', group:'escalera-rustica', orient:'h' },
-  { id:'escalera-rustica-vert', name:'Escalera rústica', w:941, h:1672, pxPerCm:5.67, anchorX:540, anchorY:695, anchorMode:'bottom', minTop:40, maxBottom:1290, minLeft:290, maxRight:790, img:'fotos/entornos/escalera-rustica-vert.jpg', thumb:'fotos/entornos/escalera-rustica-vert_thumb.jpg', group:'escalera-rustica', orient:'v' },
-  { id:'escalera-rustica-baranda', name:'Escalera rústica con barandilla', w:1536, h:1024, pxPerCm:2.22, anchorX:545, anchorY:567, anchorMode:'bottom', minTop:30, maxBottom:800, minLeft:220, maxRight:870, img:'fotos/entornos/escalera-rustica-baranda.jpg', thumb:'fotos/entornos/escalera-rustica-baranda_thumb.jpg', group:'escalera-rustica-baranda', orient:'h' },
-  { id:'escalera-rustica-baranda-vert', name:'Escalera rústica con barandilla', w:941, h:1672, pxPerCm:5.33, anchorX:425, anchorY:795, anchorMode:'bottom', minTop:40, maxBottom:1355, minLeft:220, maxRight:630, img:'fotos/entornos/escalera-rustica-baranda-vert.jpg', thumb:'fotos/entornos/escalera-rustica-baranda-vert_thumb.jpg', group:'escalera-rustica-baranda', orient:'v' },
-  { id:'escalera-clasica', name:'Escalera clásica', w:1536, h:1024, pxPerCm:3.44, anchorX:855, anchorY:459, anchorMode:'bottom', minTop:30, maxBottom:820, minLeft:530, maxRight:1180, img:'fotos/entornos/escalera-clasica.jpg', thumb:'fotos/entornos/escalera-clasica_thumb.jpg', group:'escalera-clasica', orient:'h' },
-  { id:'escalera-clasica-vert', name:'Escalera clásica', w:941, h:1672, pxPerCm:4.67, anchorX:350, anchorY:920, anchorMode:'bottom', minTop:40, maxBottom:1410, minLeft:50, maxRight:650, img:'fotos/entornos/escalera-clasica-vert.jpg', thumb:'fotos/entornos/escalera-clasica-vert_thumb.jpg', group:'escalera-clasica', orient:'v' },
-  { id:'escalera-clasica-elegante', name:'Escalera clásica elegante', w:1536, h:1024, pxPerCm:3.67, anchorX:550, anchorY:470, anchorMode:'bottom', minTop:30, maxBottom:855, minLeft:150, maxRight:950, img:'fotos/entornos/escalera-clasica-elegante.jpg', thumb:'fotos/entornos/escalera-clasica-elegante_thumb.jpg', group:'escalera-clasica-elegante', orient:'h' },
-  { id:'escalera-clasica-elegante-vert', name:'Escalera clásica elegante', w:941, h:1672, pxPerCm:4.0, anchorX:400, anchorY:910, anchorMode:'bottom', minTop:40, maxBottom:1330, minLeft:150, maxRight:650, img:'fotos/entornos/escalera-clasica-elegante-vert.jpg', thumb:'fotos/entornos/escalera-clasica-elegante-vert_thumb.jpg', group:'escalera-clasica-elegante', orient:'v' },
-  { id:'escalera-nordica-tv', name:'Escalera nórdica', w:1536, h:1024, pxPerCm:4.82, anchorX:800, anchorY:399, anchorMode:'bottom', minTop:30, maxBottom:905, minLeft:300, maxRight:1300, img:'fotos/entornos/escalera-nordica-tv.jpg', thumb:'fotos/entornos/escalera-nordica-tv_thumb.jpg', group:'escalera-nordica-tv', orient:'h' },
-  { id:'escalera-nordica-tv-vert', name:'Escalera nórdica', w:941, h:1672, pxPerCm:5.66, anchorX:545, anchorY:706, anchorMode:'bottom', minTop:40, maxBottom:1300, minLeft:190, maxRight:900, img:'fotos/entornos/escalera-nordica-tv-vert.jpg', thumb:'fotos/entornos/escalera-nordica-tv-vert_thumb.jpg', group:'escalera-nordica-tv', orient:'v' },
-  { id:'escalera-nordica-consola', name:'Escalera nórdica con consola', w:1536, h:1024, pxPerCm:2.64, anchorX:815, anchorY:521, anchorMode:'bottom', minTop:30, maxBottom:798, minLeft:250, maxRight:1380, img:'fotos/entornos/escalera-nordica-consola.jpg', thumb:'fotos/entornos/escalera-nordica-consola_thumb.jpg', group:'escalera-nordica-consola', orient:'h' },
-  { id:'escalera-nordica-consola-vert', name:'Escalera nórdica con consola', w:941, h:1672, pxPerCm:3.87, anchorX:545, anchorY:774, anchorMode:'bottom', minTop:40, maxBottom:1180, minLeft:220, maxRight:870, img:'fotos/entornos/escalera-nordica-consola-vert.jpg', thumb:'fotos/entornos/escalera-nordica-consola-vert_thumb.jpg', group:'escalera-nordica-consola', orient:'v' },
-  { id:'escalera-moderna-negra', name:'Escalera moderna', w:1536, h:1024, pxPerCm:3.25, anchorX:1040, anchorY:484, anchorMode:'bottom', minTop:30, maxBottom:825, minLeft:590, maxRight:1490, img:'fotos/entornos/escalera-moderna-negra.jpg', thumb:'fotos/entornos/escalera-moderna-negra_thumb.jpg', group:'escalera-moderna-negra', orient:'h' },
-  { id:'escalera-moderna-negra-vert', name:'Escalera moderna', w:941, h:1672, pxPerCm:5.63, anchorX:465, anchorY:849, anchorMode:'bottom', minTop:40, maxBottom:1440, minLeft:100, maxRight:830, img:'fotos/entornos/escalera-moderna-negra-vert.jpg', thumb:'fotos/entornos/escalera-moderna-negra-vert_thumb.jpg', group:'escalera-moderna-negra', orient:'v' },
-  { id:'despacho-gaming', name:'Escritorio gaming', w:941, h:1672, pxPerCm:4.6, anchorX:500, anchorY:680, anchorMode:'bottom', minTop:40, maxBottom:1300, minLeft:100, maxRight:900, img:'fotos/entornos/despacho-gaming.jpg', thumb:'fotos/entornos/despacho-gaming_thumb.jpg', group:'despacho-gaming', orient:'v' },
-  { id:'despacho-clasico', name:'Escritorio clásico', w:941, h:1672, pxPerCm:5.87, anchorX:440, anchorY:904, anchorMode:'bottom', minTop:40, maxBottom:1520, minLeft:100, maxRight:780, img:'fotos/entornos/despacho-clasico.jpg', thumb:'fotos/entornos/despacho-clasico_thumb.jpg', group:'despacho-clasico', orient:'v' },
-  { id:'despacho-nordico2', name:'Escritorio nórdico', w:941, h:1672, pxPerCm:5.67, anchorX:485, anchorY:800, anchorMode:'bottom', minTop:40, maxBottom:1500, minLeft:100, maxRight:870, img:'fotos/entornos/despacho-nordico2.jpg', thumb:'fotos/entornos/despacho-nordico2_thumb.jpg', group:'despacho-nordico2', orient:'v' },
-  { id:'despacho-nogal', name:'Escritorio de nogal', w:941, h:1672, pxPerCm:6.67, anchorX:480, anchorY:750, anchorMode:'bottom', minTop:40, maxBottom:1490, minLeft:50, maxRight:900, img:'fotos/entornos/despacho-nogal.jpg', thumb:'fotos/entornos/despacho-nogal_thumb.jpg', group:'despacho-nogal', orient:'v' },
-  // Terrazas y dormitorios generados por IA (25-sep-2026, tercera tanda), misma calibración a mano:
-  // altura real de un mueble de referencia (respaldo de sofá/silla ~80-85cm, mesita ~50cm) medida
-  // sobre una rejilla en la propia foto = pxPerCm; anchorY deja el borde inferior a ~105cm del suelo.
-  { id:'terraza-urbana2', name:'Terraza urbana con vistas', w:1536, h:1024, pxPerCm:3.375, anchorX:825, anchorY:471, anchorMode:'bottom', minTop:30, maxBottom:825, minLeft:470, maxRight:1180, img:'fotos/entornos/terraza-urbana2.jpg', thumb:'fotos/entornos/terraza-urbana2_thumb.jpg', group:'terraza-urbana2', orient:'h' },
-  { id:'terraza-mediterranea', name:'Terraza mediterránea', w:1536, h:1024, pxPerCm:3.18, anchorX:830, anchorY:571, anchorMode:'bottom', minTop:30, maxBottom:905, minLeft:330, maxRight:1330, img:'fotos/entornos/terraza-mediterranea.jpg', thumb:'fotos/entornos/terraza-mediterranea_thumb.jpg', group:'terraza-mediterranea', orient:'h' },
-  { id:'terraza-parisina', name:'Terraza acristalada', w:1536, h:1024, pxPerCm:2.65, anchorX:795, anchorY:537, anchorMode:'bottom', minTop:30, maxBottom:815, minLeft:350, maxRight:1240, img:'fotos/entornos/terraza-parisina.jpg', thumb:'fotos/entornos/terraza-parisina_thumb.jpg', group:'terraza-parisina', orient:'h' },
-  { id:'terraza-atardecer', name:'Terraza al atardecer', w:1536, h:1024, pxPerCm:2.3, anchorX:750, anchorY:663, anchorMode:'bottom', minTop:30, maxBottom:905, minLeft:320, maxRight:1180, img:'fotos/entornos/terraza-atardecer.jpg', thumb:'fotos/entornos/terraza-atardecer_thumb.jpg', group:'terraza-atardecer', orient:'h' },
-  { id:'dormitorio-boucle', name:'Dormitorio bouclé', w:1536, h:1024, pxPerCm:3.6, anchorX:760, anchorY:487, anchorMode:'bottom', minTop:30, maxBottom:865, minLeft:420, maxRight:1100, img:'fotos/entornos/dormitorio-boucle.jpg', thumb:'fotos/entornos/dormitorio-boucle_thumb.jpg', group:'dormitorio-boucle', orient:'h' },
-  { id:'dormitorio-boucle-vert', name:'Dormitorio bouclé', w:941, h:1672, pxPerCm:3.0, anchorX:470, anchorY:590, anchorMode:'bottom', minTop:40, maxBottom:905, minLeft:40, maxRight:900, img:'fotos/entornos/dormitorio-boucle-vert.jpg', thumb:'fotos/entornos/dormitorio-boucle-vert_thumb.jpg', group:'dormitorio-boucle', orient:'v' },
-  { id:'dormitorio-clasico2', name:'Dormitorio clásico', w:1536, h:1024, pxPerCm:3.1, anchorX:615, anchorY:464, anchorMode:'bottom', minTop:30, maxBottom:790, minLeft:150, maxRight:1080, img:'fotos/entornos/dormitorio-clasico2.jpg', thumb:'fotos/entornos/dormitorio-clasico2_thumb.jpg', group:'dormitorio-clasico2', orient:'h' },
-  { id:'dormitorio-clasico2-vert', name:'Dormitorio clásico', w:941, h:1672, pxPerCm:2.64, anchorX:470, anchorY:813, anchorMode:'bottom', minTop:40, maxBottom:1090, minLeft:40, maxRight:900, img:'fotos/entornos/dormitorio-clasico2-vert.jpg', thumb:'fotos/entornos/dormitorio-clasico2-vert_thumb.jpg', group:'dormitorio-clasico2', orient:'v' },
-  { id:'dormitorio-mediterraneo', name:'Dormitorio mediterráneo', w:1536, h:1024, pxPerCm:3.5, anchorX:750, anchorY:457, anchorMode:'bottom', minTop:30, maxBottom:825, minLeft:420, maxRight:1080, img:'fotos/entornos/dormitorio-mediterraneo.jpg', thumb:'fotos/entornos/dormitorio-mediterraneo_thumb.jpg', group:'dormitorio-mediterraneo', orient:'h' },
-  { id:'dormitorio-mediterraneo-vert', name:'Dormitorio mediterráneo', w:941, h:1672, pxPerCm:3.2, anchorX:470, anchorY:639, anchorMode:'bottom', minTop:40, maxBottom:975, minLeft:40, maxRight:900, img:'fotos/entornos/dormitorio-mediterraneo-vert.jpg', thumb:'fotos/entornos/dormitorio-mediterraneo-vert_thumb.jpg', group:'dormitorio-mediterraneo', orient:'v' },
-  { id:'dormitorio-oscuro', name:'Dormitorio oscuro', w:1536, h:1024, pxPerCm:3.28, anchorX:770, anchorY:468, anchorMode:'bottom', minTop:30, maxBottom:812, minLeft:420, maxRight:1120, img:'fotos/entornos/dormitorio-oscuro.jpg', thumb:'fotos/entornos/dormitorio-oscuro_thumb.jpg', group:'dormitorio-oscuro', orient:'h' },
-  { id:'dormitorio-oscuro-vert', name:'Dormitorio oscuro', w:941, h:1672, pxPerCm:3.5, anchorX:470, anchorY:597, anchorMode:'bottom', minTop:40, maxBottom:965, minLeft:30, maxRight:910, img:'fotos/entornos/dormitorio-oscuro-vert.jpg', thumb:'fotos/entornos/dormitorio-oscuro-vert_thumb.jpg', group:'dormitorio-oscuro', orient:'v' },
-  // Fondos de Futsides (mockup pics), todos frontales. Pared oscura: balón (22 cm) y libros dan ~7 px/cm.
-  { id:'pared-oscura', name:'Pared oscura', w:1448, h:1086, pxPerCm:7.0, anchorX:700, anchorY:430, anchorMode:'center', minTop:40, maxBottom:950, minLeft:320, maxRight:1075 },
-  // Paredes lisas: rodapié (~8 cm) y lamas del suelo junto a la pared (~15 cm) dan ~6 px/cm.
-  { id:'pared-beige',  name:'Pared beige',  w:1254, h:1254, pxPerCm:6.0, anchorX:627, anchorY:440, anchorMode:'center', minTop:50, maxBottom:920 },
-  { id:'pared-blanca', name:'Pared blanca', w:1254, h:1254, pxPerCm:6.0, anchorX:627, anchorY:440, anchorMode:'center', minTop:50, maxBottom:920 },
-  { id:'pared-gris',   name:'Pared gris',   w:1254, h:1254, pxPerCm:6.0, anchorX:627, anchorY:440, anchorMode:'center', minTop:50, maxBottom:920 },
-];
+/* Fondos y calibración: entornos2d.js (compartido con paredes.html). Copia propia porque abajo
+   se pasan a coordenadas del recorte y no hay que tocar el original. */
+const ROOMS = (window.MOMENTURIES_ROOMS_2D || []).map(r => Object.assign({}, r));
 ROOMS.forEach(r => {
-  if(!r.img){ r.img = 'fotos/fondos/' + r.id + '.webp'; r.thumb = 'fotos/fondos/' + r.id + '_thumb.webp'; }
   // con recorte: todo pasa a coordenadas del recorte (la <img> se desplaza -ox/-oy dentro de la escena)
   r.iw = r.w; r.ih = r.h; r.ox = 0; r.oy = 0;
   if(r.minLeft == null) r.minLeft = 20; if(r.maxRight == null) r.maxRight = r.w - 20;
   if(r.crop){ r.ox = r.crop.x; r.oy = r.crop.y; r.w = r.crop.w; r.h = r.crop.h; r.anchorX -= r.ox; r.anchorY -= r.oy; r.minTop -= r.oy; r.maxBottom -= r.oy; r.minLeft -= r.ox; r.maxRight -= r.ox; }
+  // pared libre (entornos2d.js): sin ella, la de siempre entre los topes
+  r.free = r.free ? [r.free[0] - r.ox, r.free[1] - r.oy, r.free[2] - r.ox, r.free[3] - r.oy] : [r.minLeft, r.minTop, r.maxRight, r.maxBottom];
 });
 
 const qs = new URLSearchParams(location.search);
-let WALL = WALLS.find(w => w.id === (qs.get('pared') || 'P01')) || WALLS[0];
+/* soldOut lo pone paredes/_build_paredes.py: el conjunto lleva alguna talla sin existencias.
+   Si la URL pide uno agotado se abre el primero que sí se pueda pedir. */
+const WALLS_OK = WALLS.filter(w => !w.soldOut);
+let WALL = WALLS_OK.find(w => w.id === (qs.get('pared') || 'P01')) || WALLS_OK[0] || WALLS[0];
 let ROOM = ROOMS.find(r => r.id === qs.get('entorno')) || ROOMS[0];
+/* las tarjetas de paredes.html enlazan la foto horizontal; en el móvil se abre su pareja vertical
+   (mismo `group`) si la hay, y al revés en PC, como hace roomsToShow() en el selector */
+{ const want = window.innerWidth <= 720 ? 'v' : 'h';
+  if(ROOM.group && ROOM.orient && ROOM.orient !== want){
+    const twin = ROOMS.find(r => r.group === ROOM.group && r.orient === want);
+    if(twin) ROOM = twin;
+  } }
 let SLOTS = [];            // por hueco: {url, file} o null (se conservan en orden al cambiar de pared)
 let pickIdx = -1;          // hueco al que va la próxima foto (-1 = el primero libre)
 let focusIdx = -1;         // hueco con el menú abierto
@@ -326,20 +254,35 @@ const stage = document.getElementById('stage'), scene = document.getElementById(
 const to3d = document.getElementById('to3d');   // salto a la vista 3D (habitación dibujada) con la misma composición
 function sync3dLink(){ if(to3d) to3d.href = 'cuadro.html?pared=' + WALL.id + '&entorno=salon-sofa'; }
 const pop = document.getElementById('pop'), fileInput = document.getElementById('fileInput');
-let scale = 1, offX = 0, offY = 0;
+let scale = 1, offX = 0, offY = 0, userZoom = 1; const fitInfo = { atMin:false, minZoom:1 };
 
 /* ── geometría: dónde cae la composición dentro de la foto (px de la foto) ── */
-function compRect(){
-  const ppc = ROOM.pxPerCm, W = WALL.width * ppc, H = WALL.height * ppc;
-  let top = ROOM.anchorMode === 'bottom' ? ROOM.anchorY - H : ROOM.anchorY - H / 2;
-  // que no se salga de la pared: primero respeta el tope de abajo, luego el de arriba
-  if(top + H > ROOM.maxBottom) top = ROOM.maxBottom - H;
-  if(top < ROOM.minTop) top = ROOM.minTop;
-  // en horizontal, entre los muebles (minLeft/maxRight); si no cabe, centrada en el hueco
-  let left = ROOM.anchorX - W / 2;
-  if(W > ROOM.maxRight - ROOM.minLeft) left = (ROOM.minLeft + ROOM.maxRight - W) / 2;
-  else left = Math.max(ROOM.minLeft, Math.min(ROOM.maxRight - W, left));
+/* 2-oct-2026: la composición va SIEMPRE dentro de la pared libre de la foto (ROOM.free: la zona lisa
+   sin plantas, muebles, lámparas ni escaleras). Se pone a la altura de siempre (anchorY) y centrada
+   sobre el mueble (anchorX), y se mete dentro de la pared libre si se sale. */
+function compRect(w, room){
+  w = w || WALL; room = room || ROOM;
+  const ppc = room.pxPerCm, W = w.width * ppc, H = w.height * ppc, [fx0, fy0, fx1, fy1] = room.free;
+  let top = room.anchorMode === 'bottom' ? room.anchorY - H : room.anchorY - H / 2;
+  top = Math.max(fy0, Math.min(fy1 - H, top));
+  let left = Math.max(fx0, Math.min(fx1 - W, room.anchorX - W / 2));
+  if(W > fx1 - fx0) left = (fx0 + fx1 - W) / 2;
+  if(H > fy1 - fy0) top = (fy0 + fy1 - H) / 2;
   return { left, top, W, H };
+}
+/* ¿cabe esta composición en la pared libre de esta foto? */
+function fitsRoom(w, room){ const f = room.free, p = room.pxPerCm; return w.width * p <= f[2] - f[0] && w.height * p <= f[3] - f[1]; }
+/* la foto que se enseña de un entorno en esta pantalla (la vertical en el móvil, la horizontal en PC) */
+function roomFor(r){ const want = window.innerWidth <= 720 ? 'v' : 'h';
+  return (r.group && r.orient !== want && ROOMS.find(x => x.group === r.group && x.orient === want)) || r; }
+/* si la composición no cabe en el entorno puesto, el primero (de los que se enseñan) en el que sí */
+function ensureFits(silent){
+  if(fitsRoom(WALL, ROOM)) return false;
+  const alt = roomsToShow().map(roomFor).find(r => fitsRoom(WALL, r));
+  if(!alt) return false;
+  const from = ROOM.name; ROOM = alt;
+  if(!silent) toast('«' + WALL.name + '» no cabe en ' + from + ': te la enseñamos en ' + alt.name);
+  return true;
 }
 
 /* ── encuadre: la foto llena el alto del escenario; en horizontal se centra en la composición ── */
@@ -349,19 +292,38 @@ function fit(){
   const r = compRect();
   // escala: llenar el alto; en pantallas estrechas se acerca a la pared (patrón Mixtiles)
   // para que la composición ocupe ~78% del ancho, sin pasar del tamaño real de la foto
-  const narrow = sw < 700, target = narrow ? 0.78 : 0.45;
-  const fill = sh / ROOM.h, zoom = target * sw / r.W;
-  scale = Math.min(narrow ? 1 : fill * (ROOM.zoomMax || 1.35), Math.max(fill, zoom));
-  if((r.W + 40) * scale > sw) scale = sw / (r.W + 40);
+  // 2-oct-2026: la foto tapa SIEMPRE el escenario entero (antes, en PC, solo llenaba el alto y
+  // quedaban franjas lisas a los lados), y se puede acercar hasta 1,1 px de pantalla por px de
+  // foto: con la escala real recalibrada los conjuntos pequeños se perdían en la pared.
+  /* la composición ocupa al menos ~30% del ancho en PC (55% en móvil): con una pequeña (3 cuadros de
+     10×15 = 36 cm) la vista se acerca a la pared en vez de dejarla perdida encima del sofá. Su tamaño
+     respecto a los muebles no cambia: lo que cambia es lo cerca que se mira. */
+  const narrow = sw < 700, target = narrow ? 0.45 : 0.22;
+  const cover = Math.max(sh / ROOM.h, sw / ROOM.w), zoom = target * sw / r.W;
+  // de entrada, como mucho 2× la cobertura (y el centro va 35 cm por debajo): siempre se ve el mueble
+  const cap = Math.max(cover, Math.min(2.0, cover * (ROOM.zoomMax || 2.0)));
+  scale = Math.min(cap, Math.max(cover, zoom));
+  // acercar / alejar del usuario (botones, rueda, pellizco): multiplica el encuadre de entrada
+  const base = scale;
+  scale = Math.max(cover, Math.min(cover * 4, base * userZoom));
+  fitInfo.atMin = scale <= cover * 1.001; fitInfo.minZoom = cover / base;
+  // si la composición no cabe a lo ancho, se aleja lo justo (16 px de aire): antes eran 40 y en el
+  // móvil, con fotos casi cuadradas, eso bastaba para que la foto dejara de tapar el escenario
+  if((r.W + 16) * scale > sw) scale = sw / (r.W + 16);
   const imgW = ROOM.w * scale, imgH = ROOM.h * scale;
   // centrado horizontal en la composición, limitado a los bordes de la foto
   const cx = (r.left + r.W / 2) * scale;
   offX = imgW <= sw ? (sw - imgW) / 2 : Math.max(sw - imgW, Math.min(0, sw / 2 - cx));
-  // el punto vertical que se centra no es el centro geométrico de la composición, sino un
-  // poco más abajo (74% hacia el borde inferior): así entra algo de lo que hay debajo
-  // (encimera, suelo, mueble) en vez de dejar casi todo el aire por arriba y nada por abajo.
-  const cy = (r.top + r.H * 0.74) * scale;
+  // centro vertical: algo por debajo de la composición (35 cm), para que entre el mueble de debajo
+  const cy = (r.top + r.H * 0.5 + 35 * ROOM.pxPerCm / Math.max(1, userZoom)) * scale;
   offY = imgH <= sh ? (sh - imgH) / 2 : Math.max(sh - imgH, Math.min(0, sh / 2 - cy));
+  // pero la composición tiene que verse entera (con una alta, el 74% la sacaba por arriba)
+  if(imgH > sh){
+    const ct = r.top * scale, cb = (r.top + r.H) * scale;
+    offY = Math.min(offY, sh - 8 - cb);     // que no se salga por abajo…
+    offY = Math.max(offY, 8 - ct);          // …ni por arriba (si no cabe entera, manda que se vea el borde de arriba)
+    offY = Math.max(sh - imgH, Math.min(0, offY));
+  }
   scene.style.transform = 'translate(' + offX.toFixed(1) + 'px,' + offY.toFixed(1) + 'px) scale(' + scale.toFixed(5) + ')';
   bg.style.width = ROOM.iw + 'px'; bg.style.height = ROOM.ih + 'px';
   bg.style.marginLeft = -ROOM.ox + 'px'; bg.style.marginTop = -ROOM.oy + 'px';
@@ -385,7 +347,7 @@ function loadLight(room, cb){
   im.onload = () => {
     if(LIGHT.id !== room.id) return;
     const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
-    const x = c.getContext('2d', { willReadFrequently:true }); x.drawImage(im, 0, 0);
+    const x = c.getContext('2d', { willReadFrequently:true }); x.imageSmoothingQuality = 'high'; x.drawImage(im, 0, 0);
     try{ LIGHT.data = x.getImageData(0, 0, c.width, c.height).data; LIGHT.w = c.width; LIGHT.h = c.height; }catch(e){ LIGHT.data = null; }
     cb && cb();
   };
@@ -396,9 +358,12 @@ function lightReady(){ return !!(ROOM.light && LIGHT.id === ROOM.id && LIGHT.dat
 function litRender(i, img){
   const pc = WALL.pieces[i], r = compRect(), ppc = ROOM.pxPerCm;
   const fx = ROOM.ox + r.left + pc.x * ppc, fy = ROOM.oy + r.top + pc.y * ppc, fw = pc.w * ppc, fh = pc.h * ppc;   // px de la foto completa
-  const W = Math.min(1200, Math.round(fw * 1.6)), H = Math.max(1, Math.round(W * fh / fw));
+  /* a la resolución con la que se VE en pantalla (escala de la escena × densidad de píxeles), no a la de
+     la foto de fondo: antes salía de ~90 px de ancho y las fotos del cliente se veían borrosas */
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  const W = Math.max(img ? 600 : 240, Math.min(1800, Math.round(fw * scale * dpr * 1.25))), H = Math.max(1, Math.round(W * fh / fw));
   const c = document.createElement('canvas'); c.width = W; c.height = H;
-  const x = c.getContext('2d', { willReadFrequently:true });
+  const x = c.getContext('2d', { willReadFrequently:true }); x.imageSmoothingQuality = 'high';
   if(img){
     const ar = img.naturalWidth / img.naturalHeight, t = W / H;
     let sw = img.naturalWidth, sh = img.naturalHeight;
@@ -421,7 +386,7 @@ function litRender(i, img){
   x.putImageData(id, 0, 0);
   return c.toDataURL('image/jpeg', img ? 0.9 : 0.82);
 }
-function litKey(i){ return ROOM.id + '|' + WALL.id + '|' + i; }
+function litKey(i){ return ROOM.id + '|' + WALL.id + '|' + i + '|' + Math.round(scale * 100); }
 
 
 /* Tarjeta del póster vacío: el mismo icono de cámara que dibuja editor.js en el visor 3D
@@ -560,7 +525,9 @@ document.getElementById('btnAdd').addEventListener('click', () => { pickIdx = -1
 stage.addEventListener('drop', e => { e.preventDefault(); pickIdx = -1; ingest(e.dataTransfer && e.dataTransfer.files); });
 
 /* ── estado / precio ── */
-function wallGross(w){ return w.pieces.reduce((s, pc) => s + (PRICE[pc.size] || 0), 0); }
+/* precio sin descuento: lo calcula paredes/_build_paredes.py con la tabla de precios por formato y talla
+   (la misma que FORMATS en editor.js). Antes salía de una tabla vieja M/L/XL y daba 0 con las tallas S. */
+function wallGross(w){ return w.price || 0; }
 /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) y que la landing:
    una pared siempre lleva 3 o más cuadros, así que siempre cae en algún tramo */
 const PACK_TIERS = [ {n:4, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
@@ -580,15 +547,17 @@ document.getElementById('btnCart').addEventListener('click', () => toast('Demo: 
 
 /* ── cambiar pared / entorno ── */
 function setWall(w){
-  WALL = w;
+  WALL = w; userZoom = 1;
+  if(ensureFits()){ bg.src = ROOM.img; loadLight(ROOM, renderFrames); syncCalib(); }   // no cabía en este entorno
   sync3dLink();
   SLOTS.length = Math.max(SLOTS.length, w.pieces.length);
   renderFrames();
   fit();
+  syncStatus();
   history.replaceState(null, '', '?pared=' + w.id + '&entorno=' + ROOM.id + (qs.get('calib') ? '&calib=1' : ''));
 }
 function setRoom(r){
-  ROOM = r;
+  ROOM = r; userZoom = 1;
   bg.src = r.img;
   loadLight(r, renderFrames);
   fit();
@@ -609,12 +578,13 @@ function renderWallSheet(){
     fl.appendChild(b);
   });
   grid.innerHTML = '';
-  WALLS.filter(w => wallFilter === 'all' || String(w.n) === wallFilter).forEach(w => {
+  WALLS.filter(w => wallFilter === 'all' || String(w.n) === wallFilter)
+    .sort((a, b) => !!a.soldOut - !!b.soldOut).forEach(w => {
     const b = document.createElement('button'); b.type = 'button';
-    b.className = 'opt' + (w.id === WALL.id ? ' active' : '');
-    const c = w.counts, parts = ['XL', 'L', 'M'].filter(k => c[k]).map(k => c[k] + '× ' + k).join(' · ');
-    b.innerHTML = '<div class="svgbox">' + wallSVG(w) + '</div><b>' + w.name + '</b><small>' + w.n + ' cuadros · ' + parts + '<br>Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</small><span class="p">' + eur(wallPrice(w)) + (wallPct(w) ? ' <s>' + eur(wallGross(w)) + '</s>' : '') + '</span>';
-    b.onclick = () => { setWall(w); closeSheets(); };
+    b.className = 'opt' + (w.id === WALL.id ? ' active' : '') + (w.soldOut ? ' sold-out' : '');
+    if(w.soldOut){ b.disabled = true; b.title = 'Sin existencias'; }
+    b.innerHTML = '<div class="svgbox">' + wallSVG(w) + '</div><b>' + w.name + '</b><small>' + w.n + ' cuadros<br>Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</small><span class="p">' + eur(wallPrice(w)) + (wallPct(w) ? ' <s>' + eur(wallGross(w)) + '</s>' : '') + '</span>' + (w.soldOut ? '<em class="soldout">Sin existencias</em>' : '');
+    b.onclick = () => { if(w.soldOut) return; setWall(w); closeSheets(); };
     grid.appendChild(b);
   });
 }
@@ -637,9 +607,11 @@ function renderRoomSheet(){
   const activeGroup = ROOM.group || ROOM.id;
   roomsToShow().forEach(r => {
     const b = document.createElement('button'); b.type = 'button';
-    b.className = 'opt room' + ((r.group || r.id) === activeGroup ? ' active' : '');
-    b.innerHTML = '<img src="' + r.thumb + '" alt="" loading="lazy"><b>' + r.name + '</b>';
-    b.onclick = () => { setRoom(r); closeSheets(); };
+    const ok = fitsRoom(WALL, roomFor(r));
+    b.className = 'opt room' + ((r.group || r.id) === activeGroup ? ' active' : '') + (ok ? '' : ' sold-out');
+    b.innerHTML = '<img src="' + r.thumb + '" alt="" loading="lazy"><b>' + r.name + '</b>' + (ok ? '' : '<em class="soldout">No cabe esta pared</em>');
+    if(!ok){ b.disabled = true; b.title = 'La composición no cabe en la pared libre de esta foto'; }
+    b.onclick = () => { if(!ok) return; setRoom(r); closeSheets(); };
     grid.appendChild(b);
   });
 }
@@ -676,7 +648,24 @@ if(qs.get('calib')){
 
 window.PARED2D = { ingest: f => { pickIdx = -1; ingest(f); }, setWall, setRoom };   // para QA headless
 
+/* ── acercar / alejar (2-oct-2026): botones, rueda del ratón y pellizco. Se acerca siempre hacia la
+   composición (fit() la centra), así nunca se pierde de vista. Al cambiar de pared o de entorno vuelve a 1. ── */
+const ZMIN = 0.2, ZMAX = 3.2;   // el mínimo de verdad lo pone fit(): nunca más lejos que la foto entera
+function setZoom(z){ userZoom = Math.max(ZMIN, Math.min(ZMAX, z)); fit();
+  if(fitInfo.atMin) userZoom = Math.max(userZoom, fitInfo.minZoom);    // no acumular zoom "de más" por debajo de la foto entera
+  document.getElementById('zIn').disabled = userZoom >= ZMAX - 1e-3; document.getElementById('zOut').disabled = fitInfo.atMin; }
+document.getElementById('zIn').addEventListener('click', e => { e.stopPropagation(); setZoom(userZoom * 1.35); });
+document.getElementById('zOut').addEventListener('click', e => { e.stopPropagation(); setZoom(userZoom / 1.35); });
+stage.addEventListener('wheel', e => { e.preventDefault(); setZoom(userZoom * Math.exp(-e.deltaY * 0.0015)); }, { passive:false });
+let pinch0 = 0, pinchZ = 1;
+stage.addEventListener('touchstart', e => { if(e.touches.length === 2){ pinch0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pinchZ = userZoom; } }, { passive:true });
+stage.addEventListener('touchmove', e => { if(e.touches.length === 2 && pinch0){ e.preventDefault();
+  const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); setZoom(pinchZ * d / pinch0); } }, { passive:false });
+stage.addEventListener('touchend', e => { if(e.touches.length < 2) pinch0 = 0; });
+
 /* ── arranque ── */
+setZoom(1);
+ensureFits(true);
 bg.addEventListener('load', fit);
 new ResizeObserver(fit).observe(stage);
 bg.src = ROOM.img;
