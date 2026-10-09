@@ -155,6 +155,11 @@
    posición se arrastra sobre el póster. */
 .txt-block{border-top:1px solid var(--gray2);padding-top:13px}
 .txt-block-title{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--mid);margin-bottom:11px}
+/* Delante / Detrás: gira el cuadro que se edita (con entorno, se despega de la pared y gira) */
+.face-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.face-tab{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px;border:1.5px solid var(--gray2);border-radius:4px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--black);font-family:var(--font-sans);transition:border-color .15s,background .15s,color .15s}
+.face-tab:hover{border-color:#aaa}
+.face-tab.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .txt-sub{margin-bottom:6px}
 .txt-row{display:flex;gap:8px;margin-bottom:9px}
 .txt-row .txt-date{width:84px;flex-shrink:0}

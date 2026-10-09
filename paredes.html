@@ -156,12 +156,12 @@
 <script src="fotos/paredes/paredes-fotos.js?v=e80613ea"></script>
 <script>
 /* Tarjetas de las paredes de ensueño. Cada tarjeta enseña la pared colgada en 3 habitaciones
-   (fotos/_build_paredes_fotos.py) y lleva a pared2d.html con la habitación que se esté viendo,
+   (fotos/_build_paredes_fotos.py) y lleva a cuadro.html con la habitación que se esté viendo,
    donde se puede cambiar de habitación y de composición. */
 (function(){
   'use strict';
   var WALLS = window.MOMENTURIES_WALLS || [], PH = window.MOMENTURIES_WALL_PHOTOS || {};
-  /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js y pared2d.html) */
+  /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) */
   var TIERS = [ {n:4, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
   var pct = function(w){ for(var i = 0; i < TIERS.length; i++) if(w.n >= TIERS[i].n) return TIERS[i].pct; return 0; };
   var net = function(w){ return Math.round(w.price * (100 - pct(w))) / 100; };
@@ -173,7 +173,7 @@
     var rooms = PH[w.id] || [], ok = !w.soldOut;
     var a = document.createElement(ok ? 'a' : 'div');
     a.className = 'pw-card' + (ok ? '' : ' sold-out');
-    if(ok) a.href = 'pared2d.html?pared=' + w.id + '&entorno=' + (rooms[0] || '');
+    if(ok) a.href = 'cuadro.html?pared=' + w.id + '&entorno=' + (rooms[0] || '');
     var slides = rooms.map(function(r, i){
       return '<img src="fotos/paredes/' + w.id + '-' + (i + 1) + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="640" height="640" loading="lazy" decoding="async" draggable="false">';
     }).join('');
@@ -192,7 +192,7 @@
     var sync = function(){
       var i = idx();
       for(var j = 0; j < dotEls.length; j++) dotEls[j].className = j === i ? 'on' : '';
-      if(ok && rooms[i]) a.href = 'pared2d.html?pared=' + w.id + '&entorno=' + rooms[i];
+      if(ok && rooms[i]) a.href = 'cuadro.html?pared=' + w.id + '&entorno=' + rooms[i];
     };
     track.addEventListener('scroll', function(){ window.requestAnimationFrame(sync); }, {passive:true});
     a.querySelectorAll('.pw-arr').forEach(function(b){

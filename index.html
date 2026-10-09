@@ -66,7 +66,7 @@ img{display:block;max-width:100%}
 [data-lang="es"] .en{display:none!important}
 
 #sp{
-  position:fixed;top:38px;left:0;height:2px;width:0;z-index:10000;pointer-events:none;
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:10000;pointer-events:none;
   background:linear-gradient(90deg,var(--accent),var(--accent2),rgba(255,240,180,.7));
 }
 
@@ -121,7 +121,7 @@ img{display:block;max-width:100%}
 }
 
 .nav{
-  position:sticky;top:38px;z-index:900;height:62px;
+  position:sticky;top:0;z-index:900;height:62px;
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
   padding:0 24px;
   background:rgba(255,255,255,.88);
@@ -1326,26 +1326,35 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 
 /* entradas secundarias del menú lateral */
 .menu-item-sm{font-size:15px !important;color:var(--mid) !important}
+
+/* ── LANDING CORTA (estrategia del 11-sep, rehecha el 6-oct sobre la larga) ── */
+.ben-mvm{margin-top:56px}
+.trust-section .reviews-header{margin-bottom:44px}
+.trust-section .s-tag{color:rgba(255,255,255,.5)}
+.trust-section .s-h2{color:#fff}
+.trust-section .s-lead{color:rgba(255,255,255,.62)}
+.trust-section .s-lead a{color:#fff}
+@media(max-width:580px){.ben-mvm{margin-top:36px}}
+/* para quién: pestañas centradas encima de las tarjetas (en móvil se deslizan sin cortarse por la izquierda) */
+.gift-tabs{margin:34px 0 0}
+.gift-tabs .persona-tab:first-child{margin-left:auto}
+.gift-tabs .persona-tab:last-child{margin-right:auto}
+.gift-tabs + .gift-grid{margin-top:22px}
+.gift-grid .gift-card[hidden]{display:none}
+.gift-tabs + .gift-grid{display:flex;flex-wrap:wrap;justify-content:center}   /* con 1-3 tarjetas, centradas */
+.gift-tabs + .gift-grid .gift-card{width:calc((100% - 54px)/4)}
+@media(max-width:1100px){ .gift-tabs + .gift-grid .gift-card{width:calc((100% - 36px)/3)} }
+@media(max-width:900px){ .gift-tabs + .gift-grid .gift-card{width:calc((100% - 10px)/2)} }
+@media(max-width:580px){ .gift-tabs{gap:6px} .gift-tabs .persona-tab{padding:8px 13px;font-size:13px} }
 </style>
 </head>
 <body>
 <div id="sp"></div>
 
-<!-- BARRA DE ÁNGULOS DE VENTA (solo para revisión interna, no la ve un cliente normal salvo que le pases el link) -->
-<div class="angle-bar" id="angleBar">
-  <button class="angle-arrow" id="angleBtnPrev" aria-label="Ángulo anterior">‹</button>
-  <div class="angle-mid">
-    <span class="angle-eyebrow">Ángulo de venta</span>
-    <select class="angle-select" id="angleSelect" aria-label="Elegir ángulo de venta"></select>
-    <span class="angle-counter" id="angleCounter">1 / 10</span>
-  </div>
-  <button class="angle-arrow" id="angleBtnNext" aria-label="Ángulo siguiente">›</button>
-</div>
-
 <!-- TOPBAR -->
 <div class="topbar">
-  <span class="es" id="angleTopbar-es">Oferta relámpago — <strong>10% de descuento</strong> · Código: <span class="topbar-code">METAL10</span></span>
-  <span class="en" id="angleTopbar-en">Flash sale — <strong>10% off</strong> · Code: <span class="topbar-code">METAL10</span></span>
+  <span class="es">Tus fotos en aluminio HD · Se cuelgan sin agujeros · Envío a España y Europa</span>
+  <span class="en">Your photos on HD aluminium · Hang without holes · Shipping to Spain and Europe</span>
 </div>
 
 <!-- NAV -->
@@ -1450,7 +1459,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
     <p class="hero-sub reveal"><span class="es" id="angleHeroSub-es">Cuadros de aluminio HD con colgado magnético: sin daños en la pared y ajustables cuando quieras.</span><span class="en" id="angleHeroSub-en">HD aluminium prints with magnetic mounting: no damage to the wall, and you can move them whenever.</span></p>
     <div class="hero-btns reveal">
       <a href="cuadro.html" class="hero-cta" data-photo-pick><span class="es" id="angleHeroCta-es">Elegir mis fotos</span><span class="en" id="angleHeroCta-en">Pick my photos</span> <span class="hero-cta-arr">→</span></a>
-      <a href="#paredes" class="hero-cta-outline"><span class="es" id="angleHeroCta2-es">Ver cómo queda en casa</span><span class="en" id="angleHeroCta2-en">See it at home</span></a>
+      <a href="#productos" class="hero-cta-outline"><span class="es">Ver formatos y precios</span><span class="en">See formats and prices</span></a>
     </div>
     <div class="hero-trust reveal">
       <span class="hero-trust-item"><span class="es" id="angleTrust1-es">Sin agujeros ni marco</span><span class="en" id="angleTrust1-en">No holes, no frame</span></span>
@@ -1458,284 +1467,6 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       <span class="hero-trust-item"><span class="es" id="angleTrust2-es">Vista previa en 3D</span><span class="en" id="angleTrust2-en">3D preview</span></span>
       <span class="hero-trust-sep">·</span>
       <span class="hero-trust-item"><span class="es" id="angleTrust3-es">Imán incluido</span><span class="en" id="angleTrust3-en">Magnet included</span></span>
-    </div>
-  </div>
-</section>
-
-
-<!-- DEL MÓVIL A TU PARED — el recorrido entero (VISUAL 1 del brief del socio).
-     Mientras no haya vídeo, va como tira de fotogramas. Para montar el vídeo:
-     sustituye <ol class="jr-strip"> por
-       <video class="jr-video" src="fotos/recorrido.mp4" autoplay muted loop playsinline poster="fotos/combis/combi-galeria.webp"></video>
-     y deja la tira debajo como respaldo sin JS. -->
-<section class="journey-section" id="recorrido">
-  <div class="container">
-    <p class="s-tag reveal"><span class="es">El recorrido</span><span class="en">The journey</span></p>
-    <h2 class="s-h2 reveal"><span class="es">De ese día a vuestra pared</span><span class="en">From that day to your wall</span></h2>
-    <p class="s-lead reveal"><span class="es">La foto ya existe. Está en el carrete, entre otras tres mil. Esto es lo que pasa desde ahí hasta que la colgáis juntos.</span><span class="en">The photo already exists. It's in your camera roll, among three thousand others. This is what happens from there until you hang it together.</span></p>
-
-    <ol class="jr-strip">
-      <li class="jr-step reveal">
-        <span class="jr-n">1</span>
-        <div class="jr-media"><img src="fotos/stock/1624272864537-480x640.webp" alt="Una pareja riéndose el día de la foto" loading="lazy" width="480" height="640"></div>
-        <b><span class="es">El momento</span><span class="en">The moment</span></b>
-        <span class="es">Alguien saca la foto y ahí se queda.</span><span class="en">Someone takes the photo and there it stays.</span>
-      </li>
-      <li class="jr-step reveal">
-        <span class="jr-n">2</span>
-        <div class="jr-media jr-media-phone">
-          <svg viewBox="0 0 132 190" role="img" aria-label="La galería del móvil con tres fotos seleccionadas">
-            <rect x="1" y="1" width="130" height="188" rx="16" fill="#111"/>
-            <rect x="7" y="7" width="118" height="176" rx="11" fill="#f4f1ec"/>
-            <rect x="52" y="10" width="28" height="4" rx="2" fill="#111"/>
-            <clipPath id="jrc"><rect x="14" y="22" width="104" height="150" rx="6"/></clipPath>
-            <g clip-path="url(#jrc)">
-              <image href="fotos/stock/1624272864537-480x640.webp" x="14" y="22" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1474552226712-1200x675.webp" x="50" y="22" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1750076912832-480x640.webp" x="86" y="22" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1770831208268-480x640.webp" x="14" y="70" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1606983340126-480x640.webp" x="50" y="70" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1758686254601-480x640.webp" x="86" y="70" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1752652011858-480x640.webp" x="14" y="118" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1557495235-480x640.webp" x="50" y="118" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-              <image href="fotos/stock/1655141011386-480x640.webp" x="86" y="118" width="33" height="45" preserveAspectRatio="xMidYMid slice"/>
-            </g>
-            <g fill="none" stroke="#0d0d0d" stroke-width="2.4">
-              <rect x="14" y="22" width="33" height="45" rx="3"/><rect x="86" y="70" width="33" height="45" rx="3"/><rect x="50" y="118" width="33" height="45" rx="3"/>
-            </g>
-            <g fill="#0d0d0d"><circle cx="43" cy="26" r="5.4"/><circle cx="115" cy="74" r="5.4"/><circle cx="79" cy="122" r="5.4"/></g>
-            <g fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="40.6,26 42.4,28 45.4,24"/><polyline points="112.6,74 114.4,76 117.4,72"/><polyline points="76.6,122 78.4,124 81.4,120"/>
-            </g>
-          </svg>
-        </div>
-        <b><span class="es">Eliges en tu galería</span><span class="en">You pick in your gallery</span></b>
-        <span class="es">Las tres que de verdad quieres ver cada día.</span><span class="en">The three you actually want to see every day.</span>
-      </li>
-      <li class="jr-step reveal">
-        <span class="jr-n">3</span>
-        <div class="jr-media"><img src="fotos/combis/combi-rombo.webp" alt="La combinación elegida, montada en una habitación" loading="lazy" width="720" height="540"></div>
-        <b><span class="es">Eliges la combinación</span><span class="en">You pick the layout</span></b>
-        <span class="es">Y la ves puesta en una casa, no en una cuadrícula.</span><span class="en">And you see it in a home, not in a grid.</span>
-      </li>
-      <li class="jr-step reveal">
-        <span class="jr-n">4</span>
-        <!-- FALTA FOTO: aquí va el unboxing (la caja abierta y las manos sacando el cuadro).
-             Mientras no exista, se enseña el producto impreso y el texto dice eso, no otra cosa. -->
-        <div class="jr-media"><img src="fotos/producto-metalico.jpg" alt="Los tres tamaños del cuadro de aluminio colgados en la pared" loading="lazy" width="1120" height="1400"></div>
-        <b><span class="es">Lo imprimimos</span><span class="en">We print it</span></b>
-        <span class="es">En aluminio HD, con el imán ya puesto y la base en la caja.</span><span class="en">On HD aluminium, magnet already on and the base in the box.</span>
-      </li>
-      <li class="jr-step reveal">
-        <span class="jr-n">5</span>
-        <div class="jr-media"><img src="fotos/hero-salon-2.jpg" alt="La pared ya colgada en el salón" loading="lazy" width="1600" height="1067"></div>
-        <b><span class="es">Lo colgáis juntos</span><span class="en">You hang it together</span></b>
-        <span class="es">Y la casa pasa de estar vacía a contar vuestra historia.</span><span class="en">And the house goes from empty to telling your story.</span>
-      </li>
-    </ol>
-
-    <div class="jr-foot reveal">
-      <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Empezar por mi foto</span><span class="en">Start with my photo</span> <span>→</span></a>
-    </div>
-  </div>
-</section>
-
-<!-- CÓMO SE CUELGA — va en segundo lugar a propósito (el patrón de Mixtiles): el colgado
-     magnético es la objeción que hay que quitar antes de que miren nada más.
-     Para devolverlo a su sitio de antes, mueve esta <section> debajo de "BENEFITS". -->
-<section class="adios-section" id="colgado">
-  <div class="container">
-    <p class="adios-tag">COLGADO MAGNÉTICO</p>
-    <h2 class="adios-h2">Di adiós a los clavos y<br>a los daños en la pared</h2>
-    <p class="adios-sub">Móntalo en segundos, sin herramientas.</p>
-
-    <h3 class="adios-claim">Desde tu abuela hasta tu hijo de 5 años sabe montarlo</h3>
-
-
-    <!-- EL PROCESO, EN CUATRO VIÑETAS -->
-    <ol class="hang-steps">
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="Se pega la base adhesiva en la pared">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <circle cx="60" cy="40" r="13" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
-          <path d="M60 30v20M50 40h20" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round"/>
-          <path d="M86 84c-6-10-10-18-10-26a10 10 0 0 1 20 0c0 8-4 16-10 26z" fill="#fff" stroke="#0d0d0d" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">1 · Pega la base</span><span class="en">1 · Stick the base</span></b>
-        <span class="es">Va en el pedido. Se pega en la pared sin clavos ni herramientas.</span><span class="en">It comes in the box. It sticks to the wall with no nails or tools.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se engancha solo sobre el imán">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <circle cx="60" cy="40" r="7" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
-          <rect x="38" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
-          <path d="M60 4v7M52 8l8 6 8-6" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">2 · Acércalo</span><span class="en">2 · Bring it close</span></b>
-        <span class="es">El imán tira de él y lo centra solo. Clic y ya está.</span><span class="en">The magnet pulls it in and centres it. Click, done.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se mueve y se ajusta cuando quieras">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <rect x="44" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
-          <rect x="26" y="20" width="44" height="58" rx="2" fill="none" stroke="#0d0d0d" stroke-width="1.6" stroke-dasharray="4 4" opacity=".55"/>
-          <path d="M22 46h-10M16 41l-6 5 6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M98 46h10M104 41l6 5-6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">3 · Ajústalo</span><span class="en">3 · Adjust it</span></b>
-        <span class="es">Lo mueves, lo enderezas o lo cambias de sitio las veces que quieras.</span><span class="en">Move it, straighten it or change its spot as many times as you like.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="Se descuelga y la pared queda sin marcas">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <rect x="16" y="20" width="40" height="52" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4" transform="rotate(-9 36 46)"/>
-          <circle cx="88" cy="42" r="17" fill="#fff" stroke="#0d0d0d" stroke-width="2"/>
-          <polyline points="80,42 86,48 97,36" fill="none" stroke="#0d0d0d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">4 · Descuélgalo</span><span class="en">4 · Take it down</span></b>
-        <span class="es">Retiras la base y la pared queda sin agujeros ni marcas.</span><span class="en">Peel the base off and the wall is left with no holes or marks.</span>
-      </li>
-    </ol>
-
-    <div class="adios-grid">
-
-      <!-- Cuadro tradicional -->
-      <div class="adios-col adios-col-bad">
-        <div class="adios-col-header">
-          <div class="adios-col-title">Cuadro tradicional</div>
-          <span class="adios-col-badge adios-badge-bad">El método antiguo</span>
-        </div>
-        <ul class="adios-steps-bad">
-          <li><span class="adios-x">×</span> Comprar marco y clavo</li>
-          <li><span class="adios-x">×</span> Buscar el martillo y el nivel</li>
-          <li><span class="adios-x">×</span> Marcar la pared (y equivocarte)</li>
-          <li><span class="adios-x">×</span> Clavar (y dejar marca permanente)</li>
-          <li><span class="adios-x">×</span> Ajustar hasta que quede recto</li>
-          <li><span class="adios-x">×</span> Rezar para que no se caiga</li>
-        </ul>
-        <div class="adios-pills">
-          <span class="adios-pill-bad">Agujeros permanentes</span>
-          <span class="adios-pill-bad">Difícil de mover</span>
-          <span class="adios-pill-bad">Herramientas necesarias</span>
-        </div>
-      </div>
-
-      <!-- Sistema Magnético -->
-      <div class="adios-col adios-col-good">
-        <div class="adios-col-header">
-          <div class="adios-col-title">Sistema Magnético</div>
-          <span class="adios-col-badge adios-badge-good">Momenturies</span>
-        </div>
-        <ul class="adios-steps-good">
-          <li class="adios-step-good">
-            <div class="adios-step-num">1</div>
-            <div>
-              <div class="adios-step-title">Pega el adhesivo en la pared</div>
-              <div class="adios-step-desc">Incluido en el pedido. Se adhiere en cualquier superficie.</div>
-            </div>
-          </li>
-          <li class="adios-step-good">
-            <div class="adios-step-num">2</div>
-            <div>
-              <div class="adios-step-title">Coloca el cuadro sobre el imán</div>
-              <div class="adios-step-desc">Clic. Se engancha solo. Perfectamente centrado.</div>
-            </div>
-          </li>
-          <li class="adios-step-good">
-            <div class="adios-step-num">3</div>
-            <div>
-              <div class="adios-step-title">¡Listo!</div>
-              <div class="adios-step-desc">10 segundos. Sin herramientas. Sin marcas. Para siempre.</div>
-            </div>
-          </li>
-        </ul>
-        <div class="adios-pills">
-          <span class="adios-pill-good">Sin marcas en la pared</span>
-          <span class="adios-pill-good">Intercambiable en segundos</span>
-          <span class="adios-pill-good">Sin herramientas</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- SUBE TU FOTO (la demo, al lado) -->
-<section class="upload-section" id="como-funciona">
-  <div class="container up-inner">
-    <div class="up-copy reveal">
-      <p class="s-tag"><span class="es" id="angleUpTag-es">Paso a paso</span><span class="en" id="angleUpTag-en">Step by step</span></p>
-      <h2 class="s-h2"><span class="es" id="angleUpH2-es">Elige tus fotos.<br>Elige cómo queda. Listo.</span><span class="en" id="angleUpH2-en">Pick your photos.<br>Pick how it looks. Done.</span></h2>
-      <p class="s-lead">
-        <span class="es" id="angleUpLead-es">Todo desde el móvil y en un par de minutos: eliges las fotos de tu galería, eliges la combinación y el entorno, le añades tu dedicatoria y ya está.</span>
-        <span class="en" id="angleUpLead-en">All from your phone in a couple of minutes: pick the photos from your gallery, pick the layout and the room, add your dedication and that's it.</span>
-      </p>
-      <ol class="up-steps">
-        <li>
-          <span class="up-n">1</span>
-          <div><b><span class="es">Elige tus fotos de la galería</span><span class="en">Pick your photos</span></b>
-          <span class="es">Las que ya tienes en el móvil. Una o diez, las que quieras colgar.</span>
-          <span class="en">The ones already on your phone. One or ten, whichever you want to hang.</span></div>
-        </li>
-        <li>
-          <span class="up-n">2</span>
-          <div><b><span class="es">Elige la combinación y el entorno</span><span class="en">Pick the layout and the room</span></b>
-          <span class="es">Ves la pared montada en un salón de verdad antes de decidir nada.</span>
-          <span class="en">You see the wall laid out in a real living room before deciding anything.</span></div>
-        </li>
-        <li>
-          <span class="up-n">3</span>
-          <div><b><span class="es">Añade tu dedicatoria</span><span class="en">Add your dedication</span></b>
-          <span class="es">Una frase delante, sobre la foto, y una dedicatoria detrás. Las dos opcionales y sin coste.</span>
-          <span class="en">A line on the front, over the photo, and a dedication on the back. Both optional and free.</span></div>
-        </li>
-        <li>
-          <span class="up-n">4</span>
-          <div><b><span class="es">Lo recibes listo para colgar</span><span class="en">It arrives ready to hang</span></b>
-          <span class="es">Lo imprimimos en 1-2 días laborables y lo enviamos a España y Europa, con los imanes puestos.</span>
-          <span class="en">We print it in 1-2 working days and ship to Spain and Europe, magnets included.</span></div>
-        </li>
-      </ol>
-      <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Elegir mis fotos</span><span class="en">Pick my photos</span> <span>→</span></a>
-    </div>
-  <div class="up-demo">
-    <!-- DEMO: la app de verdad grabada en un móvil (_grabar_demos.js). Los rótulos van encima, según el tiempo del vídeo. -->
-    <div class="dm-tabs" role="tablist">
-      <button type="button" class="dm-tab on" data-demo="paredes" role="tab" aria-selected="true"><span class="es">Una pared entera</span><span class="en">A whole wall</span></button>
-      <button type="button" class="dm-tab" data-demo="regalo" role="tab" aria-selected="false"><span class="es">Un regalo con dedicatoria</span><span class="en">A gift with a dedication</span></button>
-    </div>
-    <div class="phone-mockup dm-phone">
-      <div class="phone-screen">
-        <video class="dm-video" id="dmVideo" muted playsinline preload="none" poster="fotos/demo/demo-paredes.jpg" aria-label="Demo de la app en el móvil"></video>
-      </div>
-    </div>
-    <div class="dm-steps" id="dmSteps"></div>
-    <div class="phone-hint dm-cap" id="dmCap" aria-live="polite"></div>
-  </div>
-
-  </div>
-</section>
-
-
-<!-- PAREDES DE ENSUEÑO — carrusel de combinaciones montadas en entornos reales
-     (imágenes de fotos/_build_combis.py; cada una abre pared2d.html en esa pared y ese entorno) -->
-<section class="walls-section" id="paredes">
-  <div class="container">
-    <div class="walls-head">
-      <div>
-        <p class="s-tag reveal"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></p>
-        <h2 class="s-h2 reveal"><span class="es">Combínalo como quieras.<br>Mira cómo queda en casa.</span><span class="en">Combine it however you like.<br>See how it looks at home.</span></h2>
-      </div>
-      <p class="s-lead reveal"><span class="es">50 composiciones de 3 a 20 cuadros, cada una montada en un entorno real para que la veas antes de decidir. Tocas la que te gusta, pones tus fotos en cada hueco y te la mandamos entera con los imanes.</span><span class="en">50 layouts of 3 to 20 prints with sizes, slots and spacing already worked out. Pick one, tap each print to add its photo, and we ship the whole wall with the magnets.</span></p>
-    </div>
-    <div class="combi-wrap">
-      <button class="combi-arrow combi-prev" type="button" onclick="combiSlide(-1)" aria-label="Anterior">←</button>
-      <div class="combi-track-wrap"><div class="combi-track" id="combiTrack"></div></div>
-      <button class="combi-arrow combi-next" type="button" onclick="combiSlide(1)" aria-label="Siguiente">→</button>
-    </div>
-    <div class="walls-foot reveal">
-      <a href="paredes.html" class="psec-cta"><span class="es">Ver las 32 paredes</span><span class="en">See all 32 walls</span> <span>→</span></a>
-      <p class="combi-note"><span class="es">Los precios ya llevan el descuento por combinación: &minus;10% con 2 cuadros, &minus;15% con 3 y &minus;20% a partir de 4. Envío gratis a partir de 60€.</span><span class="en">Prices already include the set discount: &minus;10% for 2 prints, &minus;15% for 3 and &minus;20% from 4 on. Free shipping over €60.</span></p>
     </div>
   </div>
 </section>
@@ -1812,46 +1543,61 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   </div>
 </section>
 
-<!-- ALUMINIO vs MARCO TRADICIONAL -->
-<section class="mvm-section">
-  <div class="container">
-    <h2 class="s-h2 mvm-h2 reveal"><span class="es">Aluminio HD frente al cuadro enmarcado de siempre</span><span class="en">HD aluminium vs. the traditional framed print</span></h2>
-    <p class="mvm-sub reveal"><span class="es">Olvídate de los marcos pesados. Tus recuerdos, con una nitidez que no se apaga.</span><span class="en">Forget heavy frames. Your memories, with a clarity that doesn't fade.</span></p>
-
-    <div class="mvm-photo reveal">
-      <img src="fotos/metal-vs-marco.jpg" alt="Un cuadro de aluminio HD al lado de una lámina enmarcada tradicional" loading="lazy" width="1800" height="771">
+<!-- SUBE TU FOTO (la demo, al lado) -->
+<section class="upload-section" id="como-funciona">
+  <div class="container up-inner">
+    <div class="up-copy reveal">
+      <p class="s-tag"><span class="es" id="angleUpTag-es">Paso a paso</span><span class="en" id="angleUpTag-en">Step by step</span></p>
+      <h2 class="s-h2"><span class="es" id="angleUpH2-es">Elige tus fotos.<br>Elige cómo queda. Listo.</span><span class="en" id="angleUpH2-en">Pick your photos.<br>Pick how it looks. Done.</span></h2>
+      <p class="s-lead">
+        <span class="es" id="angleUpLead-es">Todo desde el móvil y en un par de minutos: eliges las fotos de tu galería, eliges la combinación y el entorno, le añades tu dedicatoria y ya está.</span>
+        <span class="en" id="angleUpLead-en">All from your phone in a couple of minutes: pick the photos from your gallery, pick the layout and the room, add your dedication and that's it.</span>
+      </p>
+      <ol class="up-steps">
+        <li>
+          <span class="up-n">1</span>
+          <div><b><span class="es">Elige tus fotos de la galería</span><span class="en">Pick your photos</span></b>
+          <span class="es">Las que ya tienes en el móvil. Una o diez, las que quieras colgar.</span>
+          <span class="en">The ones already on your phone. One or ten, whichever you want to hang.</span></div>
+        </li>
+        <li>
+          <span class="up-n">2</span>
+          <div><b><span class="es">Elige la combinación y el entorno</span><span class="en">Pick the layout and the room</span></b>
+          <span class="es">Ves la pared montada en un salón de verdad antes de decidir nada.</span>
+          <span class="en">You see the wall laid out in a real living room before deciding anything.</span></div>
+        </li>
+        <li>
+          <span class="up-n">3</span>
+          <div><b><span class="es">Añade tu dedicatoria</span><span class="en">Add your dedication</span></b>
+          <span class="es">Una frase delante, sobre la foto, y una dedicatoria detrás. Las dos opcionales y sin coste.</span>
+          <span class="en">A line on the front, over the photo, and a dedication on the back. Both optional and free.</span></div>
+        </li>
+        <li>
+          <span class="up-n">4</span>
+          <div><b><span class="es">Lo recibes listo para colgar</span><span class="en">It arrives ready to hang</span></b>
+          <span class="es">Lo imprimimos en 1-2 días laborables y lo enviamos a España y Europa, con los imanes puestos.</span>
+          <span class="en">We print it in 1-2 working days and ship to Spain and Europe, magnets included.</span></div>
+        </li>
+      </ol>
+      <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Elegir mis fotos</span><span class="en">Pick my photos</span> <span>→</span></a>
     </div>
+  <div class="up-demo">
+    <!-- DEMO: la app de verdad grabada en un móvil (_grabar_demos.js). Los rótulos van encima, según el tiempo del vídeo. -->
+    <div class="dm-tabs" role="tablist">
+      <button type="button" class="dm-tab on" data-demo="paredes" role="tab" aria-selected="true"><span class="es">Una pared entera</span><span class="en">A whole wall</span></button>
+      <button type="button" class="dm-tab" data-demo="regalo" role="tab" aria-selected="false"><span class="es">Un regalo con dedicatoria</span><span class="en">A gift with a dedication</span></button>
+    </div>
+    <div class="phone-mockup dm-phone">
+      <div class="phone-screen">
+        <video class="dm-video" id="dmVideo" muted playsinline preload="none" poster="fotos/demo/demo-paredes.jpg" aria-label="Demo de la app en el móvil"></video>
+      </div>
+    </div>
+    <div class="dm-steps" id="dmSteps"></div>
+    <div class="phone-hint dm-cap" id="dmCap" aria-live="polite"></div>
+  </div>
 
-    <ul class="mvm-grid reveal">
-      <li>
-        <span class="mvm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9.5" r="4.6"/><circle cx="15" cy="9.5" r="4.6"/><circle cx="12" cy="15" r="4.6"/></svg></span>
-        <b><span class="es">Colores vivos</span><span class="en">Vibrant colours</span></b>
-        <span class="es">Nitidez HD con un acabado fotorrealista.</span><span class="en">HD sharpness with a photo-realistic finish.</span>
-      </li>
-      <li>
-        <span class="mvm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-3.5 7-9V5.5L12 3 5 5.5V12c0 5.5 7 9 7 9z"/></svg></span>
-        <b><span class="es">No se apaga</span><span class="en">Fade-resistant</span></b>
-        <span class="es">La tinta va fundida en el metal, no encima: no se descascarilla ni se ondula.</span><span class="en">The ink is fused into the metal, not on top: it doesn't flake or warp.</span>
-      </li>
-      <li>
-        <span class="mvm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1.5"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></span>
-        <b><span class="es">Moderno y sin marco</span><span class="en">Modern and frameless</span></b>
-        <span class="es">Limpio y actual. Encaja en cualquier pared.</span><span class="en">Clean and current. It fits any wall.</span>
-      </li>
-      <li>
-        <span class="mvm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5"/><path d="M14 5h5v5"/><path d="M10 19H5v-5"/></svg></span>
-        <b><span class="es">Ligero y fácil</span><span class="en">Light and easy</span></b>
-        <span class="es">Pesa poco y se cuelga en segundos, sin taladro.</span><span class="en">It weighs little and hangs in seconds, no drill.</span>
-      </li>
-      <li>
-        <span class="mvm-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.4 5.6.6-4.2 3.9 1.2 5.6L12 15.7 6.9 18.5l1.2-5.6L4 9l5.6-.6z"/></svg></span>
-        <b><span class="es">Fácil de limpiar</span><span class="en">Easy to clean</span></b>
-        <span class="es">Un paño y listo. Sigue como el primer día.</span><span class="en">A quick wipe and done. Like day one.</span>
-      </li>
-    </ul>
   </div>
 </section>
-
 
 <!-- BENEFITS -->
 <section class="benefits-section">
@@ -1971,135 +1717,158 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       </div>
 
     </div>
+
+    <div class="ben-mvm">
+    <div class="mvm-photo reveal">
+      <img src="fotos/metal-vs-marco.jpg" alt="Un cuadro de aluminio HD al lado de una lámina enmarcada tradicional" loading="lazy" width="1800" height="771">
+    </div>
+    </div>
   </div>
 </section>
 
-<!-- GLOSS HD — HIGHLIGHT SECTION -->
-<section class="gloss-hero" id="glossSection">
-  <div class="gh-bg-glow"></div>
-  <div class="gh-inner">
+<section class="adios-section" id="colgado">
+  <div class="container">
+    <p class="adios-tag">COLGADO MAGNÉTICO</p>
+    <h2 class="adios-h2">Di adiós a los clavos y<br>a los daños en la pared</h2>
+    <p class="adios-sub">Móntalo en segundos, sin herramientas.</p>
 
-    <!-- COPY -->
-    <div class="gh-copy">
-      <div class="gh-tag-wrap reveal">
-        <span class="gh-pulse"></span>
-        <span class="es gh-tag-text" id="angleGhTag-es">Acabado Exclusivo</span>
-        <span class="en gh-tag-text" id="angleGhTag-en">Exclusive Finish</span>
-      </div>
-      <h2 class="gh-heading reveal">
-        <span class="es" id="angleGhH2-es">Pura Luz.<br>Puro Reflejo.</span>
-        <span class="en" id="angleGhH2-en">Pure Light.<br>Pure Reflection.</span>
-      </h2>
-      <p class="gh-body reveal">
-        <span class="es" id="angleGhBody-es">Imprimimos directamente sobre aluminio de alta pureza para conseguir un brillo, una profundidad de color y un reflejo que ningún papel, canvas ni otro material puede igualar.</span>
-        <span class="en" id="angleGhBody-en">We print directly onto high-purity aluminium to achieve a gloss, colour depth and reflection that no paper, canvas or other material can match.</span>
-      </p>
-      <div class="gh-stats reveal">
-        <div class="gh-stat">
-          <span class="gh-stat-n">0</span>
-          <span class="es gh-stat-l">Papel de por medio</span>
-          <span class="en gh-stat-l">Paper in between</span>
+    <h3 class="adios-claim">Desde tu abuela hasta tu hijo de 5 años sabe montarlo</h3>
+
+
+    <!-- EL PROCESO, EN CUATRO VIÑETAS -->
+    <ol class="hang-steps">
+      <li>
+        <svg viewBox="0 0 120 96" role="img" aria-label="Se pega la base adhesiva en la pared">
+          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
+          <circle cx="60" cy="40" r="13" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
+          <path d="M60 30v20M50 40h20" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round"/>
+          <path d="M86 84c-6-10-10-18-10-26a10 10 0 0 1 20 0c0 8-4 16-10 26z" fill="#fff" stroke="#0d0d0d" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <b><span class="es">1 · Pega la base</span><span class="en">1 · Stick the base</span></b>
+        <span class="es">Va en el pedido. Se pega en la pared sin clavos ni herramientas.</span><span class="en">It comes in the box. It sticks to the wall with no nails or tools.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se engancha solo sobre el imán">
+          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
+          <circle cx="60" cy="40" r="7" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
+          <rect x="38" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
+          <path d="M60 4v7M52 8l8 6 8-6" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b><span class="es">2 · Acércalo</span><span class="en">2 · Bring it close</span></b>
+        <span class="es">El imán tira de él y lo centra solo. Clic y ya está.</span><span class="en">The magnet pulls it in and centres it. Click, done.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se mueve y se ajusta cuando quieras">
+          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
+          <rect x="44" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
+          <rect x="26" y="20" width="44" height="58" rx="2" fill="none" stroke="#0d0d0d" stroke-width="1.6" stroke-dasharray="4 4" opacity=".55"/>
+          <path d="M22 46h-10M16 41l-6 5 6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M98 46h10M104 41l6 5-6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b><span class="es">3 · Ajústalo</span><span class="en">3 · Adjust it</span></b>
+        <span class="es">Lo mueves, lo enderezas o lo cambias de sitio las veces que quieras.</span><span class="en">Move it, straighten it or change its spot as many times as you like.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 120 96" role="img" aria-label="Se descuelga y la pared queda sin marcas">
+          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
+          <rect x="16" y="20" width="40" height="52" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4" transform="rotate(-9 36 46)"/>
+          <circle cx="88" cy="42" r="17" fill="#fff" stroke="#0d0d0d" stroke-width="2"/>
+          <polyline points="80,42 86,48 97,36" fill="none" stroke="#0d0d0d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b><span class="es">4 · Descuélgalo</span><span class="en">4 · Take it down</span></b>
+        <span class="es">Retiras la base y la pared queda sin agujeros ni marcas.</span><span class="en">Peel the base off and the wall is left with no holes or marks.</span>
+      </li>
+    </ol>
+
+    <div class="adios-grid">
+
+      <!-- Cuadro tradicional -->
+      <div class="adios-col adios-col-bad">
+        <div class="adios-col-header">
+          <div class="adios-col-title">Cuadro tradicional</div>
+          <span class="adios-col-badge adios-badge-bad">El método antiguo</span>
         </div>
-        <div class="gh-stat-sep"></div>
-        <div class="gh-stat">
-          <span class="gh-stat-n">HD</span>
-          <span class="es gh-stat-l">Acabado brillo</span>
-          <span class="en gh-stat-l">Gloss finish</span>
-        </div>
-        <div class="gh-stat-sep"></div>
-        <div class="gh-stat">
-          <span class="gh-stat-n">∞</span>
-          <span class="es gh-stat-l">Sin enmarcar</span>
-          <span class="en gh-stat-l">Frameless</span>
+        <ul class="adios-steps-bad">
+          <li><span class="adios-x">×</span> Comprar marco y clavo</li>
+          <li><span class="adios-x">×</span> Buscar el martillo y el nivel</li>
+          <li><span class="adios-x">×</span> Marcar la pared (y equivocarte)</li>
+          <li><span class="adios-x">×</span> Clavar (y dejar marca permanente)</li>
+          <li><span class="adios-x">×</span> Ajustar hasta que quede recto</li>
+          <li><span class="adios-x">×</span> Rezar para que no se caiga</li>
+        </ul>
+        <div class="adios-pills">
+          <span class="adios-pill-bad">Agujeros permanentes</span>
+          <span class="adios-pill-bad">Difícil de mover</span>
+          <span class="adios-pill-bad">Herramientas necesarias</span>
         </div>
       </div>
-      <div class="gh-actions reveal">
-        <a href="producto.html" class="gh-btn-primary">
-          <span class="es">Personaliza tu cuadro</span><span class="en">Customise your print</span>
-          <span class="gh-arr">→</span>
-        </a>
-        <a href="producto.html" class="gh-btn-ghost">
-          <span class="es">Diseña tu pared</span><span class="en">Design your wall</span>
-        </a>
+
+      <!-- Sistema Magnético -->
+      <div class="adios-col adios-col-good">
+        <div class="adios-col-header">
+          <div class="adios-col-title">Sistema Magnético</div>
+          <span class="adios-col-badge adios-badge-good">Momenturies</span>
+        </div>
+        <ul class="adios-steps-good">
+          <li class="adios-step-good">
+            <div class="adios-step-num">1</div>
+            <div>
+              <div class="adios-step-title">Pega el adhesivo en la pared</div>
+              <div class="adios-step-desc">Incluido en el pedido. Se adhiere en cualquier superficie.</div>
+            </div>
+          </li>
+          <li class="adios-step-good">
+            <div class="adios-step-num">2</div>
+            <div>
+              <div class="adios-step-title">Coloca el cuadro sobre el imán</div>
+              <div class="adios-step-desc">Clic. Se engancha solo. Perfectamente centrado.</div>
+            </div>
+          </li>
+          <li class="adios-step-good">
+            <div class="adios-step-num">3</div>
+            <div>
+              <div class="adios-step-title">¡Listo!</div>
+              <div class="adios-step-desc">10 segundos. Sin herramientas. Sin marcas. Para siempre.</div>
+            </div>
+          </li>
+        </ul>
+        <div class="adios-pills">
+          <span class="adios-pill-good">Sin marcas en la pared</span>
+          <span class="adios-pill-good">Intercambiable en segundos</span>
+          <span class="adios-pill-good">Sin herramientas</span>
+        </div>
       </div>
+
     </div>
-
-    <!-- VISUAL -->
-    <div class="gh-visual">
-      <div class="gh-halo"></div>
-      <div class="gh-print-wrap" id="ghPrint">
-        <div class="gh-photo" style="background-image:url('fotos/stock/1474552226712-600x800.webp')"></div>
-        <div class="gh-shine-a"></div>
-        <div class="gh-shine-b"></div>
-        <div class="gh-edge-top"></div>
-        <div class="gh-edge-left"></div>
-      </div>
-      <div class="gh-shadow"></div>
-      <div class="gh-chip gh-chip-a">
-        <span class="gh-chip-icon">✦</span>
-        <span class="es">Aluminio puro HD</span><span class="en">Pure HD aluminium</span>
-      </div>
-      <div class="gh-chip gh-chip-b">
-        <span class="gh-chip-icon">◈</span>
-        <span class="es">Máximo reflejo</span><span class="en">Maximum reflection</span>
-      </div>
-    </div>
-
   </div>
-  <div class="gh-bottom-fade"></div>
 </section>
 
-<!-- A QUIÉN REGALAS — cada perfil abre el personalizador en SU combinación y SU entorno
-     (las miniaturas las genera fotos/_build_combis.py) -->
 <section class="gift-section" id="para-quien">
   <div class="container">
     <p class="s-tag"><span class="es">PARA QUIÉN</span><span class="en">WHO IT'S FOR</span></p>
     <h2 class="s-h2"><span class="es">Hazle un regalo que<br>no acabe en un cajón</span><span class="en">Give a gift that<br>doesn't end up in a drawer</span></h2>
     <p class="s-lead"><span class="es">Hazle un regalo que tenga en su casa para siempre. Toca el que se parezca al tuyo y empiezas justo por ahí.</span><span class="en">Give something they'll keep at home for good. Tap the one closest to yours and you start right there.</span></p>
+    <div class="persona-tabs gift-tabs" id="giftTabs" role="tablist">
+      <button type="button" class="persona-tab active" data-tab="pareja" role="tab"><span class="es">Pareja</span><span class="en">Partner</span></button>
+      <button type="button" class="persona-tab" data-tab="familia" role="tab"><span class="es">Familia</span><span class="en">Family</span></button>
+      <button type="button" class="persona-tab" data-tab="mascota" role="tab"><span class="es">Mascotas</span><span class="en">Pets</span></button>
+      <button type="button" class="persona-tab" data-tab="ocasiones" role="tab"><span class="es">Ocasiones</span><span class="en">Occasions</span></button>
+    </div>
     <div class="gift-grid" id="giftGrid"></div>
   </div>
 </section>
 
-<!-- MOMENTO / OCASIÓN — mismo mecanismo que "para quién", pero por evento -->
-<section class="gift-section moment-section" id="momentos">
+<!-- RECIÉN EMPEZAMOS + GARANTÍAS (fusión de reviews + trust) -->
+<section class="trust-section" id="opiniones">
   <div class="container">
-    <p class="s-tag"><span class="es">EL MOMENTO</span><span class="en">THE MOMENT</span></p>
-    <h2 class="s-h2"><span class="es">Ese momento especial<br>merece verlo cada día</span><span class="en">That special moment<br>deserves to be seen every day</span></h2>
-    <p class="s-lead"><span class="es">Pasó una vez. En la pared pasa todos los días.</span><span class="en">It happened once. On the wall it happens every day.</span></p>
-    <div class="gift-grid gift-grid-sm" id="momentGrid"></div>
-  </div>
-</section>
-
-<!-- GALLERY CAROUSEL -->
-<section class="gallery-section" id="galeria">
-  <div class="container">
-    <div class="gallery-header">
-      <div>
-        <p class="s-tag"><span class="es">Ideas</span><span class="en">Ideas</span></p>
-        <h2 class="s-h2"><span class="es">Fotos que quedan bien en aluminio</span><span class="en">Photos that work well on aluminium</span></h2>
-        <p class="s-lead" style="margin-top:10px"><span class="es">Ejemplos de referencia. Las que tienen buena luz y contraste son las que más ganan con el brillo del metal.</span><span class="en">Reference examples. Photos with good light and contrast gain the most from the metal's gloss.</span></p>
-      </div>
-      <div class="carousel-arrows">
-        <button class="c-btn" onclick="gallerySlide(-1)">←</button>
-        <button class="c-btn" onclick="gallerySlide(1)">→</button>
-      </div>
+    <div class="reviews-header">
+      <p class="s-tag"><span class="es">Recién empezamos</span><span class="en">We're just starting</span></p>
+      <h2 class="s-h2"><span class="es">Somos una marca nueva.<br>Todavía no tenemos reseñas.</span><span class="en">We're a new brand.<br>No reviews yet.</span></h2>
+      <p class="s-lead" style="margin:16px auto 0">
+        <span class="es">Preferimos decírtelo antes que inventarnos estrellas. Si haces uno de los primeros pedidos y nos mandas una foto de cómo queda en tu casa, te devolvemos el 50%. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
+        <span class="en">We'd rather tell you than invent star ratings. If you place one of the first orders and send us a photo of it on your wall, we refund you 50%. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
+      </p>
     </div>
-    <div class="gallery-track-wrap">
-      <div class="gallery-track" id="galleryTrack">
-        <div class="g-card"><div class="g-card-bg gc1" style="background-image:url('fotos/stock/1741509541812-640x800.webp')"></div></div>
-        <div class="g-card"><div class="g-card-bg gc2" style="background-image:url('fotos/stock/1600489000022-640x800.webp')"></div></div>
-        <div class="g-card"><div class="g-card-bg gc3" style="background-image:url('fotos/stock/1668911494509-640x800.webp')"></div></div>
-        <div class="g-card"><div class="g-card-bg gc4" style="background-image:url('fotos/stock/1755720234057-640x800.webp')"></div></div>
-        <div class="g-card"><div class="g-card-bg gc5" style="background-image:url('fotos/stock/1617228069096-640x800.webp')"></div></div>
-        <div class="g-card"><div class="g-card-bg gc6" style="background-image:url('fotos/stock/1694889649834-640x800.webp')"></div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TRUST -->
-<section class="trust-section">
-  <div class="container">
     <div class="trust-grid">
       <div class="trust-item reveal">
         <div class="trust-icon">
@@ -2122,20 +1891,6 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
         <h3><span class="es">Si algo sale mal</span><span class="en">If something's wrong</span></h3>
         <p><span class="es">Si llega defectuoso o dañado en el envío, lo reimprimimos sin coste.</span><span class="en">If it arrives faulty or damaged in transit, we reprint it at no cost.</span></p>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- MARCA NUEVA — honestidad en vez de reseñas inventadas -->
-<section class="reviews-section" id="opiniones">
-  <div class="container">
-    <div class="reviews-header">
-      <p class="s-tag"><span class="es">Recién empezamos</span><span class="en">We're just starting</span></p>
-      <h2 class="s-h2"><span class="es">Somos una marca nueva.<br>Todavía no tenemos reseñas.</span><span class="en">We're a new brand.<br>No reviews yet.</span></h2>
-      <p class="s-lead" style="margin:16px auto 0">
-        <span class="es">Preferimos decírtelo antes que inventarnos estrellas. Si haces uno de los primeros pedidos y nos mandas una foto de cómo queda en tu casa, te devolvemos el 50%. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
-        <span class="en">We'd rather tell you than invent star ratings. If you place one of the first orders and send us a photo of it on your wall, we refund you 50%. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
-      </p>
     </div>
   </div>
 </section>
@@ -2352,23 +2107,6 @@ function toggleLang(){
   document.getElementById('footer-lang-text').textContent=txt;
 }
 
-// ── GALLERY CAROUSEL ──
-let gpos=0;
-function gallerySlide(dir){
-  const track=document.getElementById('galleryTrack');
-  const CARD=230,GAP=12;
-  const n=track.querySelectorAll('.g-card').length;
-  const vis=Math.floor(track.parentElement.offsetWidth/(CARD+GAP));
-  const max=-((n-vis)*(CARD+GAP));
-  gpos=Math.min(0,Math.max(max,gpos-dir*(CARD+GAP)));
-  track.style.transform=`translateX(${gpos}px)`;
-}
-(function(){
-  const t=document.getElementById('galleryTrack');
-  let sx=0;
-  t.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
-  t.addEventListener('touchend',e=>{const dx=sx-e.changedTouches[0].clientX;if(Math.abs(dx)>40)gallerySlide(dx>0?1:-1)});
-})();
 
 // ── CARRUSEL DE PRODUCTOS (scroll-snap nativo: funciona igual de bien a dedo que con flechas) ──
 (function(){
@@ -2576,7 +2314,7 @@ document.addEventListener('keydown',e=>{
 <script>
 /* Combinaciones en entorno real (fotos/_build_combis.py). Una misma tarjeta sirve para el
    carrusel de paredes, "a quién regalas" y "momentos": cambia el grupo y el texto de abajo.
-   El enlace abre pared2d.html en ESA composición y ESE entorno, así que el cliente
+   El enlace abre cuadro.html en ESA composición y ESE entorno, así que el cliente
    sigue justo desde lo que acaba de ver. */
 (function(){
   var C = window.MOMENTURIES_COMBIS || [];
@@ -2608,7 +2346,7 @@ document.addEventListener('keydown',e=>{
   function card(c, big){
     var a = document.createElement('a');
     a.className = 'gift-card' + (big ? '' : ' gift-card-sm');
-    a.href = 'pared2d.html?pared=' + c.wall + '&entorno=' + c.room;
+    a.href = 'cuadro.html?pared=' + c.wall + '&entorno=' + c.room;
     var cp = COPY[c.id];
     a.innerHTML =
       '<span class="gift-img"><img src="' + c.img + '" alt="' + c.es + ': ' + c.wallEs + ' en ' + c.roomEs.toLowerCase() + '" loading="lazy" width="720" height="540">' +
@@ -2627,8 +2365,26 @@ document.addEventListener('keydown',e=>{
   var track = document.getElementById('combiTrack');
   if(track) C.filter(function(c){ return c.group === 'combi'; }).forEach(function(c){ track.appendChild(card(c, true)); });
 
+  /* para quién + momentos en una sola rejilla, por pestañas (como la sección vieja) */
+  var TAB_OF = {
+    'quien-pareja':'pareja', 'mom-boda':'pareja', 'mom-aniversario':'pareja',
+    'quien-padres':'familia', 'quien-abuelos':'familia', 'quien-hijos':'familia', 'quien-hermanos':'familia',
+    'mom-nacimiento':'familia', 'mom-padres-madres':'familia',
+    'quien-mascota':'mascota'
+  };   // el resto (amigos y las demás ocasiones) va a Ocasiones
   var gift = document.getElementById('giftGrid');
-  if(gift) C.filter(function(c){ return c.group === 'quien'; }).forEach(function(c){ gift.appendChild(card(c, true)); });
+  if(gift){
+    C.filter(function(c){ return c.group === 'quien' || c.group === 'momento'; }).forEach(function(c){
+      var a = card(c, true); a.dataset.tab = TAB_OF[c.id] || 'ocasiones'; gift.appendChild(a);
+    });
+    var showTab = function(k){
+      gift.querySelectorAll('.gift-card').forEach(function(a){ a.hidden = a.dataset.tab !== k; });
+      document.querySelectorAll('#giftTabs .persona-tab').forEach(function(b){
+        var on = b.dataset.tab === k; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    };
+    document.querySelectorAll('#giftTabs .persona-tab').forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+    showTab('pareja');
+  }
 
   var mom = document.getElementById('momentGrid');
   if(mom) C.filter(function(c){ return c.group === 'momento'; }).forEach(function(c){ mom.appendChild(card(c, false)); });
@@ -2641,7 +2397,6 @@ function combiSlide(dir){
   t.scrollBy({ left: dir * ((c ? c.getBoundingClientRect().width : 320) + 18), behavior: 'smooth' });
 }
 </script>
-<script src="angles.js?v=b912a132"></script>
 <script src="photo-handoff.js?v=6b7a4858"></script>
 </body>
 </html>

@@ -140,6 +140,12 @@
 
     <div class="txt-block" id="txtBlock">
       <p class="txt-block-title"><span class="es">Texto</span><span class="en">Text</span></p>
+      <div class="face-tabs" id="faceTabs" role="group" aria-label="Cara del cuadro">
+        <button type="button" class="face-tab active" data-face="front" aria-pressed="true"><span class="es">Delante</span><span class="en">Front</span></button>
+        <button type="button" class="face-tab" data-face="back" aria-pressed="false">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+          <span class="es">Ver detrás</span><span class="en">See the back</span></button>
+      </div>
       <p class="config-label txt-sub"><span class="es">Frase delante</span><span class="en">Front caption</span></p>
       <input class="txt-input" id="frontText" maxlength="42" placeholder="Para siempre juntos">
       <div class="txt-row">
@@ -560,6 +566,10 @@ function tune(t){
 /* ═══════════ PÓSTERES ═══════════ */
 const POSTERS = [];
 let selected = 0, panelOpen = false, dirty3D = true;
+/* cara que se está viendo del cuadro que se edita (botón Delante/Detrás y campos de texto).
+   Con entorno no gira la escena: el cuadro se despega de la pared, se acerca y se da la vuelta
+   él solo (showcasePose). FIT = el último encuadre de layout(), para saber dónde acercarlo. */
+let FACE_BACK = false, FIT = null;
 
 /* Momenturies Diferentes Formatos: cada póster tiene su PROPIA proporción real (cuadrado,
    clásico 2:3 o retrato 3:4 — ver FORMATS más abajo, junto a PRODUCTS), no una única forma
@@ -789,6 +799,7 @@ function applyMountVisual(p){
 /* gira el póster para que la pieza quede a la vista al elegirla */
 function showMountPose(p){
   const id = mountOf(p);
+  if(ROOM_CFG.mode !== 'none'){ setFace(id!=='madera' && id!=='none'); return; }
   if(id==='madera')     flipToFace(restRy());         // la peana se ve de frente
   else if(id!=='none')  flipToFace(Math.PI + 0.25);   // dorso, un poco girado
 }
@@ -1029,6 +1040,7 @@ function layout(){
       py = clampIn(py,  visH/2 - (rcy + rh/2)*s, -visH/2 - (rcy - rh/2)*s);
     }
   }
+  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH };
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
@@ -1088,10 +1100,45 @@ function applySelection(){
   }
   POSTERS.forEach((p,i)=>{
     const on = editing && i === selected;
-    const base = p.sizeScale || 1;
-    const t = pos[i] || {x:p.baseX||0, y:p.baseY||0};
-    gsap.to(p.rig.position, { x:t.x, y:t.y, z: on ? 0.35 : 0, duration:.4, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
-    gsap.to(p.rig.scale,    { x: on?base*1.05:base, y:on?base*1.05:base, z:1, duration:.4, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
+    const base = p.sizeScale || 1, sc = on ? base*1.05 : base;
+    let t = pos[i] || {x:p.baseX||0, y:p.baseY||0}, z = on ? 0.35 : 0;
+    /* dorso con entorno: primero se despega y se acerca, luego gira; al volver, al revés
+       (gira de cara y después vuelve a su sitio en la pared). Así nunca atraviesa la pared. */
+    const flip = !!(on && FACE_BACK && ROOM_CFG.mode !== 'none' && FIT);
+    if(flip){ t = showcasePose(p, sc); z = t.z; }
+    if(p.flipA == null){ p.flipA = 0; p.shadowK = 1; }   // gsap solo anima propiedades que ya existen
+    const turned = p.flipA > 0.01;
+    gsap.to(p.rig.position, { x:t.x, y:t.y, z, duration:.45, delay: !flip && turned ? .55 : 0, ease:'power2.inOut', overwrite:'auto', onUpdate:()=>{dirty3D=true;} });
+    gsap.to(p.rig.scale,    { x:sc, y:sc, z:1, duration:.4, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
+    gsap.killTweensOf(p, 'flipA,shadowK');
+    gsap.to(p, { flipA: flip ? Math.PI : 0, duration:.75, delay: flip ? .3 : 0, ease:'power2.inOut', onUpdate:()=>{dirty3D=true;} });
+    gsap.to(p, { shadowK: flip ? 0 : 1, duration:.25, delay: flip ? 0 : (turned ? .9 : 0), onUpdate:()=>{dirty3D=true;} });
+  });
+}
+
+/* dónde se pone el cuadro para enseñar el dorso con entorno: en el centro del hueco libre del
+   visor, a ~3/4 de su alto, y siempre lo bastante separado de la pared para girar sin tocarla */
+function showcasePose(p, sc){
+  const Z = tZ, zr = Z / BASEZ, s = FIT.s;
+  const W0 = baseW(p)*sc*s, H0 = baseH(p)*sc*s;
+  const want = Math.min(FIT.usableH*0.74, FIT.usableW*0.80 * H0/W0);     // alto en pantalla (unidades a BASEZ)
+  let zW = Z - H0*BASEZ/want;
+  zW = Math.min(Math.max(zW, s*(baseW(p)*sc/2 + 0.12)), Z*0.8);
+  const xW = FIT.cx/BASEZ*(Z - zW), yW = FIT.cy/BASEZ*(Z - zW);
+  return { x:(xW - FIT.px*zr)/s, y:(yW - FIT.py*zr)/s, z:zW/s };
+}
+
+/* Delante / Detrás del cuadro que se edita. Sin entorno gira todo, como siempre (y se acerca
+   la cámara para leer la dedicatoria); con entorno el cuadro se despega de la pared y gira solo. */
+function setFace(back){
+  FACE_BACK = !!back;
+  if(ROOM_CFG.mode === 'none'){ flipToFace(FACE_BACK ? Math.PI : 0); zoomForBack(FACE_BACK); }
+  applySelection(); syncFaceTabs();
+}
+function syncFaceTabs(){
+  document.querySelectorAll('#faceTabs [data-face]').forEach(b => {
+    const on = (b.dataset.face === 'back') === FACE_BACK;
+    b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
 }
 
@@ -1102,6 +1149,18 @@ let textDrag=null;
 const hintEl = document.getElementById('pvHint');
 
 /* gira todos los pósters hacia una cara por el camino más corto */
+/* En 2D el cuadro está quieto y de frente: con el brillo del aluminio (pensado para cuando se
+   gira) salía una mancha de luz blanca encima de la foto y un velo en los de la pared. Mientras
+   está fijo de frente se apaga casi todo el reflejo; al girarlo (dorso, 3D) vuelve poco a poco. */
+function flatTarget(p){ return isFlat() && !((p.flipA || 0) > 0.01) ? 1 : 0; }
+function applyFlatGloss(p){
+  const t = flatTarget(p);
+  p.flatK = p.flatK == null ? t : p.flatK + (t - p.flatK)*.12;
+  if(Math.abs(t - p.flatK) < 1e-3) p.flatK = t;
+  const k = p.flatK, m = p.frontMat;
+  m.clearcoat = 1 - .85*k; m.clearcoatRoughness = .02 + .33*k;
+  m.roughness = .045 + .40*k; m.envMapIntensity = 1.18 - .68*k; m.specularIntensity = 1 - .75*k;
+}
 function flipToFace(a){ tRy = a + 2*Math.PI*Math.round((cRy-a)/(2*Math.PI)); }
 /* con una pared activa la pose de reposo es de frente (como una foto de la pared) */
 function restRy(){ return WALL ? 0 : REST_RY; }
@@ -1216,8 +1275,7 @@ canvas.addEventListener('pointermove', e=>{
   if(pc>=2&&p1&&p2){
     if(e.cancelable)e.preventDefault();
     const nd=Math.hypot(p2.x-p1.x,p2.y-p1.y);
-    if(!(isFlat() && ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom)) && lpd>0)
-      tZ=Math.max(MINZ,Math.min(MAXZ,tZ*(lpd/nd)));
+    if(lpd>0) setZoom(tZ*(lpd/nd));
     lpd=nd; return;
   }
   if(textDrag){ if(e.cancelable)e.preventDefault(); moveTextTo(e.clientX,e.clientY); return; }
@@ -1256,15 +1314,18 @@ const up3d = e=>{
 
 canvas.addEventListener('wheel', e=>{
   if(e.cancelable)e.preventDefault();
-  if(isFlat() && ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom)) return;   // foto fija: es una foto, no un 3D
-  tZ=Math.max(MINZ,Math.min(MAXZ,tZ+(e.deltaY>0?.35:-.35)));
+  setZoom(tZ+(e.deltaY>0?.35:-.35));
 },{passive:false});
 
-/* botones +/− del visor: mismo paso que un golpe de rueda */
-function stepZoom(dz){
-  if(isFlat() && ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom)) return;
-  tZ=Math.max(MINZ,Math.min(MAXZ,tZ+dz));
+/* zoom (rueda, pellizco y +/−). Sobre una foto de entorno nuestra antes no había zoom; ahora se
+   puede acercar todo lo que se quiera, pero no alejar más que el encuadre de partida: más allá
+   asomarían los bordes de la foto. */
+function setZoom(z){
+  const max = (ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom)) ? BASEZ : MAXZ;
+  tZ = Math.max(MINZ, Math.min(max, z));
 }
+/* botones +/− del visor: mismo paso que un golpe de rueda */
+function stepZoom(dz){ setZoom(tZ+dz); }
 document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9));
 document.getElementById('pvZoomOut').addEventListener('click', ()=>stepZoom(.9));
 
@@ -1314,13 +1375,18 @@ function animate(){
   if(needResize){ needResize=false; resize3D(); dirty3D=true; }
   const moving = Math.abs(tRy-cRy)>1e-4 || Math.abs(tRx-cRx)>1e-4 || Math.abs(tZ-cZ)>1e-4;
   const mounting = POSTERS.some(mountAnimating);   // peana entrando/saliendo
-  if(!moving && !mounting && !dirty3D) return;     // reposo: ni render ni DOM
+  const matting = POSTERS.some(p => Math.abs(flatTarget(p) - (p.flatK ?? -1)) > 1e-3);
+  if(!moving && !mounting && !matting && !dirty3D) return;     // reposo: ni render ni DOM
   cRy+=(tRy-cRy)*.09; cRx+=(tRx-cRx)*.09; cZ+=(tZ-cZ)*.1;
   /* pared con salón geométrico: gira la habitación entera; con foto o sin pared: gira cada cuadro sobre sí mismo */
   const orbit = ROOM_CFG.mode !== 'none';   // sin entorno giran los cuadros uno a uno, haya conjunto o no: es la parte simple
   if(orbit){ orbitPivot.rotation.y=cRy; orbitPivot.rotation.x=cRx; }
   else     { orbitPivot.rotation.y=0;   orbitPivot.rotation.x=0;   }
-  POSTERS.forEach(p=>{ p.rig.rotation.y=orbit?0:cRy; p.rig.rotation.x=orbit?0:cRx; updateMountAnim(p); });
+  POSTERS.forEach(p=>{
+    p.rig.rotation.y=(orbit?0:cRy)+(p.flipA||0); p.rig.rotation.x=orbit?0:cRx; updateMountAnim(p);
+    if(p.shadow) p.shadow.material.opacity = .5*(p.shadowK ?? 1);   // despegado de la pared, sin sombra
+    applyFlatGloss(p);
+  });
   if(WALL && ROOM_CFG.mode === 'photo') alignForeground();
   if(lightRef && LIGHT_U.uLightOn.value > 0){
     lightRef.updateWorldMatrix(true, false);
@@ -1656,6 +1722,7 @@ function openPanel(){
 function closePanel(){
   if(!panelOpen) return;
   panelOpen = false; panelEl.classList.remove('open'); stage.classList.remove('panel-open');
+  FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
   flipToFace(restRy()); tRx = restRx();
   renderThumbs(); applySelection(); layout();
 }
@@ -2172,12 +2239,13 @@ function bindFront(){ const p=POSTERS[selected]; if(!p) return; p.frontText=fron
 function bindBack(){  const p=POSTERS[selected]; if(!p) return; p.backText =backInput.value;  p.backDate=backDateInput.value; applyBackText(selected); }
 [frontInput,frontDateInput].forEach(el=>el.addEventListener('input',bindFront));
 [backInput,backDateInput].forEach(el=>el.addEventListener('input',bindBack));
-[frontInput,frontDateInput].forEach(el=>el.addEventListener('focus',()=>{ flipToFace(0); zoomForBack(false); }));
+[frontInput,frontDateInput].forEach(el=>el.addEventListener('focus',()=>{ setFace(false); }));
 /* Aitor: "por detrás se tiene que ver cerca para apreciar lo que has escrito" — al escribir
    la dedicatoria la cámara se acerca sola (como el zoom manual, mismo tZ); al salir de ese
    campo vuelve a alejarse. */
-[backInput,backDateInput].forEach(el=>el.addEventListener('focus',()=>{ flipToFace(Math.PI); zoomForBack(true); }));
+[backInput,backDateInput].forEach(el=>el.addEventListener('focus',()=>{ setFace(true); }));
 [backInput,backDateInput].forEach(el=>el.addEventListener('blur',()=>{ zoomForBack(false); }));
+document.querySelectorAll('#faceTabs [data-face]').forEach(b => b.addEventListener('click', () => setFace(b.dataset.face === 'back')));
 
 /* Selector de tipografía: un botón + lista, sin <select> nativo porque no deja pintar
    cada opción con su propia fuente de forma fiable en todos los navegadores. Cada opción
@@ -2605,7 +2673,7 @@ async function restoreDesign(saved){
   try{
     const st = store();
     const savedWall = saved.wall ? findWall(saved.wall) : null;
-    if(saved.scene){ ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(saved.scene).id; VIEW = '3d'; }
+    if(saved.scene){ ROOM_BY_USER = true; ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(saved.scene).id; VIEW = '3d'; }
     if(savedWall) applyWall(savedWall, {quiet:true});
     for(let k = 0; k < saved.items.length; k++){
       const it = saved.items[k];
@@ -2847,8 +2915,10 @@ function alignForeground(){
 }
 /* una foto de entorno: las nuestras (fotos/entornos/entornos.js) o la del cliente */
 function setRoom(room){
+  FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
   ROOM = room;
   ROOM_CFG.mode = room ? 'photo' : 'none';
+  setZoom(tZ);                            // si venía alejado, que no asomen los bordes de la foto
   VIEW = '2d';                            // sobre una foto lo natural es mirarla de frente
   tRy = tRx = cRy = cRx = 0;
   layout(); renderRoomModal(); syncTools(); syncViewerHint();
@@ -2857,6 +2927,7 @@ function setRoom(room){
 /* una de las habitaciones dibujadas */
 var _flyIn = false, _flyUntil = 0;   // la próxima vez que se encuadre, viaje de la habitación al Sobremesa
 function setScene(id){
+  FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
   ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(id).id;
   if(findScene(id).restCm != null) _flyIn = true;
   VIEW = '3d';                            // si es geometría, que se note
@@ -2865,6 +2936,7 @@ function setScene(id){
 }
 /* sin entorno: el cuadro solo, que es como entra un producto suelto */
 function clearRoom(){
+  FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
   ROOM = null; ROOM_CFG.mode = 'none';
   VIEW = '3d'; tRy = tRx = cRy = cRx = 0;
   layout(); renderRoomModal(); syncTools(); syncViewerHint();
@@ -4346,8 +4418,6 @@ function applyWall(w, opts){
   if(!w) return;
   if(!wallInStock(w)){ toast('La pared «' + w.name + '» no tiene existencias ahora mismo'); return; }
   WALL = w;
-  // un conjunto sin entorno queda flotando: si no hay ninguno puesto, se pone el de por defecto
-  if(ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; VIEW = '3d'; }
   _userEdited = true;
   const n = w.pieces.length;
   // sobran cuadros: se van primero los vacíos, y si no queda otra, los últimos
@@ -4367,6 +4437,10 @@ function applyWall(w, opts){
     if(p.orient !== o) setOrientation(p, o); else applyMountVisual(p);
   });
   if(selected >= n) selected = n - 1;
+  /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
+     uno (y le quepa). Antes se ponía directamente el salón 3D. */
+  const keep = ROOM_BY_USER && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomFits(ROOM, w));
+  if(!keep){ const r = bestRoomFor(w); if(r) setRoom(r); }
   editorRootEl.classList.add('ed-wall');
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
   closePanel();
@@ -4380,6 +4454,45 @@ function applyWall(w, opts){
     const b = document.getElementById('btnSample'); if(b) b.hidden = true;
     toast('Pared «' + w.name + '» · ' + n + ' cuadros. Toca cada uno para poner tu foto');
   }
+}
+
+/* ── ENTORNO AUTOMÁTICO AL ELEGIR CONJUNTO ──
+   Se busca la foto en la que el conjunto se vea bien: que quepa en la pared libre de la foto
+   (`free`, encima de su línea de apoyo `anchorBottomY`) y que ocupe más o menos un tercio del
+   ancho de la foto. Así los conjuntos grandes caen en fotos tomadas desde lejos y los pequeños
+   en fotos más cercanas, donde no salen diminutos. Solo fotos de la orientación de la pantalla
+   (vertical en móvil, horizontal en PC). */
+let ROOM_BY_USER = false;   // el cliente eligió entorno (selector, ?entorno= o su propia pared)
+const ROOM_FILL = 0.33;
+/* dónde se cuelgan fotos de verdad: primero salón, aparador, comedor y dormitorio */
+const ROOM_CAT_PEN = { salon:0, aparador:0, comedor:.05, dormitorio:.1, despacho:.35, cocina:.35, terraza:.4, escalera:.45 };
+function roomFit(r, w){
+  if(!r.free || !r.pxPerCm) return null;
+  const cw = w.width * r.pxPerCm, ch = w.height * r.pxPerCm;
+  const fw = r.free[2] - r.free[0], fh = (r.anchorBottomY || r.free[3]) - r.free[1];
+  return { fits: cw <= fw*0.92 && ch <= fh*0.95, fill: cw / r.w };
+}
+function roomFits(r, w){ const f = roomFit(r, w); return !f || f.fits; }
+function bestRoomFor(w){
+  const want = isMobileView() ? 'v' : 'h';
+  const vistos = {}, cands = [];
+  PHOTO_ROOMS.forEach(r => {          // una por grupo, la de la orientación de la pantalla
+    const g = r.group || r.id; if(vistos[g]) return; vistos[g] = true;
+    const par = PHOTO_ROOMS.filter(x => (x.group || x.id) === g);
+    cands.push(par.find(x => x.orient === want) || par[0]);
+  });
+  const scored = [];
+  cands.forEach(r => {
+    const f = roomFit(r, w); if(!f) return;
+    const pen = ROOM_CAT_PEN[r.cat || 'salon'] ?? .3, gamer = /gaming|gamer/.test(r.id) ? 1 : 0;
+    scored.push({ r, score: Math.abs(Math.log(f.fill / ROOM_FILL)) + pen + gamer + (f.fits ? 0 : 10) });
+  });
+  if(!scored.length) return null;
+  scored.sort((a, b) => a.score - b.score);
+  /* entre las que quedan casi igual de bien, una fija por conjunto: así no caen todos en la misma */
+  const near = scored.filter(x => x.score <= scored[0].score + .12);
+  let h = 0; for(const c of w.id) h = (h*31 + c.charCodeAt(0)) >>> 0;
+  return near[h % near.length].r;
 }
 
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
@@ -4490,9 +4603,23 @@ window.MOMENTURIES_openWall = function(id){
 /* ?entorno=geo → salón geométrico (versión 1) · ?entorno=<id> → esa foto de entorno */
 /* ?entorno=salon|dormitorio (escenas dibujadas). Los ids viejos de foto (salon-claro, aparador,
    salon-luz...) ya no existen en 3D: se quedan en el salón, las fotos están en pared2d.html */
+/* 6-oct: las tarjetas de la portada, de paredes.html y de esta misma página traen aquí sus fotos de
+   entorno (antes iban a pared2d.html): ?entorno=<id de foto> pone esa foto, en su versión vertical u
+   horizontal según la pantalla. Las paredes lisas (pared-beige/blanca/gris) solo existen en 2D: aquí
+   se quedan sin entorno, con la composición sola. */
 (function roomEntry(){
   const e = new URLSearchParams(location.search).get('entorno'); if(!e) return;
-  setScene(e === 'geo' ? 'salon' : e);
+  if(!/^pared-/.test(e)) ROOM_BY_USER = true;
+  if(e === 'geo'){ setScene('salon'); return; }
+  const r = PHOTO_ROOMS.find(x => x.id === e);
+  if(r){
+    const g = r.group || r.id, want = isMobileView() ? 'v' : 'h';
+    const cands = PHOTO_ROOMS.filter(x => (x.group || x.id) === g);
+    setRoom(cands.find(x => x.orient === want) || r);
+    return;
+  }
+  if(/^pared-/.test(e)) return;
+  setScene(e);
 })();
 
 
@@ -4522,7 +4649,7 @@ function sceneCard(sc){
     img: 'fotos/escenas/' + sc.id + '.webp', dim: '3D',
     title: '<span class="es">' + sc.es + '</span><span class="en">' + sc.en + '</span>',
     sub: '<span class="es">' + sc.des + '</span><span class="en">' + sc.den + '</span>',
-    click: () => { setScene(sc.id); closeRoomModal(); }, id: sc.id
+    click: () => { ROOM_BY_USER = true; setScene(sc.id); closeRoomModal(); }, id: sc.id
   });
 }
 function photoCard(r){
@@ -4533,7 +4660,7 @@ function photoCard(r){
     img: r.thumb || r.img, dim: '2D',
     title: r.name,
     sub: '<span class="es">foto real</span><span class="en">real photo</span>',
-    click: () => { setRoom(r); closeRoomModal(); }, id: r.id
+    click: () => { ROOM_BY_USER = true; setRoom(r); closeRoomModal(); }, id: r.id
   });
 }
 /* fila de la lista: nombre, cuántas opciones hay y cuál está puesta; al tocar se despliega */
@@ -4788,6 +4915,7 @@ document.getElementById('mywallNext').addEventListener('click', () => {
   if(MW.step === 3){
     const ppc = mwPxPerCm(); if(!ppc) return;
     _userEdited = true;
+    ROOM_BY_USER = true;
     setRoom({ id:'custom', name:'Mi pared', custom:true, img: MW.img.toDataURL('image/jpeg', 0.9), w: MW.w, h: MW.h,
               pxPerCm: ppc, anchorX: MW.cx, anchorBottomY: MW.cby, fg:null, wall:null, fgDepthCm:0 });
     closeMyWall();
