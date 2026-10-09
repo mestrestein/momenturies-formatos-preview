@@ -9,6 +9,12 @@ Este repositorio ES la web publicada en **https://momenturies.com**.
 - Los precios de verdad están en Shopify. Los «Desde X €» de las páginas están escritos a mano: si cambia un precio, cambiarlo en Shopify y aquí.
 - No se publican los archivos que empiezan por «_», ni los que llevan LEEME o BACKUP en el nombre.
 
+## Dónde está cada texto
+
+- La portada es index.html. momenturies.html es una copia idéntica: si se cambia una, cambiar también la otra.
+- Los textos de la portada (titular, subtítulo, botones…) están escritos en index.html, dentro de los <span class="es"> y <span class="en"> (español e inglés). Hay que cambiar los dos idiomas.
+- angles.js YA NO SE USA: la portada no lo carga. Cambiar textos ahí no tiene ningún efecto en la web.
+
 ## Cómo cambiar algo
 
 Desde Claude, con el conector «Vestuario Momenturies» (https://staff.momenturies.com/mcp): se pide el cambio, Claude enseña qué va a tocar, se confirma y en 2 minutos está en la web.
