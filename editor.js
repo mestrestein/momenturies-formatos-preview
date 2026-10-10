@@ -1439,6 +1439,7 @@ function ingestFiles(files, mode){
       if(!WALL && p.orient !== o) setOrientation(p, o); else { applyFrontTexture(i); }
       if(i===selected) syncConfigUI();
       if(WALL) syncWallBar();
+      updateTotal();   // con una foto más cambia el total (y el tramo de descuento)
       URL.revokeObjectURL(url);
       // Como en Mixtiles: nada más elegir la foto se pregunta el formato y el encuadre en la
       // misma pantalla — antes la foto se aplicaba en silencio con el formato que hubiera
@@ -1825,10 +1826,11 @@ async function checkoutWithShopify(){
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
-    if(p.backText && p.backText.trim()){
-      attributes.push({key:'Dedicatoria (dorso)', value:p.backText.trim()});
-      if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
-    }
+    if(p.frontDate && p.frontDate.trim()) attributes.push({key:'Fecha (frontal)', value:p.frontDate.trim()});
+    if(p.backText && p.backText.trim()) attributes.push({key:'Dedicatoria (dorso)', value:p.backText.trim()});
+    if(p.backDate && p.backDate.trim()) attributes.push({key:'Fecha (dorso)', value:p.backDate.trim()});
+    // el dorso puede llevar solo fecha: la imagen va siempre que haya algo detrás
+    if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');

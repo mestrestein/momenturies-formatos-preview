@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Futsides – Visor 3D v2</title>
+<title>Momenturies · Así se cuelga</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
@@ -393,7 +393,7 @@ function createLeafTex() {
   x.fillStyle = '#e07b00'; x.fillRect(0,0,512,724);
   x.fillStyle = '#f0900a'; x.fillRect(0,0,512,700);
   x.fillStyle = '#b35e00'; x.fillRect(0,0,512,58);
-  x.fillStyle = '#fff'; x.font = 'bold 18px sans-serif'; x.fillText('Futsides', 22, 38);
+  x.fillStyle = '#fff'; x.font = 'bold 18px sans-serif'; x.fillText('Momenturies', 22, 38);
   x.font = '11px sans-serif'; x.textAlign = 'right'; x.fillStyle = '#fff';
   x.fillText('1 SOLO USO', 490, 30); x.fillText('RETIRA ▲', 490, 48);
   x.fillStyle = '#1a1a1a'; x.font = 'bold 32px sans-serif'; x.textAlign = 'center';
@@ -437,26 +437,26 @@ function createPosterBackTex() {
     x.fillStyle='#cfc8c0'; x.fillRect(cx+4,cy+4,26,26);
     x.fillStyle='#111'; x.fillRect(cx+9,cy+9,16,16);
   });
-  x.fillStyle='#555'; x.font='10px sans-serif'; x.textAlign='center'; x.fillText('futsides.com',405,198);
+  x.fillStyle='#555'; x.font='10px sans-serif'; x.textAlign='center'; x.fillText('momenturies.com',405,198);
   x.strokeStyle='#aaa'; x.lineWidth=1; x.beginPath(); x.moveTo(50,220); x.lineTo(462,220); x.stroke();
   x.fillStyle='#2b2b2b'; x.font='bold 20px sans-serif'; x.fillText('IMÁN ADHERIDO',256,270);
   x.fillStyle='#555'; x.font='12px sans-serif'; x.fillText('La misma pieza magnética va pegada al reverso',256,294);
   x.fillStyle='#444'; x.font='12px sans-serif'; x.fillText('Imán en relieve pegado directamente al aluminio',256,585);
 
-  // ── FUTSIDES brand mark – top & bottom ──
+  // ── marca – arriba y abajo ──
   x.save();
-  x.font = 'bold 34px sans-serif';
-  x.letterSpacing = '6px';
+  x.font = 'bold 24px sans-serif';
+  x.letterSpacing = '5px';
   // Top – left of QR block
   x.textAlign = 'left';
-  x.fillStyle = 'rgba(255,255,255,0.35)'; x.fillText('FUTSIDES', 51, 69);
-  x.fillStyle = 'rgba(0,0,0,0.18)';       x.fillText('FUTSIDES', 50, 67);
-  x.fillStyle = '#6b6560';                x.fillText('FUTSIDES', 50, 68);
+  x.fillStyle = 'rgba(255,255,255,0.35)'; x.fillText('MOMENTURIES', 51, 69);
+  x.fillStyle = 'rgba(0,0,0,0.18)';       x.fillText('MOMENTURIES', 50, 67);
+  x.fillStyle = '#6b6560';                x.fillText('MOMENTURIES', 50, 68);
   // Bottom – centered
   x.textAlign = 'center';
-  x.fillStyle = 'rgba(255,255,255,0.35)'; x.fillText('FUTSIDES', 257, 677);
-  x.fillStyle = 'rgba(0,0,0,0.18)';       x.fillText('FUTSIDES', 256, 675);
-  x.fillStyle = '#6b6560';                x.fillText('FUTSIDES', 256, 676);
+  x.fillStyle = 'rgba(255,255,255,0.35)'; x.fillText('MOMENTURIES', 257, 677);
+  x.fillStyle = 'rgba(0,0,0,0.18)';       x.fillText('MOMENTURIES', 256, 675);
+  x.fillStyle = '#6b6560';                x.fillText('MOMENTURIES', 256, 676);
   x.restore();
 
   return new THREE.CanvasTexture(c);
