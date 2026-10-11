@@ -1,4 +1,5 @@
-/* photo-handoff.js — pasar LA FOTO del cliente de una página a otra sin perder resolución.
+/* photo-handoff.js — pasar LAS FOTOS del cliente de una página a otra sin perder resolución.
+   (11-oct: antes solo dejaba elegir una; ahora las que quiera, y se guarda la lista.)
    La landing la guarda al elegirla y la página de producto la recoge y abre el editor con ella.
 
    Se usa IndexedDB (no localStorage) a propósito: guarda el File original tal cual, sin
@@ -42,7 +43,7 @@
 
   var API = {
     put: function (file) { return tx('readwrite', function (s) { s.put(file, KEY); }); },
-    // devuelve el File y lo borra: solo se recoge una vez
+    // devuelve lo guardado (un File o una lista de File) y lo borra: solo se recoge una vez
     take: function () {
       return tx('readonly', function (s) { return s.get(KEY); }).then(function (file) {
         if (file) tx('readwrite', function (s) { s.delete(KEY); }).catch(function () {});
@@ -58,7 +59,7 @@
     if (!links.length || !window.indexedDB) return;
 
     var input = document.createElement('input');
-    input.type = 'file'; input.accept = 'image/*'; input.hidden = true;
+    input.type = 'file'; input.accept = 'image/*'; input.multiple = true; input.hidden = true;
     document.body.appendChild(input);
     var dest = 'cuadro.html';
 
@@ -72,10 +73,10 @@
     });
 
     input.addEventListener('change', function () {
-      var file = input.files && input.files[0];
-      if (!file) return;
+      var files = [].slice.call(input.files || []);
+      if (!files.length) return;
       links.forEach(function (a) { a.classList.add('is-loading'); });
-      API.put(file)
+      API.put(files)
         .then(function () { location.href = dest + (dest.indexOf('?') < 0 ? '?' : '&') + 'foto=1'; })
         .catch(function () { location.href = dest; });   // si IndexedDB falla, se va igual
     });

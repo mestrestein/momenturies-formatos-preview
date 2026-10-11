@@ -428,6 +428,8 @@ function roomsForCat(cat){
     const g = r.group || r.id;
     if(vistos[g]) return;
     vistos[g] = true;
+    /* con un conjunto puesto, la foto del grupo donde se ve bien (o ninguna: ver roomOk) */
+    if(WALL){ const ok = roomFor(r, WALL); if(ok) out.push(ok); return; }
     const cands = all.filter(x => (x.group || x.id) === g);
     out.push(cands.find(x => x.orient === want) || cands[0]);
   });
@@ -1012,16 +1014,30 @@ function layout(){
       /* La foto tapa el visor y el cuadro sale al tamaño que le toca sobre ella. Antes había
          un `Math.max(sCover, sFit*0.85)` para que la composición no quedara pequeña, pero con
          un cuadro suelto sFit es enorme y ampliaba la habitación hasta lo absurdo. */
-      s = Math.min(sFit, sCover);
-      px = -visW * (rightPx/(2*wpx));
-      py =  visH * ((botPx-topPx)/(2*hpx));
-      /* Con un cuadro suelto sobra mucho alto por debajo y se veía solo pared: la vista baja
-         hasta 45 cm para que entre el mueble. Con una composición grande apenas sobra nada y
-         el sesgo se queda en casi cero. */
-      py += Math.min(Math.max(0, visH/s - totalH) * 0.35, 45*CM) * s;
+      const s0 = Math.min(sFit, sCover);
+      /* con conjunto, la vista se acerca a la foto (hasta ROOM_ZOOM_MAX) para que el conjunto
+         ocupe en torno al 40% del ancho (su ancho real, sin el aire de maxW); si no, uno pequeño salía perdido en la habitación */
+      s = WALL ? Math.min(sFit, Math.max(s0, Math.min(usableW*0.40/(WALL.width*CM), sCover*ROOM_ZOOM_MAX))) : s0;
       const clampIn = (v, lo, hi) => lo <= hi ? Math.max(lo, Math.min(hi, v)) : (lo + hi)/2;
-      px = clampIn(px,  visW/2 - (rcx + rw/2)*s, -visW/2 - (rcx - rw/2)*s);
-      py = clampIn(py,  visH/2 - (rcy + rh/2)*s, -visH/2 - (rcy - rh/2)*s);
+      const uTop = visH/2 - visH*topPx/hpx, uBot = -visH/2 + visH*botPx/hpx;
+      for(let i = 0; i < 14; i++){
+        px = -visW * (rightPx/(2*wpx));
+        py =  visH * ((botPx-topPx)/(2*hpx));
+        /* Con un cuadro suelto sobra mucho alto por debajo y se veía solo pared: la vista baja
+           hasta 45 cm para que entre el mueble. Con una composición grande apenas sobra nada y
+           el sesgo se queda en casi cero. */
+        let bias = Math.min(Math.max(0, visH/s - totalH) * 0.35, 45*CM) * s;
+        /* con conjunto, el sesgo no puede subirlo hasta meterlo bajo la barra de arriba */
+        if(WALL) bias = Math.min(bias, Math.max(0, uTop - visH*0.05 - (py + (fcy + totalH/2)*s)));
+        py += bias;
+        px = clampIn(px,  visW/2 - (rcx + rw/2)*s, -visW/2 - (rcx - rw/2)*s);
+        py = clampIn(py,  visH/2 - (rcy + rh/2)*s, -visH/2 - (rcy - rh/2)*s);
+        /* al acercarse, el borde de la foto puede dejar el conjunto debajo de las barras de
+           arriba o de abajo, o el mueble fuera de la vista (solo pared): entonces se acerca menos */
+        const mueble = ROOM.anchorBottomY ? py + (cy - (ROOM.anchorBottomY - ROOM.h/2)*Upx)*s >= uBot + visH*0.14 : true;
+        if(s <= s0 || (mueble && py + (fcy + totalH/2)*s <= uTop && py + (fcy - totalH/2)*s >= uBot)) break;
+        s = Math.max(s0, s*0.93);
+      }
     }
   }
   FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH };
@@ -2438,9 +2454,10 @@ addPoster();   // empieza vacío: un póster "SUBE TU FOTO" listo para personali
   if(!window.MOMENTURIES_PHOTO) return;
   if(new URLSearchParams(location.search).get('foto') !== '1') return;
   window.MOMENTURIES_PHOTO.take().then(function(file){
-    if(!file) return;
+    const files = Array.isArray(file) ? file : (file ? [file] : []);   // una (versión vieja) o varias
+    if(!files.length) return;
     openEditor();
-    ingestFiles([file], 'replace');
+    ingestFiles(files, 'replace');
     const b = document.getElementById('btnSample'); if(b) b.hidden = true;
   });
 })();
@@ -4493,8 +4510,12 @@ function applyWall(w, opts){
   if(selected >= n) selected = n - 1;
   /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
      uno (y le quepa). Antes se ponía directamente el salón 3D. */
-  const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomFits(ROOM, w));
-  if(!keep){ const r = bestRoomFor(w); if(r) setRoom(r); }
+  const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomOk(ROOM, w));
+  if(!keep){
+    /* si el cliente había elegido la habitación, primero la otra foto de esa misma (la cercana) */
+    const alt = (ROOM_BY_USER || opts.keepRoom) && ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom ? roomFor(ROOM, w) : null;
+    const r = alt || bestRoomFor(w); if(r) setRoom(r);
+  }
   editorRootEl.classList.add('ed-wall');
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
   closePanel();
@@ -4527,19 +4548,38 @@ function roomFit(r, w){
   return { fits: cw <= fw*0.92 && ch <= fh*0.95, fill: cw / r.w };
 }
 function roomFits(r, w){ const f = roomFit(r, w); return !f || f.fits; }
+/* 11-oct · Un conjunto pequeño en una foto tomada desde lejos (se ven 5 m de pared) salía enano.
+   Con conjunto el visor se acerca a la foto hasta ROOM_ZOOM_MAX (layout), y aun así una foto
+   solo vale si el conjunto ocupa al menos ROOM_MIN_FILL de su ancho: con el acercamiento queda
+   en torno a una cuarta parte de lo que se ve. Cada habitación tiene una foto de lejos y otra
+   cercana (la vertical): si la de la pantalla no vale, se usa la otra. */
+const ROOM_MIN_FILL = 0.16, ROOM_ZOOM_MAX = 1.6;
+function roomOk(r, w){
+  if(!w || r.custom) return true;
+  const f = roomFit(r, w); return !f || (f.fits && f.fill >= ROOM_MIN_FILL);
+}
+/* la foto de la habitación de r en la que el conjunto w se ve bien: la de la orientación de la
+   pantalla si puede ser, si no la otra. null = en esa habitación no queda bien. */
+function roomFor(r, w){
+  const g = r.group || r.id, want = isMobileView() ? 'v' : 'h';
+  const par = PHOTO_ROOMS.filter(x => (x.group || x.id) === g)
+    .sort((a, b) => (a.orient === want ? 0 : 1) - (b.orient === want ? 0 : 1));
+  return par.find(x => roomOk(x, w)) || null;
+}
 function bestRoomFor(w){
   const want = isMobileView() ? 'v' : 'h';
   const vistos = {}, cands = [];
-  PHOTO_ROOMS.forEach(r => {          // una por grupo, la de la orientación de la pantalla
+  PHOTO_ROOMS.forEach(r => {          // una por grupo: la de la pantalla, o la que le vaya al conjunto
     const g = r.group || r.id; if(vistos[g]) return; vistos[g] = true;
     const par = PHOTO_ROOMS.filter(x => (x.group || x.id) === g);
-    cands.push(par.find(x => x.orient === want) || par[0]);
+    cands.push(roomFor(r, w) || par.find(x => x.orient === want) || par[0]);
   });
   const scored = [];
   cands.forEach(r => {
     const f = roomFit(r, w); if(!f) return;
     const pen = ROOM_CAT_PEN[r.cat || 'salon'] ?? .3, gamer = /gaming|gamer/.test(r.id) ? 1 : 0;
-    scored.push({ r, score: Math.abs(Math.log(f.fill / ROOM_FILL)) + pen + gamer + (f.fits ? 0 : 10) });
+    const otra = r.orient && r.orient !== want ? .15 : 0;   // la foto de la otra orientación, solo si hace falta
+    scored.push({ r, score: Math.abs(Math.log(f.fill / ROOM_FILL)) + pen + gamer + otra + (f.fits ? 0 : 10) + (roomOk(r, w) ? 0 : 5) });
   });
   if(!scored.length) return null;
   scored.sort((a, b) => a.score - b.score);
@@ -4693,6 +4733,8 @@ window.MOMENTURIES_openWall = function(id, k){
   if(r){
     const g = r.group || r.id, want = isMobileView() ? 'v' : 'h';
     const cands = PHOTO_ROOMS.filter(x => (x.group || x.id) === g);
+    /* con conjunto, la foto de esa habitación donde se vea bien; si en ninguna, la mejor otra */
+    if(WALL){ const ok = roomFor(r, WALL) || bestRoomFor(WALL); if(ok){ setRoom(ok); return; } }
     setRoom(cands.find(x => x.orient === want) || r);
     return;
   }
