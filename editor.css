@@ -301,7 +301,8 @@ html.ed-locked #ptypeLabel{display:none}
 .co-card-box{display:block;border:1.5px solid var(--gray2);border-radius:10px;padding:11px 12px;
   font-size:14.5px;color:var(--light);background:var(--gray)}
 
-.co-sum{padding:18px 0 4px}
+.co-sum{padding:6px 0 4px}
+.co-sum + .co-steps{border-top:1px solid var(--gray2);margin-top:14px}
 .co-sum-line{display:flex;gap:11px;align-items:center;padding:9px 0}
 .co-sum-thumb{width:38px;height:50px;border-radius:4px;object-fit:cover;background:var(--gray);flex-shrink:0}
 .co-sum-txt{flex:1;min-width:0}

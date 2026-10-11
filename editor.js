@@ -217,13 +217,15 @@
   <div class="co-veil" id="coVeil"></div>
   <aside class="co-panel" role="dialog" aria-modal="true" aria-labelledby="coTitle">
     <div class="co-head">
-      <h2 class="co-title" id="coTitle"><span class="es">Confirmar</span><span class="en">Confirm</span></h2>
+      <h2 class="co-title" id="coTitle"><span class="es">Tu pedido</span><span class="en">Your order</span></h2>
       <button class="co-x" id="coClose" aria-label="Cerrar">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
     <div class="co-scroll">
+      <div class="co-sum" id="coSum"></div>
+
       <div class="co-steps">
 
         <section class="co-step" id="coStep-mail">
@@ -278,45 +280,17 @@
                 </select></div>
             </div>
             <div class="co-ship" id="coShipOpts"></div>
-            <button type="button" class="co-next" data-next="pago"><span class="es">Continuar</span><span class="en">Continue</span></button>
-          </div>
-        </section>
-
-        <section class="co-step" id="coStep-pago">
-          <button type="button" class="co-row" data-step="pago">
-            <span class="co-ico">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19"/></svg>
-            </span>
-            <span class="co-row-txt">
-              <span class="co-row-lbl"><span class="es">Añade el método de pago</span><span class="en">Add payment method</span></span>
-              <span class="co-row-val" id="coVal-pago"></span>
-            </span>
-            <span class="co-row-edit"><span class="es">Cambiar</span><span class="en">Change</span></span>
-          </button>
-          <div class="co-body">
-            <div class="co-demo">
-              <p><span class="es"><b>Demo.</b> Aquí va el formulario de pago de Stripe (tarjeta, Apple&nbsp;Pay y Google&nbsp;Pay). Todavía no se cobra nada.</span><span class="en"><b>Demo.</b> Stripe's payment form goes here (card, Apple&nbsp;Pay and Google&nbsp;Pay). Nothing is charged yet.</span></p>
-            </div>
-            <div class="co-card" aria-hidden="true">
-              <div class="co-card-row"><span class="co-card-lbl">Número de tarjeta</span><span class="co-card-box">•••• •••• •••• ••••</span></div>
-              <div class="co-grid2">
-                <div><span class="co-card-lbl">Caducidad</span><span class="co-card-box">MM / AA</span></div>
-                <div><span class="co-card-lbl">CVC</span><span class="co-card-box">•••</span></div>
-              </div>
-            </div>
-            <button type="button" class="co-next" data-next=""><span class="es">Usar este método</span><span class="en">Use this method</span></button>
+            <button type="button" class="co-next" data-next=""><span class="es">Continuar</span><span class="en">Continue</span></button>
           </div>
         </section>
 
       </div>
-
-      <div class="co-sum" id="coSum"></div>
     </div>
 
     <div class="co-foot">
       <div class="co-foot-total" id="coFootTotal"></div>
-      <button class="co-pay" id="coPay"><span class="es">Confirmar y pagar</span><span class="en">Confirm and pay</span></button>
-      <p class="co-legal"><span class="es">Pedido de prueba: no se cobra nada y no se envía nada.</span><span class="en">Test order: nothing is charged and nothing ships.</span></p>
+      <button class="co-pay" id="coPay"><span class="es">Pagar de forma segura</span><span class="en">Pay securely</span></button>
+      <p class="co-legal"><span class="es">El pago se hace en la página segura de la tienda, con tus datos ya rellenados.</span><span class="en">Payment happens on the store's secure page, with your details already filled in.</span></p>
     </div>
   </aside>
 </div>
@@ -1731,9 +1705,10 @@ document.getElementById('edpClose').addEventListener('click', closePanel);
 document.getElementById('edpDelete').addEventListener('click', ()=>removePoster(selected));
 
 /* ═══════════ CHECKOUT REAL: Shopify (Storefront API) + Cloudinary (subida de la foto final) ═══════════
-   Mientras SHOPIFY_DOMAIN/STOREFRONT_TOKEN estén vacíos, "Añadir al carrito" se queda en el
-   toast simulado de siempre. En cuanto se rellenen aquí (y los variantId de cada talla, más
-   abajo en PRODUCTS) el botón empieza a crear un carrito real y a mandar al checkout de Shopify. */
+   "Añadir al carrito" abre siempre el panel lateral (resumen, correo y dirección). Mientras
+   SHOPIFY_DOMAIN/STOREFRONT_TOKEN estén vacíos, el botón del panel solo enseña cómo quedaría el
+   pedido. En cuanto se rellenen aquí (y los variantId de cada talla, más abajo en PRODUCTS)
+   crea un carrito real y manda al pago de Shopify con el correo y la dirección ya puestos. */
 const SHOPIFY = {
   domain: '',              // 'tu-tienda.myshopify.com'
   storefrontToken: '',     // Admin → Apps → Desarrollar apps → tu app → Storefront API → Instalar → token
@@ -1804,17 +1779,41 @@ async function shopifyGraphQL(query, variables){
   return j.data;
 }
 
-async function shopifyCreateCart(lines){
-  const query = `mutation cartCreate($lines:[CartLineInput!]!){
-    cartCreate(input:{lines:$lines}){ cart{ checkoutUrl } userErrors{ message } }
+async function shopifyCreateCart(lines, buyerIdentity){
+  const query = `mutation cartCreate($input:CartInput!){
+    cartCreate(input:$input){ cart{ id checkoutUrl
+      deliveryGroups(first:5){ nodes{ id deliveryOptions{ handle title } } } }
+      userErrors{ message } }
   }`;
-  const data = await shopifyGraphQL(query, {lines});
-  const errs = data.cartCreate.userErrors;
-  if(errs && errs.length) throw new Error(errs.map(e=>e.message).join('; '));
-  return data.cartCreate.cart.checkoutUrl;
+  const crear = async input => {
+    const data = await shopifyGraphQL(query, {input});
+    const errs = data.cartCreate.userErrors;
+    if(errs && errs.length) throw new Error(errs.map(e=>e.message).join('; '));
+    return data.cartCreate.cart;
+  };
+  if(!buyerIdentity) return crear({lines});
+  // si Shopify rechaza algún dato del cliente, el pedido sigue: lo rellenará en la página de pago
+  try{ return await crear({lines, buyerIdentity}); }
+  catch(e){ console.warn('[Momenturies] Carrito sin datos del cliente:', e.message); return crear({lines}); }
 }
 
-async function checkoutWithShopify(){
+/* deja marcado en Shopify el envío exprés si se eligió en el panel (el estándar ya sale por defecto) */
+async function shopifySelectShipping(cart, shipId){
+  if(shipId !== 'exp') return;
+  try{
+    const sel = [];
+    for(const g of cart.deliveryGroups.nodes){
+      const o = g.deliveryOptions.find(o => /expr[eé]s|express/i.test(o.title));
+      if(o) sel.push({deliveryGroupId:g.id, deliveryOptionHandle:o.handle});
+    }
+    if(!sel.length) return;
+    await shopifyGraphQL(`mutation($cartId:ID!, $sel:[CartSelectedDeliveryOptionInput!]!){
+      cartSelectedDeliveryOptionsUpdate(cartId:$cartId, selectedDeliveryOptions:$sel){ userErrors{ message } }
+    }`, {cartId:cart.id, sel});
+  }catch(e){ console.warn('[Momenturies] No se pudo marcar el envío:', e.message); }
+}
+
+async function checkoutWithShopify(buyerIdentity, shipId){
   const lines = [];
   for(const p of POSTERS){
     if(!p.srcImg) continue;
@@ -1834,7 +1833,9 @@ async function checkoutWithShopify(){
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');
-  return shopifyCreateCart(lines);
+  const cart = await shopifyCreateCart(lines, buyerIdentity);
+  await shopifySelectShipping(cart, shipId);
+  return cart.checkoutUrl;
 }
 
 /* ═══════════ 3 PRODUCTOS: metálico (M+) / sobremesa de madera (S) / imán nevera (XS) ═══════════ */
@@ -2359,26 +2360,11 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
   const lowRes = POSTERS.some(p=>p.srcImg && photoIsLowRes(p));
 
-  if(!SHOPIFY.domain || !SHOPIFY.storefrontToken){
-    // sin tienda conectada: se abre el checkout en panel, con el pago simulado
-    openCheckout();
-    return;
-  }
   if(lowRes){
     toast('Alguna foto se vería algo borrosa a este tamaño. Seguimos con el pedido igualmente.');
   }
-
-  const btn = document.getElementById('addToCart');
-  btn.disabled = true; const oldHtml = btn.innerHTML;
-  btn.innerHTML = '<span class="es">Preparando pedido…</span><span class="en">Preparing order…</span>';
-  try{
-    const checkoutUrl = await checkoutWithShopify();
-    window.location.href = checkoutUrl;
-  }catch(err){
-    console.error(err);
-    toast('No se ha podido crear el pedido: ' + err.message);
-    btn.disabled = false; btn.innerHTML = oldHtml;
-  }
+  // el carrito es el panel lateral: de ahí se pasa al pago
+  openCheckout();
 });
 
 /* ═══════════ ABRIR / CERRAR EDITOR ═══════════ */
@@ -2468,10 +2454,10 @@ if(_urlType && PRODUCTS[_urlType]){
 
 
 /* ═══════════ CHECKOUT EN LA PROPIA PÁGINA (panel lateral, patrón Mixtiles) ═══════════
-   Recoge correo, dirección y método de pago sin salir del editor, y enseña el resumen.
-   El paso de pago es una MAQUETA: aquí va el Payment Element de Stripe cuando haya cuenta
-   y dominio. Nada de esto cobra ni envía todavía.
-   PENDIENTE DE MARC: las tarifas de envío de abajo son un marcador de posición. */
+   Es el carrito: enseña el resumen y recoge correo y dirección sin salir del editor.
+   El botón final crea el carrito en Shopify con esos datos y lleva a su página de pago.
+   Las tarifas de envío de abajo son las mismas que tiene la tienda en Shopify: si se cambian
+   allí, hay que cambiarlas aquí. */
 const SHIPPING = {
   ES: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'3-5 días laborables', days:'3-5 working days', price:4.95, free:60},
         {id:'exp', es:'Envío exprés',   en:'Express shipping',  dias:'1-2 días laborables', days:'1-2 working days', price:9.95, free:null} ],
@@ -2480,7 +2466,7 @@ const SHIPPING = {
 };
 const eur = n => n.toFixed(2).replace('.', ',') + '€';
 const coEl = id => document.getElementById(id);
-const CO = { step:'mail', ship:'std', mail:'', envio:null, pago:false };
+const CO = { step:'mail', ship:'std', mail:'', envio:null };
 
 
 function coShipOpts(){ return SHIPPING[(coEl('coCountry')||{}).value || 'ES'] || SHIPPING.ES; }
@@ -2529,7 +2515,7 @@ function coRenderSum(){
 
 function coOpen(name){
   CO.step = name;
-  ['mail','envio','pago'].forEach(k=>{
+  ['mail','envio'].forEach(k=>{
     const s = coEl('coStep-'+k); if(s) s.classList.toggle('open', k===name);
   });
   const first = coEl('coStep-'+name); if(first){ const i=first.querySelector('.co-in'); if(i) setTimeout(()=>i.focus(),120); }
@@ -2563,15 +2549,31 @@ function coValid(name){
     }
     return ok;
   }
-  if(name==='pago'){ CO.pago = true; coMarkDone('pago', 'Tarjeta · demo'); return true; }
   return true;
+}
+
+/* correo y dirección del panel, en el formato del carrito de Shopify */
+function coBuyerIdentity(){
+  const id = {email: CO.mail};
+  const e = CO.envio;
+  // "Resto de Europa" no es un país concreto: la dirección se termina en la página de pago
+  if(e && e.country !== 'EU'){
+    const [firstName, ...rest] = e.name.split(/\s+/);
+    const deliveryAddress = {firstName, lastName:rest.join(' '), address1:e.addr, zip:e.zip, city:e.city, country:e.country};
+    const tel = e.phone.replace(/[^\d+]/g, '');
+    if(/^\+\d{8,15}$/.test(tel)) deliveryAddress.phone = tel;
+    else if(e.country==='ES' && /^[6-9]\d{8}$/.test(tel)) deliveryAddress.phone = '+34' + tel;
+    id.countryCode = e.country;
+    id.deliveryAddressPreferences = [{deliveryAddress}];
+  }
+  return id;
 }
 
 function openCheckout(){
   const items = POSTERS.filter(p=>p.srcImg);
   if(!items.length){ toast('Sube al menos una foto primero'); return; }
   coRenderShip(); coRenderSum();
-  const next = !CO.mail ? 'mail' : (!CO.envio ? 'envio' : 'pago');
+  const next = !CO.mail ? 'mail' : (!CO.envio ? 'envio' : '');
   coOpen(next);
   coEl('coRoot').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2598,10 +2600,27 @@ function closeCheckout(){
     });
   });
   coEl('coCountry').addEventListener('change', ()=>{ coRenderShip(); coRenderSum(); });
-  coEl('coPay').addEventListener('click', ()=>{
-    for(const s of ['mail','envio','pago']){
-      if(!coValid(s)){ coOpen(s); toast(s==='mail' ? 'Falta tu correo electrónico' : s==='envio' ? 'Faltan datos de la dirección' : 'Falta el método de pago'); return; }
+  const payHtml = coEl('coPay').innerHTML;
+  // al volver atrás desde la página de pago, el botón vuelve a estar listo
+  window.addEventListener('pageshow', e=>{ if(e.persisted){ const b = coEl('coPay'); b.disabled = false; b.innerHTML = payHtml; } });
+  coEl('coPay').addEventListener('click', async ()=>{
+    for(const s of ['mail','envio']){
+      if(!coValid(s)){ coOpen(s); toast(s==='mail' ? 'Falta tu correo electrónico' : 'Faltan datos de la dirección'); return; }
     }
+    if(SHOPIFY.domain && SHOPIFY.storefrontToken){
+      const btn = coEl('coPay');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="es">Preparando pedido…</span><span class="en">Preparing order…</span>';
+      try{
+        window.location.href = await checkoutWithShopify(coBuyerIdentity(), CO.ship);
+      }catch(err){
+        console.error(err);
+        toast('No se ha podido crear el pedido: ' + err.message);
+        btn.disabled = false; btn.innerHTML = payHtml;
+      }
+      return;
+    }
+    // sin tienda conectada: solo se enseña cómo quedaría el pedido
     const total = eur(coSubtotal() + coShipCost());
     document.querySelector('.co-scroll').innerHTML = `<div class="co-ok">
       <div class="co-ok-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
