@@ -40,8 +40,10 @@
     </button>
     <div class="ed-logo">
       <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-        <polygon points="14,2 22,8 22,20 14,26 6,20 6,8" stroke="#1a1a1a" stroke-width="1.4" fill="none"/>
-        <polygon points="14,8 18,11 18,17 14,20 10,17 10,11" fill="#1a1a1a"/>
+        <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+        <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+        <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+        <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
       </svg>
       <span class="ed-logo-word">Momenturies</span>
     </div>
