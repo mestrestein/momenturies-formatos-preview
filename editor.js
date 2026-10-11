@@ -65,6 +65,14 @@
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
+    <!-- tamaño del conjunto entero: solo en los conjuntos de una sola talla (ver wallSizes) -->
+    <div class="ed-tool ed-tool-size" id="toolSize" hidden>
+      <span class="ed-tool-txt">
+        <small><span class="es">Tamaño</span><span class="en">Size</span></small>
+        <b id="edSizeInfo"></b>
+      </span>
+      <div class="ed-size-seg" id="edSizeSeg"></div>
+    </div>
     <div class="ed-tool" id="toolRoom">
       <button type="button" class="ed-tool-btn" id="btnRoom">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
@@ -2328,7 +2336,9 @@ function syncPanelHead(){
   const wn = document.getElementById('wallSizeNote');
   if(wn){
     wn.hidden = !WALL;
-    if(WALL) wn.innerHTML = '<span class="es">Talla <b>' + p.sizeKey + '</b> fijada por la pared «' + WALL.name + '». Para otra medida, cambia de pared.</span><span class="en">Size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” wall. Pick another wall for a different size.</span>';
+    if(WALL) wn.innerHTML = wallSizes(WALL).length > 1
+      ? '<span class="es">En un conjunto todos los cuadros van a la misma medida. Cámbiala arriba, en <b>Tamaño</b>.</span><span class="en">In a set every print is the same size. Change it up top, under <b>Size</b>.</span>'
+      : '<span class="es">Talla <b>' + p.sizeKey + '</b> fijada por la pared «' + WALL.name + '». Para otra medida, cambia de pared.</span><span class="en">Size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” wall. Pick another wall for a different size.</span>';
   }
 }
 function syncConfigUI(){
@@ -2675,7 +2685,7 @@ async function saveDesign(){
         _savedBlobs.add(p.uid);
       }
     }
-    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, wall: WALL ? WALL.id : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
+    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
 
@@ -2693,7 +2703,7 @@ async function restoreDesign(saved){
   _restoring = true;
   try{
     const st = store();
-    const savedWall = saved.wall ? findWall(saved.wall) : null;
+    const savedWall = saved.wall && findWall(saved.wall) ? wallAt(findWall(saved.wall), saved.wallSize) : null;
     if(saved.scene){ ROOM_BY_USER = true; ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(saved.scene).id; VIEW = '3d'; }
     if(savedWall) applyWall(savedWall, {quiet:true});
     for(let k = 0; k < saved.items.length; k++){
@@ -4413,6 +4423,27 @@ function wallPct(w){ const t = PACK_TIERS.find(t => w.pieces.length >= t.n); ret
 function wallPrice(w){ return Math.round(wallGross(w) * (100 - wallPct(w))) / 100; }
 /* un conjunto solo se puede elegir si TODAS sus tallas tienen existencias */
 function wallInStock(w){ return w.pieces.every(pc => inStock(FORMATS[pc.format].sizes.find(x => x.k === pc.size))); }
+/* ── TAMAÑO DEL CONJUNTO ── (la geometría la calcula paredes.js: MOMENTURIES_wallAt)
+   Un conjunto de una sola talla se puede pedir en las demás tallas de su formato. WALL es
+   entonces esa versión: mismo id y nombre, con .vk (talla) y .base (el original). */
+const wallAt = window.MOMENTURIES_wallAt || (w => w);
+const wallSizeKeys = window.MOMENTURIES_wallSizeKeys || (() => []);
+const HUECOS = window.MOMENTURIES_HUECOS || [];
+const huecoOf = window.MOMENTURIES_huecoOf || (() => '');
+function wallKOf(w){ return w.vk || w.pieces[0].size; }
+function wallSizes(w){ return wallSizeKeys(w).map(k => wallAt(w, k)); }     // [] si mezcla tallas
+function wallPieceDims(w){ const d = FORMATS[w.pieces[0].format].sizes.find(s => s.k === wallKOf(w)).d; return cm(d[0]) + ' × ' + cm(d[1]); }
+/* la talla pedida (o la suya) si hay existencias, y si no la más cercana que tenga · qué versión
+   se enseña en cada hueco. Las dos viven en paredes.js; aquí mandan las existencias de FORMATS. */
+function wallPick(w, k){ return window.MOMENTURIES_wallPick ? window.MOMENTURIES_wallPick(w, k, wallInStock) : (w.base || w); }
+function wallForHueco(w, h){ return window.MOMENTURIES_wallForHueco ? window.MOMENTURIES_wallForHueco(w, h, wallInStock) : w; }
+function setWallSize(k){
+  if(!WALL || wallKOf(WALL) === k) return;
+  const v = wallAt(WALL, k);
+  if(!wallInStock(v)) return;
+  applyWall(v, {quiet:true, keepRoom:true});
+  toast('Cuadros de ' + wallPieceDims(v) + ' cm. El conjunto ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm');
+}
 const wallSoldOutTag = '<em class="wall-soldout"><span class="es">Sin existencias</span><span class="en">Out of stock</span></em>';
 
 /* miniatura SVG de una pared: la dibuja paredes.js (compartida con paredes.html y la landing) */
@@ -4460,7 +4491,7 @@ function applyWall(w, opts){
   if(selected >= n) selected = n - 1;
   /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
      uno (y le quepa). Antes se ponía directamente el salón 3D. */
-  const keep = ROOM_BY_USER && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomFits(ROOM, w));
+  const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomFits(ROOM, w));
   if(!keep){ const r = bestRoomFor(w); if(r) setRoom(r); }
   editorRootEl.classList.add('ed-wall');
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
@@ -4549,6 +4580,25 @@ function syncTools(){
   if(rn) rn.innerHTML = roomLabel();
   const wx = document.getElementById('btnWallFree'); if(wx) wx.hidden = !WALL;
   const rx = document.getElementById('btnRoomFree'); if(rx) rx.hidden = ROOM_CFG.mode === 'none';
+  const ts = document.getElementById('toolSize');
+  if(ts){
+    const vs = WALL ? wallSizes(WALL) : [];
+    ts.hidden = vs.length < 2;
+    editorRootEl.classList.toggle('ed-sized', vs.length > 1);
+    if(vs.length > 1){
+      document.getElementById('edSizeInfo').innerHTML = '<span class="es">Ocupa ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span><span class="en">Takes ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span>';
+      const seg = document.getElementById('edSizeSeg'); seg.innerHTML = '';
+      vs.forEach(v => {
+        const b = document.createElement('button'), ok = wallInStock(v);
+        b.type = 'button'; b.textContent = wallPieceDims(v).replace(/ /g, '');
+        if(wallKOf(v) === wallKOf(WALL)) b.className = 'active';
+        if(!ok){ b.disabled = true; b.title = 'Sin existencias'; }
+        else b.title = 'Ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm · ' + wallPrice(v).toFixed(2).replace('.', ',') + ' €';
+        b.onclick = () => setWallSize(wallKOf(v));
+        seg.appendChild(b);
+      });
+    }
+  }
 }
 const syncWallBar = syncTools;            // nombre viejo, lo llaman varios sitios
 
@@ -4557,14 +4607,14 @@ let wallFilter = 'all';
 function renderWallModal(){
   const fl = document.getElementById('wallFilters'), grid = document.getElementById('wallGrid');
   if(!fl || !grid) return;
-  const counts = {}; WALLS.forEach(w => { counts[w.n] = (counts[w.n]||0) + 1; });
-  const keys = ['all'].concat(Object.keys(counts).sort((a,b)=>a-b));
+  /* 11-oct: el filtro es el hueco donde va (por el ancho que ocupa), no el nº de cuadros */
   fl.innerHTML = '';
-  keys.forEach(k => {
+  [{k:'all'}].concat(HUECOS).forEach(h => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'wall-filter' + (wallFilter === k ? ' active' : '');
-    b.innerHTML = k === 'all' ? '<span class="es">Todas</span><span class="en">All</span>' : k + ' <span class="es">cuadros</span><span class="en">prints</span>';
-    b.onclick = () => { wallFilter = k; renderWallModal(); };
+    b.type = 'button'; b.className = 'wall-filter' + (wallFilter === h.k ? ' active' : '');
+    b.innerHTML = h.k === 'all' ? '<span class="es">Todas</span><span class="en">All</span>'
+      : '<span class="es">' + h.es + ' <i>' + h.esR + '</i></span><span class="en">' + h.en + ' <i>' + h.enR + '</i></span>';
+    b.onclick = () => { wallFilter = h.k; renderWallModal(); };
     fl.appendChild(b);
   });
   grid.innerHTML = '';
@@ -4575,19 +4625,22 @@ function renderWallModal(){
     + '<b><span class="es">Pared libre</span><span class="en">Free wall</span></b><small><span class="es">Tú eliges cuántos cuadros y de qué tamaño.</span><span class="en">You choose how many prints and which sizes.</span></small>';
   free.onclick = () => { clearWall(); closeWallModal(); };
   if(wallFilter === 'all') grid.appendChild(free);
-  // las que tienen existencias primero, las agotadas al final
-  WALLS.filter(w => wallFilter === 'all' || String(w.n) === wallFilter)
-    .sort((a, b) => wallInStock(b) - wallInStock(a)).forEach(w => {
+  // primero las que se pueden pedir en su talla de siempre, luego las que solo quedan en otra, y las agotadas al final
+  const orden = w => wallInStock(w) ? (w.base ? 1 : 0) : 2;
+  WALLS.map(w => wallForHueco(w, wallFilter)).filter(Boolean)
+    .sort((a, b) => orden(a) - orden(b)).forEach(w => {
     const b = document.createElement('button');
     const ok = wallInStock(w);
+    const otras = wallSizes(w).filter(v => wallKOf(v) !== wallKOf(w) && wallInStock(v)).map(v => wallPieceDims(v).replace(/ /g, ''));
     b.type = 'button'; b.className = 'wall-opt' + (WALL && WALL.id === w.id ? ' active' : '') + (ok ? '' : ' sold-out'); b.dataset.id = w.id;
     if(!ok){ b.disabled = true; b.title = 'Sin existencias'; }
     b.innerHTML = '<div class="wall-opt-svg">' + wallSVG(w) + '</div>'
       + '<b>' + w.name + '</b>'
-      + '<small>' + w.n + ' <span class="es">cuadros</span><span class="en">prints</span><br>'
+      + '<small>' + w.n + ' <span class="es">cuadros' + (wallSizeKeys(w).length ? ' de ' + wallPieceDims(w) : '') + '</span><span class="en">prints' + (wallSizeKeys(w).length ? ', ' + wallPieceDims(w) : '') + '</span><br>'
       + '<span class="es">Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</span><span class="en">Takes ' + w.width + ' × ' + w.height + ' cm</span></small>'
       + '<span class="wall-opt-price">' + wallPrice(w).toFixed(2).replace('.', ',') + '€'
       + (wallPct(w) ? '<s>' + wallGross(w).toFixed(2).replace('.', ',') + '€</s>' : '') + '</span>'
+      + (otras.length ? '<em class="wall-sizes"><span class="es">También en ' + otras.join(' y ') + '</span><span class="en">Also in ' + otras.join(' and ') + '</span></em>' : '')
       + (ok ? '' : wallSoldOutTag);
     b.onclick = () => { if(!ok) return; applyWall(w); closeWallModal(); };
     grid.appendChild(b);
@@ -4610,16 +4663,18 @@ wallModalEl.addEventListener('click', e => { if(e.target === wallModalEl) closeW
 
 /* entrada directa: desde una tarjeta de paredes.html / la landing, o por URL (?pared=P12) */
 window.MOMENTURIES_openWalls = function(){ openEditorWithType('metal'); openWallModal(); };
-window.MOMENTURIES_openWall = function(id){
-  const w = findWall(id); if(!w){ openEditorWithType('metal'); return; }
+window.MOMENTURIES_openWall = function(id, k){
+  const base = findWall(id); if(!base){ openEditorWithType('metal'); return; }
   openEditorWithType('metal');
+  const w = wallPick(base, k);              // la talla pedida, o la más cercana que tenga existencias
   if(!wallInStock(w)){ openWallModal(); toast('La pared «' + w.name + '» no tiene existencias ahora mismo. Elige otra'); return; }
   applyWall(w);
+  if(wallKOf(w) !== (k || wallKOf(base))) toast('Ese tamaño está agotado. Te lo enseñamos con cuadros de ' + wallPieceDims(w) + ' cm');
 };
 (function wallEntry(){
   const qs = new URLSearchParams(location.search);
   const id = qs.get('pared') || _EDCFG.wall;
-  if(id && findWall(id)) window.MOMENTURIES_openWall(id);
+  if(id && findWall(id)) window.MOMENTURIES_openWall(id, qs.get('talla'));
 })();
 /* ?entorno=geo → salón geométrico (versión 1) · ?entorno=<id> → esa foto de entorno */
 /* ?entorno=salon|dormitorio (escenas dibujadas). Los ids viejos de foto (salon-claro, aparador,

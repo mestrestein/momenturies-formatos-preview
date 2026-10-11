@@ -53,6 +53,15 @@
   .pw-tabs button{border:1px solid var(--gray2);background:#fff;border-radius:22px;padding:9px 20px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);transition:background .15s,border-color .15s}
   .pw-tabs button:hover{border-color:#aaa}
   .pw-tabs button[aria-selected="true"]{background:#efebe5;border-color:#efebe5}
+  .pw-tabs button i{font-style:normal;font-weight:500;color:var(--mid);margin-left:5px}
+  .pw-where{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light);margin:0 0 10px}
+  /* tamaño del conjunto: mismas piezas, todas a la vez */
+  .pw-sizes{display:flex;align-items:center;gap:5px;margin-top:9px;flex-wrap:wrap}
+  .pw-sizes small{font-size:12px;color:var(--light);margin-right:3px}
+  .pw-sizes button{border:1px solid var(--gray2);background:#fff;border-radius:14px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black)}
+  .pw-sizes button:hover{border-color:#aaa}
+  .pw-sizes button.on{background:var(--black);border-color:var(--black);color:#fff}
+  .pw-sizes button:disabled{color:var(--light);text-decoration:line-through;cursor:not-allowed;border-color:var(--gray2)}
   .pw-grid{max-width:1240px;margin:0 auto;padding:22px 40px 64px;display:grid;grid-template-columns:repeat(3,1fr);gap:34px 22px}
   .pw-card{display:block;color:inherit;text-decoration:none}
   .pw-media{position:relative;border-radius:12px;overflow:hidden;background:#ece7de;aspect-ratio:1/1}
@@ -83,7 +92,9 @@
     .pw-head{padding:24px 16px 4px}
     .pw-lead{font-size:13.5px}
     .pw-tabs{gap:6px;overflow-x:auto}
-    .pw-tabs button{padding:8px 16px;font-size:13px;white-space:nowrap}
+    .pw-tabs button{padding:8px 14px;font-size:13px;white-space:nowrap}
+    .pw-tabs button i{display:block;margin:1px 0 0;font-size:11.5px}
+    .pw-sizes button{padding:6px 11px}
     .pw-grid{grid-template-columns:1fr;padding:18px 16px 48px;gap:28px}
     .pw-arr{display:none}
   }
@@ -125,15 +136,13 @@
     <a href="paredes.html" aria-current="page"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></a>
 </div>
 
-<!-- CABECERA: título y tamaños, como un catálogo -->
+<!-- CABECERA: título y huecos (dónde va), como un catálogo -->
 <section class="pw-head">
   <h1><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></h1>
-  <p class="pw-lead"><span class="es">50 composiciones con los tamaños y la separación ya pensados. Elige una, pon una foto en cada cuadro y te la mandamos entera, con los imanes. Dentro puedes cambiar la habitación y la composición cuando quieras.</span><span class="en">50 layouts with sizes and spacing already worked out. Pick one, put a photo in each print and we ship the whole wall, magnets included. Inside you can switch the room and the layout any time.</span></p>
-  <div class="pw-tabs" id="pwTabs" role="tablist">
-    <button type="button" role="tab" data-cat="s" aria-selected="true"><span class="es">Pequeño</span><span class="en">Small</span></button>
-    <button type="button" role="tab" data-cat="m" aria-selected="false"><span class="es">Mediano</span><span class="en">Medium</span></button>
-    <button type="button" role="tab" data-cat="l" aria-selected="false"><span class="es">Grande</span><span class="en">Large</span></button>
-  </div>
+  <p class="pw-lead"><span class="es">50 composiciones con la separación ya pensada. Dinos dónde va, elige la que te guste y su tamaño, pon una foto en cada cuadro y te la mandamos entera, con los imanes. Dentro puedes cambiar la habitación, la composición y el tamaño cuando quieras.</span><span class="en">50 layouts with the spacing already worked out. Tell us where it goes, pick the one you like and its size, put a photo in each print and we ship the whole wall, magnets included. Inside you can switch the room, the layout and the size any time.</span></p>
+  <p class="pw-where"><span class="es">¿Dónde va?</span><span class="en">Where does it go?</span></p>
+  <!-- las pestañas las pinta el script con MOMENTURIES_HUECOS (paredes.js) -->
+  <div class="pw-tabs" id="pwTabs" role="tablist"></div>
 </section>
 
 <!-- LAS PAREDES (las tarjetas las pinta el script de abajo con paredes.js + fotos/paredes/paredes-fotos.js) -->
@@ -152,8 +161,8 @@
   &copy; 2026 Momenturies · <a href="momenturies.html"><span class="es">Inicio</span><span class="en">Home</span></a> · <a href="producto.html"><span class="es">Todos los formatos</span><span class="en">All formats</span></a>
 </footer>
 
-<script src="paredes.js?v=2f8f144d"></script>
-<script src="fotos/paredes/paredes-fotos.js?v=e80613ea"></script>
+<script src="paredes.js?v=baf24f87"></script>
+<script src="fotos/paredes/paredes-fotos.js?v=f7528b10"></script>
 <script>
 /* Tarjetas de las paredes de ensueño. Cada tarjeta enseña la pared colgada en 3 habitaciones
    (fotos/_build_paredes_fotos.py) y lleva a cuadro.html con la habitación que se esté viendo,
@@ -168,15 +177,30 @@
   var eur = function(v){ return v.toFixed(2).replace('.', ',') + ' €'; };
   var cm = function(v){ return String(Math.round(v)); };
   var grid = document.getElementById('pwGrid'), tabs = document.getElementById('pwTabs');
+  var HUECOS = window.MOMENTURIES_HUECOS || [], FS = window.MOMENTURIES_FORMAT_SIZES || {};
+  var versions = window.MOMENTURIES_wallVersions, forHueco = window.MOMENTURIES_wallForHueco;
+  var kOf = function(v){ return v.vk || v.pieces[0].size; };
+  var dims = function(v){ var d = FS[v.pieces[0].format][kOf(v)]; return d[0] + '×' + d[1]; };
 
+  /* w = el conjunto en la talla que se enseña (el original o una versión de MOMENTURIES_wallAt).
+     Las fotos de las otras tallas van con la clave "<pared>-<talla>" (fotos/_build_paredes_fotos.py). */
   function card(w){
-    var rooms = PH[w.id] || [], ok = !w.soldOut;
+    var key = w.vk && PH[w.id + '-' + w.vk] ? w.id + '-' + w.vk : w.id;
+    var rooms = PH[key] || [], ok = !w.soldOut;
+    var link = function(r){ return 'cuadro.html?pared=' + w.id + (w.vk ? '&talla=' + w.vk : '') + '&entorno=' + (r || ''); };
     var a = document.createElement(ok ? 'a' : 'div');
     a.className = 'pw-card' + (ok ? '' : ' sold-out');
-    if(ok) a.href = 'cuadro.html?pared=' + w.id + '&entorno=' + (rooms[0] || '');
+    if(ok) a.href = link(rooms[0]);
     var slides = rooms.map(function(r, i){
-      return '<img src="fotos/paredes/' + w.id + '-' + (i + 1) + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="640" height="640" loading="lazy" decoding="async" draggable="false">';
+      return '<img src="fotos/paredes/' + key + '-' + (i + 1) + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="640" height="640" loading="lazy" decoding="async" draggable="false">';
     }).join('');
+    /* tamaño del conjunto: solo si es de una sola talla y hay más de una a elegir */
+    var all = versions(w), sizes = '';
+    if(ok && all.length > 1 && all.filter(function(v){ return !v.soldOut; }).length > 1){
+      sizes = '<div class="pw-sizes"><small><span class="es">Tamaño</span><span class="en">Size</span></small>' + all.map(function(v){
+        return '<button type="button" data-k="' + kOf(v) + '"' + (kOf(v) === kOf(w) ? ' class="on"' : '') + (v.soldOut ? ' disabled title="Sin existencias"' : '') + '>' + dims(v) + '</button>';
+      }).join('') + '</div>';
+    }
     var dots = rooms.length > 1 ? '<span class="pw-dots">' + rooms.map(function(_, i){ return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span>' : '';
     a.innerHTML = '<div class="pw-media"><div class="pw-track">' + slides + '</div>' + dots
       + (ok ? '' : '<span class="pw-badge"><span class="es">Sin existencias</span><span class="en">Out of stock</span></span>')
@@ -185,14 +209,23 @@
       + '<div class="pw-info"><div class="pw-row"><b>' + w.name + '</b>'
       + '<span class="pw-dim"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>' + cm(w.width) + 'cm × ' + cm(w.height) + 'cm</span></div>'
       + '<div class="pw-row pw-sub"><span class="pw-price">' + eur(net(w)) + (pct(w) ? ' <s>' + eur(w.price) + '</s>' : '') + '</span>'
-      + '<span class="pw-n">' + w.n + ' <span class="es">cuadros</span><span class="en">prints</span></span></div></div>';
+      + '<span class="pw-n">' + w.n + ' <span class="es">cuadros' + (all.length > 1 ? ' de ' + dims(w) : '') + '</span><span class="en">prints' + (all.length > 1 ? ', ' + dims(w) : '') + '</span></span></div>'
+      + sizes + '</div>';
+    // otro tamaño: la tarjeta se vuelve a pintar con sus medidas, su precio y sus fotos
+    a.querySelectorAll('.pw-sizes button').forEach(function(b){
+      b.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(b.disabled || b.className === 'on') return;
+        a.parentNode.replaceChild(card(window.MOMENTURIES_wallAt(w, b.getAttribute('data-k'))), a);
+      });
+    });
     // pase de fotos: el enlace se lleva la habitación que se está viendo
     var track = a.querySelector('.pw-track'), dotEls = a.querySelectorAll('.pw-dots i');
     var idx = function(){ return Math.round(track.scrollLeft / track.clientWidth); };
     var sync = function(){
       var i = idx();
       for(var j = 0; j < dotEls.length; j++) dotEls[j].className = j === i ? 'on' : '';
-      if(ok && rooms[i]) a.href = 'cuadro.html?pared=' + w.id + '&entorno=' + rooms[i];
+      if(ok && rooms[i]) a.href = link(rooms[i]);
     };
     track.addEventListener('scroll', function(){ window.requestAnimationFrame(sync); }, {passive:true});
     a.querySelectorAll('.pw-arr').forEach(function(b){
@@ -205,12 +238,21 @@
     return a;
   }
 
-  function render(cat){
+  /* 11-oct: se reparten por el hueco donde caben (ancho que ocupan), no por la categoría del
+     catálogo de referencia. Un conjunto que se puede pedir en varias tallas sale en cada hueco
+     con la talla que le toca. Primero las que se pueden pedir; las agotadas al final, apagadas. */
+  function render(h){
     grid.innerHTML = '';
-    // en el orden del catálogo de referencia, tal cual; las agotadas se quedan en su sitio, apagadas
-    WALLS.filter(function(w){ return w.cat === cat; })
-      .forEach(function(w){ grid.appendChild(card(w)); });
+    var list = WALLS.map(function(w){ return forHueco(w, h); }).filter(Boolean);
+    list.filter(function(v){ return !v.soldOut; }).concat(list.filter(function(v){ return v.soldOut; }))
+      .forEach(function(v){ grid.appendChild(card(v)); });
   }
+  HUECOS.forEach(function(h){
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('data-cat', h.k); b.setAttribute('aria-selected', 'false');
+    b.innerHTML = '<span class="es">' + h.es + '<i>' + h.esR + '</i></span><span class="en">' + h.en + '<i>' + h.enR + '</i></span>';
+    tabs.appendChild(b);
+  });
   tabs.querySelectorAll('button').forEach(function(b){
     b.addEventListener('click', function(){
       tabs.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
