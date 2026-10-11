@@ -1555,7 +1555,8 @@ function drawDateCorner(ctx, dateStr, fontStr, W, marginPx, color, strokeColor){
   let x = W - marginPx;                          // normal: pegada a la esquina, con su margen
   if(x - tw < marginPx) x = marginPx + tw;        // si es tan ancha que se saldría por la izquierda, retrocede hacia el centro
   const y = marginPx;
-  ctx.strokeText(dateStr, x, y); ctx.fillText(dateStr, x, y);
+  if(strokeColor) ctx.strokeText(dateStr, x, y);   // sin contorno si no se pasa color (dorso)
+  ctx.fillText(dateStr, x, y);
   ctx.restore();
 }
 
@@ -1641,15 +1642,16 @@ function buildBackCanvas(p, W, H){
     const sz = fit.size;
     p.backSize = sz/scl;
     x.font = fontCss(p.backFont, sz);
-    x.lineJoin='round'; x.lineWidth=Math.max(4, sz*0.22); x.strokeStyle='rgba(255,255,255,.88)';
-    x.fillStyle='rgba(38,38,40,.94)';
+    /* 12-oct: sin contorno blanco alrededor de las letras. La imprenta no imprime blanco, así
+       que el contorno no saldría y lo que se ve aquí no sería lo que llega. Tinta sólida. */
+    x.fillStyle='#262628';
     // el imán de pared (colgador por defecto) va pegado al centro del dorso: si la
     // dedicatoria cayera encima, se aparta sola al hueco libre más cercano.
     const { py, lines } = placeAwayFromObstacle(x, p.backText, px, py0, maxW, sz*1.3, W, H, 30*scl, mountOf(p) === 'iman-pared');
-    drawLines(x, lines, px, py, sz*1.3, true);
+    drawLines(x, lines, px, py, sz*1.3, false);
   }
   if(hasDate){
-    drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, 'rgba(38,38,40,.94)', 'rgba(255,255,255,.88)');
+    drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, '#262628', null);
   }
   return c;
 }
