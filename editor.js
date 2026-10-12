@@ -2906,7 +2906,7 @@ function ensurePhotoRoom(){
 function setRoomTextures(room){
   /* Siempre la FOTO ENTERA, con sus muebles. La separación pared (_wall) + muebles (_fg)
      se pensó para el paralaje del 3D, pero la capa de muebles nunca llegó a alinear bien y
-     además esos ficheros no se despliegan (pesan 4 MB y _build_netlify.py los excluye).
+     además esos ficheros no se despliegan (pesan 4 MB y no se publican).
      Con la foto entera el 2D sale nítido y el 3D no echa nada de menos. */
   const plana = true;
   const base = room.img;

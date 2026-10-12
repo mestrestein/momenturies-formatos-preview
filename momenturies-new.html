@@ -2042,13 +2042,13 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   </div>
 </section>
 
-<!-- NEWSLETTER — Netlify Forms (funciona al desplegar en Netlify; en local solo no envía) -->
+<!-- NEWSLETTER — el formulario llega al Vestuario (lo reenvía el worker de momenturies.com); en local no envía -->
 <section class="newsletter-section">
   <div class="container">
     <p class="s-tag"><span class="es" id="angleNlTag-es">Aviso de lanzamiento</span><span class="en" id="angleNlTag-en">Launch notice</span></p>
     <h2 class="s-h2"><span class="es" id="angleNlH2-es">Te avisamos cuando abramos</span><span class="en" id="angleNlH2-en">We'll tell you when we open</span></h2>
     <p class="s-lead"><span class="es" id="angleNlLead-es">Un solo correo cuando la tienda esté lista, con descuento para los primeros pedidos. Nada más.</span><span class="en" id="angleNlLead-en">One email when the store is live, with a discount for the first orders. Nothing else.</span></p>
-    <form class="nl-form" name="lanzamiento" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+    <form class="nl-form" name="lanzamiento" method="POST">
       <input type="hidden" name="form-name" value="lanzamiento"/>
       <p hidden><label>No rellenar: <input name="bot-field"/></label></p>
       <input type="email" name="email" required placeholder="tu@email.com"/>

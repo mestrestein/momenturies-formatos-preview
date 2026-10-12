@@ -1,2 +1,0 @@
-OBSOLETO: este archivo es de cuando la web se subía a Netlify a mano.
-Ya no se usa Netlify. Las instrucciones buenas están en LEEME.md.
