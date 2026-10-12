@@ -30,6 +30,9 @@
       <button type="button" id="pvZoomOut" title="Alejar" aria-label="Alejar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
+      <button type="button" id="pvBruma" class="pv-bruma" title="Bruma de los bordes: quitar / poner" aria-label="Bruma de los bordes" aria-pressed="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h16M3 13h18M5 17h14"/></svg>
+      </button>
     </div>
   </div>
 
@@ -286,7 +289,33 @@
                 <select class="co-in" id="coCountry">
                   <option value="ES">España</option>
                   <option value="PT">Portugal</option>
-                  <option value="EU">Resto de Europa</option>
+                  <optgroup label="Unión Europea">
+                    <option value="DE">Alemania</option>
+                    <option value="AT">Austria</option>
+                    <option value="BE">Bélgica</option>
+                    <option value="BG">Bulgaria</option>
+                    <option value="CY">Chipre</option>
+                    <option value="HR">Croacia</option>
+                    <option value="DK">Dinamarca</option>
+                    <option value="SK">Eslovaquia</option>
+                    <option value="SI">Eslovenia</option>
+                    <option value="EE">Estonia</option>
+                    <option value="FI">Finlandia</option>
+                    <option value="FR">Francia</option>
+                    <option value="GR">Grecia</option>
+                    <option value="HU">Hungría</option>
+                    <option value="IE">Irlanda</option>
+                    <option value="IT">Italia</option>
+                    <option value="LV">Letonia</option>
+                    <option value="LT">Lituania</option>
+                    <option value="LU">Luxemburgo</option>
+                    <option value="MT">Malta</option>
+                    <option value="NL">Países Bajos</option>
+                    <option value="PL">Polonia</option>
+                    <option value="CZ">República Checa</option>
+                    <option value="RO">Rumanía</option>
+                    <option value="SE">Suecia</option>
+                  </optgroup>
                 </select></div>
             </div>
             <div class="co-ship" id="coShipOpts"></div>
@@ -474,6 +503,9 @@ let _numEntorno = 0;                      // contador de la numeración del sele
 /* Zona NÍTIDA de cada foto, en píxeles de la foto (los mismos recortes que usa pared2d.html).
    Hacen falta porque salon.jpg y salon-claro.jpg llevan el primer plano desenfocado en el
    render original: sin recortar, el 2D enseñaba esa franja y parecía que fallaba el visor. */
+/* ROOM_LEJOS: 0 = encuadre automático del conjunto, 1 = la habitación entera (ver setZoom) */
+var ROOM_LEJOS = 0;
+var SIN_BRUMA = (() => { try{ return localStorage.getItem('mm-bruma') === 'no'; }catch(e){ return false; } })();
 const PHOTO_VIEW = {
   'salon':       { x:200, y:530, w:2000, h:1320 },
   'salon-claro': { x:200, y:530, w:2000, h:1320 },
@@ -981,6 +1013,7 @@ function layout(){
     refH = refBaseH(p0) * (p0.sizeScale||1);
   }
   let s  = Math.min(1, (usableW*0.90)/Math.max(refW,P_SHORT), (usableH*0.96)/Math.max(refH,P_SHORT));
+  let fitAuto = s, fitMin = s;
   let px = -visW * (rightPx/(2*wpx)) - fcx*s;
   let py =  visH * ((botPx-topPx)/(2*hpx)) - fcy*s;
   if(ROOM_CFG.mode === 'photo' && photoMesh && photoMesh.visible){   // con o sin conjunto: manda la foto
@@ -1014,10 +1047,17 @@ function layout(){
       /* La foto tapa el visor y el cuadro sale al tamaño que le toca sobre ella. Antes había
          un `Math.max(sCover, sFit*0.85)` para que la composición no quedara pequeña, pero con
          un cuadro suelto sFit es enorme y ampliaba la habitación hasta lo absurdo. */
-      const s0 = Math.min(sFit, sCover);
+      /* sin bruma, la foto tapa siempre todo el visor (sin franjas blancas a los lados) */
+      const s0 = SIN_BRUMA ? sCover : Math.min(sFit, sCover);
       /* con conjunto, la vista se acerca a la foto (hasta ROOM_ZOOM_MAX) para que el conjunto
          ocupe en torno al 40% del ancho (su ancho real, sin el aire de maxW); si no, uno pequeño salía perdido en la habitación */
-      s = WALL ? Math.min(sFit, Math.max(s0, Math.min(usableW*0.40/(WALL.width*CM), sCover*ROOM_ZOOM_MAX))) : s0;
+      /* 12-oct · Cuánto ocupa el conjunto depende de su ancho: los pequeños se acercan hasta un 40% del
+         ancho (con el tope de ROOM_ZOOM_MAX) y los grandes se quedan en un 28%, con más habitación alrededor */
+      const llenar = WALL ? ROOM_FILL_SMALL - (ROOM_FILL_SMALL - ROOM_FILL_BIG) * Math.max(0, Math.min(1, (WALL.width - 60) / 90)) : 0;
+      const sAuto = WALL ? Math.max(SIN_BRUMA ? s0 : 0, Math.min(sFit, Math.max(s0, Math.min(usableW*llenar/(WALL.width*CM), sCover*ROOM_ZOOM_MAX)))) : s0;
+      /* el cliente puede alejarse desde ese encuadre hasta ver la habitación entera (ROOM_LEJOS) */
+      s = s0 + (sAuto - s0) * (1 - ROOM_LEJOS);
+      fitAuto = sAuto; fitMin = s0;
       const clampIn = (v, lo, hi) => lo <= hi ? Math.max(lo, Math.min(hi, v)) : (lo + hi)/2;
       const uTop = visH/2 - visH*topPx/hpx, uBot = -visH/2 + visH*botPx/hpx;
       for(let i = 0; i < 14; i++){
@@ -1040,7 +1080,7 @@ function layout(){
       }
     }
   }
-  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH };
+  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin };
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
@@ -1321,9 +1361,46 @@ canvas.addEventListener('wheel', e=>{
    puede acercar todo lo que se quiera, pero no alejar más que el encuadre de partida: más allá
    asomarían los bordes de la foto. */
 function setZoom(z){
-  const max = (ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom)) ? BASEZ : MAXZ;
+  const foto = ROOM_CFG.mode === 'photo' && !(ROOM && ROOM.custom);
+  /* con un conjunto que se ha acercado solo, alejar más allá del encuadre de partida enseña más
+     habitación (se recalcula el encuadre, así nunca asoman los bordes de la foto) hasta verla entera */
+  const paso = (z - tZ) / (BASEZ * 0.35);
+  if(foto && FIT && FIT.sAuto > FIT.s0 * 1.01){
+    if(paso > 0 && tZ >= BASEZ - 1e-3 && ROOM_LEJOS < 1 && FIT.s > FIT.s0 * 1.01){ ROOM_LEJOS = Math.min(1, ROOM_LEJOS + paso); layout(); return; }
+    if(paso < 0 && ROOM_LEJOS > 0){ ROOM_LEJOS = Math.max(0, ROOM_LEJOS + paso); layout(); return; }
+  }
+  /* ya se ve toda la foto: si la habitación tiene otra foto tomada desde más lejos (la horizontal de
+     los conjuntos pequeños), alejar pasa a esa, enseñándola entera */
+  if(foto && paso > 0 && tZ >= BASEZ - 1e-3 && (!FIT || FIT.s <= FIT.s0 * 1.01)){
+    const g = ROOM.group || ROOM.id, ancho = r => r.w / r.pxPerCm;
+    const lejos = PHOTO_ROOMS.filter(x => (x.group || x.id) === g && x !== ROOM && ancho(x) > ancho(ROOM) * 1.15 && (!WALL || roomFits(x, WALL)))
+      .sort((a, b) => ancho(a) - ancho(b))[0];
+    if(lejos){
+      /* sin saltos: en la foto de lejos se deja la vista algo más abierta que la de antes, no la habitación entera de golpe */
+      const antes = FIT ? 1 / FIT.s : 0;
+      setRoom(lejos);
+      for(const v of [0, .2, .4, .6, .8, 1]){ ROOM_LEJOS = v; layout(); if(FIT && 1 / FIT.s >= antes * 1.3) break; }
+      return;
+    }
+  }
+  const max = foto ? BASEZ : MAXZ;
   tZ = Math.max(MINZ, Math.min(max, z));
 }
+
+/* PRUEBA (12-oct) · Bruma de los bordes: con ella, las barras de arriba y abajo se funden en blanco
+   y, si el conjunto no cabe con la foto tapando todo, quedan franjas claras a los lados. Sin ella, la
+   foto tapa siempre el visor. El botón de debajo del zoom la quita y la pone; se recuerda en el navegador. */
+(function(){
+  const b = document.getElementById('pvBruma'); if(!b) return;
+  const pintar = () => { document.getElementById('editor').classList.toggle('sin-bruma', SIN_BRUMA); b.setAttribute('aria-pressed', String(!SIN_BRUMA)); b.classList.toggle('off', SIN_BRUMA); };
+  pintar();
+  b.addEventListener('click', () => {
+    SIN_BRUMA = !SIN_BRUMA;
+    try{ localStorage.setItem('mm-bruma', SIN_BRUMA ? 'no' : 'si'); }catch(e){}
+    pintar(); layout();
+    toast(SIN_BRUMA ? 'Sin bruma en los bordes' : 'Con bruma en los bordes');
+  });
+})();
 /* botones +/− del visor: mismo paso que un golpe de rueda */
 function stepZoom(dz){ setZoom(tZ+dz); }
 document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9));
@@ -2575,7 +2652,8 @@ const coEl = id => document.getElementById(id);
 const CO = { step:'mail', ship:'std', mail:'', envio:null };
 
 
-function coShipOpts(){ return SHIPPING[(coEl('coCountry')||{}).value || 'ES'] || SHIPPING.ES; }
+/* zonas de envío de la tienda: España, Portugal y el resto de la UE (mercado «Unión Europea» en Shopify) */
+function coShipOpts(){ const c = (coEl('coCountry')||{}).value || 'ES'; return SHIPPING[c] || SHIPPING.EU; }
 function coShipSel(){ const o=coShipOpts(); return o.find(x=>x.id===CO.ship) || o[0]; }
 function coShipCost(){ const o=coShipSel(); return (o.free!=null && coSubtotal()>=o.free) ? 0 : o.price; }
 
@@ -2662,8 +2740,7 @@ function coValid(name){
 function coBuyerIdentity(){
   const id = {email: CO.mail};
   const e = CO.envio;
-  // "Resto de Europa" no es un país concreto: la dirección se termina en la página de pago
-  if(e && e.country !== 'EU'){
+  if(e){
     const [firstName, ...rest] = e.name.split(/\s+/);
     const deliveryAddress = {firstName, lastName:rest.join(' '), address1:e.addr, zip:e.zip, city:e.city, country:e.country};
     const tel = e.phone.replace(/[^\d+]/g, '');
@@ -3043,7 +3120,7 @@ function alignForeground(){
 /* una foto de entorno: las nuestras (fotos/entornos/entornos.js) o la del cliente */
 function setRoom(room){
   FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
-  ROOM = room;
+  ROOM = room; ROOM_LEJOS = 0;
   ROOM_CFG.mode = room ? 'photo' : 'none';
   setZoom(tZ);                            // si venía alejado, que no asomen los bordes de la foto
   VIEW = '2d';                            // sobre una foto lo natural es mirarla de frente
@@ -4564,6 +4641,7 @@ function disposePoster(i){
 function applyWall(w, opts){
   opts = opts || {};
   if(!w) return;
+  ROOM_LEJOS = 0;
   if(!wallInStock(w)){ toast('La pared «' + w.name + '» no tiene existencias ahora mismo'); return; }
   WALL = w;
   _userEdited = true;
@@ -4631,6 +4709,8 @@ function roomFits(r, w){ const f = roomFit(r, w); return !f || f.fits; }
    en torno a una cuarta parte de lo que se ve. Cada habitación tiene una foto de lejos y otra
    cercana (la vertical): si la de la pantalla no vale, se usa la otra. */
 const ROOM_MIN_FILL = 0.16, ROOM_ZOOM_MAX = 1.6;
+/* ancho que ocupa el conjunto en el visor: 40% hasta 60 cm de ancho, bajando hasta 28% a partir de 150 cm */
+const ROOM_FILL_SMALL = 0.40, ROOM_FILL_BIG = 0.28;
 function roomOk(r, w){
   if(!w || r.custom) return true;
   const f = roomFit(r, w); return !f || (f.fits && f.fill >= ROOM_MIN_FILL);

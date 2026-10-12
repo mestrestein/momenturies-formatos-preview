@@ -19,6 +19,9 @@
   box-shadow:0 4px 14px rgba(0,0,0,.10);transition:background .15s,transform .15s}
 .pv-zoom button:hover{background:#fff;border-color:#aaa}
 .pv-zoom button:active{transform:scale(.92)}
+.pv-zoom .pv-bruma.off{background:var(--black);color:#fff;border-color:var(--black)}
+/* prueba de la bruma: sin ella, las barras de arriba y abajo no se funden en blanco */
+.sin-bruma .ed-top,.sin-bruma .ed-bottom{background:none}
 #pvStage.panel-open .pv-zoom{display:none}  /* el panel de edición tapa ese lado de la pantalla */
 @media(max-width:480px){
   .pv-zoom{right:10px;gap:6px}
