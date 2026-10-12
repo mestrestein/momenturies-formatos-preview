@@ -1024,7 +1024,11 @@ function layout(){
   /* con el editor cerrado el escenario mide 0 y el encuadre saldría negativo (y al abrir se vería
      medio segundo de geometría del revés): se deja para el resize3D() de la apertura */
   if(!editorOpen || wpx < 2 || hpx < 2){ applySelection(); return; }
-  const topPx = 116;   // deja sitio a la barra de Conjunto/Entorno, que va arriba
+  let topPx = 116;   // deja sitio a la barra de Conjunto/Entorno, que va arriba
+  /* la barra se mide: en móvil, con conjunto, lleva una segunda fila (Tamaño) y ocupa más */
+  { const t = document.getElementById('edTools');
+    if(t){ let b = 0; for(const el of t.children){ if(el.hidden) continue; const r = el.getBoundingClientRect(); if(r.width > 1) b = Math.max(b, r.bottom); }
+      const need = b - stage.getBoundingClientRect().top + 10; if(need > topPx) topPx = Math.min(need, hpx*0.3); } }
   let botPx = WALL ? (ROOM_CFG.mode === 'photo' ? 200 : 215) : 150, rightPx = 0;   // con pared hay una barra más abajo
   /* el Sobremesa lleva la peana por debajo del cuadro: sin entorno hay que dejarle sitio, o en
      la talla grande se mete debajo de las miniaturas */
@@ -1047,6 +1051,7 @@ function layout(){
   }
   let s  = Math.min(1, (usableW*0.90)/Math.max(refW,P_SHORT), (usableH*0.96)/Math.max(refH,P_SHORT));
   let fitAuto = s, fitMin = s;
+  let apurado = false;   // el conjunto no entra entero sin alejarse más de la cuenta (ver más abajo)
   let px = -visW * (rightPx/(2*wpx)) - fcx*s;
   let py =  visH * ((botPx-topPx)/(2*hpx)) - fcy*s;
   if(ROOM_CFG.mode === 'photo' && photoMesh && photoMesh.visible){   // con o sin conjunto: manda la foto
@@ -1091,9 +1096,13 @@ function layout(){
       /* el cliente puede alejarse desde ese encuadre hasta ver la habitación entera (ROOM_LEJOS) */
       s = s0 + (sAuto - s0) * (1 - ROOM_LEJOS);
       fitAuto = sAuto; fitMin = s0;
-      const clampIn = (v, lo, hi) => lo <= hi ? Math.max(lo, Math.min(hi, v)) : (lo + hi)/2;
+      /* foto más grande que el visor: no pueden asomar sus bordes. Foto más pequeña (conjunto tan
+         grande que hay que alejarse más que la foto): con conjunto se coloca donde el conjunto
+         quede centrado, sin sacar la foto del visor; antes se centraba la foto y un conjunto alto
+         acababa debajo de la barra de arriba. */
+      const clampIn = (v, lo, hi) => lo <= hi ? Math.max(lo, Math.min(hi, v)) : (WALL ? Math.max(hi, Math.min(lo, v)) : (lo + hi)/2);
       const uTop = visH/2 - visH*topPx/hpx, uBot = -visH/2 + visH*botPx/hpx;
-      for(let i = 0; i < 14; i++){
+      for(let i = 0; i < 30; i++){
         px = -visW * (rightPx/(2*wpx));
         py =  visH * ((botPx-topPx)/(2*hpx));
         /* Con un cuadro suelto sobra mucho alto por debajo y se veía solo pared: la vista baja
@@ -1108,12 +1117,19 @@ function layout(){
         /* al acercarse, el borde de la foto puede dejar el conjunto debajo de las barras de
            arriba o de abajo, o el mueble fuera de la vista (solo pared): entonces se acerca menos */
         const mueble = ROOM.anchorBottomY ? py + (cy - (ROOM.anchorBottomY - ROOM.h/2)*Upx)*s >= uBot + visH*0.14 : true;
-        if(s <= s0 || (mueble && py + (fcy + totalH/2)*s <= uTop && py + (fcy - totalH/2)*s >= uBot)) break;
-        s = Math.max(s0, s*0.93);
+        const dentro = py + (fcy + totalH/2)*s <= uTop && py + (fcy - totalH/2)*s >= uBot;
+        /* 12-oct · un conjunto tiene que verse SIEMPRE entero: si ni con la foto tapando justo el
+           visor entra (cuelga muy arriba en la foto, o es muy alto), se aleja un poco más aunque
+           asome el borde de la foto. `apurado` avisa para que se pruebe otra habitación. */
+        const sMin = WALL ? s0*0.55 : s0;
+        apurado = !!WALL && (!dentro || s < s0*0.999);
+        if(dentro && (mueble || s <= s0)) break;
+        if(s <= (dentro ? s0 : sMin)) break;
+        s = Math.max(dentro ? s0 : sMin, s*0.94);
       }
     }
   }
-  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin };
+  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin, apurado };
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
@@ -4726,6 +4742,7 @@ function applyWall(w, opts){
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
   closePanel();
   layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
+  if(!ROOM_BY_USER) arreglarEncuadre(w);
   const hint = document.getElementById('pvHint');
   if(hint) hint.innerHTML = ROOM_CFG.mode === 'photo'
     ? '<span class="es">Toca un cuadro para poner tu foto · arrastra para verlos en 3D</span><span class="en">Tap a print to add your photo · drag to see them in 3D</span>'
@@ -4774,7 +4791,7 @@ function roomFor(r, w){
     .sort((a, b) => (a.orient === want ? 0 : 1) - (b.orient === want ? 0 : 1));
   return par.find(x => roomOk(x, w)) || null;
 }
-function bestRoomFor(w){
+function bestRoomFor(w, ranked){
   const want = isMobileView() ? 'v' : 'h';
   const vistos = {}, cands = [];
   PHOTO_ROOMS.forEach(r => {          // una por grupo: la de la pantalla, o la que le vaya al conjunto
@@ -4791,10 +4808,20 @@ function bestRoomFor(w){
   });
   if(!scored.length) return null;
   scored.sort((a, b) => a.score - b.score);
+  if(ranked) return scored.map(x => x.r);
   /* entre las que quedan casi igual de bien, una fija por conjunto: así no caen todos en la misma */
   const near = scored.filter(x => x.score <= scored[0].score + .12);
   let h = 0; for(const c of w.id) h = (h*31 + c.charCodeAt(0)) >>> 0;
   return near[h % near.length].r;
+}
+/* Si en la habitación que tocaba el conjunto no entra entero sin alejarse de más (layout lo marca
+   en FIT.apurado), se van probando las siguientes hasta dar con una donde quede bien. Solo
+   cuando la habitación la ha puesto el editor: la que elige el cliente se respeta. */
+function arreglarEncuadre(w){
+  if(!FIT || !FIT.apurado || ROOM_CFG.mode !== 'photo' || !ROOM || ROOM.custom) return;
+  const primera = ROOM, lista = (bestRoomFor(w, true) || []).filter(r => r !== primera && roomOk(r, w)).slice(0, 10);
+  for(const r of lista){ setRoom(r); if(FIT && !FIT.apurado) return; }
+  setRoom(primera);
 }
 
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
@@ -4914,7 +4941,9 @@ wallModalEl.addEventListener('click', e => { if(e.target === wallModalEl) closeW
 /* entrada directa: desde una tarjeta de paredes.html / la landing, o por URL (?pared=P12) */
 window.MOMENTURIES_openWalls = function(){ openEditorWithType('metal'); openWallModal(); };
 window.MOMENTURIES_openWall = function(id, k){
-  const base = findWall(id); if(!base){ openEditorWithType('metal'); return; }
+  let base = findWall(id); if(!base){ openEditorWithType('metal'); return; }
+  /* repetido de otro conjunto (paredes.js lo marca con `dup`): se abre aquel, en la talla de este */
+  if(base.dup && findWall(base.dup)){ k = k || base.pieces[0].size; base = findWall(base.dup); }
   openEditorWithType('metal');
   const w = wallPick(base, k);              // la talla pedida, o la más cercana que tenga existencias
   if(!wallInStock(w)){ openWallModal(); toast('La pared «' + w.name + '» no tiene existencias ahora mismo. Elige otra'); return; }

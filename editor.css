@@ -526,6 +526,10 @@ html.ed-locked #ptypeLabel{display:none}
   .ed-tool-size{gap:8px;padding:3px 4px 3px 11px;order:3}
   .ed-tool-size .ed-tool-txt b{max-width:none}
   .editor.ed-sized .pv-badge{top:158px}
+  /* 12-oct · con conjunto, la etiqueta 2D y el zoom bajan a la franja de encima de las miniaturas:
+     en medio de la pantalla quedaban encima de los cuadros */
+  .editor.ed-wall .pv-badge{top:auto;bottom:176px}
+  .editor.ed-wall .pv-zoom{top:auto;bottom:168px;transform:none;flex-direction:row}
   .ed-size-seg button{padding:6px 9px;font-size:11px}
 }
 
