@@ -122,6 +122,13 @@
 .format-chip.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .format-chip-shape{border:1.5px solid currentColor;opacity:.85}
 .format-chip small{display:block;font-size:9px;font-weight:400;opacity:.65}
+/* Sobremesa: la tarjeta de formato lleva también los cm y el precio */
+.format-chip-size{gap:3px;padding:10px 4px 9px}
+.format-chip-size .format-chip-shape{margin-bottom:3px}
+.format-chip-size small{font-size:10px;opacity:.75;margin:0}
+.format-chip-size small.format-chip-price{font-weight:700;opacity:1;font-size:11px}
+.format-chip-size.sold-out,.format-chip-size:disabled{cursor:not-allowed;color:#9a9a9a;border-style:dashed;background:#f6f5f2}
+#sizeGrid[hidden],#sizeLabel[hidden],#cropSizeGrid[hidden]{display:none!important}
 .ver-montaje{float:right;font-weight:400;text-transform:none;letter-spacing:0;color:var(--mid);font-size:11px;cursor:pointer;text-decoration:underline;background:none;border:none;font-family:var(--font-sans)}
 .ver-montaje:hover{color:var(--black)}
 

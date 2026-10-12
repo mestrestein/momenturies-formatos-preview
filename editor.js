@@ -142,7 +142,7 @@
 
     <p class="config-label" id="formatLabel"><span class="es">Formato</span><span class="en">Format</span></p>
     <div class="format-chips" id="formatChips"></div>
-    <p class="config-label"><span class="es">Tamaño</span><span class="en">Size</span></p>
+    <p class="config-label" id="sizeLabel"><span class="es">Tamaño</span><span class="en">Size</span></p>
     <div class="size-grid" id="sizeGrid"></div>
     <p class="wall-size-note" id="wallSizeNote" hidden></p>
 
@@ -2125,9 +2125,13 @@ const PRODUCTS = {
                M y L nacen con stock:false porque todavía no existen en Shopify: cuando la tienda
                tenga los SKU SOB-M y SOB-L, la lectura de Shopify les pone precio, variante y
                existencias, y se pueden elegir sin tocar nada aquí. Precios provisionales. */
-            sizes:[ {k:'S',d:[10.2,15.2],price:28.99, variantId:null},
-                    {k:'M',d:[12.7,17.8],price:34.99, variantId:null, stock:false},
-                    {k:'L',d:[20.3,25.4],price:44.99, variantId:null, stock:false} ] },
+            /* 13-oct: cada medida tiene su proporción (10×15, 13×18 y 20×25, las de foto de siempre),
+               así que formato y tamaño son la misma elección: se enseñan en una sola fila de
+               tarjetas con su forma, los cm debajo y el precio (sizeAsFormatChips). */
+            oneRow:true,
+            sizes:[ {k:'S',d:[10.2,15.2],price:28.99, variantId:null, es:'Pequeño', en:'Small'},
+                    {k:'M',d:[12.7,17.8],price:34.99, variantId:null, stock:false, es:'Mediano', en:'Medium'},
+                    {k:'L',d:[20.3,25.4],price:44.99, variantId:null, stock:false, es:'Grande', en:'Large'} ] },
   nevera: { name:'Imán',                 short:'Imán',     hanger:'iman-nevera', def:'XS',
             note:'Imán trasero incluido.',
             sizes:[ {k:'XS',d:[7,10],price:9.99, variantId:null} ] },
@@ -2226,10 +2230,37 @@ function setMount(id){
 /* formato = la PROPORCIÓN real del panel (cuadrado/clásico/retrato). Solo el Cuadro lo tiene
    — Sobremesa e Imán son una sola pieza fija, así que la fila ni se enseña. Cambiar de
    formato reconstruye la geometría del póster (ver applyProductSize → rebuildPosterGeometry). */
+/* Productos de una medida por formato (Sobremesa): una tarjeta por medida con su forma a escala
+   de su proporción, el nombre, los cm debajo y el precio. Sirve al panel y a la ventana de encuadre. */
+function sizeAsFormatChips(box, p, after){
+  box.innerHTML='';
+  sizesOf(p).forEach(s=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='format-chip format-chip-size'+(p.sizeKey===s.k?' active':'')+(inStock(s)?'':' sold-out');
+    const d=isLand(p)?[s.d[1],s.d[0]]:s.d, boxH=22, boxW=Math.max(8,Math.round(boxH*d[0]/d[1]));
+    b.innerHTML = `<span class="format-chip-shape" style="width:${boxW}px;height:${boxH}px"></span>`
+      + `<span class="es">${s.es||s.k}</span><span class="en">${s.en||s.k}</span>`
+      + `<small>${cm(d[0])} × ${cm(d[1])} cm</small><small class="format-chip-price">${String(s.price.toFixed(2)).replace('.',',')}€</small>`
+      + sizeStockTag(s);
+    if(!inStock(s)){ b.disabled=true; b.title='Sin existencias'; }
+    b.onclick=()=>{ if(!inStock(s) || p.sizeKey===s.k) return; applyProductSize(p,s); after(); };
+    box.appendChild(b);
+  });
+}
 function renderFormats(){
   const box=document.getElementById('formatChips'), lbl=document.getElementById('formatLabel');
   const p=POSTERS[selected]; if(!box||!p) return;
   const pr=prodOf(p);
+  const sizeLbl=document.getElementById('sizeLabel'), sizeGrid=document.getElementById('sizeGrid');
+  if(sizeLbl) sizeLbl.hidden=!!pr.oneRow; if(sizeGrid) sizeGrid.hidden=!!pr.oneRow;
+  if(pr.oneRow){
+    if(lbl){ lbl.hidden=false; lbl.innerHTML='<span class="es">Formato y tamaño</span><span class="en">Format and size</span>'; }
+    box.hidden=false;
+    sizeAsFormatChips(box, p, ()=>{ renderFormats(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); });
+    return;
+  }
+  if(lbl) lbl.innerHTML='<span class="es">Formato</span><span class="en">Format</span>';
   if(!pr.formats){ box.innerHTML=''; box.hidden=true; if(lbl) lbl.hidden=true; return; }
   if(lbl) lbl.hidden=false; box.hidden=false;
   box.innerHTML='';
@@ -2387,6 +2418,11 @@ function renderCropFormats(){
   const box=document.getElementById('cropFormatChips'), sbox=document.getElementById('cropSizeGrid');
   const p=POSTERS[selected]; if(!box||!sbox||!p) return;
   const pr=prodOf(p);
+  if(pr.oneRow){
+    box.hidden=false; sbox.innerHTML=''; sbox.hidden=true;
+    sizeAsFormatChips(box, p, ()=>{ renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p); });
+    return;
+  }
   if(!pr.formats){ box.innerHTML=''; box.hidden=true; sbox.innerHTML=''; sbox.hidden=true; return; }
   box.hidden=false; sbox.hidden=false;
   box.innerHTML='';
