@@ -172,7 +172,7 @@
         <div class="font-dd" id="backFontDD" data-for="backText"></div>
         <input class="txt-date" id="backDate" maxlength="12" placeholder="Fecha">
       </div>
-      <p class="txt-hint"><span class="es">Arrastra el texto sobre el cuadro para colocarlo · la letra se ajusta sola al tamaño.</span><span class="en">Drag the text on the poster to place it · the letter size adjusts itself.</span></p>
+      <p class="txt-hint"><span class="es">Se imprime detrás del cuadro. Arrástrala para colocarla · la letra se ajusta sola al tamaño.</span><span class="en">Printed on the back. Drag it to place it · the letter size adjusts itself.</span></p>
     </div>
   </aside>
 
@@ -415,32 +415,62 @@ const isFlat = () => VIEW === '2d';
 /* ── TIPOGRAFÍAS del texto delante/detrás. Antes solo existía una (Georgia, fija en el
    código, sin selector). google=null es la que ya venía con el navegador; el resto se
    cargan de Google Fonts en una sola petición nada más arrancar el editor. */
+/* 12-oct · Favoritas arriba (fav): las que más se usan para una dedicatoria, con la de máquina de
+   escribir la primera después de la de siempre. El resto va debajo, en «Más letras».
+   Las fuentes NO se descargan todas al abrir: la hoja de Google solo las declara, y cada una baja
+   cuando se enseña en la lista o cuando se usa (ensureFont). */
+/* 12-oct · Marc: fuera la frase de delante (sobre la foto). El código se queda; con true vuelve. */
+const FRONT_TEXT = false;
 const FONTS = [
-  { id:'georgia',    label:'Clásica',    family:'Georgia, "Times New Roman", serif',        weight:'700', style:'italic', google:null },
-  { id:'playfair',   label:'Elegante',   family:'"Playfair Display", Georgia, serif',        weight:'700', style:'normal', google:'Playfair+Display:wght@600;700' },
+  { id:'georgia',    label:'Clásica',    family:'Georgia, "Times New Roman", serif',        weight:'700', style:'italic', google:null, fav:true },
+  { id:'typewriter', label:'Máquina de escribir', family:'"Special Elite", "Courier New", monospace', weight:'400', style:'normal', google:'Special+Elite', fav:true },
+  { id:'dancing',    label:'Manuscrita', family:'"Dancing Script", cursive',                 weight:'700', style:'normal', google:'Dancing+Script:wght@600;700', fav:true },
+  { id:'caveat',     label:'A mano',     family:'"Caveat", cursive',                         weight:'700', style:'normal', google:'Caveat:wght@600;700', fav:true },
+  { id:'playfair',   label:'Elegante',   family:'"Playfair Display", Georgia, serif',        weight:'700', style:'normal', google:'Playfair+Display:wght@600;700', fav:true },
+  { id:'montserrat', label:'Moderna',    family:'"Montserrat", Arial, sans-serif',           weight:'700', style:'normal', google:'Montserrat:wght@600;700', fav:true },
+  { id:'courier',    label:'Máquina fina', family:'"Courier Prime", "Courier New", monospace', weight:'400', style:'normal', google:'Courier+Prime:wght@400;700' },
   { id:'cormorant',  label:'Fina',       family:'"Cormorant Garamond", Georgia, serif',      weight:'600', style:'normal', google:'Cormorant+Garamond:wght@600;700' },
   { id:'marcellus',  label:'Editorial',  family:'"Marcellus", Georgia, serif',               weight:'400', style:'normal', google:'Marcellus' },
-  { id:'dancing',    label:'Manuscrita', family:'"Dancing Script", cursive',                 weight:'700', style:'normal', google:'Dancing+Script:wght@600;700' },
+  { id:'baskerville',label:'De libro',   family:'"Libre Baskerville", Georgia, serif',       weight:'400', style:'italic', google:'Libre+Baskerville:ital@1' },
+  { id:'cinzel',     label:'Romana',     family:'"Cinzel", Georgia, serif',                  weight:'600', style:'normal', google:'Cinzel:wght@600' },
+  { id:'abril',      label:'Titular',    family:'"Abril Fatface", Georgia, serif',           weight:'400', style:'normal', google:'Abril+Fatface' },
   { id:'vibes',      label:'Caligrafía', family:'"Great Vibes", cursive',                    weight:'400', style:'normal', google:'Great+Vibes' },
-  { id:'caveat',     label:'A mano',     family:'"Caveat", cursive',                         weight:'700', style:'normal', google:'Caveat:wght@600;700' },
-  { id:'montserrat', label:'Moderna',    family:'"Montserrat", Arial, sans-serif',           weight:'700', style:'normal', google:'Montserrat:wght@600;700' },
-  { id:'poppins',    label:'Redonda',    family:'"Poppins", Arial, sans-serif',              weight:'600', style:'normal', google:'Poppins:wght@600;700' },
+  { id:'sacramento', label:'De un trazo', family:'"Sacramento", cursive',                    weight:'400', style:'normal', google:'Sacramento' },
+  { id:'parisienne', label:'Parisina',   family:'"Parisienne", cursive',                     weight:'400', style:'normal', google:'Parisienne' },
+  { id:'satisfy',    label:'Pincel',     family:'"Satisfy", cursive',                        weight:'400', style:'normal', google:'Satisfy' },
+  { id:'pacifico',   label:'Verano',     family:'"Pacifico", cursive',                       weight:'400', style:'normal', google:'Pacifico' },
+  { id:'shadows',    label:'Cuaderno',   family:'"Shadows Into Light", cursive',             weight:'400', style:'normal', google:'Shadows+Into+Light' },
+  { id:'indie',      label:'Nota',       family:'"Indie Flower", cursive',                   weight:'400', style:'normal', google:'Indie+Flower' },
+  { id:'marker',     label:'Rotulador',  family:'"Permanent Marker", cursive',               weight:'400', style:'normal', google:'Permanent+Marker' },
   { id:'amatic',     label:'Festiva',    family:'"Amatic SC", sans-serif',                   weight:'700', style:'normal', google:'Amatic+SC:wght@700' },
+  { id:'poppins',    label:'Redonda',    family:'"Poppins", Arial, sans-serif',              weight:'600', style:'normal', google:'Poppins:wght@600;700' },
+  { id:'quicksand',  label:'Suave',      family:'"Quicksand", Arial, sans-serif',            weight:'600', style:'normal', google:'Quicksand:wght@600' },
+  { id:'josefin',    label:'Ligera',     family:'"Josefin Sans", Arial, sans-serif',         weight:'600', style:'normal', google:'Josefin+Sans:wght@600' },
+  { id:'oswald',     label:'Estrecha',   family:'"Oswald", Arial, sans-serif',               weight:'500', style:'normal', google:'Oswald:wght@500' },
+  { id:'bebas',      label:'Cartel',     family:'"Bebas Neue", Arial, sans-serif',           weight:'400', style:'normal', google:'Bebas+Neue' },
 ];
-const FONT_DEFAULT = FONTS[0].id;
+const FONT_DEFAULT = 'georgia';
 const fontOf = id => FONTS.find(f => f.id === id) || FONTS[0];
 function fontCss(id, sizePx){ const f=fontOf(id); return `${f.style==='italic'?'italic ':''}${f.weight} ${Math.round(sizePx)}px ${f.family}`; }
+/* el canvas no espera a la fuente: se le pide al navegador y, cuando llega, se avisa (una vez) */
+function ensureFont(id, done){
+  const f = fontOf(id);
+  if(!f.google || f._ok === true) return true;
+  if(!f._ok){
+    f._ok = 'loading';
+    document.fonts.load(fontCss(f.id, 40)).catch(()=>{}).then(() => { f._ok = true; if(done) done(); });
+  }
+  return false;
+}
 (function loadFontFaces(){
   const fams = FONTS.filter(f => f.google).map(f => 'family=' + f.google).join('&');
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = 'https://fonts.googleapis.com/css2?' + fams + '&display=swap';
   document.head.appendChild(link);
-  // el canvas no espera solo a que se aplique la fuente: hay que pedirle al navegador
-  // que la cargue de verdad antes de volver a dibujar, si no el primer texto sale con
-  // la fuente de repuesto (se ve un parpadeo del texto cambiando de letra al cargar).
+  // solo las favoritas se piden ya (son las que casi seguro se usan); el resto, al elegirlas
   link.onload = () => {
-    Promise.all(FONTS.filter(f => f.google).map(f => document.fonts.load(fontCss(f.id, 40)).catch(()=>{})))
+    Promise.all(FONTS.filter(f => f.google && f.fav).map(f => document.fonts.load(fontCss(f.id, 40)).catch(()=>{}).then(() => { f._ok = true; })))
       .then(() => { dirty3D = true; if(typeof applyFrontTexture === 'function' && POSTERS[selected]){ applyFrontTexture(selected); applyBackText(selected); } });
   };
 })();
@@ -996,6 +1026,9 @@ function layout(){
   if(!editorOpen || wpx < 2 || hpx < 2){ applySelection(); return; }
   const topPx = 116;   // deja sitio a la barra de Conjunto/Entorno, que va arriba
   let botPx = WALL ? (ROOM_CFG.mode === 'photo' ? 200 : 215) : 150, rightPx = 0;   // con pared hay una barra más abajo
+  /* el Sobremesa lleva la peana por debajo del cuadro: sin entorno hay que dejarle sitio, o en
+     la talla grande se mete debajo de las miniaturas */
+  if(!WALL && ROOM_CFG.mode === 'none' && POSTERS.some(q => q.ptype === 'madera')) botPx += 56;
   if(panelOpen){
     if(wpx > 720) rightPx = 410;
     else          botPx  = Math.max(botPx, hpx*0.62);
@@ -1661,7 +1694,7 @@ function buildFrontCanvas(p, W, H){
     drawPlaceholder(x, W, H);
   }
   const scl=W/texW(p);
-  if(p.frontText && p.frontText.trim()){
+  if(FRONT_TEXT && p.frontText && p.frontText.trim()){
     const px=W*(p.frontX/100), py=H*(p.frontY/100);
     const maxW=Math.max(160*scl, 2*Math.min(px, W-px) - 40*scl);
     const maxH=Math.max(90*scl, 2*Math.min(py, H-py) - 40*scl);
@@ -1675,7 +1708,7 @@ function buildFrontCanvas(p, W, H){
     drawLines(x, fit.lines, px, py, sz*1.18, true);
     x.shadowBlur=0;
   }
-  if(p.frontDate && p.frontDate.trim()){
+  if(FRONT_TEXT && p.frontDate && p.frontDate.trim()){
     drawDateCorner(x, p.frontDate.trim(), fontCss(p.frontFont, 30*scl), W, 26*scl, '#fff', 'rgba(0,0,0,.55)');
   }
   return c;
@@ -1736,6 +1769,7 @@ function buildBackCanvas(p, W, H){
 function applyBackText(idx){
   scheduleSave();
   const p = POSTERS[idx];
+  if(p && p.backText) ensureFont(p.backFont, () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
   if(p.backPlane){
     p.mesh.remove(p.backPlane);
     if(p.backPlane.material.map) p.backPlane.material.map.dispose();
@@ -2023,7 +2057,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
    producto real). Allí la peana de madera SOLO existe en S, el imán de nevera en
    XS/S y el imán premium de pared solo en M/L/XL → cada talla cae en un producto:
      XS  7 × 10      → Imán de nevera
-     S   10,2 × 15,2 → Sobremesa (peana de bambú)
+     S   10,2 × 15,2 → Sobremesa (peana de bambú; desde el 12-oct también 12,7×17,8 y 20,3×25,4)
      M   21 × 29,7 · L 25,5 × 36 · XL 30,5 × 43 → Cuadro de pared
    La escala 3D es proporcional al lado largo real (S = 1). */
 /* MOMENTURIES DIFERENTES FORMATOS: las medidas son las de verdad de los paneles de aluminio
@@ -2070,7 +2104,14 @@ const PRODUCTS = {
             mounts:['iman-pared','tiras','none'], formats:FORMATS },
   madera: { name:'Sobremesa',            short:'Sobremesa',  hanger:'madera',      def:'S',
             note:'Peana de bambú incluida.',
-            sizes:[ {k:'S',d:[10.2,15.2],price:28.99, variantId:null} ] },
+            /* 12-oct: la lámina con peana de bambú de ahorraentinta (ref. MAD1130) viene en tres
+               medidas: 152×102, 178×127 y 254×203 mm. La peana mide siempre el lado corto.
+               M y L nacen con stock:false porque todavía no existen en Shopify: cuando la tienda
+               tenga los SKU SOB-M y SOB-L, la lectura de Shopify les pone precio, variante y
+               existencias, y se pueden elegir sin tocar nada aquí. Precios provisionales. */
+            sizes:[ {k:'S',d:[10.2,15.2],price:28.99, variantId:null},
+                    {k:'M',d:[12.7,17.8],price:34.99, variantId:null, stock:false},
+                    {k:'L',d:[20.3,25.4],price:44.99, variantId:null, stock:false} ] },
   nevera: { name:'Imán',                 short:'Imán',     hanger:'iman-nevera', def:'XS',
             note:'Imán trasero incluido.',
             sizes:[ {k:'XS',d:[7,10],price:9.99, variantId:null} ] },
@@ -2421,6 +2462,11 @@ const backDateInput =document.getElementById('backDate');
 function bindFront(){ const p=POSTERS[selected]; if(!p) return; p.frontText=frontInput.value; p.frontDate=frontDateInput.value; applyFrontTexture(selected); }
 function bindBack(){  const p=POSTERS[selected]; if(!p) return; p.backText =backInput.value;  p.backDate=backDateInput.value; applyBackText(selected); }
 [frontInput,frontDateInput].forEach(el=>el.addEventListener('input',bindFront));
+if(!FRONT_TEXT){   // sin frase delante: se esconden su rótulo, el campo y la fila de letra y fecha
+  const lab = frontInput.previousElementSibling, row = frontInput.nextElementSibling;
+  [lab, frontInput, row].forEach(el => { if(el) el.hidden = true; });
+  if(row) row.style.display = 'none';
+}
 [backInput,backDateInput].forEach(el=>el.addEventListener('input',bindBack));
 [frontInput,frontDateInput].forEach(el=>el.addEventListener('focus',()=>{ setFace(false); }));
 /* Aitor: "por detrás se tiene que ver cerca para apreciar lo que has escrito" — al escribir
@@ -2442,7 +2488,12 @@ function buildFontDD(container, getInput, getKey, setKey, sample){
   function text(){ const t = getInput().value.trim(); return t || sample; }
   function renderList(){
     list.innerHTML = '';
-    FONTS.forEach(f => {
+    FONTS.forEach((f, i) => {
+      if(i === 0 || !!f.fav !== !!FONTS[i-1].fav){
+        const h = document.createElement('p'); h.className = 'font-dd-head';
+        h.innerHTML = f.fav ? '<span class="es">Favoritas</span><span class="en">Favourites</span>' : '<span class="es">Más letras</span><span class="en">More fonts</span>';
+        list.appendChild(h);
+      }
       const opt = document.createElement('button');
       opt.type = 'button';
       opt.className = 'font-dd-opt' + (f.id === getKey() ? ' active' : '');
@@ -2893,7 +2944,7 @@ async function restoreDesign(saved){
         applyProductSize(p, pickSize(list, list.some(s => s.k === it.sizeKey) ? it.sizeKey : (pr.formats ? SIZE_DEFAULT : pr.def)), fmt);
       } else if(PRODUCTS.metal.mounts.includes(it.mount)) p.mount = it.mount;
       Object.assign(p, {
-        frontText:it.frontText||'', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:it.frontDate||'',
+        frontText:FRONT_TEXT ? it.frontText||'' : '', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:FRONT_TEXT ? it.frontDate||'' : '',
         backText:it.backText||'',  backX:it.backX,  backY:it.backY,  backSize:it.backSize,  backFont:it.backFont||FONT_DEFAULT,  backDate:it.backDate||'',
       });
       const i = POSTERS.indexOf(p);
