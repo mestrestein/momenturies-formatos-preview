@@ -1746,6 +1746,9 @@ const CLOUDINARY = {
   uploadPreset: '',        // Settings → Upload → Add upload preset → Signing Mode: Unsigned
 };
 const PRINT_DPI = 300;     // resolución de la foto que se manda a producción (no la del visor 3D)
+const BLEED_MM = 3;        // sangrado por lado para sublimar: el archivo sigue 3 mm más allá del corte
+const MAX_CANVAS_PX = 16.7e6;  // Safari en iPhone no pinta lienzos de más de 16,77 Mpx
+const MAX_ORIGINAL_PX = 16e6, MAX_ORIGINAL_BYTES = 19*1024*1024;  // la tienda admite 20 Mpx y 20 MB por imagen
 
 function printDimsPx(p){
   const d = sizeOf(p).d, shortCm = Math.min(d[0], d[1]), longCm = Math.max(d[0], d[1]);
@@ -1777,18 +1780,77 @@ async function uploadToCloudinary(blob, filename){
   return j.secure_url;
 }
 
-/* imágenes finales de impresión (a PRINT_DPI, no al tamaño reducido del visor 3D) subidas a Cloudinary */
-async function uploadPosterArt(p){
-  const {W,H} = printDimsPx(p);
-  const frontBlob = await canvasToBlob(buildFrontCanvas(p, W, H));
-  const frontUrl = await uploadToCloudinary(frontBlob, `frontal-${Date.now()}.jpg`);
-  let backUrl = null;
-  const backCanvas = buildBackCanvas(p, W, H);
-  if(backCanvas){
-    const backBlob = await canvasToBlob(backCanvas);
-    backUrl = await uploadToCloudinary(backBlob, `dedicatoria-${Date.now()}.jpg`);
+/* Archivo para sublimar: la medida final más BLEED_MM por lado. El corte (justo lo que vio el
+   cliente, con su frase y su fecha) va en el centro. El sangrado se rellena con la parte de la
+   foto que quedó fuera del recorte y, donde ya no hay más foto, con el borde reflejado: nunca blanco.
+   En las medidas grandes baja un poco de PRINT_DPI si hace falta para no pasar de MAX_CANVAS_PX. */
+function buildPrintCanvas(p){
+  const {W:w0, H:h0} = printDimsPx(p);
+  const b0 = Math.round(BLEED_MM / 25.4 * PRINT_DPI);
+  const k = Math.min(1, Math.sqrt(MAX_CANVAS_PX / ((w0 + 2*b0) * (h0 + 2*b0))));
+  const W = Math.round(w0*k), H = Math.round(h0*k), b = Math.round(b0*k);
+  const corte = buildFrontCanvas(p, W, H);
+  const c = document.createElement('canvas'); c.width = W + 2*b; c.height = H + 2*b;
+  const x = c.getContext('2d');
+  // 1) base: los últimos BLEED_MM del corte reflejados hacia fuera, como un espejo (y las esquinas)
+  const espejo = (tx, ty, sx, sy, srcX, srcY, w, h, dx, dy) => {
+    x.save(); x.translate(tx, ty); x.scale(sx, sy); x.drawImage(corte, srcX, srcY, w, h, dx, dy, w, h); x.restore();
+  };
+  espejo(b, b,      1, -1, 0, 0,   W, b, 0, 0);     // arriba
+  espejo(b, H+b,    1, -1, 0, H-b, W, b, 0, -b);    // abajo
+  espejo(b, b,     -1,  1, 0, 0,   b, H, 0, 0);     // izquierda
+  espejo(W+b, b,   -1,  1, W-b, 0, b, H, -b, 0);    // derecha
+  espejo(b, b,     -1, -1, 0, 0,     b, b, 0, 0);   // esquinas
+  espejo(W+b, b,   -1, -1, W-b, 0,   b, b, -b, 0);
+  espejo(b, H+b,   -1, -1, 0, H-b,   b, b, 0, -b);
+  espejo(W+b, H+b, -1, -1, W-b, H-b, b, b, -b, -b);
+  // 2) encima, la foto de verdad que hay alrededor del recorte, hasta donde llegue
+  if(p.srcImg){
+    const img = p.srcImg, cw = cropWindow(p, W, H), s = cw.sw / W;
+    const sx0 = Math.max(0, cw.sx - b*s), sy0 = Math.max(0, cw.sy - b*s);
+    const sx1 = Math.min(img.naturalWidth, cw.sx + cw.sw + b*s), sy1 = Math.min(img.naturalHeight, cw.sy + cw.sh + b*s);
+    x.drawImage(img, sx0, sy0, sx1-sx0, sy1-sy0, b + (sx0-cw.sx)/s, b + (sy0-cw.sy)/s, (sx1-sx0)/s, (sy1-sy0)/s);
   }
-  return {frontUrl, backUrl};
+  // 3) el corte tal cual, en el centro
+  x.drawImage(corte, b, b);
+  corte.width = corte.height = 0;   // libera memoria en el móvil
+  return {canvas:c, dpi:Math.round(PRINT_DPI*k), cm:[(W+2*b)/(PRINT_DPI*k)*2.54, (H+2*b)/(PRINT_DPI*k)*2.54]};
+}
+
+/* la foto original del cliente, para poder rehacer el recorte sin pedírsela otra vez.
+   Si es HEIC, pesa más de lo que admite la tienda o pasa de MAX_ORIGINAL_PX, va en JPG
+   a la mayor resolución que cabe */
+async function originalBlob(p){
+  const f = p.file, img = p.srcImg;
+  const px = img.naturalWidth * img.naturalHeight;
+  if(f && /^image\/(jpeg|png|webp)$/.test(f.type) && f.size <= MAX_ORIGINAL_BYTES && px <= MAX_ORIGINAL_PX) return f;
+  const k = Math.min(1, Math.sqrt(MAX_ORIGINAL_PX / px));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return canvasToBlob(c, 0.95);
+}
+
+/* imágenes finales de impresión (a PRINT_DPI, no al tamaño reducido del visor 3D), la original
+   y la dedicatoria, subidas a la vez */
+async function uploadPosterArt(p){
+  const t = Date.now();
+  const print = buildPrintCanvas(p);
+  const frontBlob = await canvasToBlob(print.canvas, 0.95);
+  print.canvas.width = print.canvas.height = 0;   // libera memoria en el móvil antes del siguiente
+  const {W,H} = printDimsPx(p);
+  const backCanvas = buildBackCanvas(p, W, H);
+  const backBlob = backCanvas ? await canvasToBlob(backCanvas) : null;
+  const orig = await originalBlob(p);
+  const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
+  const [frontUrl, backUrl, originalUrl] = await Promise.all([
+    uploadToCloudinary(frontBlob, `impresion-${t}.jpg`),
+    backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.jpg`) : null,
+    // la original es un extra: si no sube, el pedido sigue con el archivo de impresión
+    uploadToCloudinary(orig, `original-${t}.${ext}`).catch(e => { console.warn('[Momenturies] Original sin subir:', e.message); return null; }),
+  ]);
+  const medida = `${print.cm.map(n => n.toFixed(1).replace('.', ',')).join('×')} cm (con ${BLEED_MM} mm de sangrado) a ${print.dpi} ppp`;
+  return {frontUrl, backUrl, originalUrl, medida};
 }
 
 function variantIdOf(p){
@@ -1847,9 +1909,10 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     if(!p.srcImg) continue;
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
-    const {frontUrl, backUrl} = await uploadPosterArt(p);
+    const {frontUrl, backUrl, originalUrl, medida} = await uploadPosterArt(p);
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
+      {key:'_impresion', value: medida},
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
@@ -1858,6 +1921,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     if(p.backDate && p.backDate.trim()) attributes.push({key:'Fecha (dorso)', value:p.backDate.trim()});
     // el dorso puede llevar solo fecha: la imagen va siempre que haya algo detrás
     if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
+    if(originalUrl) attributes.push({key:'_foto_original', value:originalUrl});
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');
