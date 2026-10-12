@@ -1817,6 +1817,17 @@ function buildPrintCanvas(p){
   return {canvas:c, dpi:Math.round(PRINT_DPI*k), cm:[(W+2*b)/(PRINT_DPI*k)*2.54, (H+2*b)/(PRINT_DPI*k)*2.54]};
 }
 
+/* escribe los ppp en la cabecera JFIF del JPG: sin ellos, el programa de impresión lo abre
+   a 72 ppp y con un tamaño que no es. El lienzo del navegador no los pone. */
+async function jpgConDpi(blob, dpi){
+  const u = new Uint8Array(await blob.arrayBuffer());
+  if(u[0] !== 0xFF || u[1] !== 0xD8) return blob;
+  const jfif = u[2] === 0xFF && u[3] === 0xE0 && String.fromCharCode(u[6], u[7], u[8], u[9]) === 'JFIF';
+  const app0 = [0xFF,0xE0, 0,16, 0x4A,0x46,0x49,0x46,0, 1,1, 1, dpi>>8,dpi&255, dpi>>8,dpi&255, 0,0];
+  if(jfif){ u[13] = 1; u[14] = dpi>>8; u[15] = dpi&255; u[16] = dpi>>8; u[17] = dpi&255; return new Blob([u], {type:'image/jpeg'}); }
+  return new Blob([u.subarray(0,2), new Uint8Array(app0), u.subarray(2)], {type:'image/jpeg'});
+}
+
 /* la foto original del cliente, para poder rehacer el recorte sin pedírsela otra vez.
    Si es HEIC, pesa más de lo que admite la tienda o pasa de MAX_ORIGINAL_PX, va en JPG
    a la mayor resolución que cabe */
@@ -1836,11 +1847,11 @@ async function originalBlob(p){
 async function uploadPosterArt(p){
   const t = Date.now();
   const print = buildPrintCanvas(p);
-  const frontBlob = await canvasToBlob(print.canvas, 0.95);
+  const frontBlob = await jpgConDpi(await canvasToBlob(print.canvas, 0.95), print.dpi);
   print.canvas.width = print.canvas.height = 0;   // libera memoria en el móvil antes del siguiente
   const {W,H} = printDimsPx(p);
   const backCanvas = buildBackCanvas(p, W, H);
-  const backBlob = backCanvas ? await canvasToBlob(backCanvas) : null;
+  const backBlob = backCanvas ? await jpgConDpi(await canvasToBlob(backCanvas), PRINT_DPI) : null;
   const orig = await originalBlob(p);
   const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
   const [frontUrl, backUrl, originalUrl] = await Promise.all([
