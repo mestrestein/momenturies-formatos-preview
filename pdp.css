@@ -40,6 +40,16 @@ a{text-decoration:none;color:inherit}
 .bh-stars b{color:var(--mid);font-weight:400;margin-left:6px;font-size:13px}
 .bh-price{font-size:17px;color:var(--mid);margin-bottom:22px}
 .bh-price strong{color:var(--black);font-size:22px;font-weight:700;margin-right:6px}
+/* descuento por cantidad, junto a la foto */
+.bh-packs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.bh-pack{border:1px solid var(--gray2);border-radius:12px;padding:11px 8px 10px;background:#fff;text-align:center;display:flex;flex-direction:column;gap:3px}
+.bh-pack b{font-size:12.5px;font-weight:600;color:var(--mid)}
+.bh-pack-pct{font-size:20px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:var(--black)}
+.bh-pack-off{font-size:12px;font-weight:600;letter-spacing:0;color:var(--mid);padding:4px 0 3px}
+.bh-pack-on{border-color:var(--black);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.bh-packs-note{font-size:12.5px;color:var(--mid);line-height:1.5;margin-bottom:22px}
+.bh-packs-note a{color:var(--black);font-weight:600;white-space:nowrap}
+@media(max-width:420px){ .bh-packs{gap:6px} .bh-pack{padding:10px 4px 9px} .bh-pack b{font-size:11.5px} .bh-pack-pct{font-size:17px} .bh-pack-off{font-size:11px} }
 .bh-bullets{list-style:none;margin-bottom:30px;display:flex;flex-direction:column;gap:10px}
 .bh-bullets li{display:flex;align-items:center;gap:10px;font-size:15px;color:#333}
 .bh-bullets svg{flex-shrink:0;color:var(--black)}

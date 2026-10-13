@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"/></noscript>
-<link rel="stylesheet" href="pdp.css?v=8e90ef2d">
+<link rel="stylesheet" href="pdp.css?v=3dc2a9e9">
 <link rel="stylesheet" href="editor.css?v=6bc83754">
 <meta name="theme-color" content="#1c1c1c"/>
 <script type="application/ld+json">
@@ -104,12 +104,20 @@
     <p class="bh-tag"><span class="es">Para la pared</span><span class="en">For the wall</span></p>
     <h1 class="bh-h1"><span class="es">Tu foto en aluminio HD, colgada sin un solo agujero.</span><span class="en">Your photo on HD aluminium, hung without a single hole.</span></h1>
     <p class="bh-price"><strong><span class="es">Desde 17,99€</span><span class="en">From €17.99</span></strong><span class="es">3 formatos, varios tamaños cada uno</span><span class="en">3 formats, several sizes each</span></p>
+    <!-- Descuento por cantidad: los porcentajes los aplica de verdad el carrito (PACK_TIERS en editor.js y descuentos automáticos de Shopify) -->
+    <div class="bh-packs">
+      <div class="bh-pack"><b><span class="es">1 cuadro</span><span class="en">1 print</span></b><span class="bh-pack-pct bh-pack-off"><span class="es">Precio normal</span><span class="en">Standard price</span></span></div>
+      <div class="bh-pack"><b><span class="es">2 cuadros</span><span class="en">2 prints</span></b><span class="bh-pack-pct">&minus;10%</span></div>
+      <div class="bh-pack bh-pack-on"><b><span class="es">3 cuadros</span><span class="en">3 prints</span></b><span class="bh-pack-pct">&minus;15%</span></div>
+      <div class="bh-pack"><b><span class="es">4 o más</span><span class="en">4 or more</span></b><span class="bh-pack-pct">&minus;20%</span></div>
+    </div>
+    <p class="bh-packs-note"><span class="es">Descuento en cada cuadro. Se aplica solo en el carrito, sin código.</span><span class="en">Off every print. Applied automatically in the cart, no code needed.</span> <a href="paredes.html"><span class="es">Ver combinaciones ya montadas</span><span class="en">See ready-made sets</span> &rarr;</a></p>
     <ul class="bh-bullets">
       <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Impreso directo sobre aluminio: brillo y profundidad de color que el papel no da</span><span class="en">Printed straight onto aluminium: gloss and colour depth paper can't reach</span></li>
       <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Se cuelga con el imán premium incluido, sin taladro y sin marcas</span><span class="en">Hangs with the included premium magnet, no drill, no marks</span></li>
       <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Dedicatoria impresa detrás, si quieres</span><span class="en">A dedication printed on the back, if you want</span></li>
       <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Tres formatos — cuadrado, clásico y retrato — cada uno en varios tamaños</span><span class="en">Three formats — square, classic and portrait — each in several sizes</span></li>
-      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Cuantos más cuelgues, más barato sale cada uno. Envío gratis a partir de 60€</span><span class="en">The more you hang, the cheaper each one gets. Free shipping over €60</span></li>
+      <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="es">Envío gratis a partir de 60€ en España</span><span class="en">Free shipping over €60 within Spain</span></li>
     </ul>
     <button class="bh-cta" id="btnOpenEditor">
       <span class="es">Crear mi cuadro</span><span class="en">Create my wall print</span>
@@ -124,40 +132,6 @@
 </section>
 
 
-<!-- COMBINACIONES 2 · 3 · 4 — los porcentajes los aplica de verdad el carrito (PACK_TIERS en editor.js) -->
-<section class="pk-section">
-  <h2><span class="es">Cuantos más cuelgues, más barato sale cada uno</span><span class="en">The more you hang, the cheaper each one gets</span></h2>
-  <p class="pk-lead"><span class="es">El precio de cada cuadro ya lleva el imán y la base adhesiva. Si montas una combinación, el descuento se aplica solo al llegar al carrito: no hay código que recordar.</span><span class="en">Each print already includes the magnet and the adhesive base. Build a set and the discount applies by itself at checkout: no code to remember.</span></p>
-  <div class="pk-grid">
-    <div class="pk-card">
-      <b><span class="es">1 cuadro</span><span class="en">1 print</span></b>
-      <span class="pk-pct pk-pct-off"><span class="es">Precio normal</span><span class="en">Standard price</span></span>
-      <span class="pk-note"><span class="es">Imán y base incluidos</span><span class="en">Magnet and base included</span></span>
-    </div>
-    <div class="pk-card">
-      <b><span class="es">2 cuadros</span><span class="en">2 prints</span></b>
-      <span class="pk-pct">&minus;10%</span>
-      <span class="pk-note"><span class="es">en cada cuadro</span><span class="en">off every print</span></span>
-    </div>
-    <div class="pk-card pk-card-on">
-      <span class="pk-badge"><span class="es">El equilibrio</span><span class="en">The sweet spot</span></span>
-      <b><span class="es">3 cuadros</span><span class="en">3 prints</span></b>
-      <span class="pk-pct">&minus;15%</span>
-      <span class="pk-note"><span class="es">en cada cuadro</span><span class="en">off every print</span></span>
-    </div>
-    <div class="pk-card">
-      <b><span class="es">4 o más</span><span class="en">4 or more</span></b>
-      <span class="pk-pct">&minus;20%</span>
-      <span class="pk-note"><span class="es">en cada cuadro</span><span class="en">off every print</span></span>
-    </div>
-  </div>
-  <p class="pk-ship">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="12" rx="1.5"/><path d="M15 10h4l4 4v4h-8z"/><circle cx="6" cy="18.5" r="2"/><circle cx="18" cy="18.5" r="2"/></svg>
-    <span class="es"><strong>Envío gratis a partir de 60€</strong> en España. Por debajo, 4,95€.</span>
-    <span class="en"><strong>Free shipping over €60</strong> within Spain. Below that, €4.95.</span>
-  </p>
-  <a class="pk-cta" href="paredes.html"><span class="es">Ver las combinaciones ya montadas</span><span class="en">See the ready-made sets</span> <span>→</span></a>
-</section>
 
 <!-- POR QUÉ ESTE FORMATO -->
 <section class="why-section">
