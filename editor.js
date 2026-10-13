@@ -93,6 +93,7 @@
   </div>
 
   <div class="ed-bottom">
+    <button type="button" class="ed-suggest" id="edSuggest" hidden></button>
     <div class="pv-thumbs" id="pvThumbs"></div>
     <div class="ed-btnrow">
     <button class="ed-add" id="btnAdd">
@@ -1577,6 +1578,7 @@ function ingestFiles(files, mode){
     img.onerror = ()=>{ p.pendingImg=false; URL.revokeObjectURL(url); };
     img.src = url;
   });
+  setTimeout(syncSuggest, 300);
   const added = imgs.length - skipped;
   if(skipped && !added) toast('La pared ya está completa: toca un cuadro para cambiar su foto');
   else if(skipped)      toast(added + (added>1?' fotos añadidas':' foto añadida') + ' · la pared no tiene más huecos');
@@ -1805,6 +1807,7 @@ function applyBackText(idx){
 /* ═══════════ THUMBS ═══════════ */
 const thumbsEl = document.getElementById('pvThumbs');
 function renderThumbs(){
+  try{ syncSuggest(); }catch(e){}     // al arrancar aún no existen WALLS: no pasa nada
   thumbsEl.innerHTML='';
   POSTERS.forEach((p,i)=>{
     const t = document.createElement('div');
@@ -4775,6 +4778,7 @@ function applyWall(w, opts){
     const r = alt || bestRoomFor(w); if(r) setRoom(r);
   }
   editorRootEl.classList.add('ed-wall');
+  wallPreferN = 0; syncSuggest();
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
   closePanel();
   layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
@@ -4917,6 +4921,7 @@ const syncWallBar = syncTools;            // nombre viejo, lo llaman varios siti
 
 /* ── ventana de elección ── */
 let wallFilter = 'all';
+let wallPreferN = 0;   // >0: el cliente tiene N fotos y viene de «verlas juntas»: primero los de N cuadros
 function renderWallModal(){
   const fl = document.getElementById('wallFilters'), grid = document.getElementById('wallGrid');
   if(!fl || !grid) return;
@@ -4939,7 +4944,7 @@ function renderWallModal(){
   free.onclick = () => { clearWall(); closeWallModal(); };
   if(wallFilter === 'all') grid.appendChild(free);
   // primero las que se pueden pedir en su talla de siempre, luego las que solo quedan en otra, y las agotadas al final
-  const orden = w => wallInStock(w) ? (w.base ? 1 : 0) : 2;
+  const orden = w => (wallInStock(w) ? (w.base ? 1 : 0) : 4) + (wallPreferN && w.n !== wallPreferN ? 2 : 0);
   WALLS.map(w => wallForHueco(w, wallFilter)).filter(Boolean)
     .sort((a, b) => orden(a) - orden(b)).forEach(w => {
     const b = document.createElement('button');
@@ -4960,6 +4965,22 @@ function renderWallModal(){
   });
 }
 function openWallModal(){ renderWallModal(); wallModalEl.classList.add('open'); }
+/* 14-oct · Quien sube varias fotos sueltas casi siempre quiere colgarlas juntas: se le ofrece verlas
+   en un conjunto de ese mismo número de cuadros (el selector los pone primero). Las fotos se quedan. */
+function syncSuggest(){
+  const b = document.getElementById('edSuggest'); if(!b) return;
+  const n = POSTERS.filter(p => p.srcImg).length;
+  const hay = !WALL && n >= 2 && n <= 20 && WALLS.some(w => !w.dup && w.n === n && wallInStock(wallPick(w)));
+  b.hidden = !hay;
+  if(hay) b.innerHTML = '<span class="es">' + n + ' fotos · <b>Míralas juntas en una pared</b> →</span><span class="en">' + n + ' photos · <b>See them together on a wall</b> →</span>';
+  // con alguna foto ya puesta, sobra «o prueba con una foto de ejemplo»
+  const ej = document.getElementById('btnSample'); if(ej && n > 0) ej.hidden = true;
+}
+document.getElementById('edSuggest').addEventListener('click', () => {
+  wallPreferN = POSTERS.filter(p => p.srcImg).length; wallFilter = 'all';
+  openWallModal();
+  const g = document.getElementById('wallGrid'); if(g) g.scrollTop = 0;
+});
 function closeWallModal(){ wallModalEl.classList.remove('open'); }
 document.getElementById('btnWalls').addEventListener('click', openWallModal);
 /* sin paredes cargadas, o en una página fijada a sobremesa/imán, no hay "conjunto" que elegir:

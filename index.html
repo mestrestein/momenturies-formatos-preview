@@ -954,6 +954,10 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   box-shadow:0 48px 96px rgba(0,0,0,.36),0 16px 40px rgba(0,0,0,.22),0 0 0 1px rgba(0,0,0,.1);
   background:#0b0b0f;
 }
+/* 14-oct: foto en vez del visor 3D */
+.ben-photo{background:#e9e4dc}
+.ben-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.ben-photo .ben-3d-label{background:rgba(20,20,20,.55);color:#fff;border-color:rgba(255,255,255,.25)}
 .ben-3d-iframe{
   position:absolute;inset:0;width:100%;height:100%;
   border:none;display:block;
@@ -1536,16 +1540,9 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 
       <!-- COLUMNA IZQUIERDA — VISOR 3D INTERACTIVO -->
       <div class="ben-poster-col">
-        <div class="ben-3d-wrap">
-          <iframe
-            id="visor3d"
-            src="momenturies%20-%20visor%203D.html?embed=1&autorotate=1&poster=fotos%2Fstock%2F1474552226712-620x877.webp"
-            class="ben-3d-iframe"
-            loading="lazy"
-            frameborder="0"
-            title="Visor 3D — Momenturies"
-          ></iframe>
-          <div class="ben-3d-label">3D · Interactivo</div>
+        <div class="ben-3d-wrap ben-photo">
+          <img src="fotos/ventajas-brillo.jpg" alt="Cuadros de aluminio HD en un salón, con el reflejo de la ventana en el brillo del metal" width="750" height="1000" loading="lazy" decoding="async">
+          <div class="ben-3d-label"><span class="es">Brillo real del aluminio</span><span class="en">Real aluminium gloss</span></div>
         </div>
       </div>
 
