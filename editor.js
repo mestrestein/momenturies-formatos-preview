@@ -3125,13 +3125,19 @@ function layoutWall(){
    viven solo en la vista 2D (pared2d.html). Aquí ROOM solo puede ser la foto del cliente
    ({custom:true,...} de "Ver en mi pared"); el resto del tiempo se ve una escena dibujada. */
 
-function loadTex(url, cb){
+function loadTex(url, cb, onErr, mip){
   new THREE.TextureLoader().load(url, tex => {
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = MAXANI;
-    tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter;   // la foto se enseña casi 1:1
+    /* la normal se enseña casi 1:1; la HD se ve a menudo reducida (habitación entera) y sin mipmaps
+       parpadea al moverla */
+    tex.generateMipmaps = !!mip; tex.minFilter = mip ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter;
     cb(tex);
-  });
+  }, undefined, onErr);
 }
+/* 14-oct · Las fotos de entorno miden 1536 px y, al acercarse a un conjunto, salían borrosas. Hay una
+   versión al doble en fotos/entornos/hd/ (ampliada con Real-ESRGAN ×4 y reducida a ×2: nítida sin pesar
+   demasiado). La del cliente y las que no tengan HD van como siempre. */
+const roomHD = r => !r.custom && /^fotos\/entornos\/[^/]+\.jpg$/.test(r.img || '') ? r.img.replace('fotos/entornos/', 'fotos/entornos/hd/') : null;
 /* La capa de muebles va por delante de la pared y, proyectada desde la cámara, sobresale de la foto por los
    lados (fotos sin relleno lateral: se vería la planta flotando sobre el fondo del editor). Se descarta cada
    fragmento cuyo rayo desde la cámara NO cae dentro de la foto de la pared (plano local de photoMesh, ±0.5). */
@@ -3175,12 +3181,16 @@ function setRoomTextures(room){
   if(pm.map){ pm.map.dispose(); pm.map = null; pm.needsUpdate = true; }
   if(fm.map){ fm.map.dispose(); fm.map = null; fm.needsUpdate = true; }
   fgMesh.visible = false;
-  loadTex(base, tex => {
+  const poner = tex => {
     if(photoMesh.userData.key !== key){ tex.dispose(); return; }
     if(tex.image && tex.image.naturalWidth && !room.w){ room.w = tex.image.naturalWidth; room.h = tex.image.naturalHeight; }
+    if(pm.map) pm.map.dispose();
     pm.map = tex; pm.needsUpdate = true; dirty3D = true;
     if(WALL) layout();
-  });
+  };
+  const hd = roomHD(room);
+  /* primero la normal (sale al momento) y encima la HD en cuanto llega */
+  loadTex(base, tex => { poner(tex); if(hd) loadTex(hd, poner, () => {}, true); });
   if(room.fg && !plana) loadTex(room.fg, tex => {
     if(photoMesh.userData.key !== key){ tex.dispose(); return; }
     fm.map = tex; fm.needsUpdate = true; fgMesh.visible = true; dirty3D = true;
@@ -4816,9 +4826,11 @@ function roomFits(r, w){ const f = roomFit(r, w); return !f || f.fits; }
    solo vale si el conjunto ocupa al menos ROOM_MIN_FILL de su ancho: con el acercamiento queda
    en torno a una cuarta parte de lo que se ve. Cada habitación tiene una foto de lejos y otra
    cercana (la vertical): si la de la pantalla no vale, se usa la otra. */
-const ROOM_MIN_FILL = 0.16, ROOM_ZOOM_MAX = 1.6;
+/* 14-oct · con las fotos HD el visor puede acercarse más sin que se vea borroso: 1,6 → 2,4, y el conjunto
+   ocupa más (40/28% → 48/34%) */
+const ROOM_MIN_FILL = 0.16, ROOM_ZOOM_MAX = 2.4;
 /* ancho que ocupa el conjunto en el visor: 40% hasta 60 cm de ancho, bajando hasta 28% a partir de 150 cm */
-const ROOM_FILL_SMALL = 0.40, ROOM_FILL_BIG = 0.28;
+const ROOM_FILL_SMALL = 0.48, ROOM_FILL_BIG = 0.34;
 function roomOk(r, w){
   if(!w || r.custom) return true;
   const f = roomFit(r, w); return !f || (f.fits && f.fill >= ROOM_MIN_FILL);
