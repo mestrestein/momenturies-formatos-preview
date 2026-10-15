@@ -1560,7 +1560,7 @@ function ingestFiles(files, mode){
       p.pendingImg=false;
       const i=POSTERS.indexOf(p); if(i<0){ URL.revokeObjectURL(url); return; }
       // orientación automática según la foto + recorte centrado
-      p.crop = {scale:1, fx:0, fy:0};
+      p.crop = {scale:1, fx:0, fy:0, cx:0.5, cy:0.5};
       const o = img.naturalWidth/img.naturalHeight >= 1.05 ? 'landscape' : 'portrait';
       p.srcImg = img;
       if(!WALL && p.orient !== o) setOrientation(p, o); else { applyFrontTexture(i); }
@@ -1696,8 +1696,19 @@ function cropWindow(p, W, H){
   const sc=Math.max(1,Math.min(3,(p.crop&&p.crop.scale)||1));
   sw/=sc; sh/=sc;
   const maxX=img.naturalWidth-sw, maxY=img.naturalHeight-sh;
-  const fx=p.crop?Math.max(-1,Math.min(1,p.crop.fx)):0, fy=p.crop?Math.max(-1,Math.min(1,p.crop.fy)):0;
-  return { sx:maxX*(0.5+0.5*fx), sy:maxY*(0.5+0.5*fy), sw, sh, maxX, maxY };
+  /* 15-oct · El encuadre es el punto de la foto que queda en el centro (cx, cy, de 0 a 1). Antes era
+     fx/fy = cuánto se había corrido dentro del margen que sobra, y ese margen cambia con cada proporción:
+     al pasar a otro tamaño del Sobremesa o a otro formato del Cuadro, el mismo valor caía en otra
+     zona de la foto. Los diseños guardados con fx/fy se pasan a cx/cy la primera vez que se pintan. */
+  if(p.crop && p.crop.cx == null){
+    const fx=Math.max(-1,Math.min(1,p.crop.fx||0)), fy=Math.max(-1,Math.min(1,p.crop.fy||0));
+    p.crop.cx = (maxX*(0.5+0.5*fx) + sw/2) / img.naturalWidth;
+    p.crop.cy = (maxY*(0.5+0.5*fy) + sh/2) / img.naturalHeight;
+  }
+  const cx = p.crop ? p.crop.cx : 0.5, cy = p.crop ? p.crop.cy : 0.5;
+  const sx = Math.max(0, Math.min(maxX, cx*img.naturalWidth - sw/2));
+  const sy = Math.max(0, Math.min(maxY, cy*img.naturalHeight - sh/2));
+  return { sx, sy, sw, sh, maxX, maxY };
 }
 
 function buildFrontCanvas(p, W, H){
@@ -2482,7 +2493,7 @@ cropZoom.addEventListener('input', ()=>{
 });
 document.getElementById('cropReset').addEventListener('click', ()=>{
   const p = POSTERS[selected]; if(!p||!p.srcImg) return;
-  p.crop = {scale:1, fx:0, fy:0};
+  p.crop = {scale:1, fx:0, fy:0, cx:0.5, cy:0.5};
   applyFrontTexture(selected); drawCropPreview();
 });
 
@@ -2499,8 +2510,10 @@ cropBox.addEventListener('pointermove', e=>{
   const dx=e.clientX-cpx, dy=e.clientY-cpy; cpx=e.clientX; cpy=e.clientY;
   const c=_cropCache;
   // el preview se pinta a 2x → el desplazamiento del dedo son dx*2 px de canvas
-  if(c.maxX>0) p.crop.fx = Math.max(-1,Math.min(1, p.crop.fx - (dx*2/c.kx)/(0.5*c.maxX)));
-  if(c.maxY>0) p.crop.fy = Math.max(-1,Math.min(1, p.crop.fy - (dy*2/c.ky)/(0.5*c.maxY)));
+  // se mueve el punto central (en píxeles de la foto), sin salirse de lo que deja la proporción actual
+  const img = p.srcImg, cw = cropWindow(p, texW(p), texH(p)), iw = img.naturalWidth, ih = img.naturalHeight;
+  if(c.maxX>0) p.crop.cx = Math.max(cw.sw/2/iw, Math.min(1 - cw.sw/2/iw, p.crop.cx - (dx*2/c.kx)/iw));
+  if(c.maxY>0) p.crop.cy = Math.max(cw.sh/2/ih, Math.min(1 - cw.sh/2/ih, p.crop.cy - (dy*2/c.ky)/ih));
   applyFrontTexture(selected); drawCropPreview();
 });
 ['pointerup','pointercancel'].forEach(ev=>cropBox.addEventListener(ev, e=>{ cropDragId=null; }));
@@ -2950,7 +2963,7 @@ async function saveDesign(){
   try{
     const items = POSTERS.filter(p => p.srcImg || p.frontText || p.backText || p.frontDate || p.backDate).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
-      crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy},
+      crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
       frontText:p.frontText, frontX:p.frontX, frontY:p.frontY, frontSize:p.frontSize, frontFont:p.frontFont, frontDate:p.frontDate,
       backText:p.backText, backX:p.backX, backY:p.backY, backSize:p.backSize, backFont:p.backFont, backDate:p.backDate,
       photo: p.file ? ('photo:' + p.uid) : null, thumb: p.thumb || null,
@@ -3013,7 +3026,7 @@ async function restoreDesign(saved){
             const url = URL.createObjectURL(blob), img = new Image();
             img.onload = () => {
               p.srcImg = img;
-              p.crop = {scale:it.crop.scale, fx:it.crop.fx, fy:it.crop.fy};
+              p.crop = {scale:it.crop.scale, fx:it.crop.fx, fy:it.crop.fy, cx:it.crop.cx, cy:it.crop.cy};
               if(!savedWall && p.orient !== it.orient) setOrientation(p, it.orient); else applyFrontTexture(i);
               URL.revokeObjectURL(url); res();
             };
@@ -4513,17 +4526,19 @@ const SCENES = [
       addBookRow(g, U, 44, 88, 33, 3, 14);
       addModel(g, KIT + 'lamp_round_table_kenney.glb', { xCm:-46, zCm:33, wCm:18, dCm:18, yCm:88, mat:'negro' });
     } },
-  { id:'mesita-boutique', flyRy:-0.3, flyRy0:-0.5, restZCm:23, caja:{ w:560, h:270, d:430 }, es:'Dormitorio', en:'Bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
+  { id:'mesita-boutique', flyRy:-0.3, flyRy0:-0.5, restZCm:33, caja:{ w:560, h:270, d:430 }, es:'Dormitorio', en:'Bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
     restCm:52, gapCm:0, furnCm:52, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#e9ddd2', wall2:'#dbcbb8', floor1:'#c2b6a4', floor2:'#ae9f8c', side:'#e6ded2', skirt:'#dbd2c4' });
       addRug(g, U, 300, 200, 175, '#c9b89a');
       addCamaModerna(g, U, { xCm:-108, zCm:4, anchoCm:160, largoCm:200, color:'#a8583f', ropa:'#f2ece0' });
       addMesitaModerna(g, U, { xCm:0,    zCm:4, color:'#8a5c3a' });
       addMesitaModerna(g, U, { xCm:-216, zCm:4, color:'#8a5c3a' });
-      addTableLamp(g, U, 16*U, 52*U, 6*U, '#b08d57', '#f3ece0');       // al lado del cuadro, pegada a la pared (con el Sobremesa grande chocaban)
+      /* 15-oct: la pantalla mide 11,5 cm de radio: a 6 cm de la pared se metía dentro. El Sobremesa va
+         más adelante en la mesita (restZCm 33) y la lámpara detrás, a un lado, sin tocar ni pared ni cuadro */
+      addTableLamp(g, U, 16*U, 52*U, 13*U, '#b08d57', '#f3ece0');
       addTableLamp(g, U, -216*U, 52*U, 20*U, '#b08d57', '#f3ece0');
     } },
-  { id:'mesita-nordica', flyRy:-0.3, flyRy0:-0.5, restZCm:23, caja:{ w:560, h:270, d:430 }, es:'Dormitorio nórdico', en:'Nordic bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
+  { id:'mesita-nordica', flyRy:-0.3, flyRy0:-0.5, restZCm:33, caja:{ w:560, h:270, d:430 }, es:'Dormitorio nórdico', en:'Nordic bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
     restCm:52, gapCm:0, furnCm:52, viewCm:330, build:(g,U) => {
       buildShell(g, U, { wall1:'#f1efe9', wall2:'#e5e2da', floor1:'#d3c9b8', floor2:'#bfb4a0', side:'#eeece5', skirt:'#e5e2da' });
       addCamaModerna(g, U, { xCm:-108, zCm:4, anchoCm:160, largoCm:200, color:'#e4ddcd', ropa:'#faf8f2' });
@@ -4532,7 +4547,7 @@ const SCENES = [
       const bancoMat = pbrMat('oak_veneer_01', 0.16, { color:'#e0d3b6', roughness:0.55, env:0.45 });
       const banco = softBox(120*U, 15*U, 40*U, 2*U, bancoMat); banco.position.set(-108*U, 30*U, 230*U); g.add(banco);
       [-1,1].forEach(sx => { const pata = softBox(3*U, 28*U, 3*U, 0.6*U, bancoMat); pata.position.set((-108 + sx*54)*U, 14*U, 230*U); g.add(pata); });
-      addTableLamp(g, U, 16*U, 52*U, 6*U, '#2b2b2b', '#efeae0');
+      addTableLamp(g, U, 16*U, 52*U, 13*U, '#2b2b2b', '#efeae0');
       addTableLamp(g, U, -216*U, 52*U, 20*U, '#2b2b2b', '#efeae0');
     } },
 ];
@@ -4794,7 +4809,7 @@ const wallSVG = window.MOMENTURIES_wallSVG || function(){ return ''; };
 function clearPosterPhoto(i){
   const p = POSTERS[i]; if(!p) return;
   _userEdited = true;
-  p.srcImg = null; p.file = null; p.pendingImg = false; p.crop = {scale:1, fx:0, fy:0};
+  p.srcImg = null; p.file = null; p.pendingImg = false; p.crop = {scale:1, fx:0, fy:0, cx:0.5, cy:0.5};
   applyFrontTexture(i);
   p.thumb = null;
   closePanel(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
