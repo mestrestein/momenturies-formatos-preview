@@ -1365,6 +1365,22 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 @media(max-width:900px){ .gift-tabs + .gift-grid .gift-card{width:calc((100% - 10px)/2)} }
 @media(max-width:580px){ .gift-tabs{gap:6px} .gift-tabs .persona-tab{padding:8px 13px;font-size:13px} }
 </style>
+<script>
+/* ?solo=N enseña solo la sección N de la portada (para comparar versiones en /soluciones/portada.html) y le dice su alto a la página que la incrusta */
+(function(){
+  var m = location.search.match(/[?&]solo=(\d+)/); if(!m) return;
+  var n = +m[1];
+  document.documentElement.style.background = '#fff';
+  document.addEventListener('DOMContentLoaded', function(){
+    var secs = [].filter.call(document.body.children, function(e){ return e.tagName === 'SECTION'; }), sec = secs[n - 1];
+    [].forEach.call(document.body.children, function(e){ if(e !== sec && e.tagName !== 'SCRIPT') e.style.display = 'none'; });
+    if(sec){ sec.style.marginTop = '0'; [].forEach.call(sec.querySelectorAll('.reveal'), function(r){ r.classList.add('visible'); }); }
+    var alto = function(){ if(sec) parent.postMessage({ soloSeccion:n, alto:Math.ceil(sec.getBoundingClientRect().height) }, '*'); };
+    if('ResizeObserver' in window && sec) new ResizeObserver(alto).observe(sec);
+    addEventListener('load', alto); alto();
+  });
+})();
+</script>
 </head>
 <body>
 <div id="sp"></div>

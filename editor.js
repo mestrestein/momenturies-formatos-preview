@@ -4886,7 +4886,7 @@ function roomFit(r, w){
   if(!r.free || !r.pxPerCm) return null;
   const cw = w.width * r.pxPerCm, ch = w.height * r.pxPerCm;
   const fw = r.free[2] - r.free[0], fh = (r.anchorBottomY || r.free[3]) - r.free[1];
-  return { fits: cw <= fw*0.92 && ch <= fh*0.95, fill: cw / r.w };
+  return { fits: cw <= fw*0.92 && ch <= fh*0.95, fill: cw / r.w, fillH: ch / r.h };
 }
 function roomFits(r, w){ const f = roomFit(r, w); return !f || f.fits; }
 /* 11-oct · Un conjunto pequeño en una foto tomada desde lejos (se ven 5 m de pared) salía enano.
@@ -4901,7 +4901,23 @@ const ROOM_MIN_FILL = 0.16, ROOM_ZOOM_MAX = 2.4;
 const ROOM_FILL_SMALL = 0.48, ROOM_FILL_BIG = 0.34;
 function roomOk(r, w){
   if(!w || r.custom) return true;
-  const f = roomFit(r, w); return !f || (f.fits && f.fill >= ROOM_MIN_FILL);
+  /* 16-oct: un conjunto estrecho y alto (una columna de tres) nunca ocupa mucho de ancho: cuenta también el alto */
+  const f = roomFit(r, w); return !f || (f.fits && Math.max(f.fill, f.fillH*0.7) >= minFillFor(w));
+}
+/* Los conjuntos más pequeños (dos o tres cuadros de 12×16) casi no llegan al mínimo en ninguna foto,
+   porque las que hay están hechas desde lejos. Para que el selector nunca se quede vacío, si con el
+   mínimo normal le quedarían menos de 6 habitaciones se rebaja para ese conjunto. */
+const _minFill = {};
+function minFillFor(w){
+  const key = w.id + '@' + (w.vk || '') + ':' + w.width;
+  if(_minFill[key] != null) return _minFill[key];
+  const vistos = {}; let n = 0;
+  PHOTO_ROOMS.forEach(r => {
+    const g = r.group || r.id; if(vistos[g]) return;
+    const f = roomFit(r, w);
+    if(f && f.fits && Math.max(f.fill, f.fillH*0.7) >= ROOM_MIN_FILL){ vistos[g] = true; n++; }
+  });
+  return (_minFill[key] = n >= 6 ? ROOM_MIN_FILL : ROOM_MIN_FILL*0.6);
 }
 /* la foto de la habitación de r en la que el conjunto w se ve bien: la de la orientación de la
    pantalla si puede ser, si no la otra. null = en esa habitación no queda bien. */
