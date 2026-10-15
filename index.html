@@ -1047,6 +1047,18 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   .adios-col-good{order:1}
 }
 
+/* ── PARED DE 15: se cuelgan y se intercambian (3D sobre foto real, pared3d.js) ── */
+.pared15-section{background:#090909;color:#fff;padding:24px 0 112px}
+.pared15-head{max-width:640px;margin:0 auto 36px;text-align:center}
+.pared15-head .s-tag{color:rgba(255,255,255,.3);justify-content:center}
+.pared15-head .s-h2{color:#fff}
+.pared15-head p{font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;margin-top:14px}
+.pared15-stage{position:relative;max-width:1080px;margin:0 auto;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#ebe5dc url(fotos/entornos/escalera-nordica-tv.jpg) center 30%/cover no-repeat}
+.pared15-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .7s}
+.pared15-stage canvas.fuera{opacity:0}
+.pared15-n{position:absolute;left:16px;top:16px;z-index:2;background:#fff;color:var(--black);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.08)}
+@media(max-width:768px){ .pared15-section{padding:8px 0 72px} .pared15-stage{aspect-ratio:1/1;border-radius:14px} }
+
 /* ── PERSONA CAROUSELS ── */
 .persona-section{background:var(--beige);padding:112px 0}
 .persona-tabs{
@@ -1844,6 +1856,20 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   </div>
 </section>
 
+<section class="pared15-section" id="cambialos">
+  <div class="container">
+    <div class="pared15-head">
+      <p class="s-tag"><span class="es">PAREDES DE ENSUEÑO</span><span class="en">DREAM WALLS</span></p>
+      <h2 class="s-h2"><span class="es">Cuelga quince.<br>Cámbialos cuando te apetezca.</span><span class="en">Hang fifteen.<br>Swap them whenever you like.</span></h2>
+      <p><span class="es">Cada cuadro va sobre su propio imán: lo despegas, lo pones en otro sitio y vuelve a quedar recto. Sin medir, sin taladrar y sin un agujero nuevo.</span><span class="en">Every print sits on its own magnet: lift it off, put it somewhere else and it hangs straight again. No measuring, no drilling, no new holes.</span></p>
+    </div>
+    <div class="pared15-stage" id="pared15">
+      <div class="pared15-n" id="pared15n" aria-live="off"></div>
+      <canvas id="pared15c" aria-label="Animación: se cuelgan quince cuadros con imán y se intercambian entre ellos" role="img"></canvas>
+    </div>
+  </div>
+</section>
+
 <section class="gift-section" id="para-quien">
   <div class="container">
     <p class="s-tag"><span class="es">PARA QUIÉN</span><span class="en">WHO IT'S FOR</span></p>
@@ -2397,6 +2423,55 @@ function combiSlide(dir){
   var c = t.querySelector('.gift-card');
   t.scrollBy({ left: dir * ((c ? c.getBoundingClientRect().width : 320) + 18), behavior: 'smooth' });
 }
+</script>
+<script>
+/* Pared de 15 (#cambialos): three.js y la escena se cargan solo cuando la sección se acerca a la pantalla */
+(function(){
+  var st = document.getElementById('pared15'); if(!st || !('IntersectionObserver' in window)) return;
+  function js(src, ok){ var s = document.createElement('script'); s.src = src; s.onload = ok; document.body.appendChild(s); }
+  var io = new IntersectionObserver(function(es){
+    if(!es[0].isIntersecting) return; io.disconnect();
+    js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', function(){ js('pared3d.js?v=6a62fe59', arrancar); });
+  }, { rootMargin:'600px 0px' });
+  io.observe(st);
+  function arrancar(){
+    var en = function(){ return document.documentElement.getAttribute('data-lang') === 'en'; };
+    var cont = document.getElementById('pared15n');
+    var P = Pared3D({ canvas:document.getElementById('pared15c'), stage:st, foto:'fotos/entornos/escalera-nordica-tv.jpg', fotoPx:[1536, 1024], pxPorCm:4,
+      foco:{ x:0, y:22, w:250, h:180 }, luz:[-120, 90, 220], blur:22, sombra:.28 });
+    var FOTOS = ['1472719674214-480x640','1474552226712-620x877','1491013516836-620x877','1548858806-480x640','1557495235-480x640','1586498024141-480x640',
+      '1603367563698-480x640','1606983340126-480x640','1624272864537-480x640','1655141011386-480x640','1738956952892-480x640','1750076912832-480x640',
+      '1752652011858-480x640','1758686254601-480x640','1770831208268-480x640'];
+    var HUECOS = []; [82, 36, -10].forEach(function(y){ [-74, -37, 0, 37, 74].forEach(function(x){ HUECOS.push({ x:x, y:y }); }); });
+    var C = FOTOS.map(function(f){ return P.cuadro('fotos/stock/' + f + '.webp'); });
+    HUECOS.forEach(function(h){ var m = P.imanPared(); m.position.set(h.x, h.y - 2, .1); });   // el imán de cada hueco, a la vista
+    var ORDEN = [7, 6, 8, 2, 12, 1, 11, 3, 13, 5, 9, 0, 14, 4, 10];
+    var CAMBIOS = [[2, 11, 8.2], [5, 9, 10.7], [0, 14, 13.2], [7, 12, 15.7]];
+    var Z = .5, DUR = 2.1, E = P.E, cl = P.cl, lerp = P.lerp;
+    /* un cuadro va de un hueco a otro: se despega, cruza por delante (cada uno por su lado) y el imán lo vuelve a coger */
+    function cruzar(c, u, h1, h2, fondo){
+      var a = E.io(cl(u / .22)), b = E.io(cl((u - .22) / .6)), k = E.in(cl((u - .82) / .18)), lado = fondo > 20 ? 1 : -1, s = Math.sin(b * Math.PI);
+      c.position.set(lerp(h1.x, h2.x, b) + lado * s * 14, lerp(h1.y, h2.y, b) + lado * s * 6, b >= 1 ? Z + 6 - k * 6 : Z + a * 6 + s * fondo);
+      c.rotation.set(-.18 * a * (1 - b) + .1 * s, (h2.x - h1.x) * .004 * s, 0);
+      if(u > 1){ var q = u - 1; c.position.z = Z + Math.sin(q * 70) * .25 * Math.exp(-q * 16); c.rotation.set(0, 0, 0); }
+    }
+    P.bucle(22, function(t){
+      var sitio = FOTOS.map(function(_, i){ return i; }), colgados = 0, hechos = 0;
+      ORDEN.forEach(function(i, n){ var u = (t - 1.4 - n * .36) / 1.1; if(u > 1) colgados++;
+        P.llegar(C[i], u, HUECOS[i].x, HUECOS[i].y, Z, { x:HUECOS[i].x + 35, y:HUECOS[i].y - 45, z:80 }, true); });
+      CAMBIOS.forEach(function(cb){
+        var a = cb[0], b = cb[1], ia = sitio.indexOf(a), ib = sitio.indexOf(b), u = (t - cb[2]) / DUR;
+        if(u <= 0) return;
+        if(u < 1.4){ cruzar(C[ia], u, HUECOS[a], HUECOS[b], 30); cruzar(C[ib], u, HUECOS[b], HUECOS[a], 14); }
+        else { C[ia].position.set(HUECOS[b].x, HUECOS[b].y, Z); C[ib].position.set(HUECOS[a].x, HUECOS[a].y, Z); C[ia].rotation.set(0, 0, 0); C[ib].rotation.set(0, 0, 0); }
+        if(u >= 1) hechos++;
+        sitio[ia] = b; sitio[ib] = a;
+      });
+      cont.textContent = colgados < 15 ? (en() ? 'Hung: ' : 'Colgados: ') + colgados + (en() ? ' of 15' : ' de 15') : (en() ? 'Swaps: ' : 'Cambios: ') + hechos;
+      st.querySelector('canvas').classList.toggle('fuera', t > 20.6);
+    });
+  }
+})();
 </script>
 <script src="photo-handoff.js?v=be4aae08"></script>
 </body>

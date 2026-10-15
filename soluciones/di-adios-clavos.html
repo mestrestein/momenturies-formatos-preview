@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Soluciones · Di adiós a los clavos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0d0d0d;--mid:#6b7280;--white:#fff;--beige:#f0ebe3;
+  --accent:#c8922a;--terra:#c2613a;--wall:#ebe5dc;
+  --serif:Georgia,'Times New Roman',serif;--sans:'Inter','Helvetica Neue',Arial,sans-serif;
+}
+body{font-family:var(--sans);background:#f4f1ec;color:var(--black);overflow-x:hidden}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.label{background:#f4f1ec;padding:34px 0 14px}
+.label b{display:inline-block;background:var(--black);color:#fff;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px;border-radius:4px;margin-right:10px}
+.label span{font-size:15px;color:#444}
+.intro{padding:40px 0 4px}
+.intro h1{font-family:var(--serif);font-size:30px;margin-bottom:6px}
+.intro p{color:#555;font-size:15px;line-height:1.5;max-width:720px}
+.dark{background:#090909;color:#fff;position:relative;overflow:hidden}
+.eyebrow{font-size:11px;letter-spacing:3.5px;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:600}
+.cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--black);font-weight:700;font-size:14px;padding:14px 26px;border-radius:999px;text-decoration:none}
+
+/* ═════ 1 · MANIFIESTO ═════ */
+.o1{padding:110px 0 100px}
+.o1 .eyebrow{margin-bottom:28px}
+.o1-lines{font-family:var(--serif);font-weight:700;font-size:clamp(48px,9.5vw,132px);line-height:.95;letter-spacing:-.03em}
+.o1-lines div{position:relative;width:max-content;max-width:100%}
+.o1-lines .tachado{color:rgba(255,255,255,.22)}
+.o1-lines .tachado::after{content:'';position:absolute;left:-2%;top:54%;height:.07em;background:var(--terra);width:0;transition:width .7s cubic-bezier(.6,0,.2,1)}
+.o1.on .tachado::after{width:104%}
+.o1.on .tachado:nth-child(2)::after{transition-delay:.25s}
+.o1.on .tachado:nth-child(3)::after{transition-delay:.5s}
+.o1-lines .si{color:#fff;margin-top:.12em}
+.o1-lines .si em{font-style:normal;color:var(--accent)}
+.o1-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:80px;border-top:1px solid rgba(255,255,255,.14)}
+.o1-stats div{padding:28px 24px 0 0}
+.o1-stats b{display:block;font-family:var(--serif);font-size:clamp(40px,5vw,64px);line-height:1;margin-bottom:10px}
+.o1-stats span{font-size:14px;color:rgba(255,255,255,.5);line-height:1.5}
+@media(max-width:640px){.o1{padding:72px 0}.o1-stats{grid-template-columns:1fr;margin-top:50px}.o1-stats div{padding:22px 0;border-bottom:1px solid rgba(255,255,255,.1)}}
+
+/* ═════ 2 · ANTES / DESPUÉS ═════ */
+.o2{padding:96px 0}
+.o2 h2,.o3 h2,.o4 h2,.o5 h2{font-family:var(--serif);font-size:clamp(30px,4vw,52px);line-height:1.08;letter-spacing:-.02em;margin:16px 0 14px}
+.o2-head{text-align:center;margin-bottom:44px}
+.o2-head p{color:rgba(255,255,255,.5);font-size:15px}
+.o2-stage{position:relative;max-width:980px;margin:0 auto;aspect-ratio:16/9;border-radius:18px;overflow:hidden;user-select:none;touch-action:pan-y;background:var(--wall)}
+.o2-pane{position:absolute;inset:0}
+.o2-pane svg{width:100%;height:100%;display:block}
+.o2-after{clip-path:inset(0 0 0 var(--x,50%))}
+.o2-tag{position:absolute;top:18px;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:7px 12px;border-radius:999px}
+.o2-tag.a{left:18px;background:#fff;color:#b23b2a}
+.o2-tag.b{right:18px;background:var(--black);color:#fff}
+.o2-handle{position:absolute;top:0;bottom:0;left:var(--x,50%);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);pointer-events:none}
+.o2-handle::after{content:'‹ ›';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:#fff;color:var(--black);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.25);letter-spacing:4px}
+.o2-range{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.o2-cap{display:grid;grid-template-columns:1fr 1fr;max-width:980px;margin:22px auto 0;gap:20px;font-size:14px;color:rgba(255,255,255,.55);line-height:1.5}
+.o2-cap b{color:#fff;display:block;margin-bottom:3px}
+.o2-cap div:last-child{text-align:right}
+@media(max-width:640px){.o2{padding:70px 0}.o2-stage{aspect-ratio:4/5;border-radius:14px}.o2-cap{font-size:13px}}
+
+/* ═════ 3 · ASÍ SE MONTA (animación en bucle) ═════ */
+.o3{padding:96px 0}
+.o3-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:center}
+.o3-stage{position:relative;aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:#e6dfd4}
+.o3-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .7s}
+.o3-stage canvas.fuera{opacity:0}
+.o3-time{position:absolute;left:18px;top:18px;background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:var(--black);box-shadow:0 6px 16px rgba(0,0,0,.08);z-index:2}
+.o3-steps{list-style:none;display:flex;flex-direction:column;gap:6px}
+.o3-steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 18px;border-radius:14px;color:rgba(255,255,255,.38);transition:background .4s,color .4s}
+.o3-steps li.on{background:rgba(255,255,255,.07);color:#fff}
+.o3-steps i{font-style:normal;font-family:var(--serif);font-size:28px;font-weight:700;line-height:1}
+.o3-steps b{display:block;font-size:17px;margin-bottom:4px}
+.solo-3>*:not(.o3),.solo-g>*:not(.g15){display:none}
+.g15{padding:96px 0}
+.g15-head{max-width:720px;margin-bottom:34px}
+.g15-head p{color:rgba(255,255,255,.55);font-size:15px;line-height:1.6}
+.g15-stage{position:relative;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#ebe5dc}
+.g15-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .7s}
+.g15-stage canvas.fuera{opacity:0}
+.g15-n{position:absolute;left:18px;top:18px;z-index:2;background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px;color:var(--black);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+@media(max-width:640px){.g15{padding:70px 0}.g15-stage{aspect-ratio:1/1;border-radius:14px}}
+.o3-steps span{font-size:14px;line-height:1.5}
+.o3 .eyebrow{display:block}
+.o3-note{margin-top:22px;font-size:14px;color:rgba(255,255,255,.5)}
+@media(max-width:820px){.o3{padding:70px 0}.o3-grid{grid-template-columns:1fr;gap:30px}.o3-steps li{padding:12px 14px}}
+
+/* ═════ 4 · LA CARRERA ═════ */
+.o4{padding:96px 0;background:#0b0b0b}
+.o4-head{max-width:640px;margin-bottom:46px}
+.o4-head p{color:rgba(255,255,255,.5);font-size:15px;line-height:1.5}
+.o4-lane{border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px 24px;margin-bottom:14px}
+.o4-lane-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:16px}
+.o4-lane-top b{font-size:16px}
+.o4-clock{font-family:var(--serif);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.o4-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:16px}
+.o4-bar i{display:block;height:100%;width:0;border-radius:99px}
+.o4-old .o4-bar i{background:#e0563f}
+.o4-new .o4-bar i{background:var(--accent)}
+.o4-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:34px}
+.o4-chips span{font-size:13px;padding:7px 12px;border-radius:999px;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s}
+.o4-chips span.on{opacity:1;transform:none}
+.o4-old .o4-chips span{background:rgba(224,86,63,.12);color:#f2a091}
+.o4-new .o4-chips span{background:rgba(200,146,42,.14);color:#f0c56f}
+.o4-new{border-color:rgba(200,146,42,.45);background:rgba(200,146,42,.04)}
+.o4-done{margin-top:26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.o4-done p{font-family:var(--serif);font-size:clamp(22px,2.6vw,30px);opacity:0;transition:opacity .5s}
+.o4-done p.on{opacity:1}
+.o4-done p em{font-style:normal;color:var(--accent)}
+.o4-again{background:none;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:10px 18px;font:600 13px var(--sans);cursor:pointer}
+.o4-foot{font-size:12px;color:rgba(255,255,255,.3);margin-top:16px}
+
+/* ═════ 5 · DESPIECE ═════ */
+.o5{padding:96px 0 104px}
+.o5-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:40px;align-items:center}
+.o5-txt p.lead{color:rgba(255,255,255,.55);font-size:15px;line-height:1.6;margin-bottom:28px}
+.o5-legend{list-style:none;display:flex;flex-direction:column;gap:16px;margin-bottom:30px}
+.o5-legend li{display:grid;grid-template-columns:30px 1fr;gap:12px;font-size:14px;color:rgba(255,255,255,.55);line-height:1.5}
+.o5-legend i{font-style:normal;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.o5-legend b{color:#fff;display:block}
+.o5-btn{background:var(--accent);color:var(--black);border:0;border-radius:999px;padding:13px 22px;font:700 14px var(--sans);cursor:pointer}
+.o5-scene{height:520px;perspective:1600px;display:flex;align-items:center;justify-content:center}
+.o5-stack{position:relative;width:260px;height:340px;transform-style:preserve-3d;transform:rotateX(52deg) rotateZ(-38deg);transition:transform .9s}
+.o5-layer{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.5,0,.2,1)}
+.o5-layer .face{position:absolute;inset:0}
+.o5-wall .face{inset:-70px;background:linear-gradient(135deg,#efe9e0,#d9d0c3);border-radius:6px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.o5-wall .face::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(0,0,0,.025) 38px 39px)}
+.o5-base .face{left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;border-radius:50%;background:#fff;border:6px solid #e6dfd4;box-shadow:inset 0 0 0 10px #f3efe8}
+.o5-mag .face{left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#8a8f96,#3b3f45);box-shadow:0 0 0 4px rgba(255,255,255,.1)}
+.o5-photo .face{background:#888 center/cover no-repeat;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.3)}
+.o5-photo .face::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.28),transparent 40%)}
+.o5-pin{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--black);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;transform:rotateZ(38deg) rotateX(-52deg);transition:opacity .4s}
+.o5-base .o5-pin{left:calc(50% + 52px);top:calc(50% - 14px)}
+.o5-mag .o5-pin{left:calc(50% + 42px);top:calc(50% - 14px)}
+.o5-photo .o5-pin{right:-14px;top:-14px}
+.o5-wall .o5-pin{left:-64px;top:-64px}
+.o5.abierto .o5-base{transform:translateZ(40px)}
+.o5.abierto .o5-mag{transform:translateZ(120px)}
+.o5.abierto .o5-photo{transform:translateZ(200px)}
+.o5:not(.abierto) .o5-base{transform:translateZ(1px)}
+.o5:not(.abierto) .o5-mag{transform:translateZ(2px)}
+.o5:not(.abierto) .o5-photo{transform:translateZ(6px)}
+.o5:not(.abierto) .o5-pin{opacity:0}
+.o5:not(.abierto) .o5-stack{transform:rotateX(0) rotateZ(0)}
+@media(max-width:820px){.o5{padding:70px 0}.o5-grid{grid-template-columns:1fr}.o5-scene{height:420px;order:-1}.o5-stack{width:200px;height:262px}}
+</style>
+</head>
+<body>
+
+<div class="wrap intro">
+  <p style="font-size:13px;margin-bottom:10px"><a href="index.html" style="color:#555">&larr; Todas las secciones</a></p>
+  <h1>Di adiós a los clavos · soluciones</h1>
+  <p>Cinco formas muy distintas de contar lo mismo: se pega una base, el cuadro va con imán y la pared queda sin agujeros. Todas mantienen el fondo negro. Solo están en español para que se vean bien.</p>
+</div>
+
+<!-- ═════════════════ 1 ═════════════════ -->
+<div class="wrap label"><b>Opción 1</b><span>Manifiesto: solo tipografía, enorme. Las tres cosas que te ahorras se tachan al llegar.</span></div>
+<section class="dark o1" id="o1">
+  <div class="wrap">
+    <p class="eyebrow">Colgado magnético</p>
+    <div class="o1-lines">
+      <div class="tachado">Martillo.</div>
+      <div class="tachado">Taladro.</div>
+      <div class="tachado">Agujeros.</div>
+      <div class="si">Solo <em>clic.</em></div>
+    </div>
+    <div class="o1-stats">
+      <div><b>10 s</b><span>Pegas la base, acercas el cuadro y el imán hace el resto.</span></div>
+      <div><b>0</b><span>agujeros. Al quitarlo, la pared queda como estaba.</span></div>
+      <div><b>∞</b><span>Lo mueves y lo cambias de sitio las veces que quieras.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════ 2 ═════════════════ -->
+<div class="wrap label"><b>Opción 2</b><span>Antes y después: se arrastra la barra y se ve la pared con clavos frente a la pared con Momenturies.</span></div>
+<section class="dark o2">
+  <div class="wrap">
+    <div class="o2-head">
+      <p class="eyebrow">Colgado magnético</p>
+      <h2>La misma pared. Dos maneras de colgar.</h2>
+      <p>Arrastra para comparar.</p>
+    </div>
+    <div class="o2-stage" id="o2">
+      <!-- ANTES: agujeros, marcas de lápiz, cuadro torcido y herramientas -->
+      <div class="o2-pane">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <rect width="1600" height="900" fill="#e6dfd4"/>
+          <rect y="770" width="1600" height="130" fill="#a97d55"/>
+          <g fill="#3b332b">
+            <circle cx="520" cy="210" r="7"/><circle cx="610" cy="190" r="6"/><circle cx="1090" cy="230" r="7"/><circle cx="1180" cy="205" r="5"/><circle cx="430" cy="300" r="5"/><circle cx="1250" cy="330" r="6"/>
+          </g>
+          <g stroke="#7d6f5f" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7">
+            <path d="M520 210l-14-20M520 210l18 -6M1090 230l16 18M1090 230l-12 -16"/>
+            <path d="M560 175h40M580 160v30M1130 170h40M1150 155v30M470 260h28"/>
+          </g>
+          <g transform="rotate(-7 800 380)">
+            <rect x="640" y="190" width="320" height="400" fill="#fff" stroke="#2b2b2b" stroke-width="14"/>
+            <rect x="672" y="222" width="256" height="336" fill="#b8b0a4"/>
+            <path d="M800 190 L760 120 L840 120 Z" fill="none" stroke="#555" stroke-width="3"/>
+          </g>
+          <circle cx="800" cy="118" r="8" fill="#555"/>
+          <!-- martillo -->
+          <g transform="translate(240 690) rotate(-18)">
+            <rect x="0" y="-10" width="210" height="22" rx="8" fill="#8a5a33"/>
+            <rect x="190" y="-34" width="34" height="70" rx="5" fill="#4a4f55"/>
+            <rect x="224" y="-20" width="34" height="18" rx="4" fill="#4a4f55"/>
+          </g>
+          <!-- nivel -->
+          <g transform="translate(1160 720) rotate(4)">
+            <rect width="300" height="40" rx="6" fill="#e3b23c"/><rect x="128" y="10" width="44" height="20" rx="8" fill="#bfe3b2" stroke="#7a6a2a" stroke-width="2"/>
+          </g>
+          <!-- clavos sueltos -->
+          <g stroke="#6b7078" stroke-width="5" stroke-linecap="round"><path d="M560 760l40-14M610 765l42-6M660 758l36-20"/></g>
+          <!-- polvo -->
+          <g fill="#cfc4b3" opacity=".8"><ellipse cx="1090" cy="290" rx="34" ry="8"/><ellipse cx="520" cy="266" rx="28" ry="6"/></g>
+        </svg>
+        <span class="o2-tag a">Con clavos</span>
+      </div>
+      <!-- DESPUÉS: pared limpia, cuadro recto con la foto -->
+      <div class="o2-pane o2-after" id="o2after">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+          <rect width="1600" height="900" fill="#ece6dc"/>
+          <rect y="770" width="1600" height="130" fill="#a97d55"/>
+          <defs><filter id="o2s" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="22" stdDeviation="20" flood-opacity=".25"/></filter></defs>
+          <image href="../fotos/stock/1548858806-480x640.webp" x="635" y="170" width="330" height="440" preserveAspectRatio="xMidYMid slice" filter="url(#o2s)"/>
+          <g transform="translate(1180 640)">
+            <rect x="0" y="40" width="160" height="90" rx="10" fill="#d8cdbd"/>
+            <path d="M40 40c0-60 20-100 40-130M80 40c0-50 30-80 60-110M60 40c-10-40-40-60-70-80" stroke="#6d7d5a" stroke-width="7" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <span class="o2-tag b">Momenturies</span>
+      </div>
+      <div class="o2-handle" id="o2h"></div>
+      <input class="o2-range" id="o2r" type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"/>
+    </div>
+    <div class="o2-cap">
+      <div><b>Con clavos</b>Martillo, nivel, agujeros, polvo y un cuadro que nunca queda recto.</div>
+      <div><b>Con Momenturies</b>Una base adhesiva y un imán. Recto a la primera y sin una marca.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════ 3 ═════════════════ -->
+<div class="wrap label"><b>Opción 3</b><span>Así se monta: una animación en bucle a la izquierda y los pasos se van encendiendo a la vez a la derecha.</span></div>
+<section class="dark o3">
+  <div class="wrap o3-grid">
+    <div class="o3-stage" id="o3">
+      <div class="o3-time" id="o3t">0:00</div>
+      <canvas id="o3c"></canvas>
+    </div>
+    <div>
+      <span class="eyebrow">Colgado magnético</span>
+      <h2>Desde tu abuela hasta tu hijo de 5 años sabe montarlo</h2>
+      <ol class="o3-steps" id="o3s">
+        <li><i>1</i><div><b>Pega la lámina</b><span>Va en el pedido. Protege la pared y se retira sin dejar marca.</span></div></li>
+        <li><i>2</i><div><b>Pon el imán encima</b><span>Presiona unos segundos. Ya tienes la base.</span></div></li>
+        <li><i>3</i><div><b>Acerca el cuadro</b><span>Lleva otro imán detrás: se engancha solo. Clic. Si quieres, lo enderezas.</span></div></li>
+        <li><i>4</i><div><b>Cámbialo cuando quieras</b><span>Lo quitas y pones otro en un segundo. La pared, intacta.</span></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════ 3b ═════════════════ -->
+<div class="wrap label"><b>Opción 6 · en la web</b><span>Pared llena: se cuelgan 15 cuadros y luego se van intercambiando entre ellos.</span></div>
+<section class="dark g15">
+  <div class="wrap">
+    <div class="g15-head">
+      <p class="eyebrow">Paredes de ensueño</p>
+      <h2 style="font-family:var(--serif);font-size:clamp(30px,4vw,52px);line-height:1.08;letter-spacing:-.02em;margin:16px 0 14px">Cuelga quince. Cámbialos cuando te apetezca.</h2>
+      <p>Cada cuadro va sobre su propio imán: lo despegas, lo pones en otro sitio y vuelve a quedar recto. Sin medir, sin taladrar y sin un agujero nuevo.</p>
+    </div>
+    <div class="g15-stage" id="g15">
+      <div class="g15-n" id="g15n">Colgados: 0 de 15</div>
+      <canvas id="g15c"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════ 4 ═════════════════ -->
+<div class="wrap label"><b>Opción 4</b><span>La carrera: al llegar a la sección, los dos métodos «compiten» con cronómetro.</span></div>
+<section class="dark o4" id="o4">
+  <div class="wrap">
+    <div class="o4-head">
+      <p class="eyebrow">Colgado magnético</p>
+      <h2>Mientras buscas el martillo, ya lo tienes colgado</h2>
+      <p>Lo que lleva colgar un cuadro de toda la vida, frente a lo que lleva un Momenturies.</p>
+    </div>
+    <div class="o4-lane o4-old">
+      <div class="o4-lane-top"><b>Cuadro con clavos</b><span class="o4-clock" id="o4c1">0 min</span></div>
+      <div class="o4-bar"><i id="o4b1"></i></div>
+      <div class="o4-chips" id="o4s1">
+        <span>Buscar martillo y nivel</span><span>Medir y marcar</span><span>Taladrar</span><span>Taco y tornillo</span><span>Enderezar</span><span>Barrer el polvo</span>
+      </div>
+    </div>
+    <div class="o4-lane o4-new">
+      <div class="o4-lane-top"><b>Momenturies</b><span class="o4-clock" id="o4c2">0 s</span></div>
+      <div class="o4-bar"><i id="o4b2"></i></div>
+      <div class="o4-chips" id="o4s2"><span>Pegar la base</span><span>Acercar el cuadro</span><span>✓ Colgado</span></div>
+    </div>
+    <div class="o4-done">
+      <p id="o4p">Tú ya estás en el sofá. <em>Ellos siguen con el taladro.</em></p>
+      <button class="o4-again" id="o4r" type="button">↺ Repetir</button>
+    </div>
+    <p class="o4-foot">Tiempos orientativos.</p>
+  </div>
+</section>
+
+<!-- ═════════════════ 5 ═════════════════ -->
+<div class="wrap label"><b>Opción 5</b><span>Despiece: el cuadro se separa en capas en 3D para enseñar cómo va por dentro. Con el botón se junta y se separa.</span></div>
+<section class="dark o5 abierto" id="o5">
+  <div class="wrap o5-grid">
+    <div class="o5-txt">
+      <p class="eyebrow">Colgado magnético</p>
+      <h2>Por dentro es así de sencillo</h2>
+      <p class="lead">Sin clavos, sin cola, sin herramientas. Tres piezas y tu pared intacta.</p>
+      <ol class="o5-legend">
+        <li><i>1</i><div><b>Tu pared</b>Sin agujeros. Ni antes, ni después.</div></li>
+        <li><i>2</i><div><b>Base adhesiva</b>Va en el pedido y se pega en segundos.</div></li>
+        <li><i>3</i><div><b>Imán</b>Engancha el cuadro y lo deja centrado.</div></li>
+        <li><i>4</i><div><b>Tu cuadro</b>Lo quitas y lo vuelves a poner cuando quieras.</div></li>
+      </ol>
+      <button class="o5-btn" id="o5b" type="button">Juntar las piezas</button>
+    </div>
+    <div class="o5-scene">
+      <div class="o5-stack">
+        <div class="o5-layer o5-wall"><div class="face"></div><span class="o5-pin">1</span></div>
+        <div class="o5-layer o5-base"><div class="face"></div><span class="o5-pin">2</span></div>
+        <div class="o5-layer o5-mag"><div class="face"></div><span class="o5-pin">3</span></div>
+        <div class="o5-layer o5-photo"><div class="face" style="background-image:url(../fotos/stock/1474552226712-620x877.webp)"></div><span class="o5-pin">4</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div style="height:60px"></div>
+
+<script>
+/* 1 · tachar al entrar */
+const ver = (el, fn) => new IntersectionObserver((es, o) => { es.forEach(e => { if (e.isIntersecting) { fn(); o.disconnect(); } }); }, { threshold: .35 }).observe(el);
+ver(document.getElementById('o1'), () => document.getElementById('o1').classList.add('on'));
+
+/* 2 · deslizador */
+const o2 = document.getElementById('o2'), o2r = document.getElementById('o2r');
+const o2set = v => o2.style.setProperty('--x', v + '%');
+o2r.addEventListener('input', () => o2set(o2r.value));
+
+/* 4 · carrera */
+function carrera(){
+  const b1 = document.getElementById('o4b1'), b2 = document.getElementById('o4b2');
+  const c1 = document.getElementById('o4c1'), c2 = document.getElementById('o4c2');
+  const s1 = [...document.querySelectorAll('#o4s1 span')], s2 = [...document.querySelectorAll('#o4s2 span')];
+  const p = document.getElementById('o4p');
+  [...s1, ...s2].forEach(s => s.classList.remove('on')); p.classList.remove('on');
+  const T = 6000, t = performance.now();
+  (function paso(){
+    const k = Math.min(1, (performance.now() - t) / T);
+    // con clavos: 30 min en 6 s; Momenturies: 10 s, termina enseguida
+    b1.style.width = (k * 100) + '%'; c1.textContent = Math.round(k * 30) + ' min';
+    const k2 = Math.min(1, k / .12);
+    b2.style.width = (k2 * 100) + '%'; c2.textContent = Math.round(k2 * 10) + ' s';
+    s1.forEach((s, i) => s.classList.toggle('on', k >= i / s1.length));
+    s2.forEach((s, i) => s.classList.toggle('on', k2 >= i / (s2.length - 1) - .001));
+    if (k2 >= 1) p.classList.add('on');
+    if (k < 1) requestAnimationFrame(paso);
+  })();
+}
+ver(document.getElementById('o4'), carrera);
+document.getElementById('o4r').addEventListener('click', carrera);
+
+/* 5 · despiece */
+const o5 = document.getElementById('o5'), o5b = document.getElementById('o5b');
+o5b.addEventListener('click', () => { const a = o5.classList.toggle('abierto'); o5b.textContent = a ? 'Juntar las piezas' : 'Ver por dentro'; });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="../pared3d.js"></script>
+<script>
+const SOLO = new URLSearchParams(location.search).get('solo');
+if(SOLO) document.body.classList.add('solo-' + SOLO);
+
+/* 3 · Montaje sobre una entrada real: lámina, imán, cuadro y cambio de cuadro */
+(function(){
+  const stage = document.getElementById('o3'), reloj = document.getElementById('o3t'), pasos = [...document.querySelectorAll('#o3s li')];
+  const P = Pared3D({ canvas:document.getElementById('o3c'), stage, foto:'../fotos/entornos/aparador-lujo.jpg', fotoPx:[1536, 1024], pxPorCm:4.65,
+    foco:{ x:-35, y:15, w:100, h:125 }, luz:[-80, 70, 150] });
+  const X = -25, Y = 4.5;
+  const lam = P.lamina(), im = P.imanPared();
+  const A = P.cuadro('../fotos/stock/1491013516836-620x877.webp'), B = P.cuadro('../fotos/stock/1474552226712-620x877.webp');
+  let paso = -1;
+  P.bucle(14, t => {
+    P.llegar(lam, (t - .4) / 1.3, X, Y, .03, { z:55, rx:.1 });
+    P.llegar(im, (t - 2) / 1.2, X, Y - 2, .1, { z:55 });
+    if(t < 7.6){
+      P.llegar(A, (t - 3.6) / 1.9, X, Y, .5, null, true);
+      if(t > 6 && t < 7.2){ const u = (t - 6) / 1.2; A.rotation.z = Math.sin(u * Math.PI) * -.05; }
+    } else P.quitar(A, (t - 7.6) / 1.5, X, Y, .5);
+    if(t < 9.2) B.visible = false; else P.llegar(B, (t - 9.2) / 1.9, X, Y, .5, { x:X + 40, y:Y - 25 }, true);
+    const p = t < 2 ? 0 : t < 3.6 ? 1 : t < 7.6 ? 2 : 3;
+    if(p !== paso){ paso = p; pasos.forEach((li, i) => li.classList.toggle('on', i === p)); }
+    reloj.textContent = '0:' + String(Math.min(10, Math.floor(t / 5.5 * 10))).padStart(2, '0');
+    stage.querySelector('canvas').classList.toggle('fuera', t > 12.9);
+  });
+})();
+
+/* 3b · Pared llena: se cuelgan 15 y se van intercambiando */
+(function(){
+  const stage = document.getElementById('g15'), cont = document.getElementById('g15n');
+  const P = Pared3D({ canvas:document.getElementById('g15c'), stage, foto:'../fotos/entornos/escalera-nordica-tv.jpg', fotoPx:[1536, 1024], pxPorCm:4,
+    foco:{ x:0, y:22, w:250, h:180 }, luz:[-120, 90, 220], blur:22, sombra:.28 });
+  const FOTOS = ['1472719674214-480x640','1474552226712-620x877','1491013516836-620x877','1548858806-480x640','1557495235-480x640','1586498024141-480x640',
+    '1603367563698-480x640','1606983340126-480x640','1624272864537-480x640','1655141011386-480x640','1738956952892-480x640','1750076912832-480x640',
+    '1752652011858-480x640','1758686254601-480x640','1770831208268-480x640'];
+  const HUECOS = []; [82, 36, -10].forEach(y => [-74, -37, 0, 37, 74].forEach(x => HUECOS.push({ x, y })));
+  const C = FOTOS.map(f => P.cuadro('../fotos/stock/' + f + '.webp'));
+  /* el imán de cada hueco ya está en la pared: se ve antes de colgar y cada vez que un cuadro se despega */
+  HUECOS.forEach(h => { const m = P.imanPared(); m.position.set(h.x, h.y - 2, .1); });
+  const ORDEN = [7, 6, 8, 2, 12, 1, 11, 3, 13, 5, 9, 0, 14, 4, 10];     // del centro hacia fuera, como lo haría alguien
+  const CAMBIOS = [[2, 11, 8.2], [5, 9, 10.7], [0, 14, 13.2], [7, 12, 15.7]];
+  const Z = .5, DUR = 2.1;
+  /* un cuadro va de un hueco a otro: se despega, cruza por delante y el imán lo vuelve a coger */
+  function cruzar(c, u, h1, h2, fondo){
+    const E = P.E, cl = P.cl, lerp = P.lerp;
+    const a = E.io(cl(u / .22)), b = E.io(cl((u - .22) / .6)), k = E.in(cl((u - .82) / .18));
+    c.position.set(lerp(h1.x, h2.x, b), lerp(h1.y, h2.y, b), Z + a * 6 + Math.sin(b * Math.PI) * fondo - k * 6 * (b >= 1));
+    if(b >= 1) c.position.z = Z + 6 - k * 6;
+    /* los dos se cruzan cada uno por un lado, como dos manos que no chocan */
+    const lado = fondo > 20 ? 1 : -1; c.position.x += lado * Math.sin(b * Math.PI) * 14; c.position.y += lado * Math.sin(b * Math.PI) * 6;
+    c.rotation.set(-.18 * a * (1 - b) + .1 * Math.sin(b * Math.PI), (h2.x - h1.x) * .004 * Math.sin(b * Math.PI), 0);
+    if(u > 1){ const q = u - 1; c.position.z = Z + Math.sin(q * 70) * .25 * Math.exp(-q * 16); c.rotation.set(0, 0, 0); }
+  }
+  P.bucle(22, t => {
+    const sitio = FOTOS.map((_, i) => i);   // hueco en el que está cada cuadro
+    let colgados = 0, hechos = 0;
+    ORDEN.forEach((i, n) => { const u = (t - 1.4 - n * .36) / 1.1; if(u > 1) colgados++;
+      P.llegar(C[i], u, HUECOS[i].x, HUECOS[i].y, Z, { x:HUECOS[i].x + 35, y:HUECOS[i].y - 45, z:80 }, true); });
+    CAMBIOS.forEach(([a, b, t0]) => {
+      const ia = sitio.indexOf(a), ib = sitio.indexOf(b), u = (t - t0) / DUR;
+      if(u <= 0) return;
+      if(u < 1.4){ cruzar(C[ia], u, HUECOS[a], HUECOS[b], 30); cruzar(C[ib], u, HUECOS[b], HUECOS[a], 14); }
+      else { C[ia].position.set(HUECOS[b].x, HUECOS[b].y, Z); C[ib].position.set(HUECOS[a].x, HUECOS[a].y, Z); C[ia].rotation.set(0,0,0); C[ib].rotation.set(0,0,0); }
+      if(u >= 1) hechos++;
+      sitio[ia] = b; sitio[ib] = a;
+    });
+    cont.textContent = colgados < 15 ? 'Colgados: ' + colgados + ' de 15' : 'Cambios: ' + hechos;
+    stage.querySelector('canvas').classList.toggle('fuera', t > 20.6);
+  });
+})();
+</script>
+</body>
+</html>
