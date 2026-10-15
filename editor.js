@@ -3854,11 +3854,15 @@ function addMesitaModerna(g, U, o){
   const x=(o.xCm||0)*U, z=(o.zCm||6)*U, W=44*U, D=38*U, H=52*U;
   const mat = pbrMat(o.tex || 'oak_veneer_01', 0.16, { color:o.color || '#d9c9ab', roughness:0.55, env:0.45 });
   const G = new THREE.Group(); G.position.set(x,0,z); if(o.rotY) G.rotation.y = o.rotY; g.add(G);
+  /* 15-oct: las patas no llegaban al cajón (quedaban 4 cm de aire) y solo había las dos de delante */
   const top = softBox(W, 3*U, D, 0.8*U, mat); top.position.set(0, H - 1.5*U, D/2); G.add(top);
-  const cajon = softBox(W - 4*U, H*0.42, D - 6*U, 0.8*U, mat); cajon.position.set(0, H*0.72, D/2); G.add(cajon);
-  const uña = new THREE.Mesh(new THREE.PlaneGeometry(W - 10*U, 1.2*U), shadedMat('#00000022', 1));
-  uña.position.set(0, H*0.62, D - 2*U); G.add(uña);
-  [-1,1].forEach(sx => { const pata = softBox(2.4*U, H*0.42, 2.4*U, 0.6*U, mat); pata.position.set(sx*(W/2-3*U), H*0.21, D-4*U); G.add(pata); });
+  const LH = H*0.42, cajH = (H - 3*U) - LH;                 // patas hasta el cajón, cajón hasta la tapa
+  const cajon = softBox(W - 4*U, cajH + 0.4*U, D - 6*U, 0.8*U, mat); cajon.position.set(0, LH + cajH/2, D/2); G.add(cajon);
+  const uña = softBox(W - 10*U, 1.1*U, 0.6*U, 0.2*U, shadedMat('#2a2119', 0.9));   // la ranura del cajón, oscura
+  uña.position.set(0, LH + cajH*0.80, D - 3*U + 0.15*U); G.add(uña);          // justo bajo la tapa, como el tirador de uñero
+  [-1,1].forEach(sx => [5*U, D - 5*U].forEach(pz => {
+    const pata = softBox(2.4*U, LH + 0.6*U, 2.4*U, 0.6*U, mat); pata.position.set(sx*(W/2 - 5*U), (LH + 0.6*U)/2, pz); G.add(pata);
+  }));
   addContactShadow(g, U, 55, 48, x, z, 0.5);
   return G;
 }
@@ -4109,16 +4113,18 @@ function addGrifo(g, U, xCm, zCm, topYCm){
   const x = xCm*U, z = zCm*U, y = topYCm*U;
   const base = new THREE.Mesh(new THREE.CylinderGeometry(3*U, 3.6*U, 2*U, 20), metal);
   base.position.set(x, y + 1*U, z); g.add(base);
-  const cuerpo = new THREE.Mesh(new THREE.CylinderGeometry(1.9*U, 2.1*U, 20*U, 16), metal);
-  cuerpo.position.set(x, y + 12*U, z); g.add(cuerpo);
-  // el arco va en el plano YZ: sube y se vuelca hacia la pila (hacia +z), no hacia un lado
-  const arco = new THREE.Mesh(new THREE.TorusGeometry(9*U, 1.9*U, 12, 28, Math.PI/2), metal);
-  arco.rotation.y = Math.PI/2; arco.rotation.z = 0;
-  arco.position.set(x, y + 22*U, z); g.add(arco);
-  const cano = new THREE.Mesh(new THREE.CylinderGeometry(1.7*U, 1.7*U, 7*U, 14), metal);
-  cano.position.set(x, y + 28*U, z + 9*U); g.add(cano);
-  const mando = new THREE.Mesh(new THREE.CylinderGeometry(1.2*U, 1.2*U, 9*U, 12), metal);
-  mando.position.set(x - 4.5*U, y + 7*U, z + 1*U); mando.rotation.z = -0.62; g.add(mando);
+  /* 15-oct: antes eran tres piezas sueltas (cuerpo, arco y caño separados en el aire). Ahora un solo
+     tubo: sube desde la base, se curva hacia la pila y baja en el caño. */
+  const camino = new THREE.CurvePath();
+  camino.add(new THREE.LineCurve3(new THREE.Vector3(x, y + 1.5*U, z), new THREE.Vector3(x, y + 24*U, z)));
+  camino.add(new THREE.CubicBezierCurve3(new THREE.Vector3(x, y + 24*U, z), new THREE.Vector3(x, y + 35*U, z),
+    new THREE.Vector3(x, y + 35*U, z + 16*U), new THREE.Vector3(x, y + 25*U, z + 16*U)));
+  camino.add(new THREE.LineCurve3(new THREE.Vector3(x, y + 25*U, z + 16*U), new THREE.Vector3(x, y + 21*U, z + 16*U)));
+  const cuello = new THREE.Mesh(new THREE.TubeGeometry(camino, 64, 1.8*U, 16, false), metal); g.add(cuello);
+  const boca = new THREE.Mesh(new THREE.CylinderGeometry(1.95*U, 1.95*U, 1.2*U, 16), metal);
+  boca.position.set(x, y + 21*U, z + 16*U); g.add(boca);
+  const mando = new THREE.Mesh(new THREE.CylinderGeometry(1.1*U, 1.1*U, 8*U, 12), metal);
+  mando.rotation.z = -1.05; mando.position.set(x - 4.6*U, y + 11*U, z); g.add(mando);        // sale del cuerpo, sin hueco
 }
 
 /* ── CONSOLA DE RECIBIDOR: 110×28, tablero fino de roble y patas de metal negro.
@@ -4129,7 +4135,7 @@ function addConsola(g, U, o){
   const metal = new THREE.MeshStandardMaterial({ color:0x2f2f33, roughness:0.45, metalness:0.8, envMapIntensity:0.5 });
   const G = new THREE.Group(); G.position.set(x0, 0, z0); g.add(G);
   const top = softBox(W, 3*U, D, 1*U, roble); top.position.set(0, H - 1.5*U, D/2); G.add(top);
-  const balda = softBox(W - 20*U, 2.2*U, D - 6*U, 0.8*U, roble); balda.position.set(0, 22*U, D/2); G.add(balda);
+  const balda = softBox(W - 8*U, 2.2*U, D - 6*U, 0.8*U, roble); balda.position.set(0, 22*U, D/2); G.add(balda);   // de pata a pata (antes flotaba entre ellas)
   [-1, 1].forEach(sx => [4*U, D - 4*U].forEach(dz => {
     const leg = new THREE.Mesh(new THREE.BoxGeometry(2.2*U, H - 3*U, 2.2*U), metal);
     leg.position.set(sx*(W/2 - 4*U), (H - 3*U)/2, dz); G.add(leg);
@@ -4326,14 +4332,17 @@ const SCENES = [
         { m:'lamp_round_table_kenney',  xCm:136,  zCm:22, wCm:24,  dCm:24, yCm:46, mat:'hueso' },
       ]}) },
   { id:'dormitorio-juvenil', caja:{ w:500, h:262, d:360 }, es:'Habitación juvenil', en:'Small bedroom', des:'cama individual y estante', den:'single bed and shelf',
-    furnCm:96, gapCm:24, viewCm:360, build:(g,U) => buildEscena(g, U, {
+    furnCm:120, gapCm:20, viewCm:360, build:(g,U) => { buildEscena(g, U, {
       shell:{ wall1:'#e6e9e2', wall2:'#d6dbd1', floor1:'#c6bfb1', floor2:'#b2ab9c', side:'#e4e7e0', skirt:'#d6dbd1' },
       alfombra:[240, 170, 150, '#cfc7b8'],
       muebles:[
-        { m:'bed_single_kenney',        xCm:-46,  zCm:6,  wCm:210, dCm:110, back:true, alinear:false, mat:'tela-arena' },
-        { m:'night_stand_quaternius',   xCm:116,  zCm:8,  wCm:44,  dCm:40, back:true, mat:'roble' },
-        { m:'small_plant_quaternius',   xCm:116,  zCm:20, wCm:24,  dCm:24, yCm:52, mat:'verde' },
-      ]}) },
+        { m:'night_stand_quaternius',   xCm:92,   zCm:8,  wCm:44,  dCm:40, back:true, mat:'roble' },
+        { m:'small_plant_quaternius',   xCm:92,   zCm:20, wCm:24,  dCm:24, yCm:38.2, mat:'verde' },   // tapa de la mesita (medida)
+      ]});
+      /* 15-oct: la cama descargada era una losa plana con un bloque encima; ahora la misma cama que
+         los otros dormitorios, en individual de 90×190, con cabecero de 108 cm (por eso furnCm 120) */
+      addCamaModerna(g, U, { xCm:20, zCm:6, anchoCm:90, largoCm:190, color:'#c9c1ae', ropa:'#f4f1ea' });
+    } },
 
 
   { id:'dormitorio-boutique', caja:{ w:640, h:294, d:460 }, es:'Dormitorio boutique', en:'Boutique bedroom', des:'cabecero acolchado terracota', den:'padded terracotta headboard',
@@ -4511,7 +4520,7 @@ const SCENES = [
       addCamaModerna(g, U, { xCm:-108, zCm:4, anchoCm:160, largoCm:200, color:'#a8583f', ropa:'#f2ece0' });
       addMesitaModerna(g, U, { xCm:0,    zCm:4, color:'#8a5c3a' });
       addMesitaModerna(g, U, { xCm:-216, zCm:4, color:'#8a5c3a' });
-      addTableLamp(g, U, 15*U, 52*U, 13*U, '#b08d57', '#f3ece0');      // al lado del cuadro, un poco detrás
+      addTableLamp(g, U, 16*U, 52*U, 6*U, '#b08d57', '#f3ece0');       // al lado del cuadro, pegada a la pared (con el Sobremesa grande chocaban)
       addTableLamp(g, U, -216*U, 52*U, 20*U, '#b08d57', '#f3ece0');
     } },
   { id:'mesita-nordica', flyRy:-0.3, flyRy0:-0.5, restZCm:23, caja:{ w:560, h:270, d:430 }, es:'Dormitorio nórdico', en:'Nordic bedroom', des:'encima de la mesita, junto a la cama', den:'on the nightstand, next to the bed',
@@ -4523,7 +4532,7 @@ const SCENES = [
       const bancoMat = pbrMat('oak_veneer_01', 0.16, { color:'#e0d3b6', roughness:0.55, env:0.45 });
       const banco = softBox(120*U, 15*U, 40*U, 2*U, bancoMat); banco.position.set(-108*U, 30*U, 230*U); g.add(banco);
       [-1,1].forEach(sx => { const pata = softBox(3*U, 28*U, 3*U, 0.6*U, bancoMat); pata.position.set((-108 + sx*54)*U, 14*U, 230*U); g.add(pata); });
-      addTableLamp(g, U, 15*U, 52*U, 13*U, '#2b2b2b', '#efeae0');
+      addTableLamp(g, U, 16*U, 52*U, 6*U, '#2b2b2b', '#efeae0');
       addTableLamp(g, U, -216*U, 52*U, 20*U, '#2b2b2b', '#efeae0');
     } },
 ];
@@ -4674,10 +4683,54 @@ function placeRoom(compH){
      quedaba 1-4 cm en el aire. Los cuadros colgados siguen con su gapCm. */
   const below = sc.restCm != null ? (BASE_H - BAMBU_SINK) + sc.restCm*CM : (sc.gapCm + sc.furnCm)*CM;
   g.position.set(0, -compH/2 - below, -0.22 - (sc.restZCm || 0)*CM);
+  if(sc.restCm != null){
+    /* la primera vez el póster aún no está colocado en este punto de layout(): se repite en el
+       fotograma siguiente y cuando han llegado los muebles descargados */
+    const yBase = g.position.y; apoyarSobremesa(g);
+    const otraVez = () => { if(!g.visible || findScene(ROOM_CFG.scene) !== sc) return; g.position.y = yBase; apoyarSobremesa(g); dirty3D = true; };
+    requestAnimationFrame(otraVez); setTimeout(otraVez, 700);
+  }
   g.visible = true;
   // los cuadros reciben la luz de ventana de la pared dibujada (mismo shader que con foto)
   LIGHT_U.uLightTex.value = wallLight(); LIGHT_U.uLightOn.value = 1;
   lightRef = g.userData.wall || null;
+}
+
+/* 15-oct · La altura de la peana salía de una fórmula (restCm + lo que asoma la peana) que no contaba
+   la inclinación del póster ni el canto redondeado de las tapas: la peana se metía 5-6 mm dentro de la
+   balda o la mesita, más cuanto más grande el Sobremesa. Ahora se mide: la base de la peana en reposo
+   (sin la animación de entrada) y la cara de arriba de lo que tiene justo debajo, y la escena se mueve
+   lo que haga falta para que se toquen. */
+function apoyarSobremesa(g){
+  const p = POSTERS.find(q => q.ptype === 'madera' && q.bamboo); if(!p) return;
+  const bg = p.bambooGroup, y0 = bg.position.y;
+  bg.position.y = 0;                                   // en reposo, no a mitad de la animación
+  /* todo se mide en el sistema del grupo (la habitación), no en el de la pantalla: el visor inclina y
+     gira el grupo y entonces «arriba» en pantalla no es «arriba» en la habitación */
+  group.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(group.matrixWorld).invert(), M = new THREE.Matrix4();
+  /* caja de una malla en el sistema del grupo, desde su geometría (pasar la caja de pantalla al grupo
+     con el visor inclinado la inflaba varios cm) */
+  const cajaEnGrupo = o => {
+    if(!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    return o.geometry.boundingBox.clone().applyMatrix4(M.multiplyMatrices(inv, o.matrixWorld));
+  };
+  const pb = cajaEnGrupo(p.bamboo);
+  bg.position.y = y0;
+  const s = 1, tol = 4*CM;
+  let top = -Infinity;
+  g.traverse(o => {
+    if(!o.isMesh) return;
+    const m = Array.isArray(o.material) ? o.material[0] : o.material;
+    if(m && m.transparent && m.depthWrite === false) return;          // sombras de contacto
+    const b = cajaEnGrupo(o);
+    const cx = (pb.min.x + pb.max.x)/2, cz = (pb.min.z + pb.max.z)/2;
+    if(b.min.x > cx || b.max.x < cx || b.min.z > cz || b.max.z < cz) return;   // justo debajo del centro de la peana
+    if(b.max.y > pb.min.y + tol || b.max.y < pb.min.y - tol) return;
+    top = Math.max(top, b.max.y);
+  });
+  if(isFinite(top)) g.position.y += (pb.min.y - top) / s;
+  bg.updateMatrixWorld(true);
 }
 
 /* sombra suave detrás de cada cuadro (solo se ve con pared) */
