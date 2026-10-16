@@ -47,7 +47,7 @@
     mapas: ['Atlas celestes, mapas antiguos y la Luna dibujada a mano.', 'Celestial atlases, antique maps and the Moon drawn by hand.'],
     espacio: ['Nebulosas, galaxias y la Tierra vista desde la Luna: las imágenes de la NASA y de los telescopios Hubble y James Webb.', 'Nebulae, galaxies and Earth seen from the Moon: images from NASA and the Hubble and James Webb telescopes.'],
     paisajes: ['Montañas, bosques y ríos de los grandes paisajistas, y el blanco y negro de Ansel Adams.', 'Mountains, forests and rivers by the great landscape painters, plus Ansel Adams in black and white.'],
-    fotografia: ['Momentos que cambiaron la historia: el primer vuelo, los rascacielos de Nueva York, la torre Eiffel a medio construir.', 'Moments that changed history: the first flight, New York skyscrapers, the Eiffel Tower half built.'],
+    fotografia: ['Momentos que cambiaron la historia y fotocromos en color de hace más de un siglo: Venecia, Amalfi, Capri, el Cervino.', 'Moments that changed history and colour photochroms over a century old: Venice, Amalfi, Capri, the Matterhorn.'],
     mar: ['Olas, veleros y playas de Aivazovski, Winslow Homer, Seurat y Monet.', 'Waves, sailboats and beaches by Aivazovsky, Winslow Homer, Seurat and Monet.'],
     cocina: ['Bodegones clásicos y las acuarelas de fruta del Departamento de Agricultura de EE. UU.', 'Classic still lifes and the US Department of Agriculture fruit watercolours.'],
     mascotas: ['Gatos y perros de Hiroshige, Steinlen, Renoir, Toulouse-Lautrec y Boucher.', 'Cats and dogs by Hiroshige, Steinlen, Renoir, Toulouse-Lautrec and Boucher.'],
