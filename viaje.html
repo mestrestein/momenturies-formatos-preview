@@ -54,9 +54,10 @@
     <div class="pz-step">
       <label for="place">1. ¿Dónde fuisteis?</label>
       <div class="pz-search">
-        <input id="place" class="pz-input" type="text" autocomplete="off" placeholder="Ciudad, isla, pueblo…" value="Dénia, Comunidad Valenciana, España">
-        <div class="pz-results" id="placeRes"></div>
+        <input id="place" class="pz-input pz-select" type="text" autocomplete="off" placeholder="Busca la ciudad, la isla o el pueblo" value="Dénia" role="combobox" aria-expanded="false" aria-controls="placeRes">
+        <div class="pz-results pz-scroll" id="placeRes" role="listbox"></div>
       </div>
+      <div class="pz-picked" id="placeNote">Más de 300 destinos con su subtítulo ya preparado. Si el vuestro no está, escribidlo igual.</div>
     </div>
 
     <div class="pz-step" id="fotoStep">
@@ -90,7 +91,7 @@
     </div>
 
     <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
-    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared. Lugares: © OpenStreetMap.</p>
+    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared. Otros lugares: © OpenStreetMap.</p>
   </div>
 </main>
 <div class="pz-toast" id="pzToast"></div>
@@ -104,6 +105,7 @@
 <script src="photo-handoff.js"></script>
 <script src="personaliza/comun.js"></script>
 <script src="personaliza/viaje.js"></script>
+<script src="personaliza/viaje-destinos.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); }, V = MOM_VIAJE;
@@ -181,12 +183,64 @@
     });
     ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function () { drag = null; }); });
   })();
-  MOM_P.placeSearch($('place'), $('placeRes'), function (p) {
-    st.lugar = p.name; $('title').value = p.name;
-    var d = dest();
-    $('sub').value = d ? d.sub.charAt(0) + d.sub.slice(1).toLowerCase() : (p.country || '');
-    sync(); render();
-  });
+  /* 17-oct · selector de destinos: los 300+ preparados (nombre + subtítulo escrito) y, si no está, cualquier lugar (Photon) */
+  (function () {
+    var D = window.MOM_VIAJE_DESTINOS, inp = $('place'), box = $('placeRes'), items = [], act = -1, t = null, ctl = null;
+    var norm = function (s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); };
+    var mk = function (g) { return function (d) { return { n: d[0], sub: d[1], g: g, kn: norm(d[0]), k: norm(d[0] + ' ' + d[1] + ' ' + (d[2] || '')) }; }; };
+    var ALL = D.ciudades.map(mk('Ciudades')).concat(D.lugares.map(mk('Islas, costas y parajes')));
+    function match(q) {
+      q = norm(q).trim(); if (!q) return ALL.slice();
+      var a = [], b = [], c = [];
+      ALL.forEach(function (d) { var i = d.kn.indexOf(q); if (i === 0 || d.kn.indexOf(' ' + q) >= 0) a.push(d); else if (i > 0) b.push(d); else if (d.k.indexOf(q) >= 0) c.push(d); });
+      return a.concat(b, c);
+    }
+    var all = false;
+    function show() {
+      var g = null, h = '';
+      items.forEach(function (it, i) {
+        if (it.g !== g && (!inp.value.trim() || all || it.osm)) h += '<div class="pz-rh">' + MOM_P.esc(it.g) + '</div>';
+        g = it.g;
+        h += '<button type="button" role="option" data-i="' + i + '"' + (i === act ? ' class="act"' : '') + '>' + MOM_P.esc(it.n) + '<small>' + MOM_P.esc(it.sub || '') + '</small></button>';
+      });
+      box.innerHTML = h; box.classList.toggle('on', items.length > 0); inp.setAttribute('aria-expanded', items.length > 0);
+      var a = box.querySelector('.act'); if (a) a.scrollIntoView({ block: 'nearest' });
+    }
+    function search(showAll) {
+      all = !!showAll; var q = all ? '' : inp.value; items = match(q); act = -1; show();
+      clearTimeout(t); if (ctl) ctl.abort();
+      if (norm(q).trim().length < 3 || items.length >= 4) return;
+      t = setTimeout(function () {
+        ctl = window.AbortController ? new AbortController() : null;
+        fetch('https://photon.komoot.io/api/?limit=5&q=' + encodeURIComponent(q), ctl ? { signal: ctl.signal } : {}).then(function (r) { return r.json(); }).then(function (j) {
+          var seen = {};
+          (j.features || []).forEach(function (f) {
+            var p = f.properties, n = p.name; if (!n || seen[n]) return; seen[n] = 1;
+            items.push({ n: n, sub: [p.state, p.country].filter(Boolean).filter(function (x) { return x !== n; }).join(' · '), country: p.country || '', g: 'Otro lugar', osm: true });
+          });
+          show();
+        }).catch(function () {});
+      }, 280);
+    }
+    function pick(i) {
+      var it = items[i]; if (!it) return;
+      st.lugar = it.n; inp.value = it.n; $('title').value = it.n;
+      if (it.osm) { var d = dest(); $('sub').value = d ? d.sub.charAt(0) + d.sub.slice(1).toLowerCase() : it.country; }
+      else $('sub').value = it.sub;
+      items = []; show(); sync(); render();
+    }
+    inp.addEventListener('focus', function () { inp.select(); search(true); });
+    inp.addEventListener('input', function () { search(false); });
+    inp.addEventListener('keydown', function (e) {
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') { act = Math.min(items.length - 1, act + 1); show(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { act = Math.max(0, act - 1); show(); e.preventDefault(); }
+      else if (e.key === 'Enter') { pick(act < 0 ? 0 : act); e.preventDefault(); inp.blur(); }
+      else if (e.key === 'Escape') { items = []; show(); }
+    });
+    box.addEventListener('mousedown', function (e) { var b = e.target.closest('button'); e.preventDefault(); if (b) { pick(+b.dataset.i); inp.blur(); } });
+    inp.addEventListener('blur', function () { setTimeout(function () { items = []; show(); if (!inp.value.trim()) inp.value = st.lugar; }, 150); });
+  })();
   ['title', 'sub', 'extra'].forEach(function (id) { $(id).addEventListener('input', render); });
   $('cta').addEventListener('click', function () {
     if (modo() === 'foto' && !st.foto) { MOM_P.toast('Sube primero la foto de vuestro viaje.'); return; }

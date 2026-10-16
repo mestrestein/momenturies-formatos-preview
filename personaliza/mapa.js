@@ -187,11 +187,92 @@
       ctx.beginPath(); heartPath(ctx, cx, cy - s * 0.25, s); ctx.stroke(); ctx.fill();
     }
   }
+  /* ── ICONOS sobre el mapa (17-oct-2026) ──
+     Cada icono va en su lugar real (lat/lon): se arrastra en la vista previa o se coloca con el buscador.
+     Dibujados en vectorial en una caja de 24 × 24 (parts: relleno o trazo), con un halo del color del fondo
+     para que se lean sobre cualquier calle. */
+  function C(cx, cy, r) { return 'M' + (cx - r) + ' ' + cy + 'a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0a' + r + ' ' + r + ' 0 1 0 ' + -2 * r + ' 0z'; }
+  var ICONS = {
+    corazon:   { es: 'Corazón', parts: [{ d: 'M12 21s-7.6-4.7-9.7-9.3C.8 8.3 3 4.4 6.8 4.4c2.1 0 3.6 1.2 5.2 3.1 1.6-1.9 3.1-3.1 5.2-3.1 3.8 0 6 3.9 4.5 7.3C19.6 16.3 12 21 12 21z' }] },
+    estrella:  { es: 'Estrella', parts: [{ d: 'M12 2.3l2.95 6.2 6.75.85-4.95 4.7 1.3 6.75L12 17.45l-6.05 3.35 1.3-6.75-4.95-4.7 6.75-.85z' }] },
+    chincheta: { es: 'Chincheta', anchor: 'bottom', parts: [{ d: 'M12 1.5c-4 0-7.2 3.1-7.2 7.1 0 5.3 7.2 13.9 7.2 13.9s7.2-8.6 7.2-13.9c0-4-3.2-7.1-7.2-7.1z' + C(12, 8.6, 2.7), rule: 'evenodd' }] },
+    casa:      { es: 'Casa', parts: [{ d: 'M12 2.8l9.6 8.4h-2.8V21h-5.1v-6.2h-3.4V21H5.2v-9.8H2.4z' }] },
+    anillos:   { es: 'Anillos', parts: [{ d: C(8.6, 14.6, 5.3), stroke: 2.3 }, { d: C(15.4, 11.6, 5.3), stroke: 2.3 }, { d: 'M15.4 1.6l2.3 2.5-2.3 2.3-2.3-2.3z' }] },
+    avion:     { es: 'Avión', parts: [{ d: 'M21.5 15.8v-2.1l-8.2-5.2V3.4a1.55 1.55 0 0 0-3.1 0v5.1L2 13.7v2.1l8.2-2.6v5.3l-2.1 1.6v1.6l3.6-1 3.6 1v-1.6l-2.1-1.6v-5.3z' }] },
+    copa:      { es: 'Brindis', parts: [{ d: 'M6.6 2.5h10.8l-.5 6a4.95 4.95 0 0 1-3.9 4.4V19h3.3v2.3H7.7V19H11v-6.1a4.95 4.95 0 0 1-3.9-4.4z' }] },
+    cafe:      { es: 'Café', parts: [{ d: 'M3.5 7.5h13.6v5.6a6 6 0 0 1-6 6H9.5a6 6 0 0 1-6-6zM3 20.2h15v1.9H3z' }, { d: 'M17.4 9.2h1.3a3.1 3.1 0 0 1 0 6.2h-1.6', stroke: 2 }] },
+    birrete:   { es: 'Universidad', parts: [{ d: 'M12 3.5L.8 8.8 12 14l8.9-4.1v6.2h1.9V8.8zM5 12.3v3.9c0 1.8 3.1 3.3 7 3.3s7-1.5 7-3.3v-3.9l-7 3.2z' }] },
+    huella:    { es: 'Mascota', parts: [{ d: 'M12 11.6c-2.9 0-5.7 3.2-5.7 5.6 0 1.8 1.4 2.8 3.1 2.8 1 0 1.7-.5 2.6-.5s1.6.5 2.6.5c1.7 0 3.1-1 3.1-2.8 0-2.4-2.8-5.6-5.7-5.6z' + C(5.4, 10.8, 2.15) + C(9.2, 6.4, 2.2) + C(14.8, 6.4, 2.2) + C(18.6, 10.8, 2.15) }] },
+    ancla:     { es: 'Ancla', parts: [{ d: C(12, 4.6, 2.2) + 'M12 6.8V21M7.6 10.2h8.8M4.4 13.6a7.6 7.6 0 0 0 15.2 0', stroke: 2.3 }] },
+    arbol:     { es: 'Árbol', parts: [{ d: 'M12 1.8l6.3 8.2h-3.1l5.3 6.6h-7.4V22h-2.2v-5.4H3.5L8.8 10H5.7z' }] },
+    camara:    { es: 'Cámara', parts: [{ d: 'M4 7h3.3L9 4.4h6L16.7 7H20a2 2 0 0 1 2 2v9.4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z' + C(12, 13.4, 3.7), rule: 'evenodd' }] },
+    nota:      { es: 'Música', parts: [{ d: 'M9 3.2V14.6a3.6 3.6 0 1 0 2.2 3.3V8.1h7.3V3.2z' }] },
+    sol:       { es: 'Sol', parts: [{ d: C(12, 12, 4.6) }, { d: 'M12 1.8v3M12 19.2v3M1.8 12h3M19.2 12h3M4.8 4.8l2.1 2.1M17.1 17.1l2.1 2.1M4.8 19.2l2.1-2.1M17.1 6.9l2.1-2.1', stroke: 2.1 }] },
+    balon:     { es: 'Deporte', parts: [{ d: C(12, 12, 9.6) + 'M12 7.4l4.1 3-1.6 4.8h-5l-1.6-4.8z', rule: 'evenodd' }] }
+  };
+  var ICON_COLORS = { rojo: '#d64545', dorado: '#c99a3b', tinta: null, verde: '#3f7a5a' };   // tinta = el color de las calles del tema
+  var ICON_SIZES = { s: 0.03, m: 0.045, l: 0.065 };
+  var pathCache = {};
+  function P2(d) { return pathCache[d] || (pathCache[d] = new Path2D(d)); }
+  function iconColor(ic, T) { return ICON_COLORS[ic.color] || T.road; }
+  /* dibuja el icono k con su punto de anclaje en (x, y) y ancho s (en píxeles) */
+  function drawIcon(ctx, k, x, y, s, color, halo) {
+    var I = ICONS[k] || ICONS.corazon, u = s / 24, oy = I.anchor === 'bottom' ? -22.5 : -12;
+    ctx.save(); ctx.translate(x - 12 * u, y + oy * u); ctx.scale(u, u);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (var pass = 0; pass < 2; pass++) {
+      I.parts.forEach(function (pt) {
+        var p = P2(pt.d);
+        if (pass === 0) { ctx.strokeStyle = halo; ctx.lineWidth = (pt.stroke || 0) + 3.2; ctx.stroke(p); if (!pt.stroke) { ctx.fillStyle = halo; ctx.fill(p, pt.rule || 'nonzero'); } }
+        else if (pt.stroke) { ctx.strokeStyle = color; ctx.lineWidth = pt.stroke; ctx.stroke(p); }
+        else { ctx.fillStyle = color; ctx.fill(p, pt.rule || 'nonzero'); }
+      });
+    }
+    ctx.restore();
+  }
+  function iconSVG(k, color) {
+    var I = ICONS[k]; if (!I) return '';
+    return '<svg viewBox="-1 -1 26 26" width="22" height="22" aria-hidden="true">' + I.parts.map(function (pt) {
+      return pt.stroke ? '<path d="' + pt.d + '" fill="none" stroke="' + (color || 'currentColor') + '" stroke-width="' + pt.stroke + '" stroke-linecap="round" stroke-linejoin="round"/>'
+        : '<path d="' + pt.d + '" fill="' + (color || 'currentColor') + '"' + (pt.rule ? ' fill-rule="' + pt.rule + '"' : '') + '/>';
+    }).join('') + '</svg>';
+  }
+  /* dónde cae cada icono en el póster (W × H): [{i, x, y, s, inside}] */
+  function iconLayout(W, H, o) {
+    var d = o.data, r = mapRect(W, H); if (!d || !o.icons) return [];
+    var kx = 111320 * Math.cos(d.lat * Math.PI / 180), ky = 110540, sc = r.w / (2 * d.hw), cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+    return o.icons.map(function (ic, i) {
+      var x = cx + (ic.lon - d.lon) * kx * sc, y = cy - (ic.lat - d.lat) * ky * sc;
+      return { i: i, x: x, y: y, s: W * (ICON_SIZES[ic.size] || ICON_SIZES.m), inside: x >= r.x - 1 && x <= r.x + r.w + 1 && y >= r.y - 1 && y <= r.y + r.h + 1 };
+    });
+  }
+  /* punto del póster → lat/lon (para arrastrar), recortado al rectángulo del mapa */
+  function toLatLon(W, H, o, x, y) {
+    var d = o.data, r = mapRect(W, H), pad = W * 0.012;
+    x = Math.max(r.x + pad, Math.min(r.x + r.w - pad, x)); y = Math.max(r.y + pad, Math.min(r.y + r.h - pad, y));
+    var kx = 111320 * Math.cos(d.lat * Math.PI / 180), ky = 110540, sc = r.w / (2 * d.hw);
+    return { lat: d.lat - (y - (r.y + r.h / 2)) / sc / ky, lon: d.lon + (x - (r.x + r.w / 2)) / sc / kx };
+  }
+  function drawIcons(ctx, W, H, o, T) {
+    iconLayout(W, H, o).forEach(function (p) {
+      if (!p.inside) return;
+      var ic = o.icons[p.i];
+      drawIcon(ctx, ic.k, p.x, p.y, p.s, iconColor(ic, T), T.bg);
+      if (ic.label) {
+        var fs = Math.max(W * 0.0125, p.s * 0.3), ty = ICONS[ic.k] && ICONS[ic.k].anchor === 'bottom' ? p.y + fs * 1.15 : p.y + p.s * 0.5 + fs * 1.05;
+        ctx.save(); ctx.font = MOM_P.subFont(fs, 600); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+        ctx.lineJoin = 'round'; ctx.strokeStyle = T.bg; ctx.lineWidth = fs * 0.42; ctx.strokeText(ic.label, p.x, ty);
+        ctx.fillStyle = T.text; ctx.fillText(ic.label, p.x, ty); ctx.restore();
+      }
+    });
+  }
+
   function draw(ctx, W, H, o) {
     var T = THEMES[o.theme] || THEMES.clasico, d = o.data, r = mapRect(W, H);
     ctx.save(); ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
     if (d) {
       mapIn(ctx, W, r, o, T);
+      if (o.icons && o.icons.length) { ctx.save(); shapePath(ctx, r, o.shape); ctx.clip(); drawIcons(ctx, W, H, o, T); ctx.restore(); }
       ctx.fillStyle = T.soft; ctx.font = MOM_P.subFont(W * 0.0085, 400); ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText('© OpenStreetMap', r.x + r.w, r.y + r.h + W * 0.008);
     }
@@ -199,5 +280,6 @@
     ctx.restore();
   }
 
-  window.MOM_MAPA = { fetch: fetchData, mapIn: mapIn, draw: draw, themes: THEMES, radius: RADIUS };
+  window.MOM_MAPA = { fetch: fetchData, mapIn: mapIn, draw: draw, themes: THEMES, radius: RADIUS,
+    icons: ICONS, iconColors: ICON_COLORS, iconSVG: iconSVG, iconLayout: iconLayout, toLatLon: toLatLon, mapRect: mapRect };
 })();

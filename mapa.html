@@ -51,7 +51,7 @@
   <div class="pz-panel">
     <div class="pz-eyebrow">Personalizado</div>
     <h1>Vuestro lugar en el mapa</h1>
-    <p class="pz-lead">Tu ciudad, el barrio donde vivís, el pueblo de los abuelos o la playa donde os conocisteis. Con todas sus calles dibujadas y sus coordenadas. <a href="ciudades.html" style="text-decoration:underline">O elige entre 266 ciudades ya preparadas →</a></p>
+    <p class="pz-lead">Tu ciudad, el barrio donde vivís, el pueblo de los abuelos o la playa donde os conocisteis. Con todas sus calles dibujadas y sus coordenadas.</p>
 
     <div class="pz-step">
       <label for="place">1. ¿Qué lugar?</label>
@@ -60,6 +60,11 @@
         <div class="pz-results" id="placeRes"></div>
       </div>
       <div class="pz-picked" id="placePicked"></div>
+      <details class="pz-ya" id="yaHechos">
+        <summary>¿Sin ideas? Ver mapas ya hechos de 266 ciudades</summary>
+        <input id="yaQ" class="pz-input" type="search" placeholder="Buscar ciudad o país" aria-label="Buscar ciudad">
+        <div class="pz-ya-grid" id="yaGrid"></div>
+      </details>
     </div>
 
     <div class="pz-step">
@@ -72,14 +77,19 @@
       <div class="pz-chips" id="shapes"></div>
       <div style="height:12px"></div>
       <div class="pz-toggles">
-        <label><input type="checkbox" id="optPin"> Corazón en el centro</label>
         <label><input type="checkbox" id="optParks" checked> Parques</label>
         <label><input type="checkbox" id="optCoords" checked> Coordenadas</label>
       </div>
     </div>
 
     <div class="pz-step">
-      <label for="title">4. El texto</label>
+      <span class="pz-label">4. Iconos <small>(opcional: tocad uno para añadirlo y arrastradlo en el mapa)</small></span>
+      <div class="pz-icpal" id="iconPal"></div>
+      <div id="iconList"></div>
+    </div>
+
+    <div class="pz-step">
+      <label for="title">5. El texto</label>
       <input id="title" class="pz-input" type="text" maxlength="40" value="Dénia" aria-label="Título">
       <div style="height:10px"></div>
       <input id="line2" class="pz-input" type="text" maxlength="80" value="España" aria-label="Segunda línea">
@@ -88,7 +98,7 @@
     </div>
 
     <div class="pz-step">
-      <span class="pz-label">5. Colores</span>
+      <span class="pz-label">6. Colores</span>
       <div class="pz-swatches" id="themes"></div>
       <div class="pz-swname" id="themeName"></div>
     </div>
@@ -112,11 +122,11 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var st = { lat: 38.8408, lon: 0.1057, zone: 'ciudad', shape: 'rect', theme: 'clasico', font: 'moderna', data: null, req: 0 };
+  var st = { lat: 38.8408, lon: 0.1057, zone: 'ciudad', shape: 'rect', theme: 'clasico', font: 'moderna', data: null, req: 0, icons: [], relocate: false };
   var ZONES = [['barrio', 'Barrio'], ['ciudad', 'Ciudad'], ['comarca', 'Comarca']];
   var SHAPES = [['rect', 'Rectángulo'], ['circulo', 'Círculo'], ['corazon', 'Corazón']];
   var cache = {};
-  /* 17-oct · desde el catálogo de ciudades (ciudades.html): mapa.html?lat=..&lon=..&n=Nombre&p=País&tema=noche */
+  /* 17-oct · con la ciudad puesta por URL: mapa.html?lat=..&lon=..&n=Nombre&p=País&tema=noche */
   (function () {
     var q = new URLSearchParams(location.search), la = parseFloat(q.get('lat')), lo = parseFloat(q.get('lon'));
     if (isFinite(la) && isFinite(lo)) {
@@ -128,20 +138,22 @@
   })();
 
   function opts() {
-    return { data: st.data, theme: st.theme, font: st.font, shape: st.shape, pin: $('optPin').checked, parks: $('optParks').checked,
+    return { data: st.data, theme: st.theme, font: st.font, shape: st.shape, icons: st.icons, parks: $('optParks').checked,
       title: $('title').value, line2: $('line2').value, line3: $('optCoords').checked ? MOM_P.coords(st.lat, st.lon) : '' };
   }
   var raf = 0;
-  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); MOM_MAPA.draw(ctx, cv.width, cv.height, opts()); }); }
+  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); MOM_MAPA.draw(ctx, cv.width, cv.height, opts()); iconWarn(); }); }
   function load() {
     var k = st.lat.toFixed(5) + ',' + st.lon.toFixed(5) + ',' + st.zone, my = ++st.req;
     $('placePicked').textContent = MOM_P.coords(st.lat, st.lon);
-    if (cache[k]) { st.data = cache[k]; render(); return; }
+    if (cache[k]) { st.data = cache[k]; if (st.relocate) { st.relocate = false; recenterIcons(); } render(); return; }
     $('loading').classList.add('on'); $('loadingTxt').textContent = 'Dibujando las calles…';
     $('cta').disabled = true;
     MOM_MAPA.fetch(st.lat, st.lon, st.zone).then(function (d) {
       cache[k] = d; if (my !== st.req) return;
-      st.data = d; $('loading').classList.remove('on'); $('cta').disabled = false; render();
+      st.data = d; $('loading').classList.remove('on'); $('cta').disabled = false;
+      if (st.relocate) { st.relocate = false; recenterIcons(); }
+      render();
     }).catch(function () {
       if (my !== st.req) return;
       $('loading').classList.remove('on'); $('cta').disabled = !st.data;
@@ -154,7 +166,7 @@
     $('title').value = p.name; $('line2').value = p.country || '';
     // una calle o un edificio: mejor de barrio; una ciudad grande: de ciudad
     if (/^(highway|building|amenity|shop|tourism|place:house)$/.test(p.osmKey) || p.osmValue === 'house') setChip('zones', 'barrio');
-    load();
+    st.relocate = true; load();
   });
   function chips(id, list, cur, onSel) {
     list.forEach(function (it) {
@@ -175,7 +187,123 @@
   });
   $('themeName').textContent = MOM_MAPA.themes[st.theme].name;
   ['title', 'line2'].forEach(function (id) { $(id).addEventListener('input', render); });
-  ['optPin', 'optParks', 'optCoords'].forEach(function (id) { $(id).addEventListener('change', render); });
+  ['optParks', 'optCoords'].forEach(function (id) { $(id).addEventListener('change', render); });
+
+  /* ── 17-oct · iconos: se añaden desde la paleta, se arrastran en la vista previa o se colocan con el buscador ── */
+  var M = MOM_MAPA, COLS = [['rojo', 'Rojo'], ['dorado', 'Dorado'], ['tinta', 'Color del mapa'], ['verde', 'Verde']], SIZES = [['s', 'S'], ['m', 'M'], ['l', 'L']];
+  function colorHex(c) { return M.iconColors[c] || M.themes[st.theme].road; }
+  function spot(n) {   // dónde aparece un icono nuevo: el centro, y los siguientes en corona alrededor
+    if (!st.data) return { lat: st.lat, lon: st.lon };
+    var W = 1200, H = 1600, r = M.mapRect(W, H), a = n * 2.4 - 1.2, d = n ? W * (0.1 + 0.015 * n) : 0;
+    return M.toLatLon(W, H, opts(), r.x + r.w / 2 + Math.cos(a) * d, r.y + r.h / 2 + Math.sin(a) * d);
+  }
+  function recenterIcons() {   // al cambiar de lugar, los iconos que se quedan fuera vuelven al centro del mapa nuevo
+    var L = M.iconLayout(1200, 1600, opts());
+    L.forEach(function (p, n) { if (!p.inside) { var q = spot(n); st.icons[p.i].lat = q.lat; st.icons[p.i].lon = q.lon; } });
+  }
+  Object.keys(M.icons).forEach(function (k) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-icbtn'; b.title = M.icons[k].es; b.setAttribute('aria-label', 'Añadir ' + M.icons[k].es);
+    b.innerHTML = M.iconSVG(k);
+    b.addEventListener('click', function () {
+      if (st.icons.length >= 12) { MOM_P.toast('Como mucho 12 iconos por mapa.'); return; }
+      var q = spot(st.icons.length);
+      st.icons.push({ k: k, lat: q.lat, lon: q.lon, size: 'm', color: k === 'corazon' ? 'rojo' : 'tinta', label: '' });
+      iconList(); render();
+    });
+    $('iconPal').appendChild(b);
+  });
+  function iconList() {
+    var box = $('iconList'); box.innerHTML = '';
+    st.icons.forEach(function (ic, i) {
+      var el = document.createElement('div'); el.className = 'pz-ic';
+      el.innerHTML = '<div class="pz-ic-top"><span class="pz-ic-ico" style="color:' + colorHex(ic.color) + '">' + M.iconSVG(ic.k) + '</span>' +
+        '<input class="pz-input pz-ic-label" maxlength="28" placeholder="Texto junto al icono (opcional)" aria-label="Texto del icono">' +
+        '<button type="button" class="pz-ic-del" aria-label="Quitar icono">×</button></div>' +
+        '<div class="pz-search"><input class="pz-input pz-ic-where" type="text" autocomplete="off" placeholder="Colocar en una dirección o un sitio…" aria-label="Colocar icono en"><div class="pz-results"></div></div>' +
+        '<div class="pz-ic-row"><div class="pz-ic-sizes"></div><div class="pz-ic-cols"></div></div>' +
+        '<div class="pz-ic-warn" hidden>Este icono se queda fuera del mapa con esta zona. Arrástralo o colócalo en otro sitio.</div>';
+      var lab = el.querySelector('.pz-ic-label'); lab.value = ic.label || '';
+      lab.addEventListener('input', function () { ic.label = lab.value; render(); });
+      el.querySelector('.pz-ic-del').addEventListener('click', function () { st.icons.splice(i, 1); iconList(); render(); });
+      MOM_P.placeSearch(el.querySelector('.pz-ic-where'), el.querySelector('.pz-results'), function (p) {
+        ic.lat = p.lat; ic.lon = p.lon; render();
+        var L = M.iconLayout(1200, 1600, opts())[i];
+        if (L && !L.inside) MOM_P.toast('Ese sitio queda fuera del mapa. Prueba con la zona «Comarca» o busca un lugar más cerca.');
+      }, { bias: [st.lat, st.lon] });
+      SIZES.forEach(function (sz) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-chip pz-chip-s'; b.textContent = sz[1]; b.setAttribute('aria-pressed', ic.size === sz[0]);
+        b.addEventListener('click', function () { ic.size = sz[0]; [].forEach.call(b.parentNode.children, function (x) { x.setAttribute('aria-pressed', x === b); }); render(); });
+        el.querySelector('.pz-ic-sizes').appendChild(b);
+      });
+      COLS.forEach(function (c) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-ic-dot'; b.title = c[1]; b.setAttribute('aria-label', c[1]); b.setAttribute('aria-pressed', ic.color === c[0]);
+        b.style.background = colorHex(c[0]);
+        b.addEventListener('click', function () { ic.color = c[0]; [].forEach.call(b.parentNode.children, function (x) { x.setAttribute('aria-pressed', x === b); }); el.querySelector('.pz-ic-ico').style.color = colorHex(c[0]); render(); });
+        el.querySelector('.pz-ic-cols').appendChild(b);
+      });
+      box.appendChild(el);
+    });
+  }
+  function iconWarn() {
+    if (!st.icons.length || !st.data) return;
+    var L = M.iconLayout(1200, 1600, opts()), w = $('iconList').querySelectorAll('.pz-ic-warn');
+    L.forEach(function (p) { if (w[p.i]) w[p.i].hidden = p.inside; });
+  }
+  // arrastrar los iconos sobre la vista previa
+  (function () {
+    var cv = $('cv'), drag = null;
+    function at(e) { var b = cv.getBoundingClientRect(), k = cv.width / b.width; return { x: (e.clientX - b.left) * k, y: (e.clientY - b.top) * k }; }
+    function hit(pt) {
+      if (!st.data) return null;
+      var L = M.iconLayout(cv.width, cv.height, opts()), best = null;
+      L.forEach(function (p) {
+        if (!p.inside) return;
+        var cy = M.icons[st.icons[p.i].k].anchor === 'bottom' ? p.y - p.s * 0.45 : p.y, d = Math.hypot(pt.x - p.x, pt.y - cy);
+        if (d < Math.max(p.s * 0.75, cv.width * 0.03) && (!best || d < best.d)) best = { i: p.i, d: d, dx: pt.x - p.x, dy: pt.y - p.y };
+      });
+      return best;
+    }
+    cv.addEventListener('pointerdown', function (e) {
+      var h = hit(at(e)); if (!h) return;
+      drag = h; try { cv.setPointerCapture(e.pointerId); } catch (x) {} cv.style.touchAction = 'none'; cv.style.cursor = 'grabbing'; e.preventDefault();
+    });
+    cv.addEventListener('pointermove', function (e) {
+      var pt = at(e);
+      if (!drag) { cv.style.cursor = hit(pt) ? 'grab' : ''; return; }
+      var q = M.toLatLon(cv.width, cv.height, opts(), pt.x - drag.dx, pt.y - drag.dy), ic = st.icons[drag.i];
+      ic.lat = q.lat; ic.lon = q.lon; render();
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function () { if (drag) { drag = null; cv.style.cursor = ''; cv.style.touchAction = ''; } }); });
+    // en el móvil, el dedo sobre un icono no debe mover la página
+    cv.addEventListener('touchstart', function (e) { var t = e.touches[0]; if (t && hit(at(t))) e.preventDefault(); }, { passive: false });
+  })();
+
+  /* ── 17-oct · mapas ya hechos (plegado, secundario): galeria/ciudades.js + miniaturas galeria/ciudades/<id>.jpg ── */
+  (function () {
+    var det = $('yaHechos'), loaded = false;
+    function norm(x) { return (x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+    function grid() {
+      var C = window.MOMENTURIES_CIUDADES || [], q = norm($('yaQ').value).trim();
+      var L = C.filter(function (c) { return !q || norm(c.n + ' ' + c.pais).indexOf(q) >= 0; });
+      $('yaGrid').innerHTML = L.length ? L.map(function (c) {
+        var i = C.indexOf(c), name = c.n.replace(/ \(.*\)$/, '');
+        return '<button type="button" class="pz-ya-it" data-i="' + i + '"><img src="galeria/ciudades/' + c.id + '.jpg" alt="" loading="lazy" width="600" height="800"><span>' + MOM_P.esc(name) + '</span></button>';
+      }).join('') : '<p class="pz-picked">No está entre las ya hechas, pero podéis buscarla arriba: sale igual de bien.</p>';
+    }
+    det.addEventListener('toggle', function () {
+      if (!det.open || loaded) return; loaded = true;
+      var sc = document.createElement('script'); sc.src = 'galeria/ciudades.js'; sc.onload = grid; document.head.appendChild(sc);
+    });
+    $('yaQ').addEventListener('input', grid);
+    $('yaGrid').addEventListener('click', function (e) {
+      var b = e.target.closest('.pz-ya-it'); if (!b) return;
+      var c = window.MOMENTURIES_CIUDADES[+b.dataset.i], name = c.n.replace(/ \(.*\)$/, '');
+      st.lat = c.lat; st.lon = c.lon; $('place').value = name + ', ' + c.pais; $('title').value = name; $('line2').value = c.pais;
+      st.theme = c.tema; [].forEach.call($('themes').children, function (x, j) { x.setAttribute('aria-pressed', Object.keys(M.themes)[j] === c.tema); }); $('themeName').textContent = M.themes[c.tema].name;
+      setChip('zones', 'ciudad'); st.relocate = true; load();
+      if (window.innerWidth < 900) document.querySelector('.pz-stage').scrollIntoView({ behavior: 'smooth' });
+    });
+  })();
 
   $('cta').addEventListener('click', function () {
     if (!st.data) return;

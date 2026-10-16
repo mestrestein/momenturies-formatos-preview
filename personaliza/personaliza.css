@@ -53,3 +53,35 @@ body{background:#faf8f5}
   .pz-paper{width:min(100%,380px)}
   .pz-cta{position:sticky;bottom:12px;z-index:5}
 }
+/* 17-oct · lista larga con grupos (destinos del cartel de viaje) */
+.pz-results.pz-scroll{max-height:360px;overflow-y:auto;overscroll-behavior:contain}
+.pz-rh{position:sticky;top:0;background:#faf8f5;padding:7px 14px;font:700 11px Inter,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#c2613a;border-bottom:1px solid #f0ece6;z-index:1}
+.pz-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2.4'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+/* 17-oct · iconos del mapa */
+.pz-icpal{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.pz-icbtn{aspect-ratio:1;border:1px solid #d6d0c7;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1a1a1a;transition:border-color .15s,transform .15s}
+.pz-icbtn:hover{border-color:#1a1a1a;transform:translateY(-1px)}
+.pz-ic{border:1px solid #e6e0d7;background:#fff;border-radius:12px;padding:10px;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.pz-ic-top{display:flex;gap:8px;align-items:center}
+.pz-ic-ico{flex:none;width:38px;height:38px;border-radius:9px;background:#f6f2ec;display:flex;align-items:center;justify-content:center}
+.pz-ic-top .pz-input{flex:1;min-width:0}
+.pz-ic .pz-input{padding:9px 12px;font-size:14px}
+.pz-ic-del{flex:none;width:34px;height:34px;border:0;background:none;font-size:22px;line-height:1;color:#888;cursor:pointer;border-radius:8px}
+.pz-ic-del:hover{background:#f6f2ec;color:#c0392b}
+.pz-ic-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pz-ic-sizes,.pz-ic-cols{display:flex;gap:6px;align-items:center}
+.pz-chip-s{padding:5px 11px;font-size:12px}
+.pz-ic-dot{width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d6d0c7;cursor:pointer;padding:0}
+.pz-ic-dot[aria-pressed="true"]{box-shadow:0 0 0 2px #1a1a1a}
+.pz-ic-warn{font-size:12.5px;color:#b26b00}
+@media(max-width:420px){.pz-icpal{grid-template-columns:repeat(6,1fr)}}
+/* 17-oct · mapas ya hechos (plegado) */
+.pz-ya{margin-top:10px;font-size:13px}
+.pz-ya summary{cursor:pointer;color:var(--mid);text-decoration:underline;text-underline-offset:3px;list-style:none}
+.pz-ya summary::-webkit-details-marker{display:none}
+.pz-ya[open] summary{margin-bottom:10px}
+.pz-ya .pz-input{padding:8px 12px;font-size:13.5px}
+.pz-ya-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-height:330px;overflow-y:auto;margin-top:8px;padding:2px}
+.pz-ya-it{border:0;background:none;padding:0;cursor:pointer;text-align:center;font:500 11.5px Inter,sans-serif;color:#333}
+.pz-ya-it img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:4px;display:block;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:4px;background:#eee}
+.pz-ya-it:hover img{outline:2px solid #1a1a1a}
