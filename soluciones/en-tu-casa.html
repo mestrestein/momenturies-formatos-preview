@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Soluciones · En tu casa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#0d0d0d;--mid:#6b7280;--terra:#c2613a;--accent:#c8922a;--beige:#f0ebe3;--serif:Georgia,'Times New Roman',serif;--sans:'Inter','Helvetica Neue',Arial,sans-serif}
+body{font-family:var(--sans);background:#f4f1ec;color:var(--black);overflow-x:hidden}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.intro{padding:44px 0 8px}
+.intro h1{font-family:var(--serif);font-size:30px;margin-bottom:6px}
+.intro p{color:#555;font-size:15px;line-height:1.55;max-width:760px}
+.intro a{color:var(--black);font-weight:700}
+.label{padding:40px 0 14px}
+.label b{display:inline-block;background:var(--black);color:#fff;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px;border-radius:4px;margin-right:10px}
+.label span{font-size:15px;color:#444}
+
+.sec{padding:96px 0}
+.sec.dark{background:#0b0a09;color:#fff}
+.eyebrow{font-size:12px;letter-spacing:3.5px;text-transform:uppercase;font-weight:700;color:var(--terra)}
+.dark .eyebrow{color:#f1c48a}
+.sec h2{font-family:var(--serif);font-size:clamp(32px,4.4vw,56px);line-height:1.06;letter-spacing:-.02em;margin:14px 0 14px}
+.sec .lead{font-size:17px;line-height:1.55;color:#5b5b5b;max-width:620px}
+.dark .lead{color:rgba(255,255,255,.62)}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:40px;flex-wrap:wrap}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--black);color:#fff;font-weight:700;font-size:15px;padding:15px 28px;border-radius:999px;text-decoration:none;white-space:nowrap}
+.dark .cta{background:#fff;color:var(--black)}
+.frame{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.28);background:#111;aspect-ratio:16/9}
+.frame video{display:block;width:100%;height:100%;object-fit:cover}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips span{font-size:13px;font-weight:600;padding:8px 14px;border-radius:99px;border:1px solid rgba(0,0,0,.14);background:#fff}
+.dark .chips span{background:transparent;border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.85)}
+
+/* la historia: vídeo + capítulos que se encienden con el vídeo */
+.story{display:grid;grid-template-columns:1fr 300px;gap:36px;align-items:start}
+.steps{list-style:none;display:flex;flex-direction:column;gap:2px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.35;color:#8a8580;cursor:pointer;transition:background .25s,color .25s}
+.steps li i{font-style:normal;font-weight:800;font-size:12px;letter-spacing:1px;color:#b9b2a9;padding-top:2px}
+.steps li.on{background:#fff;color:var(--black);box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.steps li.on i{color:var(--terra)}
+@media(max-width:900px){.story{grid-template-columns:1fr}.steps{display:none}.sec{padding:64px 0}.frame{border-radius:14px}}
+</style>
+</head>
+<body>
+<div class="wrap intro">
+  <h1>En tu casa: la pared, en movimiento</h1>
+  <p>Tres secciones nuevas para la portada a partir de la idea de Aitor (16-oct): la pared quieta mientras la casa cambia alrededor, las combinaciones pasando con su nombre y su precio con descuento, y la historia entera de un cliente. Los vídeos están hechos con las fotos de entornos HD y los conjuntos reales de la tienda (precios de paredes.js). <a href="index.html">← Todas las soluciones</a></p>
+</div>
+
+<div class="wrap label"><b>A</b><span>Donde quieras · la pared se queda y la casa cambia</span></div>
+<section class="sec dark">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Donde quieras</div>
+        <h2>Mira cómo queda en cada rincón de tu casa.</h2>
+        <p class="lead">Tus fotos, a tamaño real, en el salón, la cocina, el recibidor, la escalera o el dormitorio. Antes de pedir nada.</p>
+      </div>
+      <a class="cta" href="../cuadro.html?pared=W27">Pruébalo con tus fotos →</a>
+    </div>
+    <div class="frame"><video src="../fotos/historia/Donde-web.mp4" poster="../fotos/historia/Donde-poster.jpg" autoplay muted loop playsinline preload="metadata"></video></div>
+  </div>
+</section>
+
+<div class="wrap label"><b>B</b><span>Como quieras · las combinaciones pasando, con nombre y precio</span></div>
+<section class="sec">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Como quieras</div>
+        <h2>Cambia la pared entera con un toque.</h2>
+        <p class="lead">Más de 30 combinaciones pensadas para que encajen. Cuantos más cuadros, más descuento: 10 % con dos, 15 % con tres y 20 % con cuatro o más.</p>
+      </div>
+      <a class="cta" href="../paredes.html">Ver todas las paredes →</a>
+    </div>
+    <div class="frame"><video src="../fotos/historia/Como-web.mp4" poster="../fotos/historia/Como-poster.jpg" autoplay muted loop playsinline preload="metadata"></video></div>
+    <div class="chips"><span>Lazos · 8 cuadros</span><span>Los cuatro perfectos</span><span>Días dorados</span><span>Luz y cariño</span><span>Nueve momentos</span><span>Buen ánimo</span><span>Armonía a cuatro</span><span>Con cariño</span></div>
+  </div>
+</section>
+
+<div class="wrap label"><b>C</b><span>La historia · del momento a la pared, y vuelta a empezar</span></div>
+<section class="sec" style="background:#ece5da">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="eyebrow">Así funciona</div>
+        <h2>Del momento a vuestra pared. Y vuelta a empezar.</h2>
+        <p class="lead">Vivís el momento, lo veis en casa antes de pedirlo, llega, lo colgáis sin clavos. Y cuando llega otro momento, cambiáis una y movéis las demás.</p>
+      </div>
+      <a class="cta" href="../cuadro.html">Empieza tu pared →</a>
+    </div>
+    <div class="story">
+      <div class="frame"><video id="hist" src="../fotos/historia/Historia-web.mp4" poster="../fotos/historia/Historia-poster.jpg" autoplay muted loop playsinline preload="metadata"></video></div>
+      <ol class="steps" id="steps">
+        <li data-t="0"><i>01</i>Vivís el momento</li>
+        <li data-t="3.8"><i>02</i>Hacéis la foto y la veis juntos</li>
+        <li data-t="6.8"><i>03</i>Elegís las que queréis</li>
+        <li data-t="10.2"><i>04</i>La veis en casa, a tamaño real</li>
+        <li data-t="13.5"><i>05</i>Donde quieras</li>
+        <li data-t="18.1"><i>06</i>Como quieras</li>
+        <li data-t="22.4"><i>07</i>Con dedicatoria</li>
+        <li data-t="27.8"><i>08</i>Llega a casa y lo abrís</li>
+        <li data-t="32.1"><i>09</i>Lo colgáis sin clavos</li>
+        <li data-t="37.4"><i>10</i>Pasa el tiempo…</li>
+        <li data-t="41.5"><i>11</i>Vuelve un momento importante</li>
+        <li data-t="44.2"><i>12</i>Cambiáis una, movéis las demás</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var v=document.getElementById('hist'),li=[].slice.call(document.querySelectorAll('#steps li'));
+  var ts=li.map(function(l){return +l.dataset.t});
+  function upd(){var t=v.currentTime,k=0;for(var i=0;i<ts.length;i++)if(t>=ts[i])k=i;li.forEach(function(l,i){l.classList.toggle('on',i===k)})}
+  v.addEventListener('timeupdate',upd);upd();
+  li.forEach(function(l){l.addEventListener('click',function(){v.currentTime=+l.dataset.t;v.play()})});
+  // los vídeos solo corren cuando se ven
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){e.isIntersecting?e.target.play().catch(function(){}):e.target.pause()})},{threshold:.25});
+    [].forEach.call(document.querySelectorAll('video'),function(x){io.observe(x)})}
+})();
+</script>
+</body>
+</html>
