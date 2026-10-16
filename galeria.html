@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — Galería de arte</title>
+<meta name="description" content="Obras maestras de dominio público y diseños propios retro, modernos y minimalistas, impresos en aluminio HD. Van Gogh, Monet, Klimt, Hokusai, Sorolla y más.">
+<link rel="canonical" href="https://momenturies.com/galeria.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Momenturies — Galería de arte"/>
+<meta property="og:description" content="Obras maestras y diseños propios impresos en aluminio HD, listos para colgar sin agujeros."/>
+<meta property="og:image" content="https://momenturies.com/fotos/hero-salon-1.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://thumb.wikimedia.org" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"/></noscript>
+<link rel="stylesheet" href="pdp.css?v=ea12681b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1c1c1c"/>
+<style>
+  :root{--accent:#c2613a}
+  body{background:#faf8f5}
+  .ga-hero{max-width:1240px;margin:0 auto;padding:44px 24px 10px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:end}
+  .ga-eyebrow{font-size:12px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  .ga-hero h1{font-family:var(--font-serif);font-size:clamp(30px,4vw,50px);line-height:1.08;margin-bottom:16px}
+  .ga-lead{font-size:16px;line-height:1.65;color:#444;max-width:560px}
+  .ga-entry{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ga-door{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#ddd;cursor:pointer;border:0;padding:0;text-align:left;color:#fff}
+  .ga-door img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s}
+  .ga-door:hover img{transform:scale(1.04)}
+  .ga-door-l{position:absolute;left:0;right:0;bottom:0;padding:44px 14px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:15px;font-weight:700;line-height:1.25}
+  .ga-door-l small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
+
+  .ga-bar{position:sticky;top:60px;z-index:50;background:rgba(250,248,245,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--gray2);margin-top:34px}
+  .ga-bar-in{max-width:1240px;margin:0 auto;padding:12px 24px;display:flex;gap:14px;align-items:center}
+  .ga-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 0}
+  .ga-chips::-webkit-scrollbar{display:none}
+  .ga-chip{flex:none;border:1px solid var(--gray2);background:#fff;border-radius:22px;padding:8px 14px;font:500 13px Inter,sans-serif;color:#333;cursor:pointer;white-space:nowrap}
+  .ga-chip:hover{border-color:#bbb}
+  .ga-chip[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .ga-chip-sep{flex:none;width:1px;background:var(--gray2);margin:4px 2px}
+  .ga-search{flex:none;width:220px;border:1px solid var(--gray2);border-radius:22px;padding:9px 14px 9px 36px;font:14px Inter,sans-serif;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat}
+
+  .ga-wrap{max-width:1240px;margin:0 auto;padding:22px 24px 70px}
+  .ga-count{font-size:13px;color:var(--mid);margin-bottom:16px}
+  .ga-section-h{font-family:var(--font-serif);font-size:24px;margin:26px 0 4px}
+  .ga-section-p{font-size:14px;color:var(--mid);margin-bottom:16px;max-width:680px;line-height:1.6}
+  .ga-grid{columns:4 240px;column-gap:18px}
+  .ga-card{break-inside:avoid;margin-bottom:22px;cursor:pointer;display:block;width:100%;border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit}
+  .ga-frame{position:relative;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06),0 6px 18px rgba(0,0,0,.07);transition:transform .25s,box-shadow .25s}
+  .ga-card:hover .ga-frame{transform:translateY(-3px);box-shadow:0 2px 4px rgba(0,0,0,.08),0 14px 30px rgba(0,0,0,.12)}
+  .ga-frame img{display:block;width:100%;height:auto;background:#eee}
+  .ga-badge{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);color:#333;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600}
+  .ga-meta{padding:10px 2px 0}
+  .ga-meta b{display:block;font-size:14px;line-height:1.3}
+  .ga-meta span{display:block;font-size:12.5px;color:var(--mid);margin-top:2px}
+  .ga-empty{padding:60px 0;text-align:center;color:var(--mid)}
+
+  /* ficha */
+  .ga-modal{position:fixed;inset:0;z-index:1000;background:rgba(20,18,16,.62);display:none;align-items:center;justify-content:center;padding:24px}
+  .ga-modal.open{display:flex}
+  .ga-sheet{position:relative;background:#fff;border-radius:16px;max-width:1080px;width:100%;max-height:calc(100vh - 48px);display:grid;grid-template-columns:1.15fr 1fr;overflow:hidden}
+  .ga-view{background:#efebe5;display:flex;align-items:center;justify-content:center;padding:34px;min-height:420px}
+  .ga-view img{max-width:100%;max-height:calc(100vh - 140px);box-shadow:0 10px 30px rgba(0,0,0,.25);border-radius:2px}
+  .ga-info{padding:34px 34px 28px;overflow-y:auto;display:flex;flex-direction:column}
+  .ga-cat{font-size:11.5px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent)}
+  .ga-info h2{font-family:var(--font-serif);font-size:clamp(24px,2.6vw,32px);line-height:1.15;margin:8px 0 6px}
+  .ga-by{font-size:15px;font-weight:600}
+  .ga-where{font-size:13px;color:var(--mid);margin-top:3px}
+  .ga-desc{font-size:15px;line-height:1.7;color:#333;margin:18px 0}
+  .ga-facts{list-style:none;border-top:1px solid var(--gray2);margin:4px 0 20px}
+  .ga-facts li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--gray2);font-size:13.5px;line-height:1.45;color:#444}
+  .ga-facts svg{flex:none;margin-top:2px}
+  .ga-facts a{text-decoration:underline;color:inherit}
+  .ga-cta{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--black);color:#fff;border:0;border-radius:10px;padding:16px 20px;font:700 15px Inter,sans-serif;cursor:pointer}
+  .ga-cta:hover{background:#333}
+  .ga-cta[disabled]{opacity:.7;cursor:wait}
+  .ga-spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:gasp 0.8s linear infinite;display:none}
+  .ga-cta.loading .ga-spin{display:inline-block}
+  @keyframes gasp{to{transform:rotate(360deg)}}
+  .ga-cta-note{font-size:12px;color:var(--mid);text-align:center;margin-top:9px}
+  .ga-x,.ga-nav{position:absolute;border:0;background:rgba(255,255,255,.95);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:2}
+  .ga-x{top:14px;right:14px}
+  .ga-nav{top:50%;transform:translateY(-50%)}
+  .ga-prev{left:14px}.ga-next{left:calc(53.5% - 54px)}
+  .ga-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:1100;display:none}
+
+  @media(max-width:900px){
+    .ga-hero{grid-template-columns:1fr;gap:22px;padding-top:30px}
+    .ga-entry{max-width:460px}
+    .ga-bar-in{flex-direction:column;align-items:stretch;gap:10px;padding:10px 16px}
+    .ga-search{width:100%}
+    .ga-wrap{padding:18px 16px 60px}
+    .ga-grid{columns:2 150px;column-gap:12px}
+    .ga-card{margin-bottom:16px}
+    .ga-modal{padding:0;align-items:stretch}
+    .ga-sheet{grid-template-columns:1fr;max-height:none;height:100%;border-radius:0;overflow-y:auto;display:block}
+    .ga-view{padding:22px 16px;min-height:0}
+    .ga-view img{max-height:56vh}
+    .ga-info{padding:22px 18px 26px;overflow:visible}
+    .ga-next{left:auto;right:14px;top:calc(28vh)}.ga-prev{top:calc(28vh)}
+    .ga-cta{position:sticky;bottom:12px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="momenturies.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Inicio</span><span class="en">Home</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+      <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+      <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+      <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies</span>
+  </a>
+  <div class="nav-right-slot"></div>
+</nav>
+
+<header class="ga-hero">
+  <div>
+    <div class="ga-eyebrow"><span class="es">Galería de arte</span><span class="en">Art gallery</span></div>
+    <h1><span class="es">Arte para tu pared, impreso en aluminio HD</span><span class="en">Art for your walls, printed on HD aluminium</span></h1>
+    <p class="ga-lead">
+      <span class="es">Las obras más famosas de la historia y diseños de nuestro estudio, retro, modernos y minimalistas. Elige una, mírala en 3D en tu salón y la recibes lista para colgar sin agujeros. Todas se imprimen a partir de archivos de alta resolución.</span>
+      <span class="en">The most famous artworks in history plus designs from our studio, retro, modern and minimal. Pick one, see it in 3D in your living room and receive it ready to hang without holes. Every piece is printed from high-resolution files.</span>
+    </p>
+  </div>
+  <div class="ga-entry">
+    <button class="ga-door" data-go="obras"><img id="doorObras" alt="" loading="eager"><span class="ga-door-l"><span class="es">Obras maestras</span><span class="en">Masterpieces</span><small id="nObras"></small></span></button>
+    <button class="ga-door" data-go="estudio"><img id="doorEstudio" alt="" loading="eager"><span class="ga-door-l"><span class="es">Diseños del estudio</span><span class="en">Studio designs</span><small id="nEstudio"></small></span></button>
+  </div>
+</header>
+
+<div class="ga-bar" id="bar">
+  <div class="ga-bar-in">
+    <div class="ga-chips" id="chips" role="toolbar" aria-label="Filtrar"></div>
+    <input class="ga-search" id="q" type="search" placeholder="Buscar obra o artista" aria-label="Buscar">
+  </div>
+</div>
+
+<main class="ga-wrap">
+  <div class="ga-count" id="count"></div>
+  <div id="sections"></div>
+</main>
+
+<div class="ga-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="ga-sheet">
+    <button class="ga-x" id="mClose" aria-label="Cerrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+    <button class="ga-nav ga-prev" id="mPrev" aria-label="Anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="ga-nav ga-next" id="mNext" aria-label="Siguiente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <div class="ga-view"><img id="mImg" alt=""></div>
+    <div class="ga-info">
+      <div class="ga-cat" id="mCat"></div>
+      <h2 id="mTitle"></h2>
+      <div class="ga-by" id="mBy"></div>
+      <div class="ga-where" id="mWhere"></div>
+      <p class="ga-desc" id="mDesc"></p>
+      <ul class="ga-facts" id="mFacts"></ul>
+      <button class="ga-cta" id="mCta"><span class="ga-spin"></span><span id="mCtaTxt"></span></button>
+      <div class="ga-cta-note" id="mNote"></div>
+    </div>
+  </div>
+</div>
+<div class="ga-toast" id="toast"></div>
+
+<footer class="pdp-foot">
+  &copy; 2026 Momenturies ·
+  <a href="momenturies.html"><span class="es">Inicio</span><span class="en">Home</span></a> ·
+  <a href="cuadro.html"><span class="es">Tu cuadro</span><span class="en">Your print</span></a> ·
+  <a href="paredes.html"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></a> ·
+  <a href="contacto.html"><span class="es">Contacto</span><span class="en">Contact</span></a> ·
+  <a href="aviso-legal.html"><span class="es">Aviso legal</span><span class="en">Legal notice</span></a>
+</footer>
+
+<script src="photo-handoff.js"></script>
+<script src="galeria/obras.js"></script>
+<script src="galeria/disenos.js"></script>
+<script src="galeria/galeria.js"></script>
+</body>
+</html>
