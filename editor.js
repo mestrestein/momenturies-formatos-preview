@@ -1576,6 +1576,7 @@ function ingestFiles(files, mode){
       }
     }
     const p = POSTERS[idx];
+    const auto = !(mode==='replace' && k===0);   // el cliente no eligió el hueco: se puede mover al de su forma
     p.file = file;         // el archivo original: es lo que se guarda y lo que irá a imprenta
     p.pendingImg = true;   // reserva síncrona (la carga es async)
     const url = URL.createObjectURL(file);
@@ -1588,6 +1589,7 @@ function ingestFiles(files, mode){
       const o = img.naturalWidth/img.naturalHeight >= 1.05 ? 'landscape' : 'portrait';
       p.srcImg = img;
       if(!WALL && p.orient !== o) setOrientation(p, o); else { applyFrontTexture(i); }
+      if(WALL && auto && moveToFittingSlot(p)) applyFrontTexture(POSTERS.indexOf(p));
       if(i===selected) syncConfigUI();
       if(WALL) syncWallBar();
       updateTotal();   // con una foto más cambia el total (y el tramo de descuento)
@@ -4877,6 +4879,53 @@ function disposePoster(i){
   POSTERS.splice(i, 1);
 }
 
+/* 16-oct-2026 · Cada foto al hueco de su forma. Antes, al elegir un conjunto, las fotos iban por orden a los
+   huecos: una foto vertical (p. ej. el cielo de estrellas) podía caer en un hueco horizontal y quedar recortada.
+   Ahora se reparte por parecido de proporción (vertical con vertical, horizontal con horizontal, la cuadrada
+   donde menos se recorte). Lo mismo al subir fotos con un conjunto puesto (moveToFittingSlot). */
+function applyPieceTo(p, pc){
+  p.ptype = 'metal';
+  if(!PRODUCTS.metal.mounts.includes(p.mount)) p.mount = PRODUCTS.metal.hanger;
+  applyProductSize(p, FORMATS[pc.format].sizes.find(s => s.k === pc.size) || defSizeOf(PRODUCTS.metal, pc.format), pc.format);
+  const o = pc.orient === 'h' ? 'landscape' : 'portrait';
+  if(p.orient !== o) setOrientation(p, o); else applyMountVisual(p);
+}
+function photoRatio(p){ const im = p && p.srcImg; return im && im.naturalWidth ? im.naturalWidth / im.naturalHeight : 0; }
+function pieceRatio(pc){ const r = FORMATS[pc.format].ratio; return pc.orient === 'h' ? 1 / r : r; }   // ancho/alto del hueco
+function fitCost(ph, pc){ return ph ? Math.abs(Math.log(ph) - Math.log(pieceRatio(pc))) : 0; }
+function matchPhotosToPieces(w){
+  const n = w.pieces.length;
+  if(!POSTERS.some(p => p.srcImg)) return;
+  const slotOf = POSTERS.map(() => -1), taken = w.pieces.map(() => false), pairs = [];
+  POSTERS.forEach((p, i) => { if(p.srcImg) w.pieces.forEach((pc, k) => pairs.push([fitCost(photoRatio(p), pc), i, k])); });
+  // el par más parecido primero; a igualdad, se respeta el orden de las fotos y de los huecos
+  pairs.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]);
+  pairs.forEach(([, i, k]) => { if(slotOf[i] < 0 && !taken[k]){ slotOf[i] = k; taken[k] = true; } });
+  let free = 0;
+  POSTERS.forEach((p, i) => { if(slotOf[i] >= 0) return; while(free < n && taken[free]) free++; if(free < n){ slotOf[i] = free; taken[free] = true; } });
+  const sel = POSTERS[selected], next = new Array(n);
+  POSTERS.forEach((p, i) => { next[slotOf[i]] = p; });
+  POSTERS.splice(0, POSTERS.length, ...next);
+  selected = Math.max(0, POSTERS.indexOf(sel));
+}
+/* foto recién subida en un hueco que no le va: si hay otro hueco vacío con su forma, se cambia allí */
+function moveToFittingSlot(p){
+  if(!WALL) return false;
+  const pcs = WALL.pieces, i = POSTERS.indexOf(p); if(i < 0 || !pcs[i]) return false;
+  const ph = photoRatio(p); let best = i, bc = fitCost(ph, pcs[i]);
+  POSTERS.forEach((q, j) => {
+    if(j === i || !pcs[j] || q.srcImg || q.pendingImg) return;
+    const c = fitCost(ph, pcs[j]); if(c < bc - 0.05){ bc = c; best = j; }
+  });
+  if(best === i) return false;
+  const q = POSTERS[best];
+  POSTERS[best] = p; POSTERS[i] = q;
+  applyPieceTo(p, pcs[best]); applyPieceTo(q, pcs[i]);
+  if(selected === i) selected = best; else if(selected === best) selected = i;
+  layout(); renderThumbs(); applySelection(); dirty3D = true;
+  return true;
+}
+
 function applyWall(w, opts){
   opts = opts || {};
   if(!w) return;
@@ -4892,15 +4941,9 @@ function applyWall(w, opts){
     disposePoster(i);
   }
   while(POSTERS.length < n) createPoster();
+  matchPhotosToPieces(w);                 // cada foto al hueco de su forma (vertical con vertical…)
   // cada hueco impone producto (cuadro de pared), talla y orientación
-  w.pieces.forEach((pc, i) => {
-    const p = POSTERS[i];
-    p.ptype = 'metal';
-    if(!PRODUCTS.metal.mounts.includes(p.mount)) p.mount = PRODUCTS.metal.hanger;
-    applyProductSize(p, FORMATS[pc.format].sizes.find(s => s.k === pc.size) || defSizeOf(PRODUCTS.metal, pc.format), pc.format);
-    const o = pc.orient === 'h' ? 'landscape' : 'portrait';
-    if(p.orient !== o) setOrientation(p, o); else applyMountVisual(p);
-  });
+  w.pieces.forEach((pc, i) => applyPieceTo(POSTERS[i], pc));
   if(selected >= n) selected = n - 1;
   /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
      uno (y le quepa). Antes se ponía directamente el salón 3D. */
