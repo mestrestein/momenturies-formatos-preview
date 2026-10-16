@@ -33,7 +33,13 @@
   .ga-door-l{position:absolute;left:0;right:0;bottom:0;padding:44px 14px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:15px;font-weight:700;line-height:1.25}
   .ga-door-l small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
 
-  .ga-custom{max-width:1240px;margin:26px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ga-custom{max-width:1240px;margin:26px auto 0;padding:0 24px}
+  .ga-perso{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:18px 22px;text-decoration:none;color:inherit;transition:box-shadow .25s,transform .25s}
+  .ga-perso:hover{box-shadow:0 12px 30px rgba(0,0,0,.1);transform:translateY(-2px)}
+  .ga-perso-imgs{display:flex;gap:10px}
+  .ga-perso-imgs img{width:96px;height:128px;object-fit:cover;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .ga-perso h3{font-family:var(--font-serif);font-size:24px;line-height:1.15;margin:6px 0 8px}
+  .ga-perso p{font-size:14.5px;line-height:1.55;color:#555;margin-bottom:10px}
   .ga-cust{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:box-shadow .25s,transform .25s}
   .ga-cust:hover{box-shadow:0 12px 30px rgba(0,0,0,.1);transform:translateY(-2px)}
   .ga-cust img{width:120px;height:160px;object-fit:cover;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
@@ -154,27 +160,13 @@
   </div>
 </header>
 
-<section class="ga-custom" aria-label="Personalizados">
-  <a class="ga-cust" href="cielo.html">
-    <img src="galeria/img/muestra-cielo.jpg" alt="Mapa de estrellas personalizado" width="600" height="800" loading="lazy">
-    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
-      <h3><span class="es">El cielo de vuestra noche</span><span class="en">The sky of your night</span></h3>
-      <p><span class="es">Las estrellas exactas de una fecha y un lugar: la noche que os conocisteis, la boda, el día que nació.</span><span class="en">The exact stars of a date and place: the night you met, the wedding, the day they were born.</span></p>
-      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
-  </a>
-  <a class="ga-cust" href="mapa.html">
-    <img src="galeria/img/muestra-mapa.jpg" alt="Mapa de ciudad personalizado" width="600" height="800" loading="lazy">
-    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
-      <h3><span class="es">Vuestro lugar en el mapa</span><span class="en">Your place on the map</span></h3>
-      <p><span class="es">Tu ciudad, tu barrio o el pueblo de los abuelos, con todas sus calles y sus coordenadas.</span><span class="en">Your city, your neighbourhood or your grandparents' village, with every street and its coordinates.</span></p>
-      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
-  </a>
-  <a class="ga-cust" href="viaje.html">
-    <img src="galeria/img/muestra-viaje.jpg" alt="Cartel de viaje personalizado" width="600" height="800" loading="lazy">
-    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
-      <h3><span class="es">Vuestro cartel de viaje</span><span class="en">Your travel poster</span></h3>
-      <p><span class="es">Vuestra foto de aquel viaje en un cartel retro, con el lugar, la fecha y vuestros nombres.</span><span class="en">Your photo from that trip in a retro poster, with the place, date and your names.</span></p>
-      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
+<section class="ga-custom" aria-label="Diseños personalizados">
+  <a class="ga-perso" href="personalizados.html">
+    <div class="ga-perso-imgs"><img src="galeria/img/muestra-cielo.jpg" alt="" loading="lazy"><img src="galeria/img/muestra-luna.jpg" alt="" loading="lazy"><img src="galeria/img/muestra-viaje.jpg" alt="" loading="lazy"><img src="galeria/img/muestra-mapa-viajes.jpg" alt="" loading="lazy"></div>
+    <div><div class="ga-cust-tag"><span class="es">Diseños personalizados</span><span class="en">Personalised designs</span></div>
+      <h3><span class="es">Vuestra historia, en un diseño único</span><span class="en">Your story, in a one-of-a-kind design</span></h3>
+      <p><span class="es">El cielo y la Luna de vuestra noche, mapas, carteles de viaje con vuestra foto, vuestra constelación, la onda de vuestra voz…</span><span class="en">The sky and Moon of your night, maps, travel posters with your photo, your constellation, the shape of your voice…</span></p>
+      <span class="ga-cust-go"><span class="es">Ver los 11 diseños →</span><span class="en">See all 11 designs →</span></span></div>
   </a>
 </section>
 

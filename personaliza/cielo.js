@@ -53,23 +53,28 @@
     };
     im.onerror = function () { res(); };
     var base = (document.currentScript && document.currentScript.src) || 'personaliza/cielo.js';
-    im.src = base.replace(/cielo\.js(\?.*)?$/, 'luna-lro.jpg');
+    /* 17-oct · luna.html pinta la Luna en grande: usa la cara visible a 4096 px (lon ±90°, lat ±75°) */
+    im.src = base.replace(/cielo\.js(\?.*)?$/, window.MOM_LUNA_HD ? 'luna-cara-4k.jpg' : 'luna-lro.jpg');
   });
+  var TEX_HD = !!window.MOM_LUNA_HD;
   function texAt(px, py, nz) {   // color de la superficie en el punto del disco (radio 1)
     if (!TEX) { var g = 0.62 - 0.12 * Math.exp(-((px + 0.3) * (px + 0.3) + (py + 0.2) * (py + 0.2)) * 4); return [g, g, g * 0.97]; }
     var lon = Math.atan2(px, nz), lat = Math.asin(Math.max(-1, Math.min(1, -py)));
-    var u = Math.min(TEX.w - 1, Math.max(0, Math.round((0.5 + lon / (2 * Math.PI)) * TEX.w)));
-    var v = Math.min(TEX.h - 1, Math.max(0, Math.round((0.5 - lat / Math.PI) * TEX.h)));
+    var u, v;
+    if (TEX_HD) { u = Math.round((0.5 + lon / Math.PI) * (TEX.w - 1)); v = Math.round((0.5 - lat / (150 * D2R)) * (TEX.h - 1)); }
+    else { u = Math.round((0.5 + lon / (2 * Math.PI)) * TEX.w); v = Math.round((0.5 - lat / Math.PI) * TEX.h); }
+    u = Math.min(TEX.w - 1, Math.max(0, u)); v = Math.min(TEX.h - 1, Math.max(0, v));
     var k = (v * TEX.w + u) * 4;
     return [TEX.d[k] / 255, TEX.d[k + 1] / 255, TEX.d[k + 2] / 255];
   }
-  function drawMoon(ctx, x, y, r, mo) {
+  function drawMoon(ctx, x, y, r, mo, haloK) {   // haloK: 0 = sin halo (lunas pequeñas en rejilla), 1 = normal
     var el = mo.el, side = mo.waxing ? 1 : -1;
     var Lx = side * Math.abs(Math.sin(el)), Lz = -Math.cos(el);           // dirección del Sol (z hacia nosotros)
     // halo discreto, algo mayor cuanto más llena
-    var hr = r * (1.7 + 1.5 * mo.frac), g = ctx.createRadialGradient(x, y, r * 0.95, x, y, hr);
-    g.addColorStop(0, 'rgba(255,248,228,' + (0.05 + 0.13 * mo.frac).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,248,228,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill();
+    haloK = haloK == null ? 1 : haloK;
+    var hr = r * (1 + (0.7 + 1.5 * mo.frac) * haloK), g = ctx.createRadialGradient(x, y, r * 0.95, x, y, hr);
+    if (haloK > 0) { g.addColorStop(0, 'rgba(255,248,228,' + ((0.05 + 0.13 * mo.frac) * Math.min(1, haloK)).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,248,228,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill(); }
     var N = Math.max(8, Math.ceil(r * 2) + 2), off = document.createElement('canvas'); off.width = off.height = N;
     var oc = off.getContext('2d'), img = oc.createImageData(N, N), d = img.data, c = (N - 1) / 2;
     for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
@@ -94,19 +99,18 @@
     ctx.imageSmoothingEnabled = true; ctx.drawImage(off, x - c, y - c);
   }
 
-  function draw(ctx, W, H, o) {
-    var T = THEMES[o.theme] || THEMES.medianoche, J = jd(o.utc), S = lst(J, o.lon);
-    var cx = W / 2, cy = H * 0.385, R = W * 0.38;
+  /* el disco del cielo (estrellas, constelaciones, Luna y aros) centrado en (cx, cy) con radio R.
+     W = ancho del póster: da el grosor de líneas y el tamaño de estrellas */
+  function sky(ctx, W, cx, cy, R, o, T) {
+    var J = jd(o.utc), S = lst(J, o.lon), k = R / (W * 0.38);   // k: estrellas proporcionales al disco
     ctx.save();
-    ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
-    // disco del cielo
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fillStyle = T.disk; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
-    var lw = W / 3600;
+    var lw = W / 3600 * Math.max(0.6, k);
     if (o.grid) {
       ctx.strokeStyle = T.grid; ctx.lineWidth = 2.2 * lw;
       [30, 60].forEach(function (a) { ctx.beginPath(); ctx.arc(cx, cy, R * Math.tan((90 - a) * D2R / 2), 0, Math.PI * 2); ctx.stroke(); });
-      for (var k = 0; k < 8; k++) { var p = proj(0, k * 45, cx, cy, R); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
+      for (var g8 = 0; g8 < 8; g8++) { var p = proj(0, g8 * 45, cx, cy, R); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
     }
     if (o.lines) {
       ctx.strokeStyle = T.line; ctx.lineWidth = 3 * lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -121,35 +125,47 @@
         ctx.stroke();
       });
     }
-    // estrellas
     var st = DATA.S;
     for (var i = 0; i < st.length; i += 3) {
       var a = altaz(st[i], st[i + 1], S, o.lat); if (a[0] < 0) continue;
       var m = st[i + 2], q = proj(a[0], a[1], cx, cy, R);
       var r = 1.05 * lw * Math.pow(Math.max(0.35, 6.4 - m), 1.42) * (W > 2000 ? 1 : 1.25);
       if (m < 1.6) {
-        var g = ctx.createRadialGradient(q[0], q[1], 0, q[0], q[1], r * 4.5);
-        g.addColorStop(0, T.star); g.addColorStop(0.25, T.star); g.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.globalAlpha = 0.35; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q[0], q[1], r * 4.5, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+        var gg = ctx.createRadialGradient(q[0], q[1], 0, q[0], q[1], r * 4.5);
+        gg.addColorStop(0, T.star); gg.addColorStop(0.25, T.star); gg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.globalAlpha = 0.35; ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(q[0], q[1], r * 4.5, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
       }
       ctx.fillStyle = T.star; ctx.globalAlpha = m > 5 ? 0.7 : 1;
       ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
     }
-    // la Luna con su fase, si está sobre el horizonte
     if (o.moon) {
       var mo = moon(J), ma = altaz(mo.ra, mo.dec, S, o.lat);
-      if (ma[0] > 0) { var mq = proj(ma[0], ma[1], cx, cy, R); drawMoon(ctx, mq[0], mq[1], W * 0.021, mo); }
+      if (ma[0] > 0) { var mq = proj(ma[0], ma[1], cx, cy, R); drawMoon(ctx, mq[0], mq[1], W * 0.021 * Math.max(0.6, k), mo); }
     }
     ctx.restore();
-    // aros del disco
     ctx.strokeStyle = T.ring; ctx.lineWidth = 7 * lw; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
     ctx.lineWidth = 2.5 * lw; ctx.beginPath(); ctx.arc(cx, cy, R * 1.035, 0, Math.PI * 2); ctx.stroke();
-    if (o.grid) {   // puntos cardinales
-      ctx.fillStyle = T.soft; ctx.font = MOM_P.subFont(W * 0.014, 600); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      [['N', 0], ['E', 90], ['S', 180], ['O', 270]].forEach(function (c) { var p = proj(-4.5, c[1], cx, cy, R * 1.0); ctx.fillText(c[0], p[0], p[1]); });
+    if (o.grid) {
+      ctx.fillStyle = T.soft; ctx.font = MOM_P.subFont(W * 0.014 * Math.max(0.7, k), 600); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      [['N', 0], ['E', 90], ['S', 180], ['O', 270]].forEach(function (c) { var p = proj(-4.5, c[1], cx, cy, R); ctx.fillText(c[0], p[0], p[1]); });
     }
+    ctx.restore();
+  }
+  function draw(ctx, W, H, o) {
+    var T = THEMES[o.theme] || THEMES.medianoche;
+    ctx.save();
+    ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
+    sky(ctx, W, W / 2, H * 0.385, W * 0.38, o, T);
     MOM_P.textBlock(ctx, W, H, { title: o.title, line2: o.line2, line3: o.line3, font: o.font, y: H * 0.815, color: T.text, soft: T.soft });
     ctx.restore();
+  }
+  /* nombre de la fase lunar */
+  function faseNombre(mo) {
+    var f = mo.frac, w = mo.waxing;
+    if (f < 0.03) return 'Luna nueva';
+    if (f > 0.97) return 'Luna llena';
+    if (Math.abs(f - 0.5) < 0.04) return w ? 'Cuarto creciente' : 'Cuarto menguante';
+    return f < 0.5 ? (w ? 'Luna creciente' : 'Luna menguante') : (w ? 'Gibosa creciente' : 'Gibosa menguante');
   }
 
   /* hora local del lugar → instante UTC (con su horario de verano) */
@@ -165,5 +181,5 @@
     try { var u = guess - tzOffsetMs(guess, tz); return guess - tzOffsetMs(u, tz); } catch (e) { return guess; }
   }
 
-  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, draw: draw, themes: THEMES, localToUtc: localToUtc, moon: moon, jd: jd };
+  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, sky: sky, faseNombre: faseNombre, draw: draw, themes: THEMES, localToUtc: localToUtc, moon: moon, jd: jd };
 })();

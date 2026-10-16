@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — Dos cielos</title>
+<meta name="description" content="Los cielos de dos fechas y lugares importantes, juntos en un cuadro de aluminio HD.">
+<link rel="canonical" href="https://momenturies.com/dos-cielos.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Dos cielos — Momenturies"/>
+<meta property="og:description" content="Los cielos de dos fechas y lugares importantes, juntos en un cuadro de aluminio HD."/>
+<meta property="og:image" content="https://momenturies.com/galeria/img/muestra-dos-cielos.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,500&family=Great+Vibes&display=swap"/>
+<link rel="stylesheet" href="pdp.css?v=ea12681b">
+<link rel="stylesheet" href="personaliza/personaliza.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1c1c1c"/>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="personalizados.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Personalizados</span><span class="en">Personalised</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/><rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/><rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/><rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/></svg><span class="nav-logo-word">Momenturies</span></a>
+  <div class="nav-right-slot"></div>
+</nav>
+<main class="pz-wrap">
+  <div class="pz-stage">
+    <div class="pz-paper"><canvas id="cv" aria-label="Vista previa"></canvas>
+      <div class="pz-loading" id="loading"><div class="pz-spin"></div><div id="loadingTxt">Preparando…</div></div>
+    </div>
+    <div class="pz-stage-note">Vista previa. Se imprime a 30×40 cm y 300 ppp.</div>
+  </div>
+  <div class="pz-panel">
+    <div class="pz-eyebrow">Diseño personalizado</div>
+    <h1>Dos cielos, una historia</h1>
+    <p class="pz-lead">Dos noches importantes una al lado de la otra: donde os conocisteis y donde os casasteis, dónde nació cada uno…</p>
+    <div class="pz-step">
+      <span class="pz-label">1. El primer cielo</span>
+      <input id="labA" class="pz-input" type="text" maxlength="30" value="Nos conocimos" aria-label="Qué pasó">
+      <div style="height:10px"></div>
+      <div class="pz-search"><input id="plA" class="pz-input" type="text" autocomplete="off" placeholder="Lugar" value="Dénia, Comunidad Valenciana, España"><div class="pz-results" id="plARes"></div></div>
+      <div style="height:10px"></div>
+      <div class="pz-row"><input id="dA" class="pz-input" type="date" value="2019-07-20" aria-label="Fecha"><input id="tA" class="pz-input" type="time" value="23:00" aria-label="Hora"></div>
+    </div>
+    <div class="pz-step">
+      <span class="pz-label">2. El segundo cielo</span>
+      <input id="labB" class="pz-input" type="text" maxlength="30" value="Nos casamos" aria-label="Qué pasó">
+      <div style="height:10px"></div>
+      <div class="pz-search"><input id="plB" class="pz-input" type="text" autocomplete="off" placeholder="Lugar" value="Valencia, Comunidad Valenciana, España"><div class="pz-results" id="plBRes"></div></div>
+      <div style="height:10px"></div>
+      <div class="pz-row"><input id="dB" class="pz-input" type="date" value="2024-09-14" aria-label="Fecha"><input id="tB" class="pz-input" type="time" value="20:00" aria-label="Hora"></div>
+    </div>
+    <div class="pz-step">
+      <span class="pz-label">3. El texto</span>
+      <input id="title" class="pz-input" type="text" maxlength="60" value="Nuestra historia" aria-label="Título">
+      <div style="height:10px"></div>
+      <input id="line2" class="pz-input" type="text" maxlength="80" value="Marc y Ana" placeholder="" aria-label="Segunda línea">
+      <div style="height:12px"></div>
+      <div class="pz-chips" id="fonts"></div>
+    </div>
+    <div class="pz-step">
+      <span class="pz-label">4. Colores y detalles</span>
+      <div class="pz-swatches" id="themes"></div>
+      <div class="pz-swname" id="themeName"></div>
+      <div style="height:12px"></div>
+      <div class="pz-toggles"><label><input type="checkbox" id="optLines" checked> Constelaciones</label><label><input type="checkbox" id="optMoon" checked> La Luna</label></div>
+    </div>
+    <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
+    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared.</p>
+  </div>
+</main>
+<div class="pz-toast" id="pzToast"></div>
+<footer class="pdp-foot">&copy; 2026 Momenturies · <a href="momenturies.html">Inicio</a> · <a href="personalizados.html">Diseños personalizados</a> · <a href="galeria.html">Galería de arte</a> · <a href="contacto.html">Contacto</a> · <a href="aviso-legal.html">Aviso legal</a></footer>
+<script src="photo-handoff.js"></script>
+<script src="personaliza/comun.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tz-lookup@6.1.25/tz.js"></script>
+<script src="personaliza/cielo-datos.js"></script>
+<script src="personaliza/cielo.js"></script>
+<script src="personaliza/extra.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var A = { lat: 38.8408, lon: 0.1057, city: 'Dénia' }, B = { lat: 39.4699, lon: -0.3763, city: 'Valencia' };
+  function tz(lat, lon) { try { return window.tzlookup ? tzlookup(lat, lon) : null; } catch (e) { return null; } }
+  function cielo(S, k) { return { utc: MOM_CIELO.localToUtc($('d' + k).value, $('t' + k).value, tz(S.lat, S.lon)), lat: S.lat, lon: S.lon, label: $('lab' + k).value, when: MOM_P.fecha($('d' + k).value), where: S.city }; }
+  function o() { return { theme: theme, font: font, lines: $('optLines').checked, moon: $('optMoon').checked, a: cielo(A, 'A'), b: cielo(B, 'B'), title: $('title').value, line2: $('line2').value }; }
+  function dibuja(ctx, W, H) { MOM_EXTRA.dosCielos(ctx, W, H, o()); }
+  var render = MOM_P.renderer($('cv'), dibuja);
+  var font = 'elegante';
+  MOM_P.chips($('fonts'), Object.keys(MOM_P.FONTS).map(function (k) { return [k, MOM_P.FONTS[k].name]; }), font, function (k) { font = k; render(); });
+  var theme = 'papel';
+  MOM_P.swatches($('themes'), $('themeName'), MOM_CIELO.themes, theme, function (k) { theme = k; render(); }, function (T) { return [T.bg, T.disk === T.bg ? T.star : T.disk]; });
+  MOM_P.placeSearch($('plA'), $('plARes'), function (p) { A.lat = p.lat; A.lon = p.lon; A.city = p.name; render(); });
+  MOM_P.placeSearch($('plB'), $('plBRes'), function (p) { B.lat = p.lat; B.lon = p.lon; B.city = p.name; render(); });
+  ['labA', 'dA', 'tA', 'labB', 'dB', 'tB'].forEach(function (id) { $(id).addEventListener('input', render); });
+  ['title', 'line2', 'line3'].forEach(function (id) { if ($(id)) $(id).addEventListener('input', render); });
+  [].forEach.call(document.querySelectorAll('.pz-toggles input'), function (x) { x.addEventListener('change', render); });
+  $('cta').addEventListener('click', function () {
+    if (window.__antes && !window.__antes()) return;
+    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { return Promise.resolve(window.__listo ? window.__listo() : 0).then(function () { dibuja(ctx, W, H); }); }, 'dos-cielos-' + MOM_P.slug($('title').value));
+  });
+  Promise.all([MOM_P.fontsReady(), document.fonts && document.fonts.load ? document.fonts.load('400 80px "Bebas Neue"') : 0, window.MOM_CIELO ? MOM_CIELO.ready : 0]).then(render);
+  render();
+})();
+</script>
+</body>
+</html>

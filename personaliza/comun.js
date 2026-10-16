@@ -130,5 +130,43 @@
     return cv.getContext('2d');
   };
 
+  /* ── utilidades de las páginas (17-oct) ── */
+  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  P.MESES = MESES;
+  P.fecha = function (s) { if (!s) return ''; var d = s.split('-'); return +d[2] + ' de ' + MESES[+d[1] - 1] + ' de ' + d[0]; };
+  P.hoy = function () { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  P.slug = function (s) { return (s || 'diseno').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'diseno'; };
+  P.dms = function (v, pos, neg) {
+    var a = Math.abs(v), g = Math.floor(a), m = Math.floor((a - g) * 60), s = Math.round(((a - g) * 60 - m) * 60);
+    if (s === 60) { s = 0; m++; } if (m === 60) { m = 0; g++; }
+    return g + '° ' + String(m).padStart(2, '0') + '′ ' + String(s).padStart(2, '0') + '″ ' + (v >= 0 ? pos : neg);
+  };
+  P.chips = function (el, list, cur, onSel) {
+    el.innerHTML = '';
+    list.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-chip'; b.textContent = it[1]; b.dataset.k = it[0];
+      b.setAttribute('aria-pressed', it[0] === cur ? 'true' : 'false');
+      b.addEventListener('click', function () { [].forEach.call(el.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); onSel(it[0]); });
+      el.appendChild(b);
+    });
+  };
+  P.swatches = function (el, nameEl, themes, cur, onSel, colors) {
+    el.innerHTML = '';
+    Object.keys(themes).forEach(function (k) {
+      var T = themes[k], c = colors(T), b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === cur ? 'true' : 'false');
+      b.innerHTML = '<span style="background:linear-gradient(135deg,' + c[0] + ' 0 50%,' + c[1] + ' 50% 100%)"></span>';
+      b.addEventListener('click', function () { [].forEach.call(el.children, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); if (nameEl) nameEl.textContent = T.name; onSel(k); });
+      el.appendChild(b);
+    });
+    if (nameEl && themes[cur]) nameEl.textContent = themes[cur].name;
+  };
+  /* pinta la vista previa con requestAnimationFrame (una vez por fotograma aunque cambien muchas cosas) */
+  P.renderer = function (cv, drawFn) {
+    var raf = 0;
+    var go = function () { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var ctx = P.previewCanvas(cv); ctx.clearRect(0, 0, cv.width, cv.height); drawFn(ctx, cv.width, cv.height); }); };
+    window.addEventListener('resize', go);
+    return go;
+  };
+
   window.MOM_P = P;
 })();

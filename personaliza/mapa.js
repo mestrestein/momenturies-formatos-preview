@@ -100,8 +100,8 @@
     if (tileUrl) return Promise.resolve(tileUrl);
     return fetch(TILEJSON).then(function (r) { return r.json(); }).then(function (j) { return (tileUrl = j.tiles[0]); });
   }
-  function fetchData(lat, lon, kind) {
-    var hw = RADIUS[kind] || RADIUS.ciudad, hh = hw * RATIO, z = ZOOM[kind] || 14, n = Math.pow(2, z);
+  function fetchData(lat, lon, kind, ratio) {
+    var hw = RADIUS[kind] || RADIUS.ciudad, hh = hw * (ratio || RATIO), z = ZOOM[kind] || 14, n = Math.pow(2, z);
     var kx = 111320 * Math.cos(lat * Math.PI / 180), ky = 110540, mx = 1.04;
     var tx = function (lo) { return (lo + 180) / 360 * n; };
     var ty = function (la) { var r = la * Math.PI / 180; return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n; };
@@ -157,38 +157,41 @@
     else if (shape === 'corazon') { heartPath(ctx, r.x + r.w / 2, r.y + r.h * 0.5, r.w * 0.5); }
     else ctx.rect(r.x, r.y, r.w, r.h);
   }
+  /* el mapa dentro del rectángulo r (con su forma) — W da el grosor de las líneas */
+  function mapIn(ctx, W, r, o, T) {
+    var d = o.data; if (!d) return;
+    var sc = r.w / (2 * d.hw), cx = r.x + r.w / 2, cy = r.y + r.h / 2, lw = W / 3600;
+    var kf = (d.kind === 'barrio' ? 1.3 : d.kind === 'comarca' ? 0.62 : 1) * (o.lineK || 1);
+    var X = function (p) { return cx + p[0] * sc; }, Y = function (p) { return cy - p[1] * sc; };
+    var line = function (pts) { ctx.moveTo(X(pts[0]), Y(pts[0])); for (var i = 1; i < pts.length; i++) ctx.lineTo(X(pts[i]), Y(pts[i])); };
+    var ring = function (pts) { if (pts.length > 2) { line(pts); ctx.closePath(); } };
+    ctx.save(); shapePath(ctx, r, o.shape); ctx.clip();
+    ctx.fillStyle = T.land; ctx.fillRect(r.x, r.y, r.w, r.h);
+    if (o.parks !== false) { ctx.fillStyle = T.park; d.parks.forEach(function (rs) { ctx.beginPath(); rs.forEach(ring); ctx.fill('evenodd'); }); }
+    ctx.fillStyle = T.water; d.water.forEach(function (rs) { ctx.beginPath(); rs.forEach(ring); ctx.fill('evenodd'); });
+    ctx.strokeStyle = T.water; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    d.rivers.forEach(function (rv) { ctx.lineWidth = rv.w * lw * kf; ctx.beginPath(); line(rv.pts); ctx.stroke(); });
+    ctx.strokeStyle = T.rail; ctx.lineWidth = 2.2 * lw * kf; ctx.setLineDash([9 * lw, 7 * lw]);
+    d.rails.forEach(function (p) { ctx.beginPath(); line(p); ctx.stroke(); }); ctx.setLineDash([]);
+    [[false, T.minor], [true, T.road]].forEach(function (grp) {
+      var byW = {};
+      d.roads.forEach(function (rd) { if (MAJOR.test(rd.k) !== grp[0]) return; var w = (ROADW[rd.k] || 2) * kf; (byW[w] = byW[w] || []).push(rd); });
+      Object.keys(byW).map(Number).sort(function (a, b) { return a - b; }).forEach(function (w) {
+        ctx.strokeStyle = grp[1]; ctx.lineWidth = w * lw; ctx.beginPath(); byW[w].forEach(function (rd) { line(rd.pts); }); ctx.stroke();
+      });
+    });
+    ctx.restore();
+    ctx.strokeStyle = T.frame; ctx.lineWidth = (o.shape === 'rect' ? 5 : 6) * lw; shapePath(ctx, r, o.shape); ctx.stroke();
+    if (o.pin) {
+      var s = W * 0.022; ctx.fillStyle = '#d64545'; ctx.strokeStyle = T.bg; ctx.lineWidth = W * 0.004;
+      ctx.beginPath(); heartPath(ctx, cx, cy - s * 0.25, s); ctx.stroke(); ctx.fill();
+    }
+  }
   function draw(ctx, W, H, o) {
     var T = THEMES[o.theme] || THEMES.clasico, d = o.data, r = mapRect(W, H);
     ctx.save(); ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
     if (d) {
-      var sc = r.w / (2 * d.hw), cx = r.x + r.w / 2, cy = r.y + r.h / 2, lw = W / 3600;
-      var kf = d.kind === 'barrio' ? 1.3 : d.kind === 'comarca' ? 0.62 : 1;
-      var X = function (p) { return cx + p[0] * sc; }, Y = function (p) { return cy - p[1] * sc; };
-      var line = function (pts) { ctx.moveTo(X(pts[0]), Y(pts[0])); for (var i = 1; i < pts.length; i++) ctx.lineTo(X(pts[i]), Y(pts[i])); };
-      var ring = function (pts) { if (pts.length > 2) { line(pts); ctx.closePath(); } };
-      ctx.save(); shapePath(ctx, r, o.shape); ctx.clip();
-      ctx.fillStyle = T.land; ctx.fillRect(r.x, r.y, r.w, r.h);
-      if (o.parks) { ctx.fillStyle = T.park; d.parks.forEach(function (rs) { ctx.beginPath(); rs.forEach(ring); ctx.fill('evenodd'); }); }
-      ctx.fillStyle = T.water; d.water.forEach(function (rs) { ctx.beginPath(); rs.forEach(ring); ctx.fill('evenodd'); });
-      ctx.strokeStyle = T.water; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      d.rivers.forEach(function (rv) { ctx.lineWidth = rv.w * lw * kf; ctx.beginPath(); line(rv.pts); ctx.stroke(); });
-      ctx.strokeStyle = T.rail; ctx.lineWidth = 2.2 * lw * kf; ctx.setLineDash([9 * lw, 7 * lw]);
-      d.rails.forEach(function (p) { ctx.beginPath(); line(p); ctx.stroke(); }); ctx.setLineDash([]);
-      // vías: primero las pequeñas, encima las grandes (agrupadas por grosor: un trazo por grupo)
-      [[false, T.minor], [true, T.road]].forEach(function (grp) {
-        var byW = {};
-        d.roads.forEach(function (rd) { if (MAJOR.test(rd.k) !== grp[0]) return; var w = (ROADW[rd.k] || 2) * kf; (byW[w] = byW[w] || []).push(rd); });
-        Object.keys(byW).map(Number).sort(function (a, b) { return a - b; }).forEach(function (w) {
-          ctx.strokeStyle = grp[1]; ctx.lineWidth = w * lw; ctx.beginPath(); byW[w].forEach(function (rd) { line(rd.pts); }); ctx.stroke();
-        });
-      });
-      ctx.restore();
-      // marco
-      ctx.strokeStyle = T.frame; ctx.lineWidth = (o.shape === 'rect' ? 5 : 6) * lw; shapePath(ctx, r, o.shape); ctx.stroke();
-      if (o.pin) {   // corazón en el centro: «aquí»
-        var s = W * 0.022; ctx.fillStyle = '#d64545'; ctx.strokeStyle = T.bg; ctx.lineWidth = W * 0.004;
-        ctx.beginPath(); heartPath(ctx, cx, cy - s * 0.25, s); ctx.stroke(); ctx.fill();
-      }
+      mapIn(ctx, W, r, o, T);
       ctx.fillStyle = T.soft; ctx.font = MOM_P.subFont(W * 0.0085, 400); ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText('© OpenStreetMap', r.x + r.w, r.y + r.h + W * 0.008);
     }
@@ -196,5 +199,5 @@
     ctx.restore();
   }
 
-  window.MOM_MAPA = { fetch: fetchData, draw: draw, themes: THEMES, radius: RADIUS };
+  window.MOM_MAPA = { fetch: fetchData, mapIn: mapIn, draw: draw, themes: THEMES, radius: RADIUS };
 })();
