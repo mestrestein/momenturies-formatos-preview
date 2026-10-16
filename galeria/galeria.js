@@ -115,10 +115,32 @@
     var q = norm(state.q);
     return norm([it.t, it.te, it.a, it.y, it.m, CAT[it.cat] && CAT[it.cat][1]].join(' ')).indexOf(q) >= 0;
   }
+  /* 17-oct · obras con margen/marco recortado (it.cr = [x0,y0,x1,y1]): la miniatura se recorta con CSS,
+     la ficha y el archivo de imprenta con canvas */
+  function cropCss(cr) {
+    var X = 100 / (cr[2] - cr[0]), Y = 100 / (cr[3] - cr[1]);
+    return 'position:absolute;max-width:none;width:' + X.toFixed(3) + '%;height:' + Y.toFixed(3) + '%;left:' + (-cr[0] * X).toFixed(3) + '%;top:' + (-cr[1] * Y).toFixed(3) + '%';
+  }
+  var cropCache = {};
+  function cropURL(src, cr) {
+    var k = src + '|' + cr.join(',');
+    if (!cropCache[k]) cropCache[k] = new Promise(function (res, rej) {
+      var im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = function () {
+        var sx = cr[0] * im.naturalWidth, sy = cr[1] * im.naturalHeight, sw = (cr[2] - cr[0]) * im.naturalWidth, sh = (cr[3] - cr[1]) * im.naturalHeight;
+        var c = document.createElement('canvas'); c.width = Math.round(sw); c.height = Math.round(sh);
+        c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', 0.9));
+      };
+      im.onerror = rej; im.src = src;
+    });
+    return cropCache[k];
+  }
   function card(it) {
     var w = it.own ? 3 : it.w, h = it.own ? 4 : it.h;
-    return '<button class="ga-card" data-id="' + it.id + '"><div class="ga-frame">' +
-      '<img src="' + esc(thumbOf(it)) + '" alt="' + esc(T(it) + ', ' + it.a) + '" loading="lazy" width="' + w + '" height="' + h + '" style="aspect-ratio:' + w + '/' + h + '">' +
+    var pic = it.cr
+      ? '<div style="position:relative;overflow:hidden;aspect-ratio:' + w + '/' + h + '"><img src="' + esc(thumbOf(it)) + '" alt="' + esc(T(it) + ', ' + it.a) + '" loading="lazy" style="' + cropCss(it.cr) + '"></div>'
+      : '<img src="' + esc(thumbOf(it)) + '" alt="' + esc(T(it) + ', ' + it.a) + '" loading="lazy" width="' + w + '" height="' + h + '" style="aspect-ratio:' + w + '/' + h + '">';
+    return '<button class="ga-card" data-id="' + it.id + '"><div class="ga-frame">' + pic +
       '</div><div class="ga-meta"><b>' + esc(T(it)) + '</b><span>' + esc(it.a) + (it.y && !it.own ? ' · ' + esc(it.y) : '') + '</span></div></button>';
   }
   function render() {
@@ -151,8 +173,13 @@
     var it = ALL.filter(function (x) { return x.id === id; })[0]; if (!it) return;
     cur = it; var en = L() === 'en';
     var img = document.getElementById('mImg');
-    img.src = it.own ? thumbOf(it) : it.th;              // la pequeña ya está en caché: sale al instante
-    if (!it.own && it.big) { var hi = new Image(); hi.onload = function () { if (cur === it) img.src = it.big; }; hi.src = it.big; }
+    if (it.cr) {
+      img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+      cropURL(it.th, it.cr).then(function (u) { if (cur === it) img.src = u; return cropURL(it.big, it.cr); }).then(function (u) { if (cur === it) img.src = u; }).catch(function () { if (cur === it) img.src = it.th; });
+    } else {
+      img.src = it.own ? thumbOf(it) : it.th;              // la pequeña ya está en caché: sale al instante
+      if (!it.own && it.big) { var hi = new Image(); hi.onload = function () { if (cur === it) img.src = it.big; }; hi.src = it.big; }
+    }
     img.alt = T(it);
     var c = CAT[it.cat];
     document.getElementById('mCat').textContent = it.own ? (en ? 'Studio design · ' : 'Diseño del estudio · ') + (en ? c[2] : c[1]) : (en ? c[2] : c[1]);
@@ -194,7 +221,16 @@
     return fetch(it.print, { mode: 'cors' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.blob();
-    }).then(function (b) { return new File([b], it.id + '.jpg', { type: b.type || 'image/jpeg' }); });
+    }).then(function (b) {
+      if (!it.cr) return new File([b], it.id + '.jpg', { type: b.type || 'image/jpeg' });
+      // sin el margen ni el marco: se recorta a resolución completa antes de mandarlo al editor
+      return createImageBitmap(b).then(function (bm) {
+        var cr = it.cr, sx = cr[0] * bm.width, sy = cr[1] * bm.height, sw = (cr[2] - cr[0]) * bm.width, sh = (cr[3] - cr[1]) * bm.height;
+        var c = document.createElement('canvas'); c.width = Math.round(sw); c.height = Math.round(sh);
+        c.getContext('2d').drawImage(bm, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        return new Promise(function (res, rej) { c.toBlob(function (o) { o ? res(new File([o], it.id + '.jpg', { type: 'image/jpeg' })) : rej(new Error('canvas')); }, 'image/jpeg', 0.95); });
+      });
+    });
   }
   document.getElementById('mCta').addEventListener('click', function () {
     var it = cur, cta = this; if (!it) return;
