@@ -11,9 +11,22 @@
     ['vanguardias', 'Modernismo y vanguardias', 'Modernism'],
     ['japones', 'Grabado japonés', 'Japanese prints'],
     ['carteles', 'Carteles vintage', 'Vintage posters'],
+    ['|'],
+    ['espacio', 'Espacio', 'Space'],
+    ['paisajes', 'Paisajes', 'Landscapes'],
+    ['fotografia', 'Fotografía histórica', 'Historic photography'],
+    ['mar', 'Mar', 'The sea'],
     ['naturaleza', 'Botánica y fauna', 'Botanical & wildlife'],
+    ['cocina', 'Cocina', 'Kitchen'],
+    ['mascotas', 'Gatos y perros', 'Cats & dogs'],
+    ['cuentos', 'Cuentos ilustrados', 'Storybook'],
+    ['musica', 'Música', 'Music'],
+    ['moda', 'Moda antigua', 'Vintage fashion'],
     ['mapas', 'Mapas y cielos', 'Maps & skies'],
     ['|'],
+    ['viajes', 'Carteles de viaje', 'Travel posters'],
+    ['coches', 'Coches', 'Cars'],
+    ['temporada', 'Navidad y San Valentín', 'Christmas & Valentine'],
     ['retro', 'Retro', 'Retro'],
     ['moderno', 'Moderno', 'Modern'],
     ['minimal', 'Minimal', 'Minimal']
@@ -27,6 +40,18 @@
     carteles: ['Art nouveau de Mucha, el Montmartre de Toulouse-Lautrec y los parques nacionales de los años 30.', "Mucha's Art Nouveau, Toulouse-Lautrec's Montmartre and the 1930s national parks."],
     naturaleza: ['Láminas científicas que son pura belleza: Haeckel, Audubon, Redouté, Durero.', 'Scientific plates that are pure beauty: Haeckel, Audubon, Redouté, Dürer.'],
     mapas: ['Atlas celestes, mapas antiguos y la Luna dibujada a mano.', 'Celestial atlases, antique maps and the Moon drawn by hand.'],
+    espacio: ['Nebulosas, galaxias y la Tierra vista desde la Luna: las imágenes de la NASA y de los telescopios Hubble y James Webb.', 'Nebulae, galaxies and Earth seen from the Moon: images from NASA and the Hubble and James Webb telescopes.'],
+    paisajes: ['Montañas, bosques y ríos de los grandes paisajistas, y el blanco y negro de Ansel Adams.', 'Mountains, forests and rivers by the great landscape painters, plus Ansel Adams in black and white.'],
+    fotografia: ['Momentos que cambiaron la historia: el primer vuelo, los rascacielos de Nueva York, la torre Eiffel a medio construir.', 'Moments that changed history: the first flight, New York skyscrapers, the Eiffel Tower half built.'],
+    mar: ['Olas, veleros y playas de Aivazovski, Winslow Homer, Seurat y Monet.', 'Waves, sailboats and beaches by Aivazovsky, Winslow Homer, Seurat and Monet.'],
+    cocina: ['Bodegones clásicos y las acuarelas de fruta del Departamento de Agricultura de EE. UU.', 'Classic still lifes and the US Department of Agriculture fruit watercolours.'],
+    mascotas: ['Gatos y perros de Hiroshige, Steinlen, Renoir, Toulouse-Lautrec y Boucher.', 'Cats and dogs by Hiroshige, Steinlen, Renoir, Toulouse-Lautrec and Boucher.'],
+    cuentos: ['Peter Pan y Alicia con las ilustraciones originales de la edad de oro del libro infantil.', 'Peter Pan and Alice with original illustrations from the golden age of children’s books.'],
+    musica: ['Guitarras, laúdes, pianos y orquestas pintados por Vermeer, Caravaggio, Renoir y Degas.', 'Guitars, lutes, pianos and orchestras painted by Vermeer, Caravaggio, Renoir and Degas.'],
+    moda: ['Figurines de las revistas de moda de París del siglo XIX y principios del XX.', 'Fashion plates from Paris fashion magazines of the 19th and early 20th centuries.'],
+    viajes: ['Carteles de viaje propios al estilo de los años 30 y 50: de Dénia a Kioto.', 'Our own travel posters in the style of the 1930s and 50s: from Dénia to Kyoto.'],
+    coches: ['Carteles retro de carretera con coches clásicos genéricos, sin marcas.', 'Retro road posters with generic classic cars, no brands.'],
+    temporada: ['Diseños para Navidad y San Valentín. Con el imán se cambian en un segundo cuando pasa la fecha.', 'Designs for Christmas and Valentine’s Day. With the magnet you swap them in a second when the date has passed.'],
     retro: ['Diseños propios con el color y las formas de los años 50, 60 y 70.', 'Our own designs with the colours and shapes of the 50s, 60s and 70s.'],
     moderno: ['Geometría, formas orgánicas y degradados: diseños propios para espacios actuales.', 'Geometry, organic shapes and gradients: our own designs for contemporary spaces.'],
     minimal: ['Pocas formas y mucha calma. Diseños propios que combinan con todo.', 'Few shapes, lots of calm. Our own designs that go with everything.']
@@ -35,10 +60,13 @@
 
   var OBRAS = (window.MOMENTURIES_OBRAS || []).map(function (o) { o.own = false; return o; });
   var DIS = (window.MOMENTURIES_DISENOS || { list: [] }).list;
+  var D2 = window.MOMENTURIES_DISENOS2 || { list: [], ready: Promise.resolve() };
+  DIS = DIS.concat(D2.list);
   var ALL = OBRAS.concat(DIS);
   var svgUrl = {};
   function thumbOf(it) {
     if (!it.own) return it.th;
+    if (it.draw) return D2.thumb(it);   // carteles con texto: canvas con tipografías
     if (!svgUrl[it.id]) svgUrl[it.id] = URL.createObjectURL(new Blob([it.svg()], { type: 'image/svg+xml' }));
     return svgUrl[it.id];
   }
@@ -161,6 +189,7 @@
   /* ── al editor con la imagen de imprenta ── */
   function toast(m) { var t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(function () { t.style.display = 'none'; }, 3500); }
   function printFile(it) {
+    if (it.draw) return D2.toFile(it.id);
     if (it.own) return window.MOMENTURIES_DISENOS.toFile(it.id);
     return fetch(it.print, { mode: 'cors' }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -176,7 +205,8 @@
       if (!window.MOMENTURIES_PHOTO) throw new Error('handoff');
       return window.MOMENTURIES_PHOTO.put(file);
     }).then(function () {
-      location.href = 'cuadro.html?foto=1&obra=' + encodeURIComponent(it.id);
+      // los carteles con texto ya vienen en 3:4: directos en Retrato y sin recorte (como el cielo y el mapa)
+      location.href = 'cuadro.html?foto=1&obra=' + encodeURIComponent(it.id) + (it.draw ? '&formato=retrato&encuadre=0' : '');
     }).catch(function () {
       cta.disabled = false; cta.classList.remove('loading');
       document.getElementById('mCtaTxt').textContent = en ? 'Put it on my print' : 'Ponerla en mi cuadro';
@@ -192,6 +222,8 @@
   var hp = new URLSearchParams(location.hash.slice(1));
   state.cat = CAT[hp.get('cat')] ? hp.get('cat') : 'todo';
   [].forEach.call(chips.children, function (b) { if (b.dataset) b.setAttribute('aria-pressed', b.dataset.cat === state.cat ? 'true' : 'false'); });
-  render();
-  if (hp.get('obra')) open(hp.get('obra'));
+  Promise.race([D2.ready, new Promise(function (r) { setTimeout(r, 1500); })]).then(function () {
+    render();
+    if (hp.get('obra')) open(hp.get('obra'));
+  });
 })();
