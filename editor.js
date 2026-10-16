@@ -642,15 +642,37 @@ const texH   = p => Math.max(200, Math.round(baseH(p) * TEX_PER_UNIT));
    foto del entorno (uLightInv = inversa de la matriz mundo de photoMesh), sin depender de tallas ni animaciones.
    El ratio va elevado a 0.45: el visor ya ilumina el aluminio con sus luces y con el ratio entero la foto se quemaba. */
 const LIGHT_U = { uLightTex:{ value:null }, uLightInv:{ value:new THREE.Matrix4() }, uLightOn:{ value:0 } };
+/* 2D = colores reales, sin luces 3D (16-oct-2026). Medido: con las luces del visor (pensadas para lucir el
+   aluminio al girarlo) un gris medio salía un 30 % más claro y los tonos claros, blancos quemados, en todos
+   los entornos. Marc: «colores muy vivos siempre, con contraste, nada de luces 3D». En 2D (uFlat = 1, lo mueve
+   applyFlatGloss por cuadro) el frontal pinta el color de la foto sin luces ni mapa de luz, algo realzado, y encima
+   un reflejo diagonal muy suave, como el brillo de los mockups de Futsides (FLAT_GLOSS = 0 lo quita). */
+const FLAT_GLOSS = 0.10;
+/* «muy vivos, con contraste»: realce suave solo en pantalla (imprenta usa el archivo original). Calibrado para
+   que un blanco de 235 no pase de ~248: los claros ganan chispa sin quemarse. 1 / 0 / 1 = color exacto. */
+const FLAT_CONTRAST = 1.10, FLAT_LIFT = 0.015, FLAT_SAT = 1.18;
 function lightPatch(mat){
+  mat.userData.uFlat = { value:0 };
   mat.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, LIGHT_U);
+    sh.uniforms.uFlat = mat.userData.uFlat;
     sh.vertexShader = 'varying vec4 vLightW;\n' + sh.vertexShader.replace('#include <project_vertex>',
       '#include <project_vertex>\n\tvLightW = modelMatrix * vec4(transformed, 1.0);');
-    sh.fragmentShader = 'uniform sampler2D uLightTex; uniform mat4 uLightInv; uniform float uLightOn; varying vec4 vLightW;\n'
-      + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n\tif(uLightOn > 0.5){\n'
+    sh.fragmentShader = 'uniform sampler2D uLightTex; uniform mat4 uLightInv; uniform float uLightOn; uniform float uFlat; varying vec4 vLightW;\n'
+      + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n\tvec3 flatCol = diffuseColor.rgb;\n\tif(uLightOn > 0.5){\n'
       + '\t\tvec2 luv = (uLightInv * vLightW).xy + 0.5;\n'
-      + '\t\tif(all(greaterThan(luv, vec2(0.0))) && all(lessThan(luv, vec2(1.0)))) diffuseColor.rgb *= pow(texture2D(uLightTex, luv).r * 2.55, 0.45);\n\t}');
+      + '\t\tif(all(greaterThan(luv, vec2(0.0))) && all(lessThan(luv, vec2(1.0)))) diffuseColor.rgb *= pow(texture2D(uLightTex, luv).r * 2.55, 0.45);\n\t}')
+      .replace('#include <opaque_fragment>', '#include <opaque_fragment>\n\tif(uFlat > 0.001){\n'
+      + '\t\tvec3 fc = pow(max(flatCol, vec3(0.0)), vec3(1.0/2.2));\n'               // realce en espacio de pantalla
+      + '\t\tfc = (fc - 0.5) * ' + FLAT_CONTRAST.toFixed(3) + ' + 0.5 + ' + FLAT_LIFT.toFixed(3) + ';\n'
+      + '\t\tfc = mix(vec3(dot(fc, vec3(0.299, 0.587, 0.114))), fc, ' + FLAT_SAT.toFixed(3) + ');\n'
+      + '\t\tfc = pow(clamp(fc, 0.0, 1.0), vec3(2.2));\n'
+      + '\t\t#ifdef USE_MAP\n'
+      + '\t\tfloat dg = vMapUv.x * 0.8 + (1.0 - vMapUv.y) * 0.6;\n'   // diagonal de arriba-izquierda a abajo-derecha
+      + '\t\tfloat sh = ' + FLAT_GLOSS.toFixed(3) + ' * (exp(-pow((dg - 0.42) / 0.16, 2.0)) * 0.9 + (1.0 - smoothstep(0.0, 0.9, dg)) * 0.35);\n'
+      + '\t\tfc = fc + (1.0 - fc) * sh;\n'                             // fusión «trama»: aclara sin quemar los blancos
+      + '\t\t#endif\n'
+      + '\t\tgl_FragColor.rgb = mix(gl_FragColor.rgb, fc, uFlat);\n\t}');
   };
   mat.customProgramCacheKey = () => 'momenturies-light';
   return mat;
@@ -1251,6 +1273,7 @@ function applyFlatGloss(p){
   const k = p.flatK, m = p.frontMat;
   m.clearcoat = 1 - .85*k; m.clearcoatRoughness = .02 + .33*k;
   m.roughness = .045 + .40*k; m.envMapIntensity = 1.18 - .68*k; m.specularIntensity = 1 - .75*k;
+  if(m.userData.uFlat) m.userData.uFlat.value = k;           // 2D: colores reales, sin luces (ver lightPatch)
 }
 function flipToFace(a){ tRy = a + 2*Math.PI*Math.round((cRy-a)/(2*Math.PI)); }
 /* con una pared activa la pose de reposo es de frente (como una foto de la pared) */
