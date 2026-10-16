@@ -2987,7 +2987,15 @@ async function saveDesign(){
         _savedBlobs.add(p.uid);
       }
     }
-    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
+    // resumen para el carrito de la cabecera (carrito.js), que no carga el editor
+    // igual que el botón del editor: en un conjunto cuenta la pared entera, aunque falten fotos
+    const conFoto = POSTERS.filter(p => p.srcImg), piezas = WALL ? POSTERS : conFoto;
+    const bruto = piezas.reduce((s, p) => s + (p.price || 0), 0), tramo = PACK_TIERS.find(t => piezas.length >= t.n), pct = tramo ? tramo.pct : 0;
+    const dto = Math.round(bruto * pct) / 100;
+    const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
+      bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
+      pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
+    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
 
@@ -3066,6 +3074,13 @@ async function restoreDesign(saved){
   try{ saved = await st.get(SAVE_KEY); }catch(e){ return; }
   if(!saved || !saved.items || !saved.items.length) return;
   if(Date.now() - (saved.at || 0) > SAVE_TTL){ clearDesign(); return; }
+  // desde el carrito de la cabecera: se recupera sin preguntar y, si lo pidió, se abre el pago
+  if(_q.get('carrito') === '1' || _q.get('retomar') === '1'){
+    await restoreDesign(saved);
+    if(_q.get('carrito') === '1' && POSTERS.some(p => p.srcImg)) openCheckout();
+    history.replaceState(null, '', location.pathname);
+    return;
+  }
 
   const n = saved.items.length;
   const bar = document.createElement('div');
@@ -3087,6 +3102,13 @@ async function restoreDesign(saved){
 })();
 
 window.addEventListener('beforeunload', () => { if(!_restoring) saveDesign(); });
+
+/* para carrito.js: en una página con editor, el diseño de ahora mismo se abre sin recargar */
+window.MOMENTURIES_EDITOR_VIVO = {
+  hay: () => POSTERS.some(p => p.srcImg),
+  pagar: () => { openEditor(); openCheckout(); },
+  editar: () => openEditor(),
+};
 
 
 /* ═══════════ PAREDES DE ENSUEÑO (composiciones prediseñadas, tipo Mixtiles) ═══════════
