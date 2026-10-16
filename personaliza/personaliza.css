@@ -1,0 +1,55 @@
+/* personaliza/personaliza.css — páginas cielo.html y mapa.html (va después de pdp.css) */
+:root{--accent:#c2613a}
+body{background:#faf8f5}
+.pz-wrap{max-width:1180px;margin:0 auto;padding:34px 24px 70px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:44px;align-items:start}
+.pz-stage{position:sticky;top:84px;display:flex;flex-direction:column;align-items:center}
+.pz-paper{position:relative;width:min(100%,520px);aspect-ratio:3/4;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.06),0 18px 50px rgba(0,0,0,.16);border-radius:3px;overflow:hidden}
+.pz-paper canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pz-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(250,248,245,.72);font-size:14px;color:#444;text-align:center;padding:20px}
+.pz-loading.on{display:flex}
+.pz-spin{width:28px;height:28px;border:3px solid rgba(0,0,0,.12);border-top-color:var(--accent);border-radius:50%;animation:pzs .8s linear infinite}
+@keyframes pzs{to{transform:rotate(360deg)}}
+.pz-stage-note{font-size:12.5px;color:var(--mid);margin-top:14px;text-align:center}
+
+.pz-panel h1{font-family:var(--font-serif);font-size:clamp(28px,3vw,38px);line-height:1.1;margin:6px 0 10px}
+.pz-eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
+.pz-lead{font-size:15px;line-height:1.6;color:#444;margin-bottom:22px}
+.pz-step{border-top:1px solid var(--gray2);padding:18px 0}
+.pz-step>label,.pz-label{display:block;font-size:13px;font-weight:700;margin-bottom:9px}
+.pz-step small{font-weight:400;color:var(--mid)}
+.pz-input{width:100%;border:1px solid #d6d0c7;border-radius:10px;padding:12px 14px;font:15px Inter,sans-serif;background:#fff;color:#1a1a1a}
+.pz-input:focus{outline:2px solid #1a1a1a;outline-offset:-1px}
+.pz-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pz-search{position:relative}
+.pz-results{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #d6d0c7;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12);z-index:20;overflow:hidden;display:none}
+.pz-results.on{display:block}
+.pz-results button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 14px;font:14px Inter,sans-serif;cursor:pointer;border-bottom:1px solid #f0ece6}
+.pz-results button:last-child{border-bottom:0}
+.pz-results button:hover,.pz-results button.act{background:#f6f2ec}
+.pz-results small{display:block;color:var(--mid);font-size:12px;margin-top:2px}
+.pz-picked{font-size:12.5px;color:var(--mid);margin-top:7px}
+.pz-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pz-chip{border:1px solid #d6d0c7;background:#fff;border-radius:22px;padding:8px 14px;font:500 13px Inter,sans-serif;cursor:pointer;color:#333}
+.pz-chip[aria-pressed="true"]{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+.pz-swatches{display:flex;flex-wrap:wrap;gap:10px}
+.pz-sw{width:46px;height:46px;border-radius:50%;border:2px solid transparent;padding:3px;background:none;cursor:pointer}
+.pz-sw span{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pz-sw[aria-pressed="true"]{border-color:#1a1a1a}
+.pz-swname{font-size:12.5px;color:var(--mid);margin-top:8px}
+.pz-toggles{display:flex;flex-wrap:wrap;gap:8px 18px}
+.pz-toggles label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.pz-toggles input{width:17px;height:17px;accent-color:#1a1a1a}
+.pz-cta{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#1a1a1a;color:#fff;border:0;border-radius:10px;padding:17px 20px;font:700 15.5px Inter,sans-serif;cursor:pointer;margin-top:6px}
+.pz-cta:hover{background:#333}
+.pz-cta[disabled]{opacity:.65;cursor:wait}
+.pz-cta .pz-spin{width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff;display:none}
+.pz-cta.loading .pz-spin{display:inline-block}
+.pz-fine{font-size:12px;color:var(--mid);line-height:1.55;margin-top:12px}
+.pz-fine a{color:inherit;text-decoration:underline}
+.pz-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:1100;display:none;max-width:90vw}
+@media(max-width:900px){
+  .pz-wrap{grid-template-columns:1fr;gap:22px;padding:18px 16px 60px}
+  .pz-stage{position:relative;top:0}
+  .pz-paper{width:min(100%,380px)}
+  .pz-cta{position:sticky;bottom:12px;z-index:5}
+}

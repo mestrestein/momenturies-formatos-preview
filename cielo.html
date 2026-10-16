@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — El cielo de vuestra noche</title>
+<meta name="description" content="Las estrellas exactas que había sobre un lugar en una fecha y hora: la noche que os conocisteis, la boda o el día que nació. Impreso en aluminio HD.">
+<link rel="canonical" href="https://momenturies.com/cielo.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="El cielo de vuestra noche — Momenturies"/>
+<meta property="og:description" content="Las estrellas exactas de una fecha y un lugar, impresas en aluminio HD."/>
+<meta property="og:image" content="https://momenturies.com/fotos/hero-salon-1.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&family=Great+Vibes&display=swap"/>
+<link rel="stylesheet" href="pdp.css?v=ea12681b">
+<link rel="stylesheet" href="personaliza/personaliza.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1c1c1c"/>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="galeria.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Galería</span><span class="en">Gallery</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+      <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+      <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+      <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies</span>
+  </a>
+  <div class="nav-right-slot"></div>
+</nav>
+
+<main class="pz-wrap">
+  <div class="pz-stage">
+    <div class="pz-paper"><canvas id="cv" aria-label="Vista previa del póster"></canvas></div>
+    <div class="pz-stage-note">Vista previa. Se imprime a 30×40 cm y 300 ppp, nítido hasta la última estrella.</div>
+  </div>
+
+  <div class="pz-panel">
+    <div class="pz-eyebrow">Personalizado</div>
+    <h1>El cielo de vuestra noche</h1>
+    <p class="pz-lead">Las estrellas exactas que había sobre un lugar en una fecha y hora. La noche que os conocisteis, la boda, el día que nació. Calculado con datos astronómicos reales.</p>
+
+    <div class="pz-step">
+      <label for="place">1. ¿Dónde fue?</label>
+      <div class="pz-search">
+        <input id="place" class="pz-input" type="text" autocomplete="off" placeholder="Ciudad, pueblo o lugar" value="Dénia, Comunidad Valenciana, España">
+        <div class="pz-results" id="placeRes"></div>
+      </div>
+      <div class="pz-picked" id="placePicked"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">2. ¿Cuándo? <small>(hora del lugar)</small></span>
+      <div class="pz-row">
+        <input id="date" class="pz-input" type="date" aria-label="Fecha">
+        <input id="time" class="pz-input" type="time" value="22:00" aria-label="Hora">
+      </div>
+    </div>
+
+    <div class="pz-step">
+      <label for="title">3. El texto</label>
+      <input id="title" class="pz-input" type="text" maxlength="60" value="La noche que todo empezó" aria-label="Título">
+      <div style="height:10px"></div>
+      <input id="line2" class="pz-input" type="text" maxlength="80" aria-label="Lugar y fecha" placeholder="Lugar y fecha">
+      <div style="height:12px"></div>
+      <div class="pz-chips" id="fonts"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">4. Colores</span>
+      <div class="pz-swatches" id="themes"></div>
+      <div class="pz-swname" id="themeName"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">5. Detalles</span>
+      <div class="pz-toggles">
+        <label><input type="checkbox" id="optLines" checked> Constelaciones</label>
+        <label><input type="checkbox" id="optMoon" checked> La Luna</label>
+        <label><input type="checkbox" id="optGrid"> Puntos cardinales</label>
+        <label><input type="checkbox" id="optCoords" checked> Coordenadas</label>
+      </div>
+    </div>
+
+    <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
+    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared.
+      Datos de estrellas: catálogo Hipparcos vía <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a>. Lugares: © OpenStreetMap.</p>
+  </div>
+</main>
+<div class="pz-toast" id="pzToast"></div>
+
+<footer class="pdp-foot">
+  &copy; 2026 Momenturies ·
+  <a href="momenturies.html">Inicio</a> · <a href="galeria.html">Galería de arte</a> · <a href="mapa.html">Mapa de vuestro lugar</a> ·
+  <a href="contacto.html">Contacto</a> · <a href="aviso-legal.html">Aviso legal</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/tz-lookup@6.1.25/tz.js"></script>
+<script src="photo-handoff.js"></script>
+<script src="personaliza/comun.js"></script>
+<script src="personaliza/cielo-datos.js"></script>
+<script src="personaliza/cielo.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var st = { lat: 38.8408, lon: 0.1057, city: 'Dénia', theme: 'medianoche', font: 'elegante', line2Touched: false };
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var today = new Date(); $('date').value = today.toISOString().slice(0, 10);
+
+  function fecha(s) { var d = s.split('-'); return +d[2] + ' de ' + MESES[+d[1] - 1] + ' de ' + d[0]; }
+  function autoLine2() { if (!st.line2Touched) $('line2').value = st.city + ' · ' + fecha($('date').value || today.toISOString().slice(0, 10)); }
+  function tz() { try { return window.tzlookup ? tzlookup(st.lat, st.lon) : null; } catch (e) { return null; } }
+  function opts() {
+    var z = tz();
+    return { lat: st.lat, lon: st.lon, utc: MOM_CIELO.localToUtc($('date').value, $('time').value, z), theme: st.theme, font: st.font,
+      lines: $('optLines').checked, moon: $('optMoon').checked, grid: $('optGrid').checked,
+      title: $('title').value, line2: $('line2').value, line3: $('optCoords').checked ? MOM_P.coords(st.lat, st.lon) + ' · ' + ($('time').value || '22:00') + ' h' : '' };
+  }
+  var raf = 0;
+  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); MOM_CIELO.draw(ctx, cv.width, cv.height, opts()); }); }
+  function pickedTxt() { var z = tz(); $('placePicked').textContent = MOM_P.coords(st.lat, st.lon) + (z ? ' · zona horaria ' + z : ''); }
+
+  MOM_P.placeSearch($('place'), $('placeRes'), function (p) { st.lat = p.lat; st.lon = p.lon; st.city = p.name; autoLine2(); pickedTxt(); render(); });
+  ['date', 'time'].forEach(function (id) { $(id).addEventListener('input', function () { autoLine2(); render(); }); });
+  $('title').addEventListener('input', render);
+  $('line2').addEventListener('input', function () { st.line2Touched = $('line2').value.trim() !== ''; render(); });
+  ['optLines', 'optMoon', 'optGrid', 'optCoords'].forEach(function (id) { $(id).addEventListener('change', render); });
+
+  Object.keys(MOM_P.FONTS).forEach(function (k) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-chip'; b.textContent = MOM_P.FONTS[k].name; b.setAttribute('aria-pressed', k === st.font);
+    b.addEventListener('click', function () { st.font = k; [].forEach.call($('fonts').children, function (x) { x.setAttribute('aria-pressed', x === b); }); render(); });
+    $('fonts').appendChild(b);
+  });
+  Object.keys(MOM_CIELO.themes).forEach(function (k) {
+    var T = MOM_CIELO.themes[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === st.theme);
+    b.innerHTML = '<span style="background:linear-gradient(135deg,' + T.bg + ' 0 50%,' + T.disk + ' 50% 100%)"></span>';
+    b.addEventListener('click', function () { st.theme = k; [].forEach.call($('themes').children, function (x) { x.setAttribute('aria-pressed', x === b); }); $('themeName').textContent = T.name; render(); });
+    $('themes').appendChild(b);
+  });
+  $('themeName').textContent = MOM_CIELO.themes[st.theme].name;
+
+  $('cta').addEventListener('click', function () {
+    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { MOM_CIELO.draw(ctx, W, H, opts()); }, 'cielo-' + ($('date').value || 'noche'));
+  });
+  window.addEventListener('resize', render);
+  autoLine2(); pickedTxt();
+  MOM_P.fontsReady().then(render); render();
+})();
+</script>
+</body>
+</html>

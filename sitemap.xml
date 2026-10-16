@@ -11,4 +11,6 @@
   <url><loc>https://momenturies.com/terminos.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
   <url><loc>https://momenturies.com/cookies.html</loc><changefreq>yearly</changefreq><priority>0.1</priority></url>
   <url><loc>https://momenturies.com/galeria.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://momenturies.com/cielo.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://momenturies.com/mapa.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — Vuestro lugar en el mapa</title>
+<meta name="description" content="El mapa de tu ciudad, tu barrio o el pueblo de los abuelos, con las calles dibujadas una a una y vuestras coordenadas. Impreso en aluminio HD.">
+<link rel="canonical" href="https://momenturies.com/mapa.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Vuestro lugar en el mapa — Momenturies"/>
+<meta property="og:description" content="El mapa de cualquier lugar del mundo, con sus calles y coordenadas, impreso en aluminio HD."/>
+<meta property="og:image" content="https://momenturies.com/fotos/hero-salon-1.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&family=Great+Vibes&display=swap"/>
+<link rel="stylesheet" href="pdp.css?v=ea12681b">
+<link rel="stylesheet" href="personaliza/personaliza.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1c1c1c"/>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="galeria.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Galería</span><span class="en">Gallery</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+      <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+      <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+      <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies</span>
+  </a>
+  <div class="nav-right-slot"></div>
+</nav>
+
+<main class="pz-wrap">
+  <div class="pz-stage">
+    <div class="pz-paper"><canvas id="cv" aria-label="Vista previa del póster"></canvas>
+      <div class="pz-loading" id="loading"><div class="pz-spin"></div><div id="loadingTxt">Dibujando las calles…</div></div>
+    </div>
+    <div class="pz-stage-note">Vista previa. Se imprime a 30×40 cm y 300 ppp: cada calle, nítida.</div>
+  </div>
+
+  <div class="pz-panel">
+    <div class="pz-eyebrow">Personalizado</div>
+    <h1>Vuestro lugar en el mapa</h1>
+    <p class="pz-lead">Tu ciudad, el barrio donde vivís, el pueblo de los abuelos o la playa donde os conocisteis. Con todas sus calles dibujadas y sus coordenadas.</p>
+
+    <div class="pz-step">
+      <label for="place">1. ¿Qué lugar?</label>
+      <div class="pz-search">
+        <input id="place" class="pz-input" type="text" autocomplete="off" placeholder="Ciudad, barrio o dirección" value="Dénia, Comunidad Valenciana, España">
+        <div class="pz-results" id="placeRes"></div>
+      </div>
+      <div class="pz-picked" id="placePicked"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">2. Zona</span>
+      <div class="pz-chips" id="zones"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">3. Forma</span>
+      <div class="pz-chips" id="shapes"></div>
+      <div style="height:12px"></div>
+      <div class="pz-toggles">
+        <label><input type="checkbox" id="optPin"> Corazón en el centro</label>
+        <label><input type="checkbox" id="optParks" checked> Parques</label>
+        <label><input type="checkbox" id="optCoords" checked> Coordenadas</label>
+      </div>
+    </div>
+
+    <div class="pz-step">
+      <label for="title">4. El texto</label>
+      <input id="title" class="pz-input" type="text" maxlength="40" value="Dénia" aria-label="Título">
+      <div style="height:10px"></div>
+      <input id="line2" class="pz-input" type="text" maxlength="80" value="España" aria-label="Segunda línea">
+      <div style="height:12px"></div>
+      <div class="pz-chips" id="fonts"></div>
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">5. Colores</span>
+      <div class="pz-swatches" id="themes"></div>
+      <div class="pz-swname" id="themeName"></div>
+    </div>
+
+    <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
+    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared.
+      Mapa: © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL).</p>
+  </div>
+</main>
+<div class="pz-toast" id="pzToast"></div>
+
+<footer class="pdp-foot">
+  &copy; 2026 Momenturies ·
+  <a href="momenturies.html">Inicio</a> · <a href="galeria.html">Galería de arte</a> · <a href="cielo.html">El cielo de vuestra noche</a> ·
+  <a href="contacto.html">Contacto</a> · <a href="aviso-legal.html">Aviso legal</a>
+</footer>
+
+<script src="photo-handoff.js"></script>
+<script src="personaliza/comun.js"></script>
+<script src="personaliza/mapa.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var st = { lat: 38.8408, lon: 0.1057, zone: 'ciudad', shape: 'rect', theme: 'clasico', font: 'moderna', data: null, req: 0 };
+  var ZONES = [['barrio', 'Barrio'], ['ciudad', 'Ciudad'], ['comarca', 'Comarca']];
+  var SHAPES = [['rect', 'Rectángulo'], ['circulo', 'Círculo'], ['corazon', 'Corazón']];
+  var cache = {};
+
+  function opts() {
+    return { data: st.data, theme: st.theme, font: st.font, shape: st.shape, pin: $('optPin').checked, parks: $('optParks').checked,
+      title: $('title').value, line2: $('line2').value, line3: $('optCoords').checked ? MOM_P.coords(st.lat, st.lon) : '' };
+  }
+  var raf = 0;
+  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); MOM_MAPA.draw(ctx, cv.width, cv.height, opts()); }); }
+  function load() {
+    var k = st.lat.toFixed(5) + ',' + st.lon.toFixed(5) + ',' + st.zone, my = ++st.req;
+    $('placePicked').textContent = MOM_P.coords(st.lat, st.lon);
+    if (cache[k]) { st.data = cache[k]; render(); return; }
+    $('loading').classList.add('on'); $('loadingTxt').textContent = 'Dibujando las calles…';
+    $('cta').disabled = true;
+    MOM_MAPA.fetch(st.lat, st.lon, st.zone).then(function (d) {
+      cache[k] = d; if (my !== st.req) return;
+      st.data = d; $('loading').classList.remove('on'); $('cta').disabled = false; render();
+    }).catch(function () {
+      if (my !== st.req) return;
+      $('loading').classList.remove('on'); $('cta').disabled = !st.data;
+      MOM_P.toast('No hemos podido cargar el mapa. Revisa la conexión y prueba otra vez.');
+    });
+  }
+
+  MOM_P.placeSearch($('place'), $('placeRes'), function (p) {
+    st.lat = p.lat; st.lon = p.lon;
+    $('title').value = p.name; $('line2').value = p.country || '';
+    // una calle o un edificio: mejor de barrio; una ciudad grande: de ciudad
+    if (/^(highway|building|amenity|shop|tourism|place:house)$/.test(p.osmKey) || p.osmValue === 'house') setChip('zones', 'barrio');
+    load();
+  });
+  function chips(id, list, cur, onSel) {
+    list.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-chip'; b.textContent = it[1]; b.dataset.k = it[0]; b.setAttribute('aria-pressed', it[0] === cur);
+      b.addEventListener('click', function () { setChip(id, it[0]); onSel(it[0]); });
+      $(id).appendChild(b);
+    });
+  }
+  function setChip(id, k) { [].forEach.call($(id).children, function (x) { x.setAttribute('aria-pressed', x.dataset.k === k); }); if (id === 'zones') st.zone = k; }
+  chips('zones', ZONES, st.zone, function () { load(); });
+  chips('shapes', SHAPES, st.shape, function (k) { st.shape = k; render(); });
+  chips('fonts', Object.keys(MOM_P.FONTS).map(function (k) { return [k, MOM_P.FONTS[k].name]; }), st.font, function (k) { st.font = k; render(); });
+  Object.keys(MOM_MAPA.themes).forEach(function (k) {
+    var T = MOM_MAPA.themes[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === st.theme);
+    b.innerHTML = '<span style="background:linear-gradient(135deg,' + T.bg + ' 0 50%,' + T.road + ' 50% 100%)"></span>';
+    b.addEventListener('click', function () { st.theme = k; [].forEach.call($('themes').children, function (x) { x.setAttribute('aria-pressed', x === b); }); $('themeName').textContent = T.name; render(); });
+    $('themes').appendChild(b);
+  });
+  $('themeName').textContent = MOM_MAPA.themes[st.theme].name;
+  ['title', 'line2'].forEach(function (id) { $(id).addEventListener('input', render); });
+  ['optPin', 'optParks', 'optCoords'].forEach(function (id) { $(id).addEventListener('change', render); });
+
+  $('cta').addEventListener('click', function () {
+    if (!st.data) return;
+    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { MOM_MAPA.draw(ctx, W, H, opts()); }, 'mapa-' + ($('title').value || 'lugar').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-'));
+  });
+  window.addEventListener('resize', render);
+  MOM_P.fontsReady().then(render);
+  load();
+})();
+</script>
+</body>
+</html>

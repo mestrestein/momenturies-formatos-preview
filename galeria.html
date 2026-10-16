@@ -33,6 +33,15 @@
   .ga-door-l{position:absolute;left:0;right:0;bottom:0;padding:44px 14px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:15px;font-weight:700;line-height:1.25}
   .ga-door-l small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
 
+  .ga-custom{max-width:1240px;margin:26px auto 0;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .ga-cust{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:box-shadow .25s,transform .25s}
+  .ga-cust:hover{box-shadow:0 12px 30px rgba(0,0,0,.1);transform:translateY(-2px)}
+  .ga-cust img{width:150px;height:200px;object-fit:cover;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .ga-cust-tag{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent)}
+  .ga-cust h3{font-family:var(--font-serif);font-size:22px;line-height:1.15;margin:6px 0 8px}
+  .ga-cust p{font-size:14px;line-height:1.55;color:#555;margin-bottom:10px}
+  .ga-cust-go{font-size:14px;font-weight:700}
+  @media(max-width:900px){ .ga-custom{grid-template-columns:1fr;padding:0 16px} .ga-cust{grid-template-columns:110px 1fr;gap:14px} .ga-cust img{width:110px;height:147px} }
   .ga-bar{position:sticky;top:60px;z-index:50;background:rgba(250,248,245,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--gray2);margin-top:34px}
   .ga-bar-in{max-width:1240px;margin:0 auto;padding:12px 24px;display:flex;gap:14px;align-items:center}
   .ga-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 0}
@@ -140,6 +149,23 @@
     <button class="ga-door" data-go="estudio"><img id="doorEstudio" alt="" loading="eager"><span class="ga-door-l"><span class="es">Diseños del estudio</span><span class="en">Studio designs</span><small id="nEstudio"></small></span></button>
   </div>
 </header>
+
+<section class="ga-custom" aria-label="Personalizados">
+  <a class="ga-cust" href="cielo.html">
+    <img src="galeria/img/muestra-cielo.jpg" alt="Mapa de estrellas personalizado" width="600" height="800" loading="lazy">
+    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
+      <h3><span class="es">El cielo de vuestra noche</span><span class="en">The sky of your night</span></h3>
+      <p><span class="es">Las estrellas exactas de una fecha y un lugar: la noche que os conocisteis, la boda, el día que nació.</span><span class="en">The exact stars of a date and place: the night you met, the wedding, the day they were born.</span></p>
+      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
+  </a>
+  <a class="ga-cust" href="mapa.html">
+    <img src="galeria/img/muestra-mapa.jpg" alt="Mapa de ciudad personalizado" width="600" height="800" loading="lazy">
+    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
+      <h3><span class="es">Vuestro lugar en el mapa</span><span class="en">Your place on the map</span></h3>
+      <p><span class="es">Tu ciudad, tu barrio o el pueblo de los abuelos, con todas sus calles y sus coordenadas.</span><span class="en">Your city, your neighbourhood or your grandparents' village, with every street and its coordinates.</span></p>
+      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
+  </a>
+</section>
 
 <div class="ga-bar" id="bar">
   <div class="ga-bar-in">
