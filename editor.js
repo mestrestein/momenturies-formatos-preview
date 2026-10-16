@@ -167,13 +167,13 @@
         <input class="txt-date" id="frontDate" maxlength="12" placeholder="Fecha">
       </div>
 
-      <p class="config-label txt-sub"><span class="es">Dedicatoria detrás</span><span class="en">Back dedication</span></p>
-      <textarea class="txt-area" id="backText" rows="2" maxlength="140" placeholder="Para mamá, con todo nuestro amor"></textarea>
-      <div class="txt-row">
+      <p class="config-label txt-sub txt-back"><span class="es">Dedicatoria detrás</span><span class="en">Back dedication</span></p>
+      <textarea class="txt-area txt-back" id="backText" rows="2" maxlength="140" placeholder="Para mamá, con todo nuestro amor"></textarea>
+      <div class="txt-row txt-back">
         <div class="font-dd" id="backFontDD" data-for="backText"></div>
         <input class="txt-date" id="backDate" maxlength="12" placeholder="Fecha">
       </div>
-      <p class="txt-hint"><span class="es">Se imprime detrás del cuadro. Arrástrala para colocarla · la letra se ajusta sola al tamaño.</span><span class="en">Printed on the back. Drag it to place it · the letter size adjusts itself.</span></p>
+      <p class="txt-hint txt-back"><span class="es">Se imprime detrás del cuadro. Arrástrala para colocarla · la letra se ajusta sola al tamaño.</span><span class="en">Printed on the back. Drag it to place it · the letter size adjusts itself.</span></p>
     </div>
   </aside>
 
@@ -512,6 +512,7 @@ const ROOM_BOX_DEF = { w:760, h:300, d:460 };
    El Sobremesa es una peana con foto que se APOYA, no se cuelga: en cocinas, terrazas o la
    escalera no hay dónde ponerla, así que esos grupos no se enseñan para ese producto. */
 const GRUPOS_ENTORNO = [
+  { id:'nevera',     es:'Neveras',        en:'Fridges',      mesa:false, test: id => /^nevera-/.test(id) },
   { id:'salon',      es:'Salones',        en:'Living rooms', mesa:true,  test: id => /^salon/.test(id) || id === 'rincon' },
   { id:'cocina',     es:'Cocinas',        en:'Kitchens',      mesa:false, test: id => /^cocina/.test(id) },
   { id:'comedor',    es:'Comedores',      en:'Dining rooms', mesa:true,  test: id => false },
@@ -528,6 +529,8 @@ const GRUPOS_ENTORNO = [
    la altura de una mesita quedaría raro), y son las ÚNICAS que se enseñan para el Sobremesa:
    los entornos de pared reutilizados quedaban con el sobremesa flotando en el aire. */
 const SOBREMESA_SCENES = /^(estanteria-|aparador-|mesita-)/;
+/* 16-oct-2026 · Escenas de nevera: SOLO para el imán (y el imán solo ve estas: un imán no se pega en la pared). */
+const NEVERA_SCENES = /^nevera-/;
 let grupoAbierto = null;
 let _numEntorno = 0;                      // contador de la numeración del selector (arriba: renderRoomModal corre ya en el arranque)
 
@@ -1023,7 +1026,11 @@ function layout(){
          de debajo, no hace falta ver hasta el suelo. */
       const reveal = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
       // apoyado (Sobremesa): más aire arriba, para que no roce la barra de arriba ni la decoración de la balda
-      const top = totalH/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -totalH/2 - (sc.gapCm + reveal)*CM;
+      let top = totalH/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -totalH/2 - (sc.gapCm + reveal)*CM;
+      if(sc.verCm){   // nevera: se ve de verCm[0] a verCm[1] cm del suelo (la puerta entera, sin suelo de más)
+        const F = sc.furnCm + sc.gapCm;
+        top = Math.max(totalH/2 + 4*CM, -totalH/2 + (sc.verCm[1] - F)*CM); bot = Math.min(-totalH/2 - 4*CM, -totalH/2 + (sc.verCm[0] - F)*CM);
+      }
       if(sc.restCm != null){
         /* Sobremesa: se queda CERCA (el Sobremesa y un trozo del mueble), y la habitación entera
            (wideFrame) solo se usa como punto de partida del viaje de entrada (_flyIn). */
@@ -1791,7 +1798,7 @@ function applyPhoto(idx, img, silent){
 }
 
 function buildBackCanvas(p, W, H){
-  const hasText = p.backText && p.backText.trim();
+  const hasText = p.ptype !== 'nevera' && p.backText && p.backText.trim();
   const hasDate = p.backDate && p.backDate.trim();
   if(!hasText && !hasDate) return null;
   W = W || texW(p); H = H || texH(p);
@@ -2097,7 +2104,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     ];
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
     if(p.frontDate && p.frontDate.trim()) attributes.push({key:'Fecha (frontal)', value:p.frontDate.trim()});
-    if(p.backText && p.backText.trim()) attributes.push({key:'Dedicatoria (dorso)', value:p.backText.trim()});
+    if(p.ptype !== 'nevera' && p.backText && p.backText.trim()) attributes.push({key:'Dedicatoria (dorso)', value:p.backText.trim()});
     if(p.backDate && p.backDate.trim()) attributes.push({key:'Fecha (dorso)', value:p.backDate.trim()});
     // el dorso puede llevar solo fecha: la imagen va siempre que haya algo detrás
     if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
@@ -2672,6 +2679,10 @@ function syncPanelHead(){
 function syncConfigUI(){
   const p = POSTERS[selected]; if(!p) return;
   frontInput.value=p.frontText||''; frontDateInput.value=p.frontDate||'';
+  /* 16-oct · el imán no lleva nada detrás (va pegado a la nevera): fuera pestañas y dedicatoria, y se borra si la había */
+  { const noBack = p.ptype === 'nevera';
+    document.querySelectorAll('#txtBlock .txt-back, #faceTabs').forEach(el => { el.style.display = noBack ? 'none' : ''; });
+    if(noBack){ if(p.backText || p.backDate){ p.backText = ''; p.backDate = ''; applyBackText(selected); } if(FACE_BACK) setFace(false); } }
   backInput.value =p.backText ||''; backDateInput.value =p.backDate ||'';
   if(!p.frontFont) p.frontFont = FONT_DEFAULT;
   if(!p.backFont)  p.backFont  = FONT_DEFAULT;
@@ -2795,6 +2806,8 @@ if(_urlType && PRODUCTS[_urlType]){
       applyProductSize(_p0, defSizeOf(_pr, _fmt), _fmt); }
     layout(); updateTotal(); syncConfigUI(); applyMountVisual(_p0);
   }
+  /* 16-oct · el imán se enseña en una nevera desde el principio */
+  if(_EDCFG.product === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-menta'; }
 }
 
 
@@ -3188,7 +3201,8 @@ function layoutWall(){
   /* 20-sep-2026: menos aire (antes 16 cm arriba y 0,75 del mueble abajo). Marc quería que los cuadros
      ocupen más pared y no queden pequeños en medio de una pared enorme. */
   const revealW = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
-  const top = H*CM/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -H*CM/2 - (sc.gapCm + revealW)*CM;
+  let top = H*CM/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -H*CM/2 - (sc.gapCm + revealW)*CM;
+  if(sc.verCm){ const F = sc.furnCm + sc.gapCm; top = Math.max(H*CM/2 + 4*CM, -H*CM/2 + (sc.verCm[1] - F)*CM); bot = Math.min(-H*CM/2 - 4*CM, -H*CM/2 + (sc.verCm[0] - F)*CM); }
   return { maxW: Math.max(W + 60, sc.viewCm)*CM, totalH: top - bot, cx: 0, cy: (top + bot)/2 };
 }
 
@@ -4336,6 +4350,113 @@ function buildEscena(g, U, def){
   });
 }
 
+/* ── NEVERA RETRO + COCINA ─────────────────────────────────────────────────
+   Todo en cm desde la pared (z=0) y el suelo (y=0); la nevera centrada en x=0, que es donde van los imanes. */
+const NEVERA_FRONT = 69.7;   // cara de la puerta, en cm desde la pared (cuerpo 2–66 + puerta 3,7)
+function canvasTex(w, h, draw, rx, ry){
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx || 1, ry || 1); return t;
+}
+// azulejo metro 15 × 7,5 cm al tresbolillo; una tesela = 60 × 60 cm
+function subwayTex(c1, grout, wCm, hCm){
+  return canvasTex(512, 512, (x, W, H) => {
+    x.fillStyle = grout; x.fillRect(0, 0, W, H);
+    const tw = W / 4, th = H / 8, gp = 4;
+    for(let r = 0; r < 8; r++) for(let k = -1; k < 5; k++){
+      const ox = (r % 2) * tw / 2, x0 = k * tw + ox + gp / 2, y0 = r * th + gp / 2;
+      const gr = x.createLinearGradient(0, y0, 0, y0 + th); gr.addColorStop(0, c1); gr.addColorStop(1, shade(c1, 0.94));
+      x.fillStyle = gr; x.beginPath(); x.roundRect ? x.roundRect(x0, y0, tw - gp, th - gp, 5) : x.rect(x0, y0, tw - gp, th - gp); x.fill();
+      x.fillStyle = 'rgba(255,255,255,.18)'; x.fillRect(x0 + 6, y0 + 4, tw - gp - 12, 3);
+    }
+  }, wCm / 60, hCm / 60);
+}
+function shade(hex, k){ const c = new THREE.Color(hex).multiplyScalar(k); return '#' + c.getHexString(); }
+// suelo: damero de 30 cm, baldosa de barro 30 cm o tablas de roble
+function floorTex(a, b, kind, wCm, dCm){
+  return canvasTex(512, 512, (x, W, H) => {
+    if(kind === 'roble'){
+      for(let r = 0; r < 8; r++){ const off = (r * 157) % W;
+        for(let k = -1; k < 3; k++){ x.fillStyle = (r + k) % 2 ? a : b; x.fillRect(k * W / 2 + off % (W / 2), r * H / 8, W / 2, H / 8); }
+        x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, r * H / 8, W, 2); }
+      return;
+    }
+    const n = 2, s = W / n;
+    for(let i = 0; i < n; i++) for(let j = 0; j < n; j++){
+      x.fillStyle = kind === 'barro' ? ((i + j) % 2 ? a : b) : ((i + j) % 2 ? b : a);
+      x.fillRect(i * s, j * s, s, s);
+      if(kind === 'barro'){ x.strokeStyle = 'rgba(80,40,20,.35)'; x.lineWidth = 6; x.strokeRect(i * s, j * s, s, s); }
+    }
+  }, wCm / 60, dCm / 60);
+}
+function addNeveraRetro(g, U, o){
+  const W = 60, x0 = (o.xCm || 0);
+  /* el visor ilumina fuerte (ambiente 1,85 + focos, pensado para el aluminio): con el color tal cual la nevera salía
+     casi blanca. El color base va oscurecido (0,58) para que en pantalla salga el tono de verdad, y la laca con poco
+     reflejo de entorno y algo de rugosidad: brilla como un esmalte, sin la mancha blanca del foco. */
+  const esmalte = new THREE.MeshPhysicalMaterial({ color:new THREE.Color(o.color).multiplyScalar(0.58), roughness:0.5, metalness:0, clearcoat:0.8, clearcoatRoughness:0.28, envMapIntensity:0.35, specularIntensity:0.35 });
+  const cromo = new THREE.MeshStandardMaterial({ color:0xe2e4e6, metalness:1, roughness:0.14, envMapIntensity:1.25 });
+  const goma = new THREE.MeshStandardMaterial({ color:0x2a2a2a, roughness:0.8, metalness:0 });
+  const B = (w, h, d, r, mat, x, y, z) => { const m = softBox(w*U, h*U, d*U, r*U, mat); m.position.set(x*U, y*U, z*U); g.add(m); return m; };
+  // cuerpo (6–154 cm de alto, 2–66 cm de fondo) y puerta delante, algo más pequeña para que se lea la junta
+  B(W, 148, 56, 8, esmalte, x0, 6 + 74, 34);
+  B(W - 2.2, 139, 3, 7, esmalte, x0, 6 + 4.5 + 69.5, 66 + 1.86);
+  // junta de goma entre cuerpo y puerta
+  B(W - 3, 137, 0.8, 6.5, goma, x0, 80, 65.9);
+  // tirador cromado en el canto izquierdo de la puerta (no tapa los imanes)
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(1.1*U, 1.1*U, 44*U, 16), cromo); bar.position.set((x0 - W/2 - 2.4)*U, 118*U, 64*U); g.add(bar);
+  [-1, 1].forEach(sy => {
+    const brazo = softBox(4.2*U, 2.2*U, 2.6*U, 1*U, cromo); brazo.position.set((x0 - W/2 - 0.6)*U, (118 + sy*19)*U, 64*U); g.add(brazo);
+    const tapa = new THREE.Mesh(new THREE.SphereGeometry(1.25*U, 14, 10), cromo); tapa.position.set((x0 - W/2 - 2.4)*U, (118 + sy*22)*U, 64*U); g.add(tapa);
+  });
+  // bisagras cromadas a la derecha y placa cromada arriba (sin marca)
+  [148, 14].forEach(y => B(2.4, 6, 3.5, 1, cromo, x0 + W/2 - 0.4, y, 66));
+  B(14, 2.4, 0.7, 0.9, cromo, x0, 147.5, NEVERA_FRONT + 0.2);
+  // zócalo con rejilla y patas cromadas
+  B(W - 6, 5, 2, 1, goma, x0, 9, 63);
+  [-1, 1].forEach(sx => [-1, 1].forEach(sz => {
+    const pata = new THREE.Mesh(new THREE.CylinderGeometry(1.6*U, 2.1*U, 6*U, 14), cromo); pata.position.set((x0 + sx*(W/2 - 6))*U, 3*U, (34 + sz*24)*U); g.add(pata);
+  }));
+  addContactShadow(g, U, 78, 84, x0*U, 36*U, 0.7);
+}
+function buildCocinaNevera(g, U, o){
+  buildShell(g, U, { wall1:o.wall1, wall2:o.wall2, floor1:'#888', floor2:'#777', side:o.wall1, skirt:o.wall2 });
+  const BW = ROOM_BOX.w, BD = ROOM_BOX.d;
+  // suelo propio encima del de la caja
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(BW*U, BD*U), new THREE.MeshBasicMaterial({ map: floorTex(o.floor[0], o.floor[1], o.floor[2], BW, BD), toneMapped:false }));
+  fl.rotation.x = -Math.PI/2; fl.position.set(0, 0.2*U, BD/2*U); g.add(fl);
+  // pared alicatada hasta 150 cm con un remate de madera
+  const TH = 150;
+  const tiles = new THREE.Mesh(new THREE.PlaneGeometry(BW*U, TH*U), new THREE.MeshBasicMaterial({ map: subwayTex(o.tiles[0], o.tiles[1], BW, TH), toneMapped:false }));
+  tiles.position.set(0, TH/2*U, 0.15*U); g.add(tiles);
+  const madera = pbrMat('oak_veneer_01', 0.3, { color:'#c99d6a', roughness:0.55, env:0.4 });
+  const remate = softBox(BW*U, 2.2*U, 2.4*U, 0.6*U, madera); remate.position.set(0, (TH + 1.1)*U, 1.2*U); g.add(remate);
+  // muebles bajos a la derecha de la nevera, con encimera y cosas encima
+  const mx = 34 + 80, mW = 160;
+  const frente = new THREE.MeshPhysicalMaterial({ color:new THREE.Color(o.mueble).multiplyScalar(0.7), roughness:0.45, metalness:0, clearcoat:0.35, clearcoatRoughness:0.4, envMapIntensity:0.45 });
+  const mueble = softBox(mW*U, 80*U, 58*U, 1*U, frente); mueble.position.set(mx*U, 48*U, 31*U); g.add(mueble);
+  const zocalo = softBox((mW - 4)*U, 8*U, 54*U, 0.5*U, shadedMat('#222222', 1)); zocalo.position.set(mx*U, 4*U, 29*U); g.add(zocalo);
+  const tir = new THREE.MeshStandardMaterial({ color:0xc9a46a, metalness:1, roughness:0.25, envMapIntensity:1 });
+  for(let k = 0; k < 4; k++){
+    const xd = mx - mW/2 + mW*(k + 0.5)/4;
+    if(k) { const j = new THREE.Mesh(new THREE.PlaneGeometry(0.5*U, 76*U), shadedMat('#000000', 1)); j.material.transparent = true; j.material.opacity = 0.35; j.position.set((mx - mW/2 + mW*k/4)*U, 48*U, 63.6*U); g.add(j); }
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.6*U, 0.6*U, 12*U, 10), tir); t.rotation.z = Math.PI/2; t.position.set(xd*U, 80*U, 64.6*U); g.add(t);
+  }
+  const top = softBox((mW + 4)*U, 4*U, 64*U, 0.6*U, o.encimera === '#c79a63' ? madera : new THREE.MeshPhysicalMaterial({ color:new THREE.Color(o.encimera), roughness:0.3, clearcoat:0.6, envMapIntensity:0.5 }));
+  top.position.set(mx*U, 90*U, 32*U); g.add(top);
+  // frutero con limones y un bote
+  const cuenco = new THREE.Mesh(new THREE.SphereGeometry(11*U, 24, 12, 0, Math.PI*2, Math.PI/2, Math.PI/2), new THREE.MeshStandardMaterial({ color:0xf3efe6, roughness:0.4, side:THREE.DoubleSide }));
+  cuenco.position.set((mx + 30)*U, 103*U, 34*U); g.add(cuenco);
+  const limon = new THREE.MeshStandardMaterial({ color:0xf3cd38, roughness:0.55 });
+  [[-4, 0], [4, 1], [0, -4], [1, 4]].forEach(([dx, dz], i) => { const l = new THREE.Mesh(new THREE.SphereGeometry(4*U, 16, 12), limon); l.scale.set(1, 0.85, 0.85); l.position.set((mx + 30 + dx)*U, (95.5 + (i > 1 ? 3 : 0))*U, (34 + dz)*U); g.add(l); });
+  const bote = new THREE.Mesh(new THREE.CylinderGeometry(5*U, 5*U, 18*U, 20), new THREE.MeshPhysicalMaterial({ color:0xffffff, roughness:0.05, transmission:0.6, transparent:true, opacity:0.55 }));
+  bote.position.set((mx - 40)*U, 101*U, 22*U); g.add(bote);
+  const tapaB = new THREE.Mesh(new THREE.CylinderGeometry(5.3*U, 5.3*U, 2.4*U, 20), madera); tapaB.position.set((mx - 40)*U, 111*U, 22*U); g.add(tapaB);
+  addContactShadow(g, U, mW*1.05, 70, mx*U, 31*U, 0.5);
+  // planta a la izquierda
+  addNeveraRetro(g, U, { color:o.fridge, xCm:0 });
+}
+
 const SCENES = [
 
   /* ── SALONES ───────────────────────────────────────────────────────────── */
@@ -4615,6 +4736,24 @@ const SCENES = [
       addTableLamp(g, U, 16*U, 52*U, 13*U, '#2b2b2b', '#efeae0');
       addTableLamp(g, U, -216*U, 52*U, 20*U, '#2b2b2b', '#efeae0');
     } },
+
+  /* ── NEVERAS (imán) ──────────────────────────────────────────────────────
+     16-oct-2026. Nevera retro de una puerta, tamaño real (60 × 154 × 70 cm) y no una americana enorme,
+     para que los imanes (7 × 10 cm) se vean grandes. La cara de la puerta hace de «pared»: restZCm =
+     dónde queda esa cara (NEVERA_FRONT), así la escena se retrasa y los imanes quedan pegados a la puerta.
+     furnCm + gapCm = altura del borde de abajo de la composición (100 cm, a la altura de la mano). */
+  { id:'nevera-menta', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera retro menta', en:'Mint retro fridge', des:'cocina con suelo de damero', den:'kitchen with checkerboard floor',
+    furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
+      wall1:'#f3efe6', wall2:'#e6e0d3', fridge:'#a9d8c4', tiles:['#fbfaf6', '#d9d6cc'], floor:['#f4f1ea', '#262626'],
+      mueble:'#f2efe8', encimera:'#c79a63' }) },
+  { id:'nevera-roja', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera retro roja', en:'Red retro fridge', des:'cocina verde con baldosa de barro', den:'green kitchen, terracotta floor',
+    furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
+      wall1:'#f1e9dc', wall2:'#e4d9c6', fridge:'#c8382f', tiles:['#2f5a46', '#23463a'], floor:['#b8613f', '#a5553a', 'barro'],
+      mueble:'#2f5a46', encimera:'#e9e2d4' }) },
+  { id:'nevera-crema', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera retro crema', en:'Cream retro fridge', des:'azulejo azul y suelo de roble', den:'blue tiles and oak floor',
+    furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
+      wall1:'#f4efe6', wall2:'#e7e0d2', fridge:'#f0e6cc', tiles:['#2d5b8c', '#244c77'], floor:['#c9a67c', '#b8946a', 'roble'],
+      mueble:'#f6f2ea', encimera:'#2b2b2b' }) },
 ];
 /* ── MUEBLES DESCARGADOS (Poly Haven, CC0) ─────────────────────────────────
    Modelos reales CC0 de polyhaven.com (uso comercial permitido, sin atribución obligatoria),
@@ -5327,12 +5466,13 @@ function renderRoomModal(){
   // un grupo por tipo de habitación (el Sobremesa se apoya: solo entornos con mesa/consola/escritorio)
   GRUPOS_ENTORNO.forEach(G => {
     if(defaultType === 'madera' && !G.mesa) return;
+    if((defaultType === 'nevera') !== (G.id === 'nevera')) return;     // el imán, solo neveras; el resto, nunca
     // el Sobremesa solo ve sus propias escenas (se apoya de verdad); el resto de productos
     // nunca ven esas, para no colgar un cuadro a la altura de una mesita de noche
     const scs = defaultType === 'madera'
       ? SCENES.filter(sc => SOBREMESA_SCENES.test(sc.id) && G.test(sc.id))
       : SCENES.filter(sc => !SOBREMESA_SCENES.test(sc.id) && G.test(sc.id));
-    const fotos = defaultType === 'madera' ? [] : roomsForCat(G.id);
+    const fotos = defaultType === 'madera' || defaultType === 'nevera' ? [] : roomsForCat(G.id);
     if(!scs.length && !fotos.length) return;
     const activa = (ROOM_CFG.mode === 'geo' && scs.find(x => x.id === ROOM_CFG.scene))
                  || (ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && fotos.find(x => x.id === ROOM.id));
