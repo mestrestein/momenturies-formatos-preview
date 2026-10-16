@@ -51,7 +51,7 @@
   <div class="pz-panel">
     <div class="pz-eyebrow">Personalizado</div>
     <h1>Vuestro lugar en el mapa</h1>
-    <p class="pz-lead">Tu ciudad, el barrio donde vivís, el pueblo de los abuelos o la playa donde os conocisteis. Con todas sus calles dibujadas y sus coordenadas.</p>
+    <p class="pz-lead">Tu ciudad, el barrio donde vivís, el pueblo de los abuelos o la playa donde os conocisteis. Con todas sus calles dibujadas y sus coordenadas. <a href="ciudades.html" style="text-decoration:underline">O elige entre 266 ciudades ya preparadas →</a></p>
 
     <div class="pz-step">
       <label for="place">1. ¿Qué lugar?</label>
@@ -116,6 +116,16 @@
   var ZONES = [['barrio', 'Barrio'], ['ciudad', 'Ciudad'], ['comarca', 'Comarca']];
   var SHAPES = [['rect', 'Rectángulo'], ['circulo', 'Círculo'], ['corazon', 'Corazón']];
   var cache = {};
+  /* 17-oct · desde el catálogo de ciudades (ciudades.html): mapa.html?lat=..&lon=..&n=Nombre&p=País&tema=noche */
+  (function () {
+    var q = new URLSearchParams(location.search), la = parseFloat(q.get('lat')), lo = parseFloat(q.get('lon'));
+    if (isFinite(la) && isFinite(lo)) {
+      st.lat = la; st.lon = lo;
+      if (q.get('n')) { $('title').value = q.get('n'); $('place').value = q.get('n') + (q.get('p') ? ', ' + q.get('p') : ''); }
+      if (q.get('p')) $('line2').value = q.get('p');
+      if (q.get('tema') && MOM_MAPA.themes[q.get('tema')]) st.theme = q.get('tema');
+    }
+  })();
 
   function opts() {
     return { data: st.data, theme: st.theme, font: st.font, shape: st.shape, pin: $('optPin').checked, parks: $('optParks').checked,

@@ -19,6 +19,11 @@
   .ph-eyebrow{font-size:12px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:#c2613a;margin-bottom:12px}
   .ph-hero h1{font-family:var(--font-serif);font-size:clamp(30px,4vw,48px);line-height:1.08;margin-bottom:14px}
   .ph-hero p{font-size:16px;line-height:1.65;color:#444;max-width:640px}
+  .ph-ciudades{max-width:1132px;margin:22px auto 0;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:18px 22px;text-decoration:none;color:inherit;transition:box-shadow .25s}
+  .ph-ciudades:hover{box-shadow:0 12px 30px rgba(0,0,0,.1)}
+  .ph-ci-imgs{display:flex;gap:8px} .ph-ci-imgs img{width:84px;height:112px;object-fit:cover;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+  .ph-ciudades h2{font-family:var(--font-serif);font-size:24px;margin-bottom:6px} .ph-ciudades p{font-size:14.5px;color:#555;line-height:1.55;margin-bottom:8px} .ph-ciudades span{font-weight:700;font-size:14px}
+  @media(max-width:760px){.ph-ciudades{grid-template-columns:1fr;margin:18px 16px 0} .ph-ci-imgs img{width:18%;height:auto;aspect-ratio:3/4}}
   .ph-grid{max-width:1180px;margin:0 auto;padding:26px 24px 70px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px}
   .ph-card{text-decoration:none;color:inherit;display:block}
   .ph-img{background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.08);transition:transform .25s,box-shadow .25s;aspect-ratio:3/4}
@@ -41,6 +46,10 @@
   <h1>Vuestra historia, en un diseño único</h1>
   <p>Elige un diseño y lo hacemos con vuestros lugares, vuestras fechas y vuestros nombres. Lo ves al momento, lo cuelgas en 3D en tu pared y lo recibes en aluminio HD.</p>
 </header>
+<a class="ph-ciudades" href="ciudades.html">
+  <div class="ph-ci-imgs"><img src="galeria/ciudades/paris.jpg" alt="" loading="lazy"><img src="galeria/ciudades/nueva-york.jpg" alt="" loading="lazy"><img src="galeria/ciudades/barcelona.jpg" alt="" loading="lazy"><img src="galeria/ciudades/denia.jpg" alt="" loading="lazy"><img src="galeria/ciudades/tokio.jpg" alt="" loading="lazy"></div>
+  <div><div class="ph-eyebrow" style="margin-bottom:6px">Ya preparados</div><h2>Mapas de 266 ciudades del mundo</h2><p>París, Nueva York, Barcelona, Dénia, Tokio… El mapa ya está hecho: elige tu ciudad y solo cambia los colores si quieres.</p><span>Ver todas las ciudades →</span></div>
+</a>
 <main class="ph-grid">
     <a class="ph-card" href="cielo.html"><div class="ph-img"><img src="galeria/img/muestra-cielo.jpg" alt="El cielo de vuestra noche" loading="lazy" width="600" height="800"></div>
       <h3>El cielo de vuestra noche</h3><p>Las estrellas exactas de una fecha y un lugar.</p><span>Crear el mío →</span></a>
