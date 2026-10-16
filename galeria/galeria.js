@@ -11,7 +11,6 @@
     ['vanguardias', 'Modernismo y vanguardias', 'Modernism'],
     ['japones', 'Grabado japonés', 'Japanese prints'],
     ['carteles', 'Carteles vintage', 'Vintage posters'],
-    ['|'],
     ['espacio', 'Espacio', 'Space'],
     ['paisajes', 'Paisajes', 'Landscapes'],
     ['fotografia', 'Fotografía histórica', 'Historic photography'],
@@ -23,8 +22,6 @@
     ['musica', 'Música', 'Music'],
     ['moda', 'Moda antigua', 'Vintage fashion'],
     ['mapas', 'Mapas y cielos', 'Maps & skies'],
-    ['|'],
-    ['viajes', 'Carteles de viaje', 'Travel posters'],
     ['coches', 'Coches', 'Cars'],
     ['temporada', 'Navidad y San Valentín', 'Christmas & Valentine'],
     ['retro', 'Retro', 'Retro'],
@@ -32,6 +29,14 @@
     ['minimal', 'Minimal', 'Minimal']
   ];
   var CAT = {}; CATS.forEach(function (c) { if (c[1]) CAT[c[0]] = c; });
+  /* 17-oct · dos temas: todo lo de dominio público es «Arte»; lo nuestro, «Diseños del estudio».
+     Aquí entrará «Fotografía» cuando la tengamos. */
+  var TEMAS = [
+    ['arte', 'Arte', 'Art', ['maestros', 'impresionismo', 'vanguardias', 'japones', 'carteles', 'espacio', 'paisajes', 'fotografia', 'mar', 'naturaleza', 'cocina', 'mascotas', 'cuentos', 'musica', 'moda', 'mapas']],
+    ['disenos', 'Diseños del estudio', 'Studio designs', ['coches', 'temporada', 'retro', 'moderno', 'minimal']]
+  ];
+  var TEMA = {}; TEMAS.forEach(function (t) { TEMA[t[0]] = t; });
+  function catsDe(t) { return TEMA[t][3]; }
   var INTRO = {
     maestros: ['Del Renacimiento al Romanticismo: Leonardo, Vermeer, Velázquez, Goya, Friedrich, Turner…', 'From the Renaissance to Romanticism: Leonardo, Vermeer, Velázquez, Goya, Friedrich, Turner…'],
     impresionismo: ['La luz al aire libre: Van Gogh, Monet, Renoir, Degas, Seurat y Sorolla.', 'Light in the open air: Van Gogh, Monet, Renoir, Degas, Seurat and Sorolla.'],
@@ -49,7 +54,6 @@
     cuentos: ['Peter Pan y Alicia con las ilustraciones originales de la edad de oro del libro infantil.', 'Peter Pan and Alice with original illustrations from the golden age of children’s books.'],
     musica: ['Guitarras, laúdes, pianos y orquestas pintados por Vermeer, Caravaggio, Renoir y Degas.', 'Guitars, lutes, pianos and orchestras painted by Vermeer, Caravaggio, Renoir and Degas.'],
     moda: ['Figurines de las revistas de moda de París del siglo XIX y principios del XX.', 'Fashion plates from Paris fashion magazines of the 19th and early 20th centuries.'],
-    viajes: ['Carteles de viaje propios al estilo de los años 30 y 50: de Dénia a Kioto.', 'Our own travel posters in the style of the 1930s and 50s: from Dénia to Kyoto.'],
     coches: ['Carteles retro de carretera con coches clásicos genéricos, sin marcas.', 'Retro road posters with generic classic cars, no brands.'],
     temporada: ['Diseños para Navidad y San Valentín. Con el imán se cambian en un segundo cuando pasa la fecha.', 'Designs for Christmas and Valentine’s Day. With the magnet you swap them in a second when the date has passed.'],
     retro: ['Diseños propios con el color y las formas de los años 50, 60 y 70.', 'Our own designs with the colours and shapes of the 50s, 60s and 70s.'],
@@ -75,7 +79,7 @@
   function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  var state = { cat: 'todo', q: '' }, shown = [];
+  var state = { tema: 'arte', cat: 'todo', q: '' }, shown = [];
 
   /* ── portada: las dos puertas ── */
   document.getElementById('nObras').textContent = OBRAS.length + (L() === 'en' ? ' works' : ' obras');
@@ -86,20 +90,31 @@
   if (dz) document.getElementById('doorEstudio').src = thumbOf(dz);
   [].forEach.call(document.querySelectorAll('[data-go]'), function (b) {
     b.addEventListener('click', function () {
-      setCat(b.dataset.go === 'obras' ? 'todo' : 'retro');
+      setTema(b.dataset.go === 'obras' ? 'arte' : 'disenos');
       document.getElementById('bar').scrollIntoView({ behavior: 'smooth' });
     });
   });
 
   /* ── filtros ── */
-  var chips = document.getElementById('chips');
-  CATS.forEach(function (c) {
-    if (c[0] === '|') { var s = document.createElement('span'); s.className = 'ga-chip-sep'; chips.appendChild(s); return; }
-    var b = document.createElement('button'); b.className = 'ga-chip'; b.dataset.cat = c[0];
-    b.innerHTML = '<span class="es">' + c[1] + '</span><span class="en">' + c[2] + '</span>';
-    b.addEventListener('click', function () { setCat(c[0]); });
-    chips.appendChild(b);
+  var chips = document.getElementById('chips'), temasEl = document.getElementById('temas');
+  TEMAS.forEach(function (t) {
+    var b = document.createElement('button'); b.className = 'ga-tema'; b.dataset.tema = t[0];
+    b.innerHTML = '<span class="es">' + t[1] + '</span><span class="en">' + t[2] + '</span>';
+    b.addEventListener('click', function () { setTema(t[0]); });
+    temasEl.appendChild(b);
   });
+  function buildChips() {
+    chips.innerHTML = '';
+    ['todo'].concat(catsDe(state.tema)).forEach(function (k) {
+      var c = CAT[k], b = document.createElement('button'); b.className = 'ga-chip'; b.dataset.cat = k;
+      b.innerHTML = '<span class="es">' + c[1] + '</span><span class="en">' + c[2] + '</span>';
+      b.setAttribute('aria-pressed', k === state.cat ? 'true' : 'false');
+      b.addEventListener('click', function () { setCat(k); });
+      chips.appendChild(b);
+    });
+    [].forEach.call(temasEl.children, function (b) { b.setAttribute('aria-pressed', b.dataset.tema === state.tema ? 'true' : 'false'); });
+  }
+  function setTema(t) { state.tema = t; state.cat = 'todo'; buildChips(); render(); writeHash(); }
   function setCat(c) {
     state.cat = c;
     [].forEach.call(chips.children, function (b) { if (b.dataset) b.setAttribute('aria-pressed', b.dataset.cat === c ? 'true' : 'false'); });
@@ -110,7 +125,7 @@
 
   /* ── rejilla ── */
   function matches(it) {
-    if (state.cat !== 'todo' && it.cat !== state.cat) return false;
+    if (!state.q && state.cat !== 'todo' && it.cat !== state.cat) return false;
     if (!state.q) return true;
     var q = norm(state.q);
     return norm([it.t, it.te, it.a, it.y, it.m, CAT[it.cat] && CAT[it.cat][1]].join(' ')).indexOf(q) >= 0;
@@ -144,7 +159,8 @@
       '</div><div class="ga-meta"><b>' + esc(T(it)) + '</b><span>' + esc(it.a) + (it.y && !it.own ? ' · ' + esc(it.y) : '') + '</span></div></button>';
   }
   function render() {
-    var lang = L(), html = '', groups = state.cat === 'todo' ? CATS.filter(function (c) { return c[1] && c[0] !== 'todo'; }).map(function (c) { return c[0]; }) : [state.cat];
+    // con búsqueda se busca en todo; si no, en el tema elegido
+    var lang = L(), html = '', groups = state.q ? TEMAS.reduce(function (a, t) { return a.concat(t[3]); }, []) : (state.cat === 'todo' ? catsDe(state.tema) : [state.cat]);
     shown = [];
     groups.forEach(function (g) {
       var items = ALL.filter(function (it) { return it.cat === g && matches(it); });
@@ -252,12 +268,14 @@
 
   /* ── enlace directo: galeria.html#cat=retro  ·  galeria.html#obra=noche-estrellada ── */
   function writeHash() {
-    var h = cur ? 'obra=' + cur.id : (state.cat !== 'todo' ? 'cat=' + state.cat : '');
+    var h = cur ? 'obra=' + cur.id : (state.cat !== 'todo' ? 'cat=' + state.cat : (state.tema !== 'arte' ? 'tema=' + state.tema : ''));
     history.replaceState(null, '', h ? '#' + h : location.pathname + location.search);
   }
   var hp = new URLSearchParams(location.hash.slice(1));
   state.cat = CAT[hp.get('cat')] ? hp.get('cat') : 'todo';
-  [].forEach.call(chips.children, function (b) { if (b.dataset) b.setAttribute('aria-pressed', b.dataset.cat === state.cat ? 'true' : 'false'); });
+  state.tema = TEMA[hp.get('tema')] ? hp.get('tema') : (TEMAS.filter(function (t) { return t[3].indexOf(state.cat) >= 0; })[0] || TEMAS[0])[0];
+  if (hp.get('obra')) { var _o = ALL.filter(function (x) { return x.id === hp.get('obra'); })[0]; if (_o) state.tema = (TEMAS.filter(function (t) { return t[3].indexOf(_o.cat) >= 0; })[0] || TEMAS[0])[0]; }
+  buildChips();
   Promise.race([D2.ready, new Promise(function (r) { setTimeout(r, 1500); })]).then(function () {
     render();
     if (hp.get('obra')) open(hp.get('obra'));

@@ -383,12 +383,7 @@
 
   /* ── catálogo ── */
   var LIST = [];
-  V.forEach(function (v) {
-    var cap = v.name.charAt(0) + v.name.slice(1).toLowerCase();
-    LIST.push({ id: 'v-' + v.id, cat: 'viajes', own: true, t: 'Cartel de viaje · ' + cap, te: 'Travel poster · ' + cap, a: 'Estudio Momenturies', y: '2026',
-      d: 'Un cartel de viaje al estilo de los años 30 y 50: colores planos, sol grande y el nombre del lugar en letras altas. ' + v.sub.charAt(0) + v.sub.slice(1).toLowerCase() + '. Para recordar un viaje o soñar con el siguiente.',
-      de: 'A travel poster in the style of the 1930s and 50s: flat colours, a big sun and the name of the place in tall letters. To remember a trip or dream of the next one.', draw: viaje(v) });
-  });
+  /* 17-oct: los carteles de viaje ya no son diseños fijos: se crean en viaje.html (personaliza/viaje.js) */
   CARS.forEach(function (k) {
     LIST.push({ id: k.id, cat: 'coches', own: true, t: k.name.charAt(0) + k.name.slice(1).toLowerCase(), te: k.name.charAt(0) + k.name.slice(1).toLowerCase(), a: 'Estudio Momenturies', y: '2026',
       d: 'Cartel retro de carretera: un coche clásico de líneas genéricas, sin marca, bajo un sol enorme. ' + k.sub.charAt(0) + k.sub.slice(1).toLowerCase() + '. Para garajes, despachos y amantes del motor.',

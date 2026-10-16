@@ -33,17 +33,20 @@
   .ga-door-l{position:absolute;left:0;right:0;bottom:0;padding:44px 14px 14px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:15px;font-weight:700;line-height:1.25}
   .ga-door-l small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
 
-  .ga-custom{max-width:1240px;margin:26px auto 0;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  .ga-cust{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:box-shadow .25s,transform .25s}
+  .ga-custom{max-width:1240px;margin:26px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ga-cust{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:center;background:#fff;border:1px solid var(--gray2);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:box-shadow .25s,transform .25s}
   .ga-cust:hover{box-shadow:0 12px 30px rgba(0,0,0,.1);transform:translateY(-2px)}
-  .ga-cust img{width:150px;height:200px;object-fit:cover;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .ga-cust img{width:120px;height:160px;object-fit:cover;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
   .ga-cust-tag{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent)}
-  .ga-cust h3{font-family:var(--font-serif);font-size:22px;line-height:1.15;margin:6px 0 8px}
+  .ga-cust h3{font-family:var(--font-serif);font-size:20px;line-height:1.15;margin:6px 0 8px}
   .ga-cust p{font-size:14px;line-height:1.55;color:#555;margin-bottom:10px}
   .ga-cust-go{font-size:14px;font-weight:700}
   @media(max-width:900px){ .ga-custom{grid-template-columns:1fr;padding:0 16px} .ga-cust{grid-template-columns:110px 1fr;gap:14px} .ga-cust img{width:110px;height:147px} }
   .ga-bar{position:sticky;top:60px;z-index:50;background:rgba(250,248,245,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--gray2);margin-top:34px}
   .ga-bar-in{max-width:1240px;margin:0 auto;padding:12px 24px;display:flex;gap:14px;align-items:center}
+  .ga-temas{display:flex;gap:4px;flex:none;border-right:1px solid var(--gray2);padding-right:12px}
+  .ga-tema{border:0;background:none;font:600 15px Inter,sans-serif;color:#888;padding:8px 10px;cursor:pointer;border-radius:8px;white-space:nowrap}
+  .ga-tema[aria-pressed="true"]{color:var(--black);background:#efe9e0}
   .ga-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 0}
   .ga-chips::-webkit-scrollbar{display:none}
   .ga-chip{flex:none;border:1px solid var(--gray2);background:#fff;border-radius:22px;padding:8px 14px;font:500 13px Inter,sans-serif;color:#333;cursor:pointer;white-space:nowrap}
@@ -101,6 +104,7 @@
     .ga-entry{max-width:460px}
     .ga-bar-in{flex-direction:column;align-items:stretch;gap:10px;padding:10px 16px}
     .ga-search{width:100%}
+    .ga-temas{border-right:0;padding-right:0}
     .ga-wrap{padding:18px 16px 60px}
     .ga-grid{columns:2 150px;column-gap:12px}
     .ga-card{margin-bottom:16px}
@@ -140,7 +144,7 @@
     <div class="ga-eyebrow"><span class="es">Galería de arte</span><span class="en">Art gallery</span></div>
     <h1><span class="es">Arte para tu pared, impreso en aluminio HD</span><span class="en">Art for your walls, printed on HD aluminium</span></h1>
     <p class="ga-lead">
-      <span class="es">Las obras más famosas de la historia, el espacio, paisajes, fotografía histórica y diseños de nuestro estudio: carteles de viaje, coches, retro, modernos y minimalistas. Elige una, mírala en 3D en tu salón y la recibes lista para colgar sin agujeros. Todas se imprimen a partir de archivos de alta resolución.</span>
+      <span class="es">Las obras más famosas de la historia, el espacio, paisajes y fotografía histórica, y diseños de nuestro estudio: coches, retro, modernos y minimalistas. Elige una, mírala en 3D en tu salón y la recibes lista para colgar sin agujeros. Todas se imprimen a partir de archivos de alta resolución.</span>
       <span class="en">The most famous artworks in history plus designs from our studio, retro, modern and minimal. Pick one, see it in 3D in your living room and receive it ready to hang without holes. Every piece is printed from high-resolution files.</span>
     </p>
   </div>
@@ -165,10 +169,18 @@
       <p><span class="es">Tu ciudad, tu barrio o el pueblo de los abuelos, con todas sus calles y sus coordenadas.</span><span class="en">Your city, your neighbourhood or your grandparents' village, with every street and its coordinates.</span></p>
       <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
   </a>
+  <a class="ga-cust" href="viaje.html">
+    <img src="galeria/img/muestra-viaje.jpg" alt="Cartel de viaje personalizado" width="600" height="800" loading="lazy">
+    <div><div class="ga-cust-tag"><span class="es">Personalizado</span><span class="en">Personalised</span></div>
+      <h3><span class="es">Vuestro cartel de viaje</span><span class="en">Your travel poster</span></h3>
+      <p><span class="es">El sitio de aquel viaje en un cartel retro, con vuestra fecha y vuestros nombres.</span><span class="en">That trip's destination as a retro poster, with your date and names.</span></p>
+      <span class="ga-cust-go"><span class="es">Crear el mío →</span><span class="en">Create mine →</span></span></div>
+  </a>
 </section>
 
 <div class="ga-bar" id="bar">
   <div class="ga-bar-in">
+    <div class="ga-temas" id="temas" role="tablist" aria-label="Tema"></div>
     <div class="ga-chips" id="chips" role="toolbar" aria-label="Filtrar"></div>
     <input class="ga-search" id="q" type="search" placeholder="Buscar obra o artista" aria-label="Buscar">
   </div>

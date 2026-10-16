@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — Vuestro cartel de viaje</title>
+<meta name="description" content="Un cartel de viaje retro del lugar donde estuvisteis, con vuestro texto y vuestra fecha. Impreso en aluminio HD.">
+<link rel="canonical" href="https://momenturies.com/viaje.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Vuestro cartel de viaje — Momenturies"/>
+<meta property="og:description" content="Un cartel de viaje retro de cualquier lugar del mundo, impreso en aluminio HD."/>
+<meta property="og:image" content="https://momenturies.com/fotos/hero-salon-1.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&family=Great+Vibes&display=swap"/>
+<link rel="stylesheet" href="pdp.css?v=ea12681b">
+<link rel="stylesheet" href="personaliza/personaliza.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#1c1c1c"/>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="galeria.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Galería</span><span class="en">Gallery</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+      <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+      <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+      <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies</span>
+  </a>
+  <div class="nav-right-slot"></div>
+</nav>
+
+<main class="pz-wrap">
+  <div class="pz-stage">
+    <div class="pz-paper"><canvas id="cv" aria-label="Vista previa del cartel"></canvas></div>
+    <div class="pz-stage-note">Vista previa. Se imprime a 30×40 cm y 300 ppp.</div>
+  </div>
+
+  <div class="pz-panel">
+    <div class="pz-eyebrow">Personalizado</div>
+    <h1>Vuestro cartel de viaje</h1>
+    <p class="pz-lead">El sitio de aquel viaje, en un cartel de los de antes. Pon el lugar, la fecha y vuestros nombres, y elige los colores.</p>
+
+    <div class="pz-step">
+      <label for="place">1. ¿Dónde fuisteis?</label>
+      <div class="pz-search">
+        <input id="place" class="pz-input" type="text" autocomplete="off" placeholder="Ciudad, isla, pueblo…" value="Dénia, Comunidad Valenciana, España">
+        <div class="pz-results" id="placeRes"></div>
+      </div>
+    </div>
+
+    <div class="pz-step" id="modoStep">
+      <span class="pz-label">2. Estilo</span>
+      <div class="pz-chips" id="modos"></div>
+      <div class="pz-picked" id="modoNote"></div>
+    </div>
+
+    <div class="pz-step" id="escenaStep">
+      <span class="pz-label">Paisaje</span>
+      <div class="pz-chips" id="escenas"></div>
+    </div>
+
+    <div class="pz-step">
+      <label for="title">3. El texto</label>
+      <input id="title" class="pz-input" type="text" maxlength="24" value="Dénia" aria-label="Nombre del lugar">
+      <div style="height:10px"></div>
+      <input id="sub" class="pz-input" type="text" maxlength="50" value="Costa Blanca · España" aria-label="Segunda línea">
+      <div style="height:10px"></div>
+      <input id="extra" class="pz-input" type="text" maxlength="50" value="" placeholder="Fecha o nombres (p. ej. Verano 2025 · Marc y Ana)" aria-label="Tercera línea">
+    </div>
+
+    <div class="pz-step">
+      <span class="pz-label">4. Colores</span>
+      <div class="pz-swatches" id="paletas"></div>
+      <div class="pz-swname" id="paletaName"></div>
+    </div>
+
+    <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
+    <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared. Lugares: © OpenStreetMap.</p>
+  </div>
+</main>
+<div class="pz-toast" id="pzToast"></div>
+
+<footer class="pdp-foot">
+  &copy; 2026 Momenturies ·
+  <a href="momenturies.html">Inicio</a> · <a href="galeria.html">Galería de arte</a> · <a href="cielo.html">El cielo de vuestra noche</a> · <a href="mapa.html">Vuestro lugar en el mapa</a> ·
+  <a href="contacto.html">Contacto</a> · <a href="aviso-legal.html">Aviso legal</a>
+</footer>
+
+<script src="photo-handoff.js"></script>
+<script src="personaliza/comun.js"></script>
+<script src="personaliza/viaje.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); }, V = MOM_VIAJE;
+  var st = { lugar: 'Dénia', modo: 'ilustrado', escena: 'costa', paleta: 'original' };
+  var MODOS = [['ilustrado', 'Con sus cosas típicas'], ['sencillo', 'Sencillo']];
+  function dest() { return V.destinoDe(st.lugar); }
+  function opts() { return { lugar: st.lugar, modo: dest() ? st.modo : 'sencillo', escena: st.escena, paleta: st.paleta, titulo: $('title').value, sub: $('sub').value, extra: $('extra').value }; }
+  var raf = 0;
+  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); ctx.clearRect(0, 0, cv.width, cv.height); V.draw(ctx, cv.width, cv.height, opts()); }); }
+  function chips(id, list, cur, onSel) {
+    $(id).innerHTML = '';
+    list.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-chip'; b.textContent = it[1]; b.dataset.k = it[0]; b.setAttribute('aria-pressed', it[0] === cur);
+      b.addEventListener('click', function () { [].forEach.call($(id).children, function (x) { x.setAttribute('aria-pressed', x === b); }); onSel(it[0]); });
+      $(id).appendChild(b);
+    });
+  }
+  function setModo(k) { st.modo = k; if (k === 'ilustrado') st.paleta = 'original'; syncModo(); render(); }
+  function setEscena(k) { st.escena = k; render(); }
+  function escenaList() { return Object.keys(V.escenas).map(function (k) { return [k, V.escenas[k].es]; }); }
+  function paletas() {
+    var d = dest(), list = (d && st.modo === 'ilustrado' ? [['original', 'Original']] : []).concat(Object.keys(V.paletas).map(function (k) { return [k, V.paletas[k].es]; }));
+    if (!list.some(function (x) { return x[0] === st.paleta; })) st.paleta = list[0][0];
+    $('paletas').innerHTML = '';
+    list.forEach(function (it) {
+      var P = it[0] === 'original' ? Object.assign({}, V.paletas.atardecer, d.p) : V.paletas[it[0]];
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = it[1]; b.setAttribute('aria-pressed', it[0] === st.paleta);
+      b.innerHTML = '<span style="background:linear-gradient(135deg,' + P.sky1 + ' 0 50%,' + (P.sea1 || P.land2) + ' 50% 100%)"></span>';
+      b.addEventListener('click', function () { st.paleta = it[0]; paletas(); render(); });
+      $('paletas').appendChild(b);
+    });
+    var cur = list.filter(function (x) { return x[0] === st.paleta; })[0]; $('paletaName').textContent = cur ? cur[1] : '';
+  }
+  function syncModo() {
+    var d = dest();
+    $('modoStep').style.display = d ? '' : 'none';
+    $('escenaStep').style.display = d && st.modo === 'ilustrado' ? 'none' : '';
+    $('modoNote').textContent = d ? (st.modo === 'ilustrado' ? 'Dibujado con lo más reconocible del lugar.' : 'Un paisaje sencillo, sin monumentos.') : '';
+    paletas();
+  }
+  chips('modos', MODOS, st.modo, setModo);
+  chips('escenas', escenaList(), st.escena, setEscena);
+  MOM_P.placeSearch($('place'), $('placeRes'), function (p) {
+    st.lugar = p.name; $('title').value = p.name;
+    var d = dest();
+    $('sub').value = d ? d.sub.charAt(0) + d.sub.slice(1).toLowerCase() : (p.country || '');
+    if (d) { st.modo = 'ilustrado'; st.paleta = 'original'; chips('modos', MODOS, st.modo, setModo); }
+    else {
+      if (st.paleta === 'original') st.paleta = 'atardecer';
+      // un paisaje que encaje con el sitio: isla, montaña, ciudad o costa
+      var v = (p.osmKey || '') + ' ' + (p.osmValue || '') + ' ' + p.full.toLowerCase();
+      st.escena = /island|isla|illa|archipel/.test(v) ? 'isla' : /mountain|peak|montaña|sierra|alps|alpes|pirineo|volcano/.test(v) ? 'montana' : /lake|lago/.test(v) ? 'lago' : (p.osmValue === 'city' ? 'ciudad' : 'costa');
+      chips('escenas', escenaList(), st.escena, setEscena);
+    }
+    syncModo(); render();
+  });
+  ['title', 'sub', 'extra'].forEach(function (id) { $(id).addEventListener('input', render); });
+  $('cta').addEventListener('click', function () {
+    var slug = ($('title').value || 'lugar').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { V.draw(ctx, W, H, opts()); }, 'viaje-' + slug);
+  });
+  window.addEventListener('resize', render);
+  syncModo();
+  if (document.fonts && document.fonts.load) Promise.all(['400 80px "Bebas Neue"', '600 30px Montserrat', '500 30px Montserrat'].map(function (f) { return document.fonts.load(f).catch(function () {}); })).then(render);
+  render();
+})();
+</script>
+</body>
+</html>
