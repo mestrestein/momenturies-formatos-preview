@@ -28,12 +28,70 @@
     var dec = Math.asin(Math.sin(lat) * Math.cos(e) + Math.cos(lat) * Math.sin(e) * Math.sin(lon));
     var g = (357.528 + 0.9856003 * d) * D2R, ls = (280.46 + 0.9856474 * d + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * D2R;
     var el = lon - ls;
-    return { ra: (ra / D2R + 360) % 360, dec: dec / D2R, frac: (1 - Math.cos(el)) / 2, waxing: Math.sin(el) > 0 };
+    return { ra: (ra / D2R + 360) % 360, dec: dec / D2R, frac: (1 - Math.cos(el)) / 2, waxing: Math.sin(el) > 0, el: el };
   }
   // posición en el póster de un punto del cielo (estereográfica desde el cénit)
   function proj(alt, az, cx, cy, R) {
     var r = R * Math.tan((90 - alt) * D2R / 2), a = az * D2R;
     return [cx - r * Math.sin(a), cy - r * Math.cos(a)];
+  }
+
+
+  /* La Luna como esfera iluminada (16-oct-2026; antes era un disco plano con un corte duro y parecía un icono).
+     Superficie: mapa de color real de la NASA (Lunar Reconnaissance Orbiter, dominio público; personaliza/luna-lro.jpg,
+     equirectangular, longitud 0 en el centro = cara visible). Por píxel: normal de la esfera → latitud/longitud →
+     color del mapa; luz del Sol según la elongación (creciente iluminada por la derecha, como desde el hemisferio
+     norte) con reflectancia lunar Lommel-Seeliger (la llena se ve plana, no como una bola) y terminador suave.
+     La parte en sombra es casi transparente (luz cenicienta muy tenue): no tapa el cielo como una bola negra. */
+  var TEX = null;
+  var texReady = new Promise(function (res) {
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+      var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+      TEX = { w: c.width, h: c.height, d: x.getImageData(0, 0, c.width, c.height).data }; res();
+    };
+    im.onerror = function () { res(); };
+    var base = (document.currentScript && document.currentScript.src) || 'personaliza/cielo.js';
+    im.src = base.replace(/cielo\.js(\?.*)?$/, 'luna-lro.jpg');
+  });
+  function texAt(px, py, nz) {   // color de la superficie en el punto del disco (radio 1)
+    if (!TEX) { var g = 0.62 - 0.12 * Math.exp(-((px + 0.3) * (px + 0.3) + (py + 0.2) * (py + 0.2)) * 4); return [g, g, g * 0.97]; }
+    var lon = Math.atan2(px, nz), lat = Math.asin(Math.max(-1, Math.min(1, -py)));
+    var u = Math.min(TEX.w - 1, Math.max(0, Math.round((0.5 + lon / (2 * Math.PI)) * TEX.w)));
+    var v = Math.min(TEX.h - 1, Math.max(0, Math.round((0.5 - lat / Math.PI) * TEX.h)));
+    var k = (v * TEX.w + u) * 4;
+    return [TEX.d[k] / 255, TEX.d[k + 1] / 255, TEX.d[k + 2] / 255];
+  }
+  function drawMoon(ctx, x, y, r, mo) {
+    var el = mo.el, side = mo.waxing ? 1 : -1;
+    var Lx = side * Math.abs(Math.sin(el)), Lz = -Math.cos(el);           // dirección del Sol (z hacia nosotros)
+    // halo discreto, algo mayor cuanto más llena
+    var hr = r * (1.7 + 1.5 * mo.frac), g = ctx.createRadialGradient(x, y, r * 0.95, x, y, hr);
+    g.addColorStop(0, 'rgba(255,248,228,' + (0.05 + 0.13 * mo.frac).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,248,228,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill();
+    var N = Math.max(8, Math.ceil(r * 2) + 2), off = document.createElement('canvas'); off.width = off.height = N;
+    var oc = off.getContext('2d'), img = oc.createImageData(N, N), d = img.data, c = (N - 1) / 2;
+    for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+      var px = (i - c) / r, py = (j - c) / r, q = px * px + py * py, k = (j * N + i) * 4;
+      var edge = Math.max(0, Math.min(1, (1 - Math.sqrt(q)) * r + 0.5));   // borde suavizado
+      if (edge <= 0) { d[k + 3] = 0; continue; }
+      var nz = Math.sqrt(Math.max(0, 1 - q)), mu0 = px * Lx + nz * Lz;
+      var lit = mu0 > 0 ? 2 * mu0 / (mu0 + Math.max(nz, 0.06)) : 0;           // Lommel-Seeliger
+      lit *= Math.min(1, Math.max(0, (mu0 + 0.015) / 0.09));                  // terminador suave
+      var t = texAt(px, py, nz), gain = 1.55 * Math.min(1, lit);
+      var la = Math.min(1, lit * 1.6), es = 0.16;                             // es: luz cenicienta (opacidad de la sombra)
+      var al = Math.max(la, es);
+      // color: lado iluminado = mapa con luz cálida; sombra = gris azulado tenue
+      var cr = gain * t[0] * 255 * 1.02, cg = gain * t[1] * 255, cb = gain * t[2] * 255 * 0.94;
+      var mix = la / al;
+      d[k]     = Math.min(255, cr * mix + 150 * t[0] * (1 - mix));
+      d[k + 1] = Math.min(255, cg * mix + 160 * t[1] * (1 - mix));
+      d[k + 2] = Math.min(255, cb * mix + 185 * t[2] * (1 - mix));
+      d[k + 3] = Math.round(255 * al * edge);
+    }
+    oc.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(off, x - c, y - c);
   }
 
   function draw(ctx, W, H, o) {
@@ -80,16 +138,7 @@
     // la Luna con su fase, si está sobre el horizonte
     if (o.moon) {
       var mo = moon(J), ma = altaz(mo.ra, mo.dec, S, o.lat);
-      if (ma[0] > 0) {
-        var mq = proj(ma[0], ma[1], cx, cy, R), mr = W * 0.017;
-        ctx.fillStyle = T.moonDark; ctx.beginPath(); ctx.arc(mq[0], mq[1], mr, 0, Math.PI * 2); ctx.fill();
-        // parte iluminada: medio disco + elipse del terminador
-        var s = mo.waxing ? 1 : -1, k = 1 - 2 * mo.frac;   // k: 1 nueva … -1 llena
-        ctx.fillStyle = '#fbf6e6'; ctx.beginPath();
-        ctx.arc(mq[0], mq[1], mr, -Math.PI / 2, Math.PI / 2, s < 0);
-        ctx.ellipse(mq[0], mq[1], Math.abs(k) * mr, mr, 0, Math.PI / 2, -Math.PI / 2, (k > 0) === (s > 0));
-        ctx.fill();
-      }
+      if (ma[0] > 0) { var mq = proj(ma[0], ma[1], cx, cy, R); drawMoon(ctx, mq[0], mq[1], W * 0.021, mo); }
     }
     ctx.restore();
     // aros del disco
@@ -116,5 +165,5 @@
     try { var u = guess - tzOffsetMs(guess, tz); return guess - tzOffsetMs(u, tz); } catch (e) { return guess; }
   }
 
-  window.MOM_CIELO = { draw: draw, themes: THEMES, localToUtc: localToUtc, moon: moon, jd: jd };
+  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, draw: draw, themes: THEMES, localToUtc: localToUtc, moon: moon, jd: jd };
 })();

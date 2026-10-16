@@ -95,7 +95,7 @@
 
     <button class="pz-cta" id="cta"><span class="pz-spin"></span><span id="ctaTxt">Ponerlo en mi cuadro</span></button>
     <p class="pz-fine">En el siguiente paso eliges el tamaño (recomendado Retrato 30×40) y lo ves en 3D en tu pared.
-      Datos de estrellas: catálogo Hipparcos vía <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a>. Lugares: © OpenStreetMap.</p>
+      Datos de estrellas: catálogo Hipparcos vía <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a>. Luna: mapa de la NASA (Lunar Reconnaissance Orbiter). Lugares: © OpenStreetMap.</p>
   </div>
 </main>
 <div class="pz-toast" id="pzToast"></div>
@@ -151,11 +151,11 @@
   $('themeName').textContent = MOM_CIELO.themes[st.theme].name;
 
   $('cta').addEventListener('click', function () {
-    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { MOM_CIELO.draw(ctx, W, H, opts()); }, 'cielo-' + ($('date').value || 'noche'));
+    MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { return MOM_CIELO.ready.then(function () { MOM_CIELO.draw(ctx, W, H, opts()); }); }, 'cielo-' + ($('date').value || 'noche'));
   });
   window.addEventListener('resize', render);
   autoLine2(); pickedTxt();
-  MOM_P.fontsReady().then(render); render();
+  Promise.all([MOM_P.fontsReady(), MOM_CIELO.ready]).then(render); render();
 })();
 </script>
 </body>
