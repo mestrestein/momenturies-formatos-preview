@@ -52,7 +52,7 @@
     </div>
     <button class="ed-cart" id="addToCart">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      <span class="es">Añadir al carrito</span><span class="en">Add to cart</span><span id="cartTotal"></span>
+      <span id="cartLabel"><span class="es">Sube tu foto</span><span class="en">Upload your photo</span></span><span id="cartTotal"></span>
     </button>
   </header>
 
@@ -892,11 +892,12 @@ function drawPlaceholder(x, W, H){
   x.closePath(); x.stroke();
   x.beginPath(); x.arc(cx,cy+24,40,0,Math.PI*2); x.stroke();
   x.fillStyle = '#1a1a1a'; x.textAlign='center';
-  x.font = '700 78px Helvetica, Arial, sans-serif';
+  const fs = Math.max(78, Math.round(W*0.075));
+  x.font = '700 ' + fs + 'px Helvetica, Arial, sans-serif';
   x.fillText('SUBE TU FOTO', cx, H*0.62);
-  x.fillStyle = '#a7a098';
-  x.font = '400 38px Helvetica, Arial, sans-serif';
-  x.fillText('Toca para personalizar tu cuadro', cx, H*0.66);
+  x.fillStyle = '#6f6860';
+  x.font = '400 ' + Math.round(fs*0.6) + 'px Helvetica, Arial, sans-serif';
+  x.fillText('Toca para elegirla', cx, H*0.62 + fs*1.05);
 }
 
 function makePoster(){
@@ -2302,7 +2303,7 @@ function renderSizes(){
     const b=document.createElement('button');
     b.className='size-btn'+(p.sizeKey===s.k?' active':'');
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
-    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`+sizeStockTag(s);
+    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small><small class="size-price">${precioTxt(s.price||0)}</small>`+sizeStockTag(s);
     if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
     b.onclick=()=>{ if(!inStock(s)) return; applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); };
     box.appendChild(b);
@@ -2463,7 +2464,7 @@ function renderCropFormats(){
     b.type='button';
     b.className='size-btn'+(p.sizeKey===s.k?' active':'');
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
-    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small>`+sizeStockTag(s);
+    b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small><small class="size-price">${precioTxt(s.price||0)}</small>`+sizeStockTag(s);
     if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
     b.onclick=()=>{ if(!inStock(s)) return; applyProductSize(p,s); renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p); };
     sbox.appendChild(b);
@@ -2609,13 +2610,22 @@ function coGross(){ return POSTERS.filter(p=>p.srcImg).reduce((s,p)=>s+(p.price|
 function coDiscount(){ return Math.round(coGross()*packPct())/100; }
 function coSubtotal(){ return Math.round((coGross()-coDiscount())*100)/100; }
 
+function precioTxt(n){ return n.toFixed(2).replace('.',',') + '€'; }
 function updateTotal(){
   scheduleSave();
-  // con foto puesta manda el precio con descuento por combinación; sin fotos, la suma a secas
-  const conFoto = POSTERS.filter(p=>p.srcImg).length;
-  const total = conFoto ? coSubtotal() : POSTERS.reduce((s,p)=>s+(p.price||0),0);
+  /* En un conjunto cuenta la pared entera (hay que llenarla para pedirla); sueltos, los que llevan foto,
+     y sin ninguna, los huecos que hay. Con descuento por cantidad sale el precio tachado al lado. */
+  const conFoto = POSTERS.filter(p=>p.srcImg);
+  const piezas = (WALL || !conFoto.length) ? POSTERS : conFoto;
+  const bruto = piezas.reduce((s,p)=>s+(p.price||0),0);
+  const t = PACK_TIERS.find(t=>piezas.length>=t.n), pct = t ? t.pct : 0;
+  const total = Math.round((bruto - Math.round(bruto*pct)/100)*100)/100;
   const el = document.getElementById('cartTotal');
-  if(el) el.textContent = ' · ' + total.toFixed(2).replace('.',',') + '€';
+  if(el) el.innerHTML = ' · ' + (pct ? '<s>' + precioTxt(bruto) + '</s> ' : '') + precioTxt(total);
+  const lb = document.getElementById('cartLabel');
+  if(lb) lb.innerHTML = conFoto.length
+    ? '<span class="es">Añadir al carrito</span><span class="en">Add to cart</span>'
+    : '<span class="es">Sube tu foto</span><span class="en">Upload your photo</span>';
 }
 
 function selectPoster(i){ selected=i; renderThumbs(); applySelection(); syncConfigUI(); }
@@ -2647,7 +2657,7 @@ function syncConfigUI(){
 
 document.getElementById('addToCart').addEventListener('click', async ()=>{
   const withPhoto = POSTERS.filter(p=>p.srcImg).length;
-  if(!withPhoto){ toast('Sube al menos una foto primero'); return; }
+  if(!withPhoto){ pickMode='add'; fileInput.click(); return; }
   // red de seguridad: los botones de talla agotada ya están desactivados, pero un diseño
   // guardado de antes o una pared abierta por URL podrían traer una
   const agotado = POSTERS.findIndex(p=>p.srcImg && !inStock(sizeOf(p)));

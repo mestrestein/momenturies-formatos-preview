@@ -10,7 +10,7 @@
 #pvStage.dropping{outline:3px dashed var(--black);outline-offset:-3px}
 #pvCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-transform:translateZ(0);transform:translateZ(0)}
 .pv-hint{position:absolute;bottom:196px;left:50%;transform:translateX(-50%);z-index:3;text-align:center;
-  font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.30);pointer-events:none;transition:opacity .5s;white-space:nowrap}
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.55);pointer-events:none;transition:opacity .5s;white-space:nowrap}
 .pv-badge{position:absolute;top:118px;left:16px;z-index:3;background:rgba(26,26,26,.9);color:#fff;
   font-size:10px;font-weight:700;letter-spacing:2px;padding:5px 12px;border-radius:20px;pointer-events:none}
 .pv-zoom{position:absolute;top:50%;right:16px;transform:translateY(-50%);z-index:4;display:flex;flex-direction:column;gap:8px}
@@ -27,7 +27,7 @@
   .pv-zoom{right:10px;gap:6px}
   .pv-zoom button{width:34px;height:34px}
   /* el texto de ayuda del visor 3D no cabe en una línea en móvil: se envuelve y se encoge en vez de recortarse */
-  .pv-hint{white-space:normal;max-width:78vw;font-size:9.5px;letter-spacing:.8px;line-height:1.5;bottom:200px}
+  .pv-hint{white-space:normal;max-width:84vw;font-size:11px;letter-spacing:.6px;line-height:1.5;bottom:200px}
   .ed-cart{font-size:12px;padding:9px 14px;gap:6px}
   .ed-close{font-size:12px;padding:8px 12px}
 }
@@ -44,6 +44,8 @@
 .ed-cart{display:flex;align-items:center;gap:8px;background:var(--black);color:#fff;border:none;border-radius:24px;
   padding:11px 20px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);transition:background .2s,transform .15s;font-family:var(--font-sans)}
 .ed-cart:hover{background:#333}
+.ed-cart s{opacity:.55;font-weight:500}
+.size-btn small.size-price{font-size:10px;font-weight:700;opacity:1;margin-top:3px}
 .ed-cart:active{transform:scale(.98)}
 @media(max-width:720px){ .ed-logo{display:none} }
 
