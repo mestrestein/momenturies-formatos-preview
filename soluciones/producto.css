@@ -528,3 +528,15 @@ button{font-family:inherit}
 .p9e .tri em{font-style:normal;color:rgba(255,255,255,.6);font-size:14px}
 @media(max-width:760px){.p9e .tri{grid-template-columns:1fr 1fr}.p9e .tri a:last-child{grid-column:span 2}.p9e .tri a:last-child .img{aspect-ratio:16/9}}
 @media(max-width:860px){.p1e .total{flex-wrap:wrap;gap:4px 10px}.p1e .total b{font-size:32px;white-space:nowrap}.p1e .total s{white-space:nowrap}.p1b .tit h1,.p1b .tit p{text-shadow:0 2px 18px rgba(0,0,0,.45)}.p6c .grande .info{flex-wrap:wrap}}
+/* compra sin selectores (16-oct, Marc): lo que eliges, contado; se elige en el editor */
+.eliges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.eliges div{background:var(--gray);border-radius:14px;padding:14px 12px}
+.eliges i{font-style:normal;font-size:18px;display:block;margin-bottom:8px}
+.eliges b{display:block;font-size:14px}
+.eliges span{font-size:12px;color:var(--mid);line-height:1.35;display:block;margin-top:2px}
+.nota-ed{font-size:13px;color:var(--mid);margin-top:12px}
+.p1c .tams{position:absolute;right:12px;bottom:12px;display:flex;gap:6px}
+.p1c .tams .chip{background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:999px;padding:8px 12px;font-size:12px}
+.p1c .tams .chip small{display:none}
+.p1c .tams .chip.on{background:#fff;color:#111;box-shadow:none}
+@media(max-width:560px){.eliges{grid-template-columns:1fr 1fr 1fr;gap:6px}.eliges div{padding:10px 8px}.p1c .tams{left:12px;right:auto;bottom:58px}}

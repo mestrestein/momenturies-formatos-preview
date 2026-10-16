@@ -79,7 +79,6 @@ function compra(raiz, alCambiar){
     // fondo a «auto 175%» del alto: cada píxel de la foto mide 1,75·alto/1024 en pantalla
     const k = sala.clientHeight * 1.75 / 1024, pxcm = 3.45 * k * 1.15;
     cu.style.width = (T.cm[0] * pxcm) + 'px'; cu.style.height = (T.cm[1] * pxcm) + 'px';
-    $('.med', r).textContent = T.d;
   };
   let ultima = FORMATOS.retrato.tallas[1];
   compra(r, T => { ultima = T; escala(T); });
