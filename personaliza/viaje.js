@@ -299,6 +299,48 @@
     santorini: 'santorini', thira: 'santorini', paris: 'paris', kioto: 'kioto', kyoto: 'kioto' };
   function destinoDe(nombre) { var k = ALIAS[norm(nombre)]; return k ? DESTINOS.filter(function (d) { return d.id === k; })[0] : null; }
 
+  /* ── LA FOTO DEL CLIENTE (17-oct-2026) ──
+     Va dentro del hueco de la ilustración (1080 × 1140 del lienzo lógico), a sangre y recortada como «cover»;
+     zoom ≥ 1 y desplazamiento ox/oy en -1..1 (lo que sobra a cada lado). Tres acabados hechos con modos de
+     fusión del canvas (funcionan en todos los navegadores, a diferencia de ctx.filter):
+       natural · calido (velo cálido + un punto de desvaído, como una postal antigua) · duotono (blanco y negro
+       teñido con el color de la paleta, como los carteles de imprenta). */
+  var FOTO = { x: 60, y: 60, w: 1080, h: 1140 };
+  function fotoRect(img, o) {
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var sc = Math.max(FOTO.w / iw, FOTO.h / ih) * (o.zoom || 1), dw = iw * sc, dh = ih * sc;
+    var ex = (dw - FOTO.w) / 2, ey = (dh - FOTO.h) / 2;
+    return { x: FOTO.x - ex + (o.ox || 0) * ex, y: FOTO.y - ey + (o.oy || 0) * ey, w: dw, h: dh, sc: sc };
+  }
+  function drawFoto(c, p, o) {
+    var img = o.foto;
+    if (!img) {   // aún sin foto: un hueco que invita a subirla
+      rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, shadeHex2(p.paper, 0.92));
+      c.fillStyle = shadeHex2(p.paper, 0.6); c.textAlign = 'center'; c.font = '600 44px Montserrat, Inter, sans-serif';
+      c.fillText('TU FOTO DEL VIAJE', 600, 640); return;
+    }
+    var r = fotoRect(img, o);
+    c.drawImage(img, r.x, r.y, r.w, r.h);
+    if (o.efecto === 'calido') {
+      c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = 0.45; rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, p.sun); c.restore();
+      c.save(); c.globalAlpha = 0.10; rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, p.sky2); c.restore();
+      var g = c.createRadialGradient(600, 630, 380, 600, 630, 900); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(60,30,10,.35)');
+      c.fillStyle = g; c.fillRect(FOTO.x, FOTO.y, FOTO.w, FOTO.h);
+    } else if (o.efecto === 'duotono') {
+      c.save(); c.globalCompositeOperation = 'saturation'; rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, '#808080'); c.restore();
+      c.save(); c.globalCompositeOperation = 'color'; rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, p.sea1 || p.ink); c.restore();
+      c.save(); c.globalCompositeOperation = 'screen'; c.globalAlpha = 0.18; rect(c, FOTO.x, FOTO.y, FOTO.w, FOTO.h, p.sky2); c.restore();
+    }
+  }
+  /* ¿llega la foto a 300 ppp en 30 × 40? el hueco mide 1080/1200 del ancho del póster = 3240 px de 3600 */
+  function fotoCalidad(img, o) {
+    if (!img) return null;
+    var r = fotoRect(img, o), need = 3240 / 1080;            // píxeles de imprenta por unidad del lienzo lógico
+    var ppu = 1 / r.sc;                                       // píxeles de la foto por unidad del lienzo
+    var dpi = Math.round(300 * ppu / need);
+    return dpi;
+  }
+
   /* cartel: ilustración arriba y tres líneas de texto abajo (nombre grande, subtítulo y fecha/nombres) */
   function draw(ctx, W, H, o) {
     var dest = o.modo === 'ilustrado' ? destinoDe(o.lugar) : null;
@@ -309,7 +351,8 @@
     rect(c, 0, 0, 1200, 1600, p.paper);
     c.save(); c.beginPath(); c.rect(60, 60, 1080, 1140); c.clip();
     rect(c, 0, 0, 1200, 1300, vgrad(c, 60, 900, p.sky1, p.sky2));
-    if (dest) dest.scene(c, p, R); else (ESCENAS[o.escena] || ESCENAS.costa).draw(c, p, R);
+    if (o.modo === 'foto') drawFoto(c, p, o);
+    else if (dest) dest.scene(c, p, R); else (ESCENAS[o.escena] || ESCENAS.costa).draw(c, p, R);
     c.restore();
     c.fillStyle = p.ink; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     var name = (o.titulo || '').toUpperCase();
@@ -320,5 +363,5 @@
     c.restore();
     grainLayer(ctx, W, H, 0.05);
   }
-  window.MOM_VIAJE = { draw: draw, escenas: ESCENAS, paletas: PALETAS, destinos: DESTINOS, destinoDe: destinoDe };
+  window.MOM_VIAJE = { fotoCalidad: fotoCalidad, fotoRect: fotoRect, FOTO: FOTO, draw: draw, escenas: ESCENAS, paletas: PALETAS, destinos: DESTINOS, destinoDe: destinoDe };
 })();

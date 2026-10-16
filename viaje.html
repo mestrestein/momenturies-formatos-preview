@@ -49,7 +49,7 @@
   <div class="pz-panel">
     <div class="pz-eyebrow">Personalizado</div>
     <h1>Vuestro cartel de viaje</h1>
-    <p class="pz-lead">El sitio de aquel viaje, en un cartel de los de antes. Pon el lugar, la fecha y vuestros nombres, y elige los colores.</p>
+    <p class="pz-lead">Vuestra foto de aquel viaje en un cartel de los de antes, con el nombre del lugar, la fecha y vuestros nombres.</p>
 
     <div class="pz-step">
       <label for="place">1. ¿Dónde fuisteis?</label>
@@ -59,15 +59,19 @@
       </div>
     </div>
 
-    <div class="pz-step" id="modoStep">
-      <span class="pz-label">2. Estilo</span>
-      <div class="pz-chips" id="modos"></div>
-      <div class="pz-picked" id="modoNote"></div>
-    </div>
-
-    <div class="pz-step" id="escenaStep">
-      <span class="pz-label">Paisaje</span>
-      <div class="pz-chips" id="escenas"></div>
+    <div class="pz-step" id="fotoStep">
+      <span class="pz-label">2. Vuestra foto <small>(arrástrala en la vista previa para colocarla)</small></span>
+      <label class="pz-chip" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span id="fotoBtnTxt">Subir foto</span>
+        <input type="file" id="fotoIn" accept="image/*" hidden>
+      </label>
+      <div style="height:12px"></div>
+      <label class="pz-label" for="zoom" style="font-weight:500">Zoom</label>
+      <input type="range" id="zoom" min="1" max="3" step="0.01" value="1" style="width:100%;accent-color:#1a1a1a">
+      <div style="height:10px"></div>
+      <div class="pz-chips" id="efectos"></div>
+      <div class="pz-picked" id="fotoNote"></div>
     </div>
 
     <div class="pz-step">
@@ -103,12 +107,15 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); }, V = MOM_VIAJE;
-  var st = { lugar: 'Dénia', modo: 'ilustrado', escena: 'costa', paleta: 'original' };
-  var MODOS = [['ilustrado', 'Con sus cosas típicas'], ['sencillo', 'Sencillo']];
+  /* modo: 'foto' (la foto del viaje del cliente) · 'ilustrado' (destinos dibujados) · 'sencillo' (paisaje dibujado) */
+  var st = { lugar: 'Dénia', modo: 'foto', escena: 'costa', paleta: 'original', foto: null, zoom: 1, ox: 0, oy: 0, efecto: 'natural' };
+  var EFECTOS = [['natural', 'Natural'], ['calido', 'Cálido retro'], ['duotono', 'Un solo color']];
   function dest() { return V.destinoDe(st.lugar); }
-  function opts() { return { lugar: st.lugar, modo: dest() ? st.modo : 'sencillo', escena: st.escena, paleta: st.paleta, titulo: $('title').value, sub: $('sub').value, extra: $('extra').value }; }
+  function modos() { return [['foto', 'Con mi foto']].concat(dest() ? [['ilustrado', 'Ilustrado con lo típico']] : []).concat([['sencillo', 'Paisaje dibujado']]); }
+  function modo() { return 'foto'; }   // 17-oct: el cartel de viaje es siempre con la foto del cliente
+  function opts() { return { lugar: st.lugar, modo: modo(), escena: st.escena, paleta: st.paleta, foto: st.foto, zoom: st.zoom, ox: st.ox, oy: st.oy, efecto: st.efecto, titulo: $('title').value, sub: $('sub').value, extra: $('extra').value }; }
   var raf = 0;
-  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); ctx.clearRect(0, 0, cv.width, cv.height); V.draw(ctx, cv.width, cv.height, opts()); }); }
+  function render() { cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var cv = $('cv'), ctx = MOM_P.previewCanvas(cv); ctx.clearRect(0, 0, cv.width, cv.height); V.draw(ctx, cv.width, cv.height, opts()); nota(); }); }
   function chips(id, list, cur, onSel) {
     $(id).innerHTML = '';
     list.forEach(function (it) {
@@ -117,52 +124,77 @@
       $(id).appendChild(b);
     });
   }
-  function setModo(k) { st.modo = k; if (k === 'ilustrado') st.paleta = 'original'; syncModo(); render(); }
+  function nota() {
+    var n = $('fotoNote');
+    if (modo() !== 'foto') return;
+    if (!st.foto) { n.textContent = 'Sube una foto de ese viaje. Mejor horizontal o vertical grande, sacada con buena luz.'; n.style.color = ''; return; }
+    var dpi = V.fotoCalidad(st.foto, opts());
+    if (dpi >= 220) { n.textContent = 'Calidad de imprenta: se verá nítida a 30×40 cm.'; n.style.color = '#2e7d4f'; }
+    else if (dpi >= 150) { n.textContent = 'Buena para 18×24 cm. Para 30×40 conviene una foto con más resolución o menos zoom.'; n.style.color = '#b26b00'; }
+    else { n.textContent = 'La foto tiene poca resolución para este tamaño: se verá algo borrosa. Prueba con el original de la cámara o del móvil.'; n.style.color = '#c0392b'; }
+  }
+  function setModo(k) { st.modo = k; if (k === 'ilustrado') st.paleta = 'original'; sync(); render(); }
   function setEscena(k) { st.escena = k; render(); }
   function escenaList() { return Object.keys(V.escenas).map(function (k) { return [k, V.escenas[k].es]; }); }
   function paletas() {
-    var d = dest(), list = (d && st.modo === 'ilustrado' ? [['original', 'Original']] : []).concat(Object.keys(V.paletas).map(function (k) { return [k, V.paletas[k].es]; }));
+    var d = dest(), list = (d && modo() === 'ilustrado' ? [['original', 'Original']] : []).concat(Object.keys(V.paletas).map(function (k) { return [k, V.paletas[k].es]; }));
     if (!list.some(function (x) { return x[0] === st.paleta; })) st.paleta = list[0][0];
     $('paletas').innerHTML = '';
     list.forEach(function (it) {
       var P = it[0] === 'original' ? Object.assign({}, V.paletas.atardecer, d.p) : V.paletas[it[0]];
       var b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = it[1]; b.setAttribute('aria-pressed', it[0] === st.paleta);
-      b.innerHTML = '<span style="background:linear-gradient(135deg,' + P.sky1 + ' 0 50%,' + (P.sea1 || P.land2) + ' 50% 100%)"></span>';
+      b.innerHTML = '<span style="background:linear-gradient(135deg,' + P.paper + ' 0 50%,' + P.ink + ' 50% 100%)"></span>';
       b.addEventListener('click', function () { st.paleta = it[0]; paletas(); render(); });
       $('paletas').appendChild(b);
     });
     var cur = list.filter(function (x) { return x[0] === st.paleta; })[0]; $('paletaName').textContent = cur ? cur[1] : '';
   }
-  function syncModo() {
-    var d = dest();
-    $('modoStep').style.display = d ? '' : 'none';
-    $('escenaStep').style.display = d && st.modo === 'ilustrado' ? 'none' : '';
-    $('modoNote').textContent = d ? (st.modo === 'ilustrado' ? 'Dibujado con lo más reconocible del lugar.' : 'Un paisaje sencillo, sin monumentos.') : '';
-    paletas();
+  function sync() {
+    var m = modo();
+    $('paletas').parentNode.querySelector('.pz-label').textContent = '4. Colores del marco y el texto';
+    paletas(); nota();
   }
-  chips('modos', MODOS, st.modo, setModo);
-  chips('escenas', escenaList(), st.escena, setEscena);
+  // la foto: se carga entera (es la que va a imprenta)
+  $('fotoIn').addEventListener('change', function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () { st.foto = im; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; $('fotoBtnTxt').textContent = 'Cambiar foto'; render(); };
+    im.src = url;
+  });
+  $('zoom').addEventListener('input', function () { st.zoom = +this.value; render(); });
+  chips('efectos', EFECTOS, st.efecto, function (k) { st.efecto = k; render(); });
+  // arrastrar la foto sobre la vista previa
+  (function () {
+    var cv = $('cv'), drag = null;
+    cv.style.touchAction = 'none';
+    cv.addEventListener('pointerdown', function (e) {
+      if (modo() !== 'foto' || !st.foto) return;
+      var r = V.fotoRect(st.foto, opts()), b = cv.getBoundingClientRect(), k = 1200 / b.width;
+      drag = { x: e.clientX, y: e.clientY, ox: st.ox, oy: st.oy, ex: Math.max(1, (r.w - V.FOTO.w) / 2) / k, ey: Math.max(1, (r.h - V.FOTO.h) / 2) / k };
+      cv.setPointerCapture(e.pointerId);
+    });
+    cv.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      st.ox = Math.max(-1, Math.min(1, drag.ox + (e.clientX - drag.x) / drag.ex));
+      st.oy = Math.max(-1, Math.min(1, drag.oy + (e.clientY - drag.y) / drag.ey));
+      render();
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function () { drag = null; }); });
+  })();
   MOM_P.placeSearch($('place'), $('placeRes'), function (p) {
     st.lugar = p.name; $('title').value = p.name;
     var d = dest();
     $('sub').value = d ? d.sub.charAt(0) + d.sub.slice(1).toLowerCase() : (p.country || '');
-    if (d) { st.modo = 'ilustrado'; st.paleta = 'original'; chips('modos', MODOS, st.modo, setModo); }
-    else {
-      if (st.paleta === 'original') st.paleta = 'atardecer';
-      // un paisaje que encaje con el sitio: isla, montaña, ciudad o costa
-      var v = (p.osmKey || '') + ' ' + (p.osmValue || '') + ' ' + p.full.toLowerCase();
-      st.escena = /island|isla|illa|archipel/.test(v) ? 'isla' : /mountain|peak|montaña|sierra|alps|alpes|pirineo|volcano/.test(v) ? 'montana' : /lake|lago/.test(v) ? 'lago' : (p.osmValue === 'city' ? 'ciudad' : 'costa');
-      chips('escenas', escenaList(), st.escena, setEscena);
-    }
-    syncModo(); render();
+    sync(); render();
   });
   ['title', 'sub', 'extra'].forEach(function (id) { $(id).addEventListener('input', render); });
   $('cta').addEventListener('click', function () {
+    if (modo() === 'foto' && !st.foto) { MOM_P.toast('Sube primero la foto de vuestro viaje.'); return; }
     var slug = ($('title').value || 'lugar').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
     MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { V.draw(ctx, W, H, opts()); }, 'viaje-' + slug);
   });
   window.addEventListener('resize', render);
-  syncModo();
+  sync();
   if (document.fonts && document.fonts.load) Promise.all(['400 80px "Bebas Neue"', '600 30px Montserrat', '500 30px Montserrat'].map(function (f) { return document.fonts.load(f).catch(function () {}); })).then(render);
   render();
 })();
