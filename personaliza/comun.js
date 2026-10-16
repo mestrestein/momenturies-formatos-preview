@@ -115,7 +115,7 @@
       if (!window.MOMENTURIES_PHOTO) throw new Error('handoff');
       return window.MOMENTURIES_PHOTO.put(new File([b], name + '.jpg', { type: 'image/jpeg' }));
     }).then(function () {
-      location.href = 'cuadro.html?foto=1&diseno=' + encodeURIComponent(name);
+      location.href = 'cuadro.html?foto=1&formato=retrato&encuadre=0&diseno=' + encodeURIComponent(name);   // directo en Retrato, sin recorte
     }).catch(function () {
       btn.disabled = false; btn.classList.remove('loading'); txtEl.textContent = old;
       P.toast('No hemos podido preparar el póster. Inténtalo otra vez.');

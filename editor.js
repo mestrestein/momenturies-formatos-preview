@@ -1588,6 +1588,8 @@ function ingestFiles(files, mode){
       p.crop = {scale:1, fx:0, fy:0, cx:0.5, cy:0.5};
       const o = img.naturalWidth/img.naturalHeight >= 1.05 ? 'landscape' : 'portrait';
       p.srcImg = img;
+      const fit = HANDOFF_FIT && !WALL ? HANDOFF_FIT : null; HANDOFF_FIT = null;
+      if(fit && p.format !== fit.format) applyProductSize(p, defSizeOf(PRODUCTS[p.ptype] || PRODUCTS.metal, fit.format), fit.format);
       if(!WALL && p.orient !== o) setOrientation(p, o); else { applyFrontTexture(i); }
       if(WALL && auto && moveToFittingSlot(p)) applyFrontTexture(POSTERS.indexOf(p));
       if(i===selected) syncConfigUI();
@@ -1599,7 +1601,7 @@ function ingestFiles(files, mode){
       // puesto antes, y había que ir a buscar "Formato" dentro del panel para cambiarlo. En
       // una pared (WALL) el formato de cada hueco ya viene fijado por la composición, así que
       // aquí no hace falta preguntar: se queda rápido, como pidió Marc.
-      if(!WALL && i===selected) openCropModal();
+      if(!WALL && i===selected && !fit) openCropModal();
     };
     img.onerror = ()=>{ p.pendingImg=false; URL.revokeObjectURL(url); };
     img.src = url;
@@ -2758,6 +2760,7 @@ window.addEventListener('scroll', ()=>{ document.getElementById('nav').classList
 addPoster();   // empieza vacío: un póster "SUBE TU FOTO" listo para personalizar
 /* entrada desde la landing con la foto ya elegida (photo-handoff.js):
    se recoge el File original de IndexedDB, se abre el editor y se monta en 3D. */
+let HANDOFF_FIT = null;   // formato fijado y sin recorte para la foto que llega de un personalizado
 (function pickUpHandoffPhoto(){
   if(!window.MOMENTURIES_PHOTO) return;
   if(new URLSearchParams(location.search).get('foto') !== '1') return;
@@ -2765,6 +2768,11 @@ addPoster();   // empieza vacío: un póster "SUBE TU FOTO" listo para personali
     const files = Array.isArray(file) ? file : (file ? [file] : []);   // una (versión vieja) o varias
     if(!files.length) return;
     openEditor();
+    /* 16-oct · los pósters personalizados (cielo.html, mapa.html) llegan con ?formato=retrato&encuadre=0: ya
+       vienen en 3:4 con el texto colocado, así que entran directos en Retrato y sin pasar por el recorte.
+       Solo para esta foto; después el cliente puede cambiar de formato como siempre. */
+    const _hq = new URLSearchParams(location.search);
+    if(_hq.get('encuadre') === '0') HANDOFF_FIT = { format: FORMATS[_hq.get('formato')] ? _hq.get('formato') : 'retrato' };
     ingestFiles(files, 'replace');
     const b = document.getElementById('btnSample'); if(b) b.hidden = true;
   });
