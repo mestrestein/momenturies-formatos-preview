@@ -2343,6 +2343,14 @@ function renderSizes(){
     box.appendChild(b);
   });
 }
+/* el imán no lleva dorso: oculta pestañas y dedicatoria (sin borrarla) y repinta el dorso */
+function syncBackForProduct(p){
+  if(!p) return;
+  const noBack = p.ptype === 'nevera';
+  document.querySelectorAll('#txtBlock .txt-back, #faceTabs').forEach(el => { el.style.display = noBack ? 'none' : ''; });
+  const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i);
+  if(noBack && FACE_BACK) setFace(false);
+}
 function setPtype(k){
   const p=POSTERS[selected]; if(!p||p.ptype===k||!PRODUCTS[k]) return;
   p.ptype=k;
@@ -2350,7 +2358,7 @@ function setPtype(k){
   const pr=PRODUCTS[k], fmt = pr.formats ? FORMAT_DEFAULT : null;
   applyProductSize(p, defSizeOf(pr, fmt), fmt);
   renderPtypes(); renderFormats(); renderSizes(); renderMounts(); renderHangerChips();
-  syncPanelHead(); layout(); applySelection(); updateTotal();
+  syncPanelHead(); layout(); applySelection(); updateTotal(); syncBackForProduct(p);
   sceneSelectHanger();
   applyMountVisual(p); showMountPose(p);            // peana / imán de nevera / imán de pared
   /* el Sobremesa se APOYA: si había puesto un entorno de pared (foto o escena para colgar), pasa a
@@ -2679,10 +2687,10 @@ function syncPanelHead(){
 function syncConfigUI(){
   const p = POSTERS[selected]; if(!p) return;
   frontInput.value=p.frontText||''; frontDateInput.value=p.frontDate||'';
-  /* 16-oct · el imán no lleva nada detrás (va pegado a la nevera): fuera pestañas y dedicatoria, y se borra si la había */
-  { const noBack = p.ptype === 'nevera';
-    document.querySelectorAll('#txtBlock .txt-back, #faceTabs').forEach(el => { el.style.display = noBack ? 'none' : ''; });
-    if(noBack){ if(p.backText || p.backDate){ p.backText = ''; p.backDate = ''; applyBackText(selected); } if(FACE_BACK) setFace(false); } }
+  /* 16-oct · el imán no lleva nada detrás (va pegado a la nevera): fuera pestañas y dedicatoria. La dedicatoria NO se
+     borra: en «Todos los formatos» (producto.html) se puede cambiar de producto, y al volver a cuadro sigue ahí. Mientras
+     es imán ni se dibuja (applyBackText) ni va al carrito. */
+  syncBackForProduct(p);
   backInput.value =p.backText ||''; backDateInput.value =p.backDate ||'';
   if(!p.frontFont) p.frontFont = FONT_DEFAULT;
   if(!p.backFont)  p.backFont  = FONT_DEFAULT;
