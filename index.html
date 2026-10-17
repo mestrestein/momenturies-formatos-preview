@@ -2356,7 +2356,7 @@ document.addEventListener('keydown',e=>{
 })();
 </script>
 <!-- paredes.js ya no hace falta aquí: el carrusel lo pinta combis.js con imágenes ya montadas -->
-<script src="fotos/combis/combis.js?v=d97deb7c"></script>
+<script src="fotos/combis/combis.js?v=59465662"></script>
 <script>
 /* Combinaciones en entorno real (fotos/_build_combis.py). Una misma tarjeta sirve para el
    carrusel de paredes, "a quién regalas" y "momentos": cambia el grupo y el texto de abajo.
@@ -2385,7 +2385,28 @@ document.addEventListener('keydown',e=>{
     'mom-comunion':        ['Su gran día, a la altura del momento', 'Their big day, worthy of the moment'],
     'mom-logros':          ['La casa nueva, el reto, el ascenso. Lo que te costó', 'The new place, the challenge, the promotion. What it cost you'],
     'mom-navidad':         ['El regalo que se abre y se cuelga el mismo día', 'The gift you unwrap and hang the same day'],
-    'mom-padres-madres':   ['Sin talla, sin ticket regalo y sin cajón', 'No size, no gift receipt, no drawer']
+    'mom-padres-madres':   ['Sin talla, sin ticket regalo y sin cajón', 'No size, no gift receipt, no drawer'],
+    'mom-jubilacion':      ['Todo el tiempo del mundo, y las fotos para llenarlo', 'All the time in the world, and the photos to fill it'],
+    'par-sanvalentin':     ['Este año, flores que no se marchitan', 'This year, flowers that never wilt'],
+    'par-pedida':          ['El sí más nervioso de vuestra vida', 'The most nervous yes of your life'],
+    'par-primer-ano':      ['Doce meses juntos caben en una pared', 'Twelve months together fit on one wall'],
+    'par-luna-miel':       ['Que el viaje no se acabe al deshacer la maleta', "So the trip doesn't end when you unpack"],
+    'par-casa':            ['La primera pared que colgáis juntos', 'The first wall you hang together'],
+    'par-escapadas':       ['Cada escapada, un cuadro', 'Every getaway, a print'],
+    'par-bodas-oro':       ['Cincuenta años merecen algo más que una tarta', 'Fifty years deserve more than a cake'],
+    'fam-embarazo':        ['Los meses de espera, antes de que se olviden', 'The months of waiting, before they fade'],
+    'fam-primer-ano':      ['Doce meses que pasan volando', 'Twelve months that fly by'],
+    'fam-toda':            ['Todos en la misma pared, aunque no siempre en la misma mesa', 'Everyone on one wall, even when not at one table'],
+    'fam-bautizo':         ['Un recuerdo para los padrinos que no acaba en un cajón', "A keepsake for the godparents that won't end up in a drawer"],
+    'pet-perro':           ['Su mejor cara, la que pone cuando llegas a casa', 'Their best face, the one they make when you get home'],
+    'pet-gato':            ['El jefe de la casa, por fin en la pared', 'The boss of the house, finally on the wall'],
+    'pet-cachorro':        ['Crecen tan rápido que hay que colgarlo ya', 'They grow so fast you need to hang it now'],
+    'pet-gatitos':         ['Las siestas más bonitas de la casa', 'The cutest naps in the house'],
+    'pet-familia':         ['Uno más en la foto de familia', 'One more in the family photo'],
+    'pet-cumple':          ['Su día también se celebra', 'Their day deserves a party too'],
+    'pet-navidad':         ['Su primera Navidad en casa', 'Their first Christmas at home'],
+    'pet-perro-gato':      ['Se llevan mejor de lo que dicen', 'They get along better than they let on'],
+    'pet-humano':          ['Tú y él, que sois equipo', "You and them, because you're a team"]
   };
   var eur = function(v){ return v.toFixed(2).replace('.', ',') + '€'; };
 
@@ -2421,7 +2442,8 @@ document.addEventListener('keydown',e=>{
   var gift = document.getElementById('giftGrid');
   if(gift){
     C.filter(function(c){ return c.group === 'quien' || c.group === 'momento'; }).forEach(function(c){
-      var a = card(c, true); a.dataset.tab = TAB_OF[c.id] || 'ocasiones'; gift.appendChild(a);
+      var pre = { par:'pareja', fam:'familia', pet:'mascota' }[c.id.split('-')[0]];
+      var a = card(c, true); a.dataset.tab = TAB_OF[c.id] || pre || 'ocasiones'; gift.appendChild(a);
     });
     var showTab = function(k){
       gift.querySelectorAll('.gift-card').forEach(function(a){ a.hidden = a.dataset.tab !== k; });

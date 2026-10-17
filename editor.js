@@ -1055,6 +1055,17 @@ function layout(){
   /* con el editor cerrado el escenario mide 0 y el encuadre saldría negativo (y al abrir se vería
      medio segundo de geometría del revés): se deja para el resize3D() de la apertura */
   if(!editorOpen || wpx < 2 || hpx < 2){ applySelection(); return; }
+  /* 17-oct · al entrar en una habitación (foto nuestra, con conjunto) se ve primero entera y la vista
+     viaja sola hasta el conjunto, como en las escenas 3D: aquí se coloca, sin animar, el encuadre de lejos */
+  let roomFlyGo = false;
+  if(_roomFly && !_roomFlyInner){
+    _roomFly = false;
+    if(WALL && ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom){
+      const k = ROOM_LEJOS; ROOM_LEJOS = 1; _roomFlyInner = true; _flyUntil = 0; group.userData.framed = false;
+      try{ layout(); } finally { _roomFlyInner = false; ROOM_LEJOS = k; }
+      roomFlyGo = true;
+    }
+  }
   let topPx = 116;   // deja sitio a la barra de Conjunto/Entorno, que va arriba
   /* la barra se mide: en móvil, con conjunto, lleva una segunda fila (Tamaño) y ocupa más */
   { const t = document.getElementById('edTools');
@@ -1083,6 +1094,7 @@ function layout(){
   let s  = Math.min(1, (usableW*0.90)/Math.max(refW,P_SHORT), (usableH*0.96)/Math.max(refH,P_SHORT));
   let fitAuto = s, fitMin = s;
   let apurado = false;   // el conjunto no entra entero sin alejarse más de la cuenta (ver más abajo)
+  let muebleY = null, uBotF = null;   // dónde queda en pantalla la fila `mueble` de la foto (para el tope del zoom)
   let px = -visW * (rightPx/(2*wpx)) - fcx*s;
   let py =  visH * ((botPx-topPx)/(2*hpx)) - fcy*s;
   if(ROOM_CFG.mode === 'photo' && photoMesh && photoMesh.visible){   // con o sin conjunto: manda la foto
@@ -1147,7 +1159,11 @@ function layout(){
         py = clampIn(py,  visH/2 - (rcy + rh/2)*s, -visH/2 - (rcy - rh/2)*s);
         /* al acercarse, el borde de la foto puede dejar el conjunto debajo de las barras de
            arriba o de abajo, o el mueble fuera de la vista (solo pared): entonces se acerca menos */
-        const mueble = ROOM.anchorBottomY ? py + (cy - (ROOM.anchorBottomY - ROOM.h/2)*Upx)*s >= uBot + visH*0.14 : true;
+        /* 17-oct · `mueble` (fotos/_calibracion_entornos.py) es la fila que tiene que verse siempre: 25 cm
+           dentro del mueble de debajo. Al acercarse nunca se queda en pared lisa. */
+        const filaM = ROOM.mueble || ROOM.anchorBottomY;
+        muebleY = filaM ? py + (cy - (filaM - ROOM.h/2)*Upx)*s : null; uBotF = uBot;
+        const mueble = filaM ? muebleY >= uBot + visH*(ROOM.mueble ? 0.02 : 0.14) : true;
         const dentro = py + (fcy + totalH/2)*s <= uTop && py + (fcy - totalH/2)*s >= uBot;
         /* 12-oct · un conjunto tiene que verse SIEMPRE entero: si ni con la foto tapando justo el
            visor entra (cuelga muy arriba en la foto, o es muy alto), se aleja un poco más aunque
@@ -1160,7 +1176,7 @@ function layout(){
       }
     }
   }
-  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin, apurado };
+  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin, apurado, muebleY, uBot: uBotF, visH, visW, compW: WALL ? WALL.width*CM*s : 0, compH: WALL ? WALL.height*CM*s : 0 };
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
@@ -1180,6 +1196,17 @@ function layout(){
     gsap.to(group.scale, { x:s, y:s, z:s, duration:D, ease:E, onUpdate:upd });
     gsap.to(camFrame,    { x:px, y:py,    duration:D, ease:E, onUpdate:upd });
     const rot = { v: tRy }; gsap.to(rot, { v: ry1, duration:D, ease:E, onUpdate:() => { tRy = cRy = rot.v; upd(); } });
+    dirty3D = true;
+  } else if(roomFlyGo){
+    /* viaje de la habitación entera al conjunto (el encuadre de lejos ya está puesto) */
+    const D = 2.2, E = 'power2.inOut', upd = () => { dirty3D = true; };
+    gsap.killTweensOf(group.scale); gsap.killTweensOf(camFrame);
+    /* si la habitación entera y el encuadre del conjunto casi coinciden, se arranca algo más lejos
+       (la bruma difumina los bordes) para que se note que la vista entra en la habitación */
+    if(group.scale.x > s/1.25){ const k = 1/1.35; group.scale.set(s*k, s*k, s*k); camFrame.x = px; camFrame.y = py; }
+    _flyUntil = performance.now() + (D + .45)*1000;
+    gsap.to(group.scale, { x:s, y:s, z:s, duration:D, delay:.45, ease:E, onUpdate:upd });
+    gsap.to(camFrame,    { x:px, y:py,    duration:D, delay:.45, ease:E, onUpdate:upd });
     dirty3D = true;
   } else if(performance.now() < _flyUntil){
     /* a mitad del viaje de entrada otro layout() (texturas, modelos que terminan de cargar…) lo
@@ -1459,13 +1486,29 @@ function setZoom(z){
     if(lejos){
       /* sin saltos: en la foto de lejos se deja la vista algo más abierta que la de antes, no la habitación entera de golpe */
       const antes = FIT ? 1 / FIT.s : 0;
-      setRoom(lejos);
+      setRoom(lejos, true);
       for(const v of [0, .2, .4, .6, .8, 1]){ ROOM_LEJOS = v; layout(); if(FIT && 1 / FIT.s >= antes * 1.3) break; }
       return;
     }
   }
   const max = foto ? BASEZ : MAXZ;
-  tZ = Math.max(MINZ, Math.min(max, z));
+  tZ = Math.max(foto ? zoomMinMueble() : MINZ, Math.min(max, z));
+}
+/* 17-oct · tope del zoom sobre una foto nuestra: se puede acercar hasta que la fila `mueble` (el mueble de
+   debajo del conjunto) llegaría al borde de abajo del visor; más cerca solo se vería pared lisa. La cámara
+   hace dolly hacia la pared (z=0): en pantalla y = (py·zr + (muebleY−py))·BASEZ/cZ, zr como en animate(). */
+function zoomMinMueble(){
+  if(!FIT || FIT.muebleY == null || FIT.uBot == null || !ROOM || !ROOM.mueble) return MINZ;
+  const gz = group.position.z, lim = Math.max(-FIT.visH/2 + FIT.visH*0.10, FIT.uBot - FIT.visH*0.12);   // que asome por abajo: en PC tras la tira de miniaturas, en móvil sobre los botones
+  const fila = FIT.muebleY + 15*CM*FIT.s;   // a mano basta con ver ~10 cm del mueble (la fila `mueble` son 25)
+  const y = cz => (FIT.py*(cz - gz)/(BASEZ - gz) + (fila - FIT.py)) * BASEZ / cz;
+  /* y el conjunto siempre entero en pantalla (al acercar, crece con BASEZ/cz) */
+  const zEntero = Math.max(BASEZ*FIT.compW/(FIT.visW*0.94), BASEZ*FIT.compH/(FIT.visH*0.62));
+  if(y(BASEZ) < lim) return BASEZ;
+  if(y(MINZ) >= lim) return Math.min(BASEZ, Math.max(MINZ, zEntero));
+  let lo = MINZ, hi = BASEZ;
+  for(let i = 0; i < 30; i++){ const m = (lo + hi)/2; if(y(m) >= lim) hi = m; else lo = m; }
+  return Math.min(BASEZ, Math.max(hi, zEntero));
 }
 
 /* PRUEBA (12-oct) · Bruma de los bordes: con ella, las barras de arriba y abajo se funden en blanco
@@ -3334,9 +3377,10 @@ function alignForeground(){
   fgMesh.position.set((f*wx - px)/s, (f*wy - py)/s, -0.22 + D);
 }
 /* una foto de entorno: las nuestras (fotos/entornos/entornos.js) o la del cliente */
-function setRoom(room){
+function setRoom(room, sinViaje){
   FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
   ROOM = room; ROOM_LEJOS = 0;
+  if(room && !room.custom && !sinViaje){ _roomFly = true; tZ = BASEZ; }   // al entrar, de la habitación entera al conjunto
   ROOM_CFG.mode = room ? 'photo' : 'none';
   setZoom(tZ);                            // si venía alejado, que no asomen los bordes de la foto
   VIEW = '2d';                            // sobre una foto lo natural es mirarla de frente
@@ -3345,6 +3389,7 @@ function setRoom(room){
   scheduleSave();
 }
 /* una de las habitaciones dibujadas */
+var _roomFly = false, _roomFlyInner = false;   // viaje de entrada en las fotos de entorno (ver layout)
 var _flyIn = false, _flyUntil = 0;   // la próxima vez que se encuadre, viaje de la habitación al Sobremesa
 function setScene(id){
   FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
@@ -5377,11 +5422,16 @@ window.MOMENTURIES_openWall = function(id, k){
     const g = r.group || r.id, want = isMobileView() ? 'v' : 'h';
     const cands = PHOTO_ROOMS.filter(x => (x.group || x.id) === g);
     /* con conjunto, la foto de esa habitación donde se vea bien; si en ninguna, la mejor otra */
-    if(WALL){ const ok = roomFor(r, WALL) || bestRoomFor(WALL); if(ok){ setRoom(ok); return; } }
+    /* 16-oct (Marc): de una tarjeta de la portada se llega a ESA foto, la misma de la miniatura, sin
+       cambiarla por la otra orientación ni por otra habitación. Solo si el conjunto no cabe se busca otra. */
+    if(WALL){ if(roomFits(r, WALL)){ setRoom(r); return; }
+      const ok = roomFor(r, WALL) || bestRoomFor(WALL); if(ok){ setRoom(ok); return; } }
     setRoom(cands.find(x => x.orient === want) || r);
     return;
   }
   if(/^pared-/.test(e)) return;
+  /* con conjunto, un id que ya no existe no manda al 3D: la mejor foto para ese conjunto */
+  if(WALL && !SCENES.some(s => s.id === e)){ const ok = bestRoomFor(WALL); if(ok){ setRoom(ok); return; } }
   setScene(e);
 })();
 
