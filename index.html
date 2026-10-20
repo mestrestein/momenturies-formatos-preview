@@ -1364,6 +1364,39 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 @media(max-width:1100px){ .gift-tabs + .gift-grid .gift-card{width:calc((100% - 36px)/3)} }
 @media(max-width:900px){ .gift-tabs + .gift-grid .gift-card{width:calc((100% - 10px)/2)} }
 @media(max-width:580px){ .gift-tabs{gap:6px} .gift-tabs .persona-tab{padding:8px 13px;font-size:13px} }
+
+/* «Así se cuelga»: escena 3D que avanza con el scroll (colgado-scroll.js) */
+.cs-section{position:relative;height:640vh;background:#0d0d0d}
+.cs-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+.cs-stage{position:absolute;inset:0;background:#e9e3da url(fotos/entornos/salon-luz.jpg) 58% 62%/cover no-repeat}
+.cs-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.cs-head{position:absolute;left:0;right:0;top:0;z-index:3;padding:84px 24px 40px;text-align:center;pointer-events:none;
+  background:linear-gradient(rgba(13,13,13,.55),rgba(13,13,13,0))}
+.cs-head p{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.cs-dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.cs-dots i{width:22px;height:3px;border-radius:2px;background:rgba(255,255,255,.3);transition:background .3s}
+.cs-dots i.on{background:#fff}
+.cs-caps{position:absolute;left:0;right:0;bottom:0;z-index:3;min-height:190px;pointer-events:none;
+  background:linear-gradient(rgba(13,13,13,0),rgba(13,13,13,.6) 70%)}
+.cs-cap{position:absolute;left:50%;bottom:40px;width:min(640px,calc(100% - 32px));transform:translate(-50%,14px);opacity:0;
+  transition:opacity .45s ease,transform .45s ease;text-align:center;color:#fff}
+.cs-cap.on{opacity:1;transform:translate(-50%,0)}
+.cs-cap h3{text-shadow:0 2px 14px rgba(0,0,0,.35);font-family:Georgia,'Times New Roman',serif;font-size:clamp(24px,3.2vw,38px);font-weight:700;line-height:1.15;margin-bottom:8px}
+.cs-cap p{font-size:15px;line-height:1.55;color:rgba(255,255,255,.85)}
+.cs-ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.cs-cap.on .cs-ctas{pointer-events:auto}
+.cs-ctas a{background:#fff;color:#111;font-weight:700;font-size:14px;padding:13px 22px;border-radius:999px;text-decoration:none}
+.cs-ctas a+a{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4)}
+.cs-tag{position:absolute;left:0;top:0;z-index:2;background:#fff;color:#111;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;
+  white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.14);opacity:0;transition:opacity .35s;pointer-events:none;text-align:center}
+.cs-tag small{display:block;font-weight:500;color:#666;font-size:11px;margin-top:1px}
+.cs-tag.on{opacity:1}
+.cs-section:not(.cs-listo) .cs-tag{display:none}
+@media(max-width:768px){
+  .cs-section{height:560vh}
+  .cs-cap{bottom:28px} .cs-cap p{font-size:14px}
+  .cs-tag{font-size:11px;padding:6px 10px} .cs-tag small{display:none}
+}
 </style>
 <script>
 /* ?solo=N enseña solo la sección N de la portada (para comparar versiones en /soluciones/portada.html) y le dice su alto a la página que la incrusta */
@@ -1758,6 +1791,29 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   </div>
 </section>
 
+<!-- ASÍ SE CUELGA: escena 3D por scroll (colgado-scroll.js + pared3d.js); se carga al acercarse -->
+<section class="cs-section" id="asi-se-cuelga" aria-label="Así se cuelga un cuadro Momenturies">
+  <div class="cs-sticky">
+    <div class="cs-stage">
+      <canvas role="img" aria-label="Animación: lámina protectora, imán de pared y cuadro se montan en la pared sin clavos"></canvas>
+      <div class="cs-tag"><span class="es">Lámina protectora</span><span class="en">Protective sheet</span><small><span class="es">cuida la pintura</span><span class="en">protects the paint</span></small></div>
+      <div class="cs-tag"><span class="es">Imán de pared</span><span class="en">Wall magnet</span><small><span class="es">va encima de la lámina</span><span class="en">goes on the sheet</span></small></div>
+      <div class="cs-tag"><span class="es">Tu cuadro, por detrás</span><span class="en">Your print, from behind</span><small><span class="es">imán y dedicatoria</span><span class="en">magnet and dedication</span></small></div>
+    </div>
+    <div class="cs-head"><p><span class="es">Así se cuelga</span><span class="en">How it hangs</span></p><div class="cs-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="cs-caps">
+      <div class="cs-cap"><h3><span class="es">Tres piezas. Ni un agujero.</span><span class="en">Three pieces. Not one hole.</span></h3><p><span class="es">Todo viene en la caja. Baja despacio y míralo montarse.</span><span class="en">It all comes in the box. Scroll slowly and watch it go up.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">Primero, la lámina</span><span class="en">First, the sheet</span></h3><p><span class="es">Se pega donde lo quieras. Protege la pintura y, el día que lo cambies, sale sin dejar marca.</span><span class="en">Stick it wherever you want. It protects the paint and comes off clean the day you move things around.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">Encima, el imán</span><span class="en">On top, the magnet</span></h3><p><span class="es">Aprietas cinco segundos y ya tienes tu punto de anclaje. Sin taladro y sin medir.</span><span class="en">Press for five seconds and that's your anchor point. No drill, no measuring.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">Acercas el cuadro y… clic</span><span class="en">Bring the print close and… click</span></h3><p><span class="es">Lleva su imán detrás, junto a tu dedicatoria. Notas cómo tira y se queda centrado solo.</span><span class="en">It has its own magnet on the back, next to your dedication. You feel the pull and it centres itself.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">¿Se ha quedado torcido?</span><span class="en">A little crooked?</span></h3><p><span class="es">Lo enderezas con un dedo. Ni nivel, ni metro, ni otro agujero.</span><span class="en">Straighten it with one finger. No level, no tape, no new hole.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">Y luego viene otro. Y otro.</span><span class="en">Then another one. And another.</span></h3><p><span class="es">Cada cuadro con su imán. La pared se va llenando de los tuyos sin que nadie saque la caja de herramientas.</span><span class="en">Each print on its own magnet. The wall fills up with your people and nobody gets the toolbox out.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">Tu salón, ahora sí</span><span class="en">Your living room, finally</span></h3><p><span class="es">De una pared vacía a la tuya en lo que tardas en hacerte un café.</span><span class="en">From a bare wall to yours in the time it takes to make a coffee.</span></p>
+        <div class="cs-ctas"><a href="cuadro.html"><span class="es">Crear mi cuadro</span><span class="en">Create my print</span></a><a href="paredes.html"><span class="es">Ver paredes montadas</span><span class="en">See ready-made walls</span></a></div></div>
+    </div>
+  </div>
+</section>
+
 <section class="adios-section" id="colgado">
   <div class="container">
     <p class="adios-tag">COLGADO MAGNÉTICO</p>
@@ -1767,50 +1823,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
     <h3 class="adios-claim">Desde tu abuela hasta tu hijo de 5 años sabe montarlo</h3>
 
 
-    <!-- EL PROCESO, EN CUATRO VIÑETAS -->
-    <ol class="hang-steps">
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="Se pega la base adhesiva en la pared">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <circle cx="60" cy="40" r="13" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
-          <path d="M60 30v20M50 40h20" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round"/>
-          <path d="M86 84c-6-10-10-18-10-26a10 10 0 0 1 20 0c0 8-4 16-10 26z" fill="#fff" stroke="#0d0d0d" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">1 · Pega la base</span><span class="en">1 · Stick the base</span></b>
-        <span class="es">Va en el pedido. Se pega en la pared sin clavos ni herramientas.</span><span class="en">It comes in the box. It sticks to the wall with no nails or tools.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se engancha solo sobre el imán">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <circle cx="60" cy="40" r="7" fill="#d9d2c7" stroke="#0d0d0d" stroke-width="2"/>
-          <rect x="38" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
-          <path d="M60 4v7M52 8l8 6 8-6" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">2 · Acércalo</span><span class="en">2 · Bring it close</span></b>
-        <span class="es">El imán tira de él y lo centra solo. Clic y ya está.</span><span class="en">The magnet pulls it in and centres it. Click, done.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="El cuadro se mueve y se ajusta cuando quieras">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <rect x="44" y="16" width="44" height="58" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4"/>
-          <rect x="26" y="20" width="44" height="58" rx="2" fill="none" stroke="#0d0d0d" stroke-width="1.6" stroke-dasharray="4 4" opacity=".55"/>
-          <path d="M22 46h-10M16 41l-6 5 6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M98 46h10M104 41l6 5-6 5" fill="none" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">3 · Ajústalo</span><span class="en">3 · Adjust it</span></b>
-        <span class="es">Lo mueves, lo enderezas o lo cambias de sitio las veces que quieras.</span><span class="en">Move it, straighten it or change its spot as many times as you like.</span>
-      </li>
-      <li>
-        <svg viewBox="0 0 120 96" role="img" aria-label="Se descuelga y la pared queda sin marcas">
-          <rect x="4" y="4" width="112" height="76" rx="4" fill="#efeae2"/>
-          <rect x="16" y="20" width="40" height="52" rx="2" fill="#fff" stroke="#0d0d0d" stroke-width="2.4" transform="rotate(-9 36 46)"/>
-          <circle cx="88" cy="42" r="17" fill="#fff" stroke="#0d0d0d" stroke-width="2"/>
-          <polyline points="80,42 86,48 97,36" fill="none" stroke="#0d0d0d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <b><span class="es">4 · Descuélgalo</span><span class="en">4 · Take it down</span></b>
-        <span class="es">Retiras la base y la pared queda sin agujeros ni marcas.</span><span class="en">Peel the base off and the wall is left with no holes or marks.</span>
-      </li>
-    </ol>
+
 
     <div class="adios-grid">
 
@@ -2466,13 +2479,30 @@ function combiSlide(dir){
 }
 </script>
 <script>
+/* «Así se cuelga» (#asi-se-cuelga): three.js, pared3d.js y la escena se cargan cuando la sección se acerca */
+(function(){
+  var sec = document.getElementById('asi-se-cuelga'); if(!sec || !('IntersectionObserver' in window)) return;
+  function js(src, ok){ var s = document.createElement('script'); s.src = src; s.onload = ok; document.body.appendChild(s); }
+  var io = new IntersectionObserver(function(es){
+    if(!es[0].isIntersecting) return; io.disconnect();
+    var luego = function(){ js('colgado-scroll.js?v=3e13ce7c', function(){}); };
+    if(window.Pared3D) return luego();
+    var p3 = function(){ js('pared3d.js?v=30dd5984', luego); };
+    if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
+  }, { rootMargin:'900px 0px' });
+  io.observe(sec);
+})();
+</script>
+<script>
 /* Pared de 15 (#cambialos): three.js y la escena se cargan solo cuando la sección se acerca a la pantalla */
 (function(){
   var st = document.getElementById('pared15'); if(!st || !('IntersectionObserver' in window)) return;
   function js(src, ok){ var s = document.createElement('script'); s.src = src; s.onload = ok; document.body.appendChild(s); }
   var io = new IntersectionObserver(function(es){
     if(!es[0].isIntersecting) return; io.disconnect();
-    js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', function(){ js('pared3d.js?v=6a62fe59', arrancar); });
+    /* la escena «Así se cuelga» puede haber cargado ya three.js y pared3d.js: no cargarlos dos veces */
+    var p3 = function(){ if(window.Pared3D) arrancar(); else js('pared3d.js?v=30dd5984', arrancar); };
+    if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
   }, { rootMargin:'600px 0px' });
   io.observe(st);
   function arrancar(){

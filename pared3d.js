@@ -47,6 +47,21 @@
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
   }
 
+  /* la trasera del cuadro: aluminio cepillado con la dedicatoria impresa (lo que ve quien lo descuelga) */
+  function trasera(w, h){
+    const c = document.createElement('canvas'); c.width = 600; c.height = 800; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 600, 800); g.addColorStop(0, '#e9e8e5'); g.addColorStop(.5, '#d4d3cf'); g.addColorStop(1, '#e4e3df');
+    x.fillStyle = g; x.fillRect(0, 0, 600, 800);
+    x.globalAlpha = .07; for(let i = 0; i < 800; i += 2){ x.fillStyle = Math.random() < .5 ? '#000' : '#fff'; x.fillRect(0, i, 600, 1); } x.globalAlpha = 1;
+    x.fillStyle = '#2b2b2b'; x.textAlign = 'center';
+    x.font = 'italic 34px Georgia, serif'; x.fillText('Para mamá,', 300, 600);
+    x.font = 'italic 26px Georgia, serif'; x.fillText('por enseñarnos a mirar', 300, 642); x.fillText('el lado bonito de todo.', 300, 676);
+    x.font = '18px Georgia, serif'; x.fillStyle = '#6b6b6b'; x.fillText('Lucía y Pablo · Navidad 2026', 300, 726);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w - .5, h - .5), new THREE.MeshStandardMaterial({ map:t, metalness:.35, roughness:.45 }));
+    m.rotation.y = Math.PI; m.position.z = .37; return m;
+  }
+
   /* opts: canvas, stage, foto, fotoPx:[w,h], pxPorCm, foco:{x,y,w,h} (cm), luz:[x,y,z] (desde el foco) */
   window.Pared3D = function(o){
     const renderer = new THREE.WebGLRenderer({ canvas:o.canvas, antialias:true });
@@ -66,7 +81,7 @@
     const sombra = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.ShadowMaterial({ opacity:o.sombra || .3 }));
     sombra.position.z = .02; sombra.receiveShadow = true; scene.add(sombra);
 
-    const f = o.foco;
+    let f = o.foco;
     scene.add(new THREE.HemisphereLight(0xfff4e6, 0x9a8a76, 1.1));
     const sol = new THREE.DirectionalLight(0xfff0dc, 2.4);
     const L = o.luz || [-70, 90, 140];
@@ -148,7 +163,11 @@
     let visible = false;
     new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold:.05 }).observe(o.stage);
     return {
-      scene, camara, cuadro, lamina, imanPared, llegar, quitar, E, cl, lerp,
+      scene, camara, cuadro, lamina, imanPared, trasera, llegar, quitar, E, cl, lerp,
+      /* control a mano (escena por scroll): cambiar el encuadre y pintar un fotograma */
+      renderer, fondo:scene.children[0],
+      encuadre(nf, k){ f = nf; acerca = k || 1; encuadrar(); },
+      pintar(){ renderer.render(scene, camara); },
       bucle(T, pose){
         const t0 = performance.now(), q = new URLSearchParams(location.search).get('t');
         (function paso(){
