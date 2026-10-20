@@ -58,7 +58,7 @@
     x.font = 'italic 26px Georgia, serif'; x.fillText('por enseñarnos a mirar', 300, 642); x.fillText('el lado bonito de todo.', 300, 676);
     x.font = '18px Georgia, serif'; x.fillStyle = '#6b6b6b'; x.fillText('Lucía y Pablo · Navidad 2026', 300, 726);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w - .5, h - .5), new THREE.MeshStandardMaterial({ map:t, metalness:.35, roughness:.45 }));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w - .3, h - .3), new THREE.MeshStandardMaterial({ map:t, metalness:.35, roughness:.45 }));
     m.rotation.y = Math.PI; m.position.z = .37; return m;
   }
 
@@ -108,22 +108,26 @@
     addEventListener('resize', encuadrar); encuadrar();
 
     /* materiales compartidos */
-    const alu = new THREE.MeshPhysicalMaterial({ color:0xe2e2e2, metalness:1, roughness:.22, envMapIntensity:1.4 });
+    const alu = new THREE.MeshPhysicalMaterial({ color:0xeeeeee, metalness:1, roughness:.16, envMapIntensity:1.7 });
     const negro = new THREE.MeshPhysicalMaterial({ color:0x161616, metalness:.15, roughness:.55, clearcoat:.3, clearcoatRoughness:.5 });
     const cargador = new THREE.TextureLoader();
 
     function cuadro(src, w = 30, h = 40){
       const g = new THREE.Group();
       /* la foto impresa en metal brilla: algo más de color y contraste, y sin el tono apagado de la escena */
-      const cara = new THREE.MeshPhysicalMaterial({ color:0x161616, emissive:0xffffff, emissiveIntensity:.97, roughness:.26, metalness:0,
-        clearcoat:.9, clearcoatRoughness:.08, envMapIntensity:.6, toneMapped:false });
+      const cara = new THREE.MeshPhysicalMaterial({ color:0x202020, emissive:0xffffff, emissiveIntensity:1, roughness:.2, metalness:0,
+        clearcoat:1, clearcoatRoughness:.04, envMapIntensity:.3, toneMapped:false });
       const img = new Image(); img.onload = () => {
         const lienzo = document.createElement('canvas'); lienzo.width = img.naturalWidth; lienzo.height = img.naturalHeight;
-        const x = lienzo.getContext('2d'); x.filter = 'saturate(1.22) contrast(1.08) brightness(1.04)'; x.drawImage(img, 0, 0);
+        const x = lienzo.getContext('2d'); x.filter = 'saturate(1.5) contrast(1.16) brightness(1.05)'; x.drawImage(img, 0, 0);
         const tex = new THREE.CanvasTexture(lienzo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
         cara.map = tex; cara.emissiveMap = tex; cara.needsUpdate = true;
       }; img.src = src;
-      const geo = new THREE.ExtrudeGeometry(rr(w - .2, h - .2, .45), { depth:.12, bevelEnabled:true, bevelThickness:.05, bevelSize:.1, bevelSegments:3, curveSegments:8, UVGenerator:uvPlano(w, h) });
+      /* placa de aluminio con grosor de verdad; la foto solo en la cara: las tapas van juntas en el grupo 0
+         (primero la de atrás, luego la de delante), así que la de atrás pasa a aluminio */
+      const geo = new THREE.ExtrudeGeometry(rr(w - .2, h - .2, .35), { depth:.32, bevelEnabled:true, bevelThickness:.05, bevelSize:.07, bevelSegments:3, curveSegments:8, UVGenerator:uvPlano(w, h) });
+      const tapas = geo.groups[0], mitad = tapas.count / 2;
+      geo.groups.splice(0, 1, { start:tapas.start, count:mitad, materialIndex:1 }, { start:tapas.start + mitad, count:mitad, materialIndex:0 });
       const placa = new THREE.Mesh(geo, [cara, alu]); placa.position.z = .45; placa.castShadow = true; g.add(placa);
       const im = new THREE.Mesh(new THREE.BoxGeometry(w * .4, h * .3, .4), negro); im.position.z = .2; im.castShadow = true; g.add(im);
       scene.add(g); return g;

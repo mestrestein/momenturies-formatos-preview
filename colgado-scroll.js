@@ -27,6 +27,23 @@
     .map(([f, w, h, x, y]) => ({ c:P.cuadro('fotos/stock/' + f + '-480x640.webp', w, h), i:P.imanPared(), w, h, x, y }));
   MAS.forEach(m => m.i.scale.setScalar(m.w / 30));
 
+  /* destello: una franja de luz que cruza la cara del cuadro justo después del clic (el brillo del aluminio) */
+  const franja = (() => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 64; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 512, 0);
+    g.addColorStop(.38, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.55)'); g.addColorStop(.62, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 512, 64); return c;
+  })();
+  function destello(cuadro, w, h){
+    const t = new THREE.CanvasTexture(franja); t.center.set(.5, .5); t.rotation = -.5;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w - .4, h - .4), new THREE.MeshBasicMaterial({ map:t, transparent:true,
+      blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false, opacity:0 }));
+    m.position.z = .84; cuadro.add(m);
+    return u => { m.material.opacity = u > 0 && u < 1 ? Math.sin(u * Math.PI) : 0; t.offset.x = lerp(-.75, .75, u); };
+  }
+  const brilloA = destello(A, 30, 40);
+  MAS.forEach(m => m.brillo = destello(m.c, m.w, m.h));
+
   /* despiece inicial: cada pieza flotando delante de la pared, giradas para que se vea el canto */
   const SUELTO = {
     lam:{ x:X - 40, y:Y + 3, z:18, ry:.5, rx:.05 },
@@ -57,7 +74,7 @@
   const fCerca = { x:X - 4, y:Y - 4, w:135, h:95 }, fGaleria = { x:X + 2, y:Y - 8, w:150, h:105 }, fSalon = { x:X - 12, y:Y - 8, w:205, h:150 };
   if(vertical){ fCerca.x = X; fCerca.w = 100; fGaleria.x = X; fGaleria.y = Y - 2; fGaleria.w = 80; fSalon.x = X - 6; fSalon.w = 110; }
   const mezclaF = (a, b, u) => ({ x:lerp(a.x, b.x, u), y:lerp(a.y, b.y, u), w:lerp(a.w, b.w, u), h:lerp(a.h, b.h, u) });
-  const pared = P.fondo.material.color, apagada = new THREE.Color(0xe2ddd6), viva = new THREE.Color(0xffffff);
+  const pared = P.fondo.material.color, apagada = new THREE.Color(0xece8e2), viva = new THREE.Color(0xffffff);
   const v3 = new THREE.Vector3();
 
   function pose(p, t){
@@ -66,6 +83,7 @@
     if(p < T.im[0]) flotar(im, SUELTO.im, t, 1.7); else montar(im, SUELTO.im, tramo(p, T.im), X, Y - 2, .1);
     if(p < T.A[0]) flotar(A, SUELTO.A, t, 3.1); else montar(A, SUELTO.A, tramo(p, T.A) * 1.08, X, Y, .5, true);
     /* 2 · se tuerce un poco y se endereza con un dedo */
+    brilloA(tramo(p, [.5, .6]));
     const k = tramo(p, T.tuerce); if(k > 0 && k < 1) A.rotation.z = -.075 * (k < .4 ? E.out(k / .4) : 1 - E.io((k - .4) / .6));
     /* 3 · llegan los demás: primero su imán, luego el cuadro con su clic */
     MAS.forEach((m, n) => {
@@ -73,6 +91,7 @@
       if(u <= 0){ m.i.visible = false; m.c.visible = false; return; }
       P.llegar(m.i, cl(u * 2.2), m.x, m.y - 2 * m.h / 40, .1, { x:m.x + 20, y:m.y - 30, z:60 });
       P.llegar(m.c, (u - .4) / .55, m.x, m.y, .5, { x:m.x + 25, y:m.y - 35, z:75 }, true);
+      m.brillo(cl(((p - T.mas[0] - n * .045) / .07 - .9) / .6));
     });
     /* 4 · la pared «despierta» y la cámara se aleja hasta ver el salón */
     pared.copy(apagada).lerp(viva, E.io(tramo(p, [.5, .9])));
