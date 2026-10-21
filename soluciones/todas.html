@@ -11,7 +11,8 @@
   Cada tarjeta es la sección de verdad: un iframe de su página (portada.html, producto.html,
   di-adios-clavos.html, en-tu-casa.html, ficha-cuadro.html, la portada y el cuadro en vivo)
   con todo lo demás escondido. No toca esas páginas ni lo que recuerdan de cada una.
-  Lo que se marca (me quedo / duda / fuera) y el orden se guardan en este navegador; «Copiar resumen» lo pasa a texto.
+  La elección (me quedo / duda / A/B / fuera) y los comentarios de cada socio se guardan en el Vestuario de Momenturies
+  (/panel/soluciones/*, tablas soluciones_votos y soluciones_comentarios); Claude los lee con soluciones_comentarios.
 -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -88,6 +89,37 @@ button{font-family:inherit;color:inherit;cursor:pointer}
 .resumen{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
 .resumen textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px/1.5 ui-monospace,Consolas,monospace;resize:vertical}
 .resumen .tools{margin-top:10px}
+.votos button[data-v=ab].on{background:#6b4fbb;border-color:#6b4fbb;color:#fff}
+.card.ab{border-color:#6b4fbb;box-shadow:0 0 0 2px #6b4fbb}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;background:#eef2ee;color:var(--ok);white-space:nowrap}
+.chip.nada{background:#f1efeb;color:var(--mid)}.chip.duda{background:#fbf1e1;color:var(--duda)}.chip.ab{background:#efeafb;color:#6b4fbb}.chip.no{background:#f8e7e4;color:var(--no)}
+.autor{font-style:normal;font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;margin-left:8px}
+.autor.aitor{background:#fde7d9;color:#9b4a1e}.autor.marc{background:#e3eefc;color:#1f4f8f}.autor.vivo{background:#e6f3ea;color:var(--ok)}
+.rev{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.rev .per:only-child{grid-column:1/-1}
+@media(max-width:760px){.rev{grid-template-columns:1fr}}
+.per{padding:12px 16px;display:grid;gap:8px;align-content:start}
+.per+.per{border-left:1px solid var(--line)}
+@media(max-width:760px){.per+.per{border-left:0;border-top:1px solid var(--line)}}
+.per.yo{background:#fffdf7}
+.ph{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ph b,.ct{font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--mid);margin-right:4px}
+.ct{display:block;margin-bottom:4px}
+.votos{flex-wrap:wrap}
+.com{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.com p{font-size:14px;line-height:1.45;white-space:pre-wrap}
+.com small{font-size:11.5px;color:var(--mid)}
+.com.hecho{border-color:#cfe3d6;background:#f4faf6}.com.descartado{opacity:.6}
+.vacio{font-size:13px;color:var(--mid)}
+.nuevo{display:flex;gap:8px;align-items:flex-end}
+.nuevo textarea{flex:1;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:14px/1.4 'Inter',Arial,sans-serif;resize:vertical;min-height:42px}
+.nuevo .pill{padding:9px 12px;white-space:nowrap}
+.aviso{margin:14px 0;font-size:13.5px;line-height:1.5;border-radius:12px;padding:10px 14px;background:#fff7e6;border:1px solid #f1dfb0}
+.aviso.ok{background:#eef7f1;border-color:#cfe3d6}
+.aviso a{font-weight:700}
+.ang li{align-items:flex-start}
+.ang li .chip{margin-top:4px;display:inline-block}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 40px));background:var(--ink);color:#fff;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:700;transition:transform .25s;z-index:50}
 .toast.on{transform:translateX(-50%)}
 </style>
@@ -98,13 +130,14 @@ button{font-family:inherit;color:inherit;cursor:pointer}
   <div>
     <a class="back" href="index.html">&larr; Soluciones por sección</a>
     <h1>Todas las secciones, por ángulo</h1>
-    <p>Todo lo que hemos hecho hasta ahora en Momenturies, junto: la portada (la de ahora + A–E), la página de producto (A–E), «Di adiós a los clavos», «En tu casa», la ficha nueva de Aitor, lo que está en vivo (Cuadro, Sobremesa, Imán, Todos los formatos, Paredes), los personalizados, la galería, los vídeos, cada página entera y las páginas de /soluciones. Las primeras pestañas son ángulos o beneficios; las últimas, páginas enteras. Marca con cuáles os quedáis y, en la última pestaña, ordenadlas. Se guarda en este navegador; «Copiar resumen» lo pasa a texto para mandarlo.</p>
+    <p>Todo lo que hemos hecho hasta ahora en Momenturies, junto (lo de Marc, lo de Aitor y lo que está en la web): la portada (la de ahora + A–E), la página de producto (A–E), «Di adiós a los clavos», «En tu casa», la ficha nueva de Aitor, lo que está en vivo (Cuadro, Sobremesa, Imán, Todos los formatos, Paredes), los personalizados, la galería, los vídeos, cada página entera y las páginas de /soluciones. Las primeras pestañas son ángulos o beneficios; las últimas, páginas enteras. Debajo de cada versión, cada uno pone su elección (me quedo, duda, A/B test o fuera) y sus comentarios con cambios, y ve lo del otro. En la última pestaña se ordenan. Claude lee los comentarios para hacer los cambios.</p>
   </div>
   <div class="tools">
     <div class="seg" id="vista"><button type="button" class="on" data-m="pc">Ordenador</button><button type="button" data-m="movil">Móvil</button></div>
   </div>
 </div></div>
 
+<div class="wrap"><p class="aviso" id="aviso">Cargando quién eres…</p></div>
 <div class="tabs"><div class="wrap" id="tabs"></div></div>
 <main class="wrap panel" id="panel"></main>
 <div class="toast" id="toast"></div>
@@ -159,9 +192,13 @@ const PAR = (sel, lab) => pagina('par-' + sel.replace(/\W/g, ''), '../paredes.ht
 const ENTERA = (file, lab, org) => ({ id:(file.startsWith('../') ? 'web-' : file.startsWith('http') ? 'ext-' : 'sol-') + file.replace(/^\.\.\/|^https?:\/\//, '').replace(/\W/g, '-'), file, lab, org: org || 'Página entera', entera:true, scroll:true });
 const VIDEO = (file, lab) => ({ id:'vid-' + file.replace(/\W/g, '-'), file:'../' + file, lab, org:'Vídeo · ' + file, video:true });
 
+// titulares de angles.js (herramienta de ángulos de septiembre; los «Socio» son los titulares que propuso Aitor)
+const ANG_TIT = ['Socio · Recuerdos juntos (H1 A)','Regalo','Diseño / decoración','Sin obras','Calidad del material','Recién lanzados','Familia','Minimalista','Adiós al marco','Editor 3D','Socio · Construye tu pared (H1 B)','Socio · De tu móvil a casa (H1 C)'];
+const titulares = () => ANG_TIT.map((lab, k) => ({ id:'ang-' + k, file:'../index.html', sel:'.hero', angulo:k, lab:'Titular · ' + lab.replace(/^Socio · /, ''), org: /^Socio/.test(lab) ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' }));
+
 const ANGULOS = [
   { id:'arriba', t:'Arriba del todo', d:'Lo primero que se ve: la portada (hero) y la zona de compra de la ficha.', items:[
-    ...portada(1), VIVO('.brand-hero', 'Compra: galería + título + botón'), ...producto(1), FICHA('#comprar', 'Galería de 9 con 3D, 7 puntos clave y packs (3, 4, 6, 9)'),
+    ...portada(1), ...titulares(), VIVO('.brand-hero', 'Compra: galería + título + botón'), ...producto(1), FICHA('#comprar', 'Galería de 9 con 3D, 7 puntos clave y packs (3, 4, 6, 9)'),
     SOB('.brand-hero', 'Compra de la Sobremesa'), IMA('.brand-hero', 'Compra del Imán'), FOR('.brand-hero', 'Cabecera de «Todos los formatos»'), PAR('.pw-head', 'Cabecera de Paredes de ensueño') ]},
   { id:'funciona', t:'Cómo funciona', d:'De la foto del móvil a la pared: los pasos.', items:[
     ...portada(2), VIVO('.pp-section', 'De tu galería a tu pared'), ...producto(3), FICHA('#recuerdo', 'Del recuerdo a tu pared · carrusel de 5 pasos'), CASA(3, 'Del momento a vuestra pared. Y vuelta a empezar (vídeo)') ]},
@@ -206,31 +243,89 @@ const ANGULOS = [
     ENTERA('di-adios-clavos.html', 'Di adiós a los clavos · 6 soluciones'), ENTERA('en-tu-casa.html', 'En tu casa · donde quieras, como quieras y la historia') ]},
 ];
 
-/* ── estado (solo este navegador) ── */
+/* ── estado: elección y comentarios de cada socio, guardados en el Vestuario (momenturies.com/panel/soluciones/*).
+      Sin sesión (o fuera de momenturies.com) se guarda solo en este navegador. ── */
 const KEY = 'sol-todas-';
 const get = (k, d) => { try{ const v = localStorage.getItem(KEY + k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
-const set = (k, v) => { try{ localStorage.setItem(KEY + k, JSON.stringify(v)); }catch(e){} };
-let votos = get('votos', {});
-let orden = get('orden', ANGULOS.map(a => a.id));
-ANGULOS.forEach(a => { if(!orden.includes(a.id)) orden.push(a.id); });
-let ordenDentro = get('dentro', {});
+const set = (k, v) => { try{ v == null ? localStorage.removeItem(KEY + k) : localStorage.setItem(KEY + k, JSON.stringify(v)); }catch(e){} };
+const NOMBRES = { aitor:'Aitor', marc:'Marc', tu:'Tú' };
+const ESTADOS = [['ok','✓ Me quedo'],['duda','? Duda'],['ab','A/B test'],['no','✕ Fuera']];
+const CORTO = { ok:'✓ me quedo', duda:'? duda', ab:'A/B test', no:'✕ fuera' };
+let sesion = 'probando', yo = 'tu', nombreYo = 'Tú';
+let votos = {};        // votos[item][usuario] = ok | duda | ab | no
+let comentarios = [];  // {id, item, texto, por, creado, estado, respuesta}
+const ORD0 = () => ({ orden: ANGULOS.map(a => a.id), dentro: {}, fuera: {} });
+let ord = get('ordenTodo', null) || ORD0();
 let modo = get('modo', 'pc');
 let tabActual = new URLSearchParams(location.search).get('tab') || get('tab', ANGULOS[0].id);
-let filtro = 'todas';
+let filtro = 'todas', filtroAutor = 'todos';
 
-const todos = ANGULOS.flatMap(a => a.items.map(it => Object.assign(it, { ang:a.id })));
+const todos = ANGULOS.flatMap(a => a.items.map(it => Object.assign(it, { ang:a.id, autor: it.autor || (/Aitor/.test(it.org) ? 'aitor' : /en vivo/.test(it.org) ? 'vivo' : 'marc') })));
 const porId = Object.fromEntries(todos.map(it => [it.id, it]));
 const nombre = it => `${it.org} · ${it.lab}`;
-const toast = t => { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1800); };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+const toast = t => { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); };
+const personas = () => sesion === 'ok' ? ['aitor', 'marc'] : ['tu'];
+const votosDe = id => votos[id] || {};
+const alguno = (id, ...s) => Object.values(votosDe(id)).some(v => s.includes(v));
+const comsDe = (id, p) => comentarios.filter(c => c.item === id && (!p || c.por === p));
+const pendientes = id => comentarios.filter(c => c.item === id && c.estado === 'pendiente').length;
+
+function arreglarOrden(){ ord.dentro = ord.dentro || {}; ord.fuera = ord.fuera || {}; ord.orden = (ord.orden || []).filter(id => ANGULOS.some(a => a.id === id)); ANGULOS.forEach(a => { if(!ord.orden.includes(a.id)) ord.orden.push(a.id); }); }
+function modoLocal(){
+  yo = 'tu'; nombreYo = 'Tú'; votos = {};
+  Object.entries(get('votos', {}) || {}).forEach(([i, e]) => { votos[i] = { tu:e }; });
+  comentarios = get('comentarios', []);
+}
+async function post(ruta, cuerpo){
+  if(sesion !== 'ok') return null;
+  try{
+    const r = await fetch('/panel/soluciones/' + ruta, { method:'POST', credentials:'same-origin', headers:{ 'content-type':'application/json' }, body:JSON.stringify(cuerpo) });
+    const j = await r.json().catch(() => ({}));
+    if(r.status === 401){ sesion = 'sin'; pintaAviso(); toast('Tu sesión ha caducado: vuelve a entrar con tu código'); return null; }
+    if(!r.ok) throw new Error(j.error || r.status);
+    return j;
+  }catch(e){ toast('No se ha guardado: ' + e.message); return null; }
+}
+async function cargarDatos(){
+  try{
+    const r = await fetch('/panel/soluciones/datos', { credentials:'same-origin', cache:'no-store' });
+    if(r.status === 401){ sesion = 'sin'; return modoLocal(); }
+    if(!r.ok || !/json/.test(r.headers.get('content-type') || '')){ sesion = 'local'; return modoLocal(); }
+    const d = await r.json();
+    sesion = 'ok'; yo = d.yo; nombreYo = d.nombre || NOMBRES[yo];
+    votos = {}; d.votos.forEach(v => { (votos[v.item] = votos[v.item] || {})[v.usuario] = v.estado; });
+    comentarios = d.comentarios || [];
+    if(d.orden) ord = d.orden;
+    // lo que marcaste antes en este navegador sube una vez, si aún no tenías nada guardado
+    const viejos = get('votos', null);
+    if(viejos && Object.keys(viejos).length && !d.votos.some(v => v.usuario === yo)){
+      for(const [item, estado] of Object.entries(viejos)) if(porId[item]){ (votos[item] = votos[item] || {})[yo] = estado; post('voto', { item, titulo:nombre(porId[item]), estado }); }
+      set('votos', null); toast('He subido lo que tenías marcado en este navegador');
+    }
+  }catch(e){ sesion = 'local'; modoLocal(); }
+}
+function guardarOrden(){ set('ordenTodo', ord); post('orden', ord); }
+
+/* ── aviso de arriba: quién eres y dónde se guarda ── */
+function pintaAviso(){
+  const el = $('#aviso');
+  el.className = 'aviso ' + sesion;
+  el.innerHTML = sesion === 'ok'
+    ? `Has entrado como <b>${esc(nombreYo)}</b>. Tu elección y tus comentarios se guardan para los dos (debajo de cada sección ves lo de ${yo === 'marc' ? 'Aitor' : 'Marc'}). Claude los lee para hacer los cambios.`
+    : sesion === 'sin'
+      ? `Para guardar tu elección y ver la de Aitor y Marc, <a href="/panel/soluciones">entra con tu código personal</a> (el mismo del panel). Mientras, lo que marques se queda solo en este navegador.`
+      : `Vista fuera de momenturies.com: lo que marques se guarda solo en este navegador. Para compartirlo, ábrela en <a href="https://momenturies.com/soluciones/todas.html">momenturies.com/soluciones/todas.html</a>.`;
+}
 
 /* ── pestañas ── */
 function pintaTabs(){
   $('#tabs').innerHTML = ANGULOS.map(a => {
-    const ok = a.items.filter(it => votos[it.id] === 'ok').length;
-    return `<button type="button" class="tab${a.id === tabActual ? ' on' : ''}" data-tab="${a.id}">${a.t}<small>${a.items.length}${ok ? ` · <span class="ok">✓ ${ok}</span>` : ''}</small></button>`;
+    const ok = a.items.filter(it => alguno(it.id, 'ok', 'ab')).length, com = a.items.reduce((s, it) => s + pendientes(it.id), 0);
+    return `<button type="button" class="tab${a.id === tabActual ? ' on' : ''}" data-tab="${a.id}">${a.t}<small>${a.items.length}${ok ? ` · <span class="ok">✓ ${ok}</span>` : ''}${com ? ` · 💬 ${com}` : ''}</small></button>`;
   }).join('') + `<button type="button" class="tab${tabActual === 'orden' ? ' on' : ''}" data-tab="orden">Orden final y resumen</button>`;
 }
-$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if(!b) return; tabActual = b.dataset.tab; set('tab', tabActual); filtro = 'todas'; pintaTabs(); pintaPanel(); scrollTo({ top:0 }); });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if(!b) return; tabActual = b.dataset.tab; set('tab', tabActual); filtro = 'todas'; filtroAutor = 'todos'; pintaTabs(); pintaPanel(); scrollTo({ top:0 }); });
 
 /* ── una sección dentro de su iframe, sin lo demás ── */
 const ocultar = el => el.style.setProperty('display', 'none', 'important');
@@ -259,6 +354,8 @@ function aislar(f, it){
   doc.head.appendChild(st);
   sec.style.marginTop = '0';
   sec.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
+  // titulares de angles.js: se carga la herramienta de septiembre y se pone ese ángulo
+  if(it.angulo != null){ const sc = doc.createElement('script'); sc.src = '../angles.js'; sc.onload = () => { try{ win.applyAngle(it.angulo); }catch(e){} }; doc.body.appendChild(sc); }
   if(it.scroll){ win.scrollTo(0, 0); return; }
   const alto = () => { const h = Math.ceil(sec.getBoundingClientRect().height); if(h > 40 && Math.abs(h - f.offsetHeight) > 2) f.style.height = Math.min(h, 6000) + 'px'; };
   if(win.ResizeObserver) new win.ResizeObserver(alto).observe(sec);
@@ -283,95 +380,147 @@ function cargar(card){
 }
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ cargar(e.target); io.unobserve(e.target); } }), { rootMargin:'900px 0px' }) : null;
 
-/* ── panel de un ángulo ── */
+/* ── tarjeta: la sección + la elección y los comentarios de cada uno ── */
 function enlace(it){
   if(it.n || !it.sel) return it.file;   // la página entera
   return it.file + (it.sel[0] === '#' ? it.sel : '');
 }
+const AUTOR = { aitor:'De Aitor', marc:'De Marc', vivo:'En la web' };
+function claseCard(id){
+  const vs = Object.values(votosDe(id));
+  return vs.length && vs.every(v => v === 'no') ? 'no' : vs.includes('ok') ? 'ok' : vs.includes('ab') ? 'ab' : '';
+}
+function chips(id){
+  return personas().map(p => { const v = votosDe(id)[p]; return `<span class="chip ${v || 'nada'}">${NOMBRES[p]}: ${v ? CORTO[v] : 'sin elegir'}</span>`; }).join('');
+}
+function fecha(s){ return s ? String(s).slice(8, 10) + '/' + String(s).slice(5, 7) + ' ' + String(s).slice(11, 16) : ''; }
+function revHTML(it){
+  return personas().map(p => {
+    const v = votosDe(it.id)[p], mio = p === yo, cs = comsDe(it.id, p);
+    return `<div class="per${mio ? ' yo' : ''}" data-p="${p}">
+      <div class="ph"><b>Elección ${NOMBRES[p]}</b>${mio
+        ? `<span class="votos">${ESTADOS.map(([k, t]) => `<button type="button" data-v="${k}" class="${v === k ? 'on' : ''}">${t}</button>`).join('')}</span>`
+        : `<span class="chip ${v || 'nada'}">${v ? CORTO[v] : 'todavía no ha elegido'}</span>`}</div>
+      <div class="coms"><b class="ct">Comentario ${NOMBRES[p]}</b>${cs.length ? cs.map(c => `<div class="com ${c.estado}"><p>${esc(c.texto)}</p><small>${fecha(c.creado)} · ${c.estado === 'pendiente' ? 'pendiente de hacer' : c.estado === 'hecho' ? '✓ hecho' : 'descartado'}${c.respuesta ? ': ' + esc(c.respuesta) : ''}${mio && c.estado === 'pendiente' ? ` · <a href="#" data-quitar="${c.id}">quitar</a>` : ''}</small></div>`).join('') : (mio ? '' : '<p class="vacio">Sin comentarios.</p>')}
+        ${mio ? `<div class="nuevo"><textarea rows="2" placeholder="Qué cambiarías de esta versión (texto, foto, orden, colores…)"></textarea><button type="button" class="pill" data-com>Guardar comentario</button></div>` : ''}</div>
+    </div>`;
+  }).join('');
+}
+function pintaCard(card){
+  const it = porId[card.dataset.id];
+  card.className = 'card ' + claseCard(it.id);
+  $('.chips', card).innerHTML = chips(it.id);
+  $('.rev', card).innerHTML = revHTML(it);
+  if(!card.classList.contains('no') && !card.dataset.cargado) io ? io.observe(card) : cargar(card);
+}
+function pasa(it){
+  const vs = Object.values(votosDe(it.id));
+  const okF = filtro === 'todas' || (filtro === 'sin' ? !votosDe(it.id)[yo] : filtro === 'com' ? comsDe(it.id).length > 0 : vs.includes(filtro));
+  return okF && (filtroAutor === 'todos' || it.autor === filtroAutor);
+}
 function pintaAngulo(a){
-  const vis = a.items.filter(it => filtro === 'todas' || (filtro === 'sin' ? !votos[it.id] : votos[it.id] === filtro));
-  const n = s => a.items.filter(it => votos[it.id] === s).length;
+  const vis = a.items.filter(pasa);
+  const n = s => a.items.filter(it => alguno(it.id, s)).length;
+  const autores = ['aitor', 'marc', 'vivo'].filter(x => a.items.some(it => it.autor === x));
   $('#panel').innerHTML = `
     <div class="intro-tab"><h2>${a.t}</h2><p>${a.d} ${a.items.length} versiones.</p>
-      <div class="filtro">${[['todas','Todas'],['sin','Sin marcar'],['ok','Me quedo · ' + n('ok')],['duda','Duda · ' + n('duda')],['no','Fuera · ' + n('no')]].map(([k, t]) => `<button type="button" data-f="${k}" class="${k === filtro ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+      <div class="filtro">${[['todas','Todas'],['sin','Sin elegir por mí'],['ok','Me quedo · ' + n('ok')],['duda','Duda · ' + n('duda')],['ab','A/B test · ' + n('ab')],['no','Fuera · ' + n('no')],['com','Con comentarios']].map(([k, t]) => `<button type="button" data-f="${k}" class="${k === filtro ? 'on' : ''}">${t}</button>`).join('')}</div>
+      ${autores.length > 1 ? `<div class="filtro">${[['todos','De todos'], ...autores.map(x => [x, AUTOR[x]])].map(([k, t]) => `<button type="button" data-fa="${k}" class="${k === filtroAutor ? 'on' : ''}">${t}</button>`).join('')}</div>` : ''}</div>
     ${a.nota ? `<div class="card"><div class="nota">${a.nota}</div></div>` : ''}
     ${vis.map(it => {
-      const i = a.items.indexOf(it) + 1, v = votos[it.id] || '';
-      return `<article class="card ${v}" data-id="${it.id}">
+      const i = a.items.indexOf(it) + 1;
+      return `<article class="card ${claseCard(it.id)}" data-id="${it.id}">
         <div class="bar"><span class="num">${i}</span>
-          <div class="t"><b>${it.lab}</b><span><em>${it.org}</em><a href="${enlace(it)}" target="_blank" rel="noopener">abrir aparte ↗</a></span></div>
-          <div class="votos"><button type="button" data-v="ok" class="${v === 'ok' ? 'on' : ''}">✓ Me quedo</button><button type="button" data-v="duda" class="${v === 'duda' ? 'on' : ''}">? Duda</button><button type="button" data-v="no" class="${v === 'no' ? 'on' : ''}">✕ Fuera</button></div>
+          <div class="t"><b>${it.lab}</b><span><em>${it.org}</em><i class="autor ${it.autor}">${AUTOR[it.autor]}</i><a href="${enlace(it)}" target="_blank" rel="noopener">abrir aparte ↗</a></span></div>
+          <div class="chips">${chips(it.id)}</div>
         </div>
+        <div class="rev">${revHTML(it)}</div>
         <div class="frame"><span class="cargando">Cargando…</span></div>
       </article>`;
     }).join('') || '<p style="color:#6b7280;font-size:14px">Nada con este filtro.</p>'}`;
   $$('#panel .card[data-id]').forEach(c => { if(c.classList.contains('no')) return; io ? io.observe(c) : cargar(c); });
 }
-$('#panel').addEventListener('click', e => {
+$('#panel').addEventListener('click', async e => {
+  if(tabActual === 'orden') return;
   const f = e.target.closest('.filtro [data-f]');
   if(f){ filtro = f.dataset.f; pintaPanel(); return; }
-  const b = e.target.closest('.votos [data-v]'); if(!b) return;
-  const card = b.closest('.card'), id = card.dataset.id, v = b.dataset.v;
-  votos[id] = votos[id] === v ? undefined : v; if(!votos[id]) delete votos[id];
-  set('votos', votos);
-  card.className = 'card ' + (votos[id] || '');
-  $$('.votos button', card).forEach(x => x.classList.toggle('on', x.dataset.v === votos[id]));
-  if(votos[id] !== 'no' && !card.dataset.cargado) cargar(card);
-  pintaTabs();
+  const fa = e.target.closest('.filtro [data-fa]');
+  if(fa){ filtroAutor = fa.dataset.fa; pintaPanel(); return; }
+  const card = e.target.closest('.card[data-id]'); if(!card) return;
+  const it = porId[card.dataset.id];
+  const b = e.target.closest('.per.yo .votos [data-v]');
+  if(b){
+    const v = votosDe(it.id)[yo] === b.dataset.v ? null : b.dataset.v;
+    votos[it.id] = votos[it.id] || {}; if(v) votos[it.id][yo] = v; else delete votos[it.id][yo];
+    if(sesion === 'ok') post('voto', { item:it.id, titulo:nombre(it), estado:v });
+    else set('votos', Object.fromEntries(Object.entries(votos).filter(([, x]) => x.tu).map(([k, x]) => [k, x.tu])));
+    pintaCard(card); pintaTabs(); return;
+  }
+  if(e.target.closest('[data-com]')){
+    const ta = $('.per.yo textarea', card), texto = ta.value.trim(); if(!texto) return ta.focus();
+    let id = -Date.now();
+    if(sesion === 'ok'){ const r = await post('comentario', { item:it.id, titulo:nombre(it), texto }); if(!r) return; id = r.id; }
+    comentarios.push({ id, item:it.id, texto, por:yo, creado:new Date().toISOString().replace('T', ' '), estado:'pendiente' });
+    if(sesion !== 'ok') set('comentarios', comentarios);
+    pintaCard(card); pintaTabs(); toast(sesion === 'ok' ? 'Comentario guardado' : 'Guardado solo en este navegador'); return;
+  }
+  const q = e.target.closest('[data-quitar]');
+  if(q){ e.preventDefault(); const id = +q.dataset.quitar; if(sesion === 'ok' && !(await post('quitar', { id }))) return; comentarios = comentarios.filter(c => c.id !== id); if(sesion !== 'ok') set('comentarios', comentarios); pintaCard(card); pintaTabs(); }
 });
 
 /* ── orden final ── */
-function dentro(a){   // las que se quedan (y las dudas), en el orden elegido
-  const vivos = a.items.filter(it => votos[it.id] === 'ok' || votos[it.id] === 'duda').map(it => it.id);
-  const o = (ordenDentro[a.id] || []).filter(id => vivos.includes(id));
+function dentro(a){   // las que alguno quiere (me quedo, duda o A/B), en el orden elegido
+  const vivos = a.items.filter(it => alguno(it.id, 'ok', 'duda', 'ab')).map(it => it.id);
+  const o = (ord.dentro[a.id] || []).filter(id => vivos.includes(id));
   vivos.forEach(id => { if(!o.includes(id)) o.push(id); });
   return o;
 }
-let fuera = get('fueraDeLaPagina', {});
+const votosTexto = id => personas().map(p => `${NOMBRES[p]}: ${votosDe(id)[p] ? CORTO[votosDe(id)[p]] : '—'}`).join(' · ');
 function texto(){
   const lin = ['MOMENTURIES · secciones elegidas (' + new Date().toLocaleDateString('es-ES') + ')', ''];
   let n = 0;
-  orden.forEach(id => {
+  ord.orden.forEach(id => {
     const a = ANGULOS.find(x => x.id === id), ds = dentro(a);
-    if(fuera[id]){ return; }
+    if(ord.fuera[id]) return;
     n++; lin.push(`${n}. ${a.t.toUpperCase()}`);
     if(!ds.length) lin.push('   (sin elegir)');
-    ds.forEach(d => lin.push(`   ${votos[d] === 'ok' ? '✓' : '?'} ${nombre(porId[d])}`));
+    ds.forEach(d => { lin.push(`   - ${nombre(porId[d])}  [${votosTexto(d)}]`); comsDe(d).forEach(c => lin.push(`       > ${NOMBRES[c.por] || c.por}: ${c.texto}${c.estado !== 'pendiente' ? ` (${c.estado})` : ''}`)); });
   });
-  const quitados = orden.filter(id => fuera[id]).map(id => ANGULOS.find(x => x.id === id).t);
+  const quitados = ord.orden.filter(id => ord.fuera[id]).map(id => ANGULOS.find(x => x.id === id).t);
   if(quitados.length) lin.push('', 'No va: ' + quitados.join(', '));
   return lin.join('\n');
 }
 function pintaOrden(){
+  arreglarOrden();
   $('#panel').innerHTML = `
-    <div class="intro-tab"><h2>Orden final</h2><p>Los ángulos en el orden en que irían, con las versiones que habéis marcado («me quedo» y «duda»). Sube y baja con las flechas. Si un ángulo no va, desmárcalo.</p></div>
-    <div class="orden">${orden.map((id, i) => {
+    <div class="intro-tab"><h2>Orden final</h2><p>Los ángulos en el orden en que irían, con las versiones que alguno quiere (me quedo, duda o A/B test) y lo que ha elegido cada uno. Sube y baja con las flechas. Si un ángulo no va, desmárcalo.${sesion === 'ok' ? ' El orden es el mismo para los dos.' : ''}</p></div>
+    <div class="orden">${ord.orden.map((id, i) => {
       const a = ANGULOS.find(x => x.id === id), ds = dentro(a);
-      return `<div class="ang${fuera[id] ? ' vacio' : ''}" data-a="${id}">
-        <div class="mv"><button type="button" data-mv="-1" aria-label="Subir"${i ? '' : ' disabled'}>↑</button><button type="button" data-mv="1" aria-label="Bajar"${i < orden.length - 1 ? '' : ' disabled'}>↓</button></div>
-        <div><h3>${i + 1}. ${a.t}</h3>${ds.length ? `<ul>${ds.map((d, j) => `<li><span class="mv2"><button type="button" data-mv2="-1" data-id="${d}"${j ? '' : ' disabled'}>↑</button><button type="button" data-mv2="1" data-id="${d}"${j < ds.length - 1 ? '' : ' disabled'}>↓</button></span><i class="${votos[d]}">${votos[d] === 'ok' ? '✓' : '?'}</i>${nombre(porId[d])}</li>`).join('')}</ul>` : `<p class="fuera">Sin elegir todavía · <a href="#" data-ir="${id}">elegir</a></p>`}</div>
-        <label><input type="checkbox" data-va ${fuera[id] ? '' : 'checked'}/> Va</label>
+      return `<div class="ang${ord.fuera[id] ? ' vacio' : ''}" data-a="${id}">
+        <div class="mv"><button type="button" data-mv="-1" aria-label="Subir"${i ? '' : ' disabled'}>↑</button><button type="button" data-mv="1" aria-label="Bajar"${i < ord.orden.length - 1 ? '' : ' disabled'}>↓</button></div>
+        <div><h3>${i + 1}. ${a.t}</h3>${ds.length ? `<ul>${ds.map((d, j) => `<li><span class="mv2"><button type="button" data-mv2="-1" data-id="${d}"${j ? '' : ' disabled'}>↑</button><button type="button" data-mv2="1" data-id="${d}"${j < ds.length - 1 ? '' : ' disabled'}>↓</button></span><span>${nombre(porId[d])}<br>${chips(d)}${pendientes(d) ? ` <span class="chip nada">💬 ${pendientes(d)} pendiente${pendientes(d) > 1 ? 's' : ''}</span>` : ''}</span></li>`).join('')}</ul>` : `<p class="fuera">Sin elegir todavía · <a href="#" data-ir="${id}">elegir</a></p>`}</div>
+        <label><input type="checkbox" data-va ${ord.fuera[id] ? '' : 'checked'}/> Va</label>
       </div>`;
     }).join('')}</div>
-    <div class="resumen"><b>Resumen</b><textarea id="txt" readonly>${texto()}</textarea>
-      <div class="tools"><button type="button" class="pill" id="copiar">Copiar resumen</button><button type="button" class="pill ghost" id="borrar">Empezar de cero</button></div></div>`;
+    <div class="resumen"><b>Resumen</b><textarea id="txt" readonly>${esc(texto())}</textarea>
+      <div class="tools"><button type="button" class="pill" id="copiar">Copiar resumen</button><button type="button" class="pill ghost" id="borrar">Orden de cero</button></div></div>`;
 }
 $('#panel').addEventListener('click', e => {
   if(tabActual !== 'orden') return;
   const ang = e.target.closest('.ang');
   const mv = e.target.closest('[data-mv]');
-  if(mv){ const i = orden.indexOf(ang.dataset.a), j = i + +mv.dataset.mv; [orden[i], orden[j]] = [orden[j], orden[i]]; set('orden', orden); pintaOrden(); return; }
+  if(mv){ const o = ord.orden, i = o.indexOf(ang.dataset.a), j = i + +mv.dataset.mv; [o[i], o[j]] = [o[j], o[i]]; guardarOrden(); pintaOrden(); return; }
   const mv2 = e.target.closest('[data-mv2]');
-  if(mv2){ const a = ANGULOS.find(x => x.id === ang.dataset.a), o = dentro(a), i = o.indexOf(mv2.dataset.id), j = i + +mv2.dataset.mv2; [o[i], o[j]] = [o[j], o[i]]; ordenDentro[a.id] = o; set('dentro', ordenDentro); pintaOrden(); return; }
+  if(mv2){ const a = ANGULOS.find(x => x.id === ang.dataset.a), o = dentro(a), i = o.indexOf(mv2.dataset.id), j = i + +mv2.dataset.mv2; [o[i], o[j]] = [o[j], o[i]]; ord.dentro[a.id] = o; guardarOrden(); pintaOrden(); return; }
   const ir = e.target.closest('[data-ir]');
   if(ir){ e.preventDefault(); tabActual = ir.dataset.ir; set('tab', tabActual); pintaTabs(); pintaPanel(); scrollTo({ top:0 }); return; }
   if(e.target.id === 'copiar'){ const t = $('#txt'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast('Copiado'), () => { document.execCommand('copy'); toast('Copiado'); }); return; }
-  if(e.target.id === 'borrar'){ if(!confirm('¿Borrar todo lo marcado en este navegador?')) return; votos = {}; orden = ANGULOS.map(a => a.id); ordenDentro = {}; fuera = {}; ['votos','orden','dentro','fueraDeLaPagina'].forEach(k => set(k, k === 'orden' ? orden : {})); pintaTabs(); pintaOrden(); }
+  if(e.target.id === 'borrar'){ if(!confirm('¿Volver al orden de partida? (las elecciones y los comentarios no se tocan)')) return; ord = ORD0(); guardarOrden(); pintaOrden(); }
 });
 $('#panel').addEventListener('change', e => {
   const c = e.target.closest('[data-va]'); if(!c) return;
-  const id = c.closest('.ang').dataset.a; if(c.checked) delete fuera[id]; else fuera[id] = true;
-  set('fueraDeLaPagina', fuera); pintaOrden();
+  const id = c.closest('.ang').dataset.a; if(c.checked) delete ord.fuera[id]; else ord.fuera[id] = true;
+  guardarOrden(); pintaOrden();
 });
 
 function pintaPanel(){
@@ -388,7 +537,7 @@ $('#vista').addEventListener('click', e => {
 });
 $$('#vista button').forEach(x => x.classList.toggle('on', x.dataset.m === modo));
 
-pintaTabs(); pintaPanel();
+cargarDatos().then(() => { arreglarOrden(); pintaAviso(); pintaTabs(); pintaPanel(); });
 })();
 </script>
 </body>
