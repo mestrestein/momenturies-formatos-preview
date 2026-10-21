@@ -98,7 +98,7 @@ button{font-family:inherit;color:inherit;cursor:pointer}
   <div>
     <a class="back" href="index.html">&larr; Soluciones por sección</a>
     <h1>Todas las secciones, por ángulo</h1>
-    <p>Todo lo que hemos hecho hasta ahora, junto: la portada (la de ahora + A–E), la página de producto (A–E), «Di adiós a los clavos», «En tu casa», la ficha nueva de Aitor y lo que está en vivo. Cada pestaña es un ángulo o beneficio. Marca con cuáles os quedáis y, en la última pestaña, ordenadlas. Se guarda en este navegador; «Copiar resumen» lo pasa a texto para mandarlo.</p>
+    <p>Todo lo que hemos hecho hasta ahora en Momenturies, junto: la portada (la de ahora + A–E), la página de producto (A–E), «Di adiós a los clavos», «En tu casa», la ficha nueva de Aitor, lo que está en vivo (Cuadro, Sobremesa, Imán, Todos los formatos, Paredes), los personalizados, la galería, los vídeos, cada página entera y las páginas de /soluciones. Las primeras pestañas son ángulos o beneficios; las últimas, páginas enteras. Marca con cuáles os quedáis y, en la última pestaña, ordenadlas. Se guarda en este navegador; «Copiar resumen» lo pasa a texto para mandarlo.</p>
   </div>
   <div class="tools">
     <div class="seg" id="vista"><button type="button" class="on" data-m="pc">Ordenador</button><button type="button" data-m="movil">Móvil</button></div>
@@ -151,10 +151,18 @@ const FICHA = (sel, lab) => pagina('ficha-' + sel.slice(1), '../ficha-cuadro.htm
 const VIVO = (sel, lab) => pagina('cuadro-' + sel.slice(1), '../cuadro.html', sel, lab, 'Ficha del Cuadro · en vivo ahora');
 const CLAVOS = (sel, lab) => pagina('clavos-' + sel.replace(/\W/g, ''), 'di-adios-clavos.html', sel, lab, 'Di adiós a los clavos');
 const CASA = (k, lab) => pagina('casa-' + k, 'en-tu-casa.html', `body section:nth-of-type(${k})`, lab, 'En tu casa');
+const SOB = (sel, lab) => pagina('sob-' + sel.replace(/\W/g, ''), '../sobremesa.html', sel, lab, 'Sobremesa · en vivo ahora');
+const IMA = (sel, lab) => pagina('ima-' + sel.replace(/\W/g, ''), '../iman.html', sel, lab, 'Imán · en vivo ahora');
+const FOR = (sel, lab) => pagina('for-' + sel.replace(/\W/g, ''), '../producto.html', sel, lab, 'Todos los formatos · en vivo ahora');
+const PAR = (sel, lab) => pagina('par-' + sel.replace(/\W/g, ''), '../paredes.html', sel, lab, 'Paredes de ensueño · en vivo ahora');
+// página entera, con su scroll dentro (sin esconder nada)
+const ENTERA = (file, lab, org) => ({ id:(file.startsWith('../') ? 'web-' : file.startsWith('http') ? 'ext-' : 'sol-') + file.replace(/^\.\.\/|^https?:\/\//, '').replace(/\W/g, '-'), file, lab, org: org || 'Página entera', entera:true, scroll:true });
+const VIDEO = (file, lab) => ({ id:'vid-' + file.replace(/\W/g, '-'), file:'../' + file, lab, org:'Vídeo · ' + file, video:true });
 
 const ANGULOS = [
   { id:'arriba', t:'Arriba del todo', d:'Lo primero que se ve: la portada (hero) y la zona de compra de la ficha.', items:[
-    ...portada(1), VIVO('.brand-hero', 'Compra: galería + título + botón'), ...producto(1), FICHA('#comprar', 'Galería de 9 con 3D, 7 puntos clave y packs (3, 4, 6, 9)') ]},
+    ...portada(1), VIVO('.brand-hero', 'Compra: galería + título + botón'), ...producto(1), FICHA('#comprar', 'Galería de 9 con 3D, 7 puntos clave y packs (3, 4, 6, 9)'),
+    SOB('.brand-hero', 'Compra de la Sobremesa'), IMA('.brand-hero', 'Compra del Imán'), FOR('.brand-hero', 'Cabecera de «Todos los formatos»'), PAR('.pw-head', 'Cabecera de Paredes de ensueño') ]},
   { id:'funciona', t:'Cómo funciona', d:'De la foto del móvil a la pared: los pasos.', items:[
     ...portada(2), VIVO('.pp-section', 'De tu galería a tu pared'), ...producto(3), FICHA('#recuerdo', 'Del recuerdo a tu pared · carrusel de 5 pasos'), CASA(3, 'Del momento a vuestra pared. Y vuelta a empezar (vídeo)') ]},
   { id:'colgado', t:'Sin clavos', d:'El colgado magnético: base adhesiva + imán, sin agujeros.', items:[
@@ -164,17 +172,38 @@ const ANGULOS = [
     CLAVOS('#o4', 'Mientras buscas el martillo, ya lo tienes colgado'), CLAVOS('#o5', 'Por dentro es así de sencillo · despiece') ]},
   { id:'aluminio', t:'Aluminio y calidad', d:'Por qué aluminio: ventajas, comparativa con papel y con marco.', items:[
     ...portada(3), VIVO('.why-section', 'Por qué el Cuadro'), ...producto(2), VIVO('.vs-section', 'Aluminio HD frente al cuadro enmarcado'), ...producto(5),
-    FICHA('#vs', 'Cuadro metálico HD vs póster tradicional · dos columnas negro y dorado'), FICHA('#ventajas', 'Ventajas: el cuadro flotando en 3D con 6 alrededor') ]},
+    FICHA('#vs', 'Cuadro metálico HD vs póster tradicional · dos columnas negro y dorado'), FICHA('#ventajas', 'Ventajas: el cuadro flotando en 3D con 6 alrededor'),
+    SOB('.why-section', 'Por qué la Sobremesa'), IMA('.why-section', 'Por qué el Imán') ]},
   { id:'casa', t:'En tu casa y composiciones', d:'Verlo en tu casa antes de comprar, y la pared entera.', items:[
     FICHA('#casa', 'Así queda en tu casa · 9 estancias'), CASA(1, 'Mira cómo queda en cada rincón de tu casa'), CASA(2, 'Cambia la pared entera con un toque'),
     VIVO('.wl-section', '¿Y si en vez de uno cuelgas la pared entera?'), ...producto(6), FICHA('#combinaciones', 'Tus fotos, en composición · 11 combinaciones'),
-    ...portada(6), CLAVOS('.g15', 'Cuelga quince. Cámbialos cuando te apetezca') ]},
-  { id:'productos', t:'Productos y formatos', d:'Cuadro, Sobremesa e Imán.', items:[ ...portada(4), VIVO('.otherfmt', '¿Prefieres otro formato?'), ...producto(9) ]},
+    ...portada(6), CLAVOS('.g15', 'Cuelga quince. Cámbialos cuando te apetezca'), PAR('.pw-grid', 'Las +60 composiciones con filtros') ]},
+  { id:'productos', t:'Productos y formatos', d:'Cuadro, Sobremesa e Imán.', items:[ ...portada(4), VIVO('.otherfmt', '¿Prefieres otro formato? (en el Cuadro)'), ...producto(9),
+    FOR('.prod-cards', 'Las tarjetas de «Todos los formatos»'), SOB('.otherfmt', 'Otros formatos (en la Sobremesa)'), IMA('.otherfmt', 'Otros formatos (en el Imán)'), PAR('.otherfmt', 'Otros formatos (en Paredes)') ]},
   { id:'regalo', t:'Regalo y para quién', d:'Para quién es y por qué motivo se regala.', items:[
     ...portada(7), FICHA('#regalos', '¿Para quién es? · pestañas por persona', ), FICHA('#motivos', '«Se lo regalé por…» · tarjetas por motivo') ], nota:'Las dos de la ficha de Aitor llevan reseñas de EJEMPLO (marcadas en amarillo): no se pueden publicar así.' },
   { id:'confianza', t:'Opiniones y garantías', d:'Reseñas, garantías y confianza. Sin reseñas inventadas.', items:[ ...portada(8), VIVO('.rv-section', 'Todavía no tenemos reseñas'), ...producto(7) ]},
   { id:'faq', t:'Preguntas', d:'Preguntas frecuentes.', items:[ ...portada(9), VIVO('.fq-section', 'Lo que más nos preguntan'), ...producto(8), FICHA('#faq', '16 preguntas por categorías') ]},
   { id:'news', t:'Newsletter', d:'Captar el correo.', items:[ ...portada(10) ]},
+  { id:'personalizados', t:'Personalizados y galería', d:'Los diseños personalizados (cielo, mapa, viaje, luna, onda…) y la galería de arte. Páginas enteras: se desliza dentro de cada una.', items:[
+    ENTERA('../personalizados.html', 'Diseños personalizados · la portada de todos'), ENTERA('../cielo.html', 'El cielo de vuestra noche'), ENTERA('../cielo-mapa.html', 'Cielo y mapa'),
+    ENTERA('../constelacion.html', 'Vuestra constelación'), ENTERA('../dos-cielos.html', 'Dos cielos'), ENTERA('../luna.html', 'La Luna de vuestra noche'), ENTERA('../lunas.html', 'Las lunas de un mes o de un año'),
+    ENTERA('../mapa.html', 'Vuestro lugar en el mapa'), ENTERA('../mapa-viajes.html', 'Vuestro mapa de viajes'), ENTERA('../viaje.html', 'Vuestro cartel de viaje'),
+    ENTERA('../coordenadas.html', 'Vuestras coordenadas'), ENTERA('../onda.html', 'La onda de vuestra voz'), ENTERA('../galeria.html', 'Galería de arte (108 obras + 76 diseños)') ]},
+  { id:'videos', t:'Vídeos', d:'Los vídeos que hay en la web: demos del editor y los de «En tu casa».', items:[
+    VIDEO('fotos/demo/demo-paredes.mp4', 'Demo · una pared entera'), VIDEO('fotos/demo/demo-regalo.mp4', 'Demo · regalo'),
+    VIDEO('fotos/historia/Como-web.mp4', 'En tu casa · Como'), VIDEO('fotos/historia/Donde-web.mp4', 'En tu casa · Donde'), VIDEO('fotos/historia/Historia-web.mp4', 'En tu casa · Historia'),
+    ENTERA('https://mestrestein.github.io/momenturies-guiones/', 'Panel de vídeos para anuncios (plan, guiones, rodaje)', 'Fuera de la web') ]},
+  { id:'paginas', t:'Páginas enteras', d:'Cada página de la web tal cual, de arriba abajo. Se desliza dentro de cada una.', items:[
+    ENTERA('../index.html', 'Portada'), ENTERA('../cuadro.html', 'Cuadro (la ficha de ahora)'), ENTERA('../ficha-cuadro.html', 'Ficha nueva del Cuadro (Aitor, sin publicar)'),
+    ENTERA('../sobremesa.html', 'Sobremesa'), ENTERA('../iman.html', 'Imán'), ENTERA('../producto.html', 'Todos los formatos'), ENTERA('../paredes.html', 'Paredes de ensueño'),
+    ENTERA('../cuadro.html?pared=W20', 'El editor, con una pared puesta'), ENTERA('../versiones.html', 'Versiones del personalizador de paredes'),
+    ENTERA('../colgador-scene.html', 'Escena «Así se cuelga» (la de Futsides)'), ENTERA('../momenturies%20-%20visor%203D.html', 'Visor 3D suelto'),
+    ENTERA('../nosotros.html', 'Nosotros'), ENTERA('../contacto.html', 'Contacto'), ENTERA('../404.html', 'Página no encontrada (404)'),
+    ENTERA('../terminos.html', 'Términos de compra'), ENTERA('../privacidad.html', 'Privacidad'), ENTERA('../cookies.html', 'Cookies'), ENTERA('../aviso-legal.html', 'Aviso legal') ]},
+  { id:'soluciones', t:'Páginas de soluciones', d:'Las páginas de /soluciones tal cual, con sus flechas para pasar de versión.', items:[
+    ENTERA('index.html', 'Índice de soluciones'), ENTERA('portada.html', 'Portada · todas las versiones'), ENTERA('producto.html', 'Producto · todas las versiones'),
+    ENTERA('di-adios-clavos.html', 'Di adiós a los clavos · 6 soluciones'), ENTERA('en-tu-casa.html', 'En tu casa · donde quieras, como quieras y la historia') ]},
 ];
 
 /* ── estado (solo este navegador) ── */
@@ -206,6 +235,7 @@ $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-ta
 /* ── una sección dentro de su iframe, sin lo demás ── */
 const ocultar = el => el.style.setProperty('display', 'none', 'important');
 function aislar(f, it){
+  if(it.entera) return;
   const doc = f.contentDocument, win = f.contentWindow; if(!doc || !doc.body) return;
   let sec;
   if(it.n){   // portada.html / producto.html: la sección N con la versión K puesta (sin tocar lo que esa página recuerda)
@@ -230,13 +260,20 @@ function aislar(f, it){
   sec.style.marginTop = '0';
   sec.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
   if(it.scroll){ win.scrollTo(0, 0); return; }
-  const alto = () => { const h = Math.ceil(sec.getBoundingClientRect().height); if(h > 40 && Math.abs(h - f.offsetHeight) > 2) f.style.height = Math.min(h, 3200) + 'px'; };
+  const alto = () => { const h = Math.ceil(sec.getBoundingClientRect().height); if(h > 40 && Math.abs(h - f.offsetHeight) > 2) f.style.height = Math.min(h, 6000) + 'px'; };
   if(win.ResizeObserver) new win.ResizeObserver(alto).observe(sec);
   alto(); setTimeout(alto, 800); setTimeout(alto, 2500);
 }
 function cargar(card){
   if(card.dataset.cargado) return; card.dataset.cargado = '1';
   const it = porId[card.dataset.id], box = $('.frame', card);
+  if(it.video){
+    const v = document.createElement('video');
+    Object.assign(v, { controls:true, preload:'metadata', playsInline:true, src:it.file });
+    v.style.cssText = 'display:block;max-width:100%;max-height:80vh;margin:0 auto;background:#000';
+    v.addEventListener('loadedmetadata', () => { const c = $('.cargando', box); if(c) c.remove(); });
+    box.appendChild(v); return;
+  }
   const f = document.createElement('iframe');
   f.title = nombre(it);
   if(it.scroll) f.style.height = '85vh';
@@ -248,7 +285,7 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.
 
 /* ── panel de un ángulo ── */
 function enlace(it){
-  if(it.n) return it.file;   // la página de versiones entera
+  if(it.n || !it.sel) return it.file;   // la página entera
   return it.file + (it.sel[0] === '#' ? it.sel : '');
 }
 function pintaAngulo(a){
