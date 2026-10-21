@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Cuadro metálico premium · Momenturies</title>
+<meta name="description" content="Tu foto impresa en aluminio HD y colgada con imán, sin agujeros. Míralo en tu casa antes de comprar."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600&display=swap"/>
+<!--
+  FICHA DEL CUADRO · propuesta de Aitor (20-oct-2026)
+  - Página independiente: todo el CSS y el JS van aquí dentro. Fotos nuevas en fotos/pdp/.
+  - Packs: los precios salen de la tabla PACKS (abajo, en el <script>). Mismo cálculo que
+    editor.js: suma de tallas × (100 - % de PACK_TIERS). Si cambia un precio, cambiarlo ahí.
+  - Reseñas: RESENAS_REALES = false → todas las reseñas y la nota salen marcadas como «Ejemplo».
+    NO publicar con reseñas inventadas: cambiar por reseñas reales y poner true.
+  - Solo español por ahora (falta la versión EN).
+-->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#141210;--ink2:#4a443d;--mid:#7a7168;--line:#e6dfd5;--cream:#f7f2ea;--cream2:#efe7db;--paper:#fffdf9;
+  --brown:#4A2E1A;--brown2:#6B4A2F;--terra:#c2613a;--terra-s:#f6e3d8;--gold:#c8922a;--green:#2f6f4f;
+  --serif:Georgia,'Times New Roman',serif;--sans:'Inter','Helvetica Neue',Arial,sans-serif;--ease:cubic-bezier(.4,0,.2,1);
+  --r:18px;
+}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+button{font-family:inherit;color:inherit}
+.c{max-width:1240px;margin:0 auto;padding:0 40px}
+@media(max-width:700px){.c{padding:0 16px}}
+.tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:800;color:var(--terra);margin-bottom:12px}
+.h2{font-family:var(--serif);font-size:clamp(30px,4vw,52px);line-height:1.05;letter-spacing:-.02em;font-weight:700;color:var(--brown)}
+.h2 em{font-style:italic;color:var(--terra)}
+.lead{font-size:17px;line-height:1.6;color:var(--ink2);max-width:620px;margin-top:14px}
+.center{text-align:center}.center .lead{margin-left:auto;margin-right:auto}
+.sec{padding:96px 0}
+@media(max-width:760px){.sec{padding:60px 0}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff;font-weight:800;font-size:16px;padding:18px 30px;border-radius:999px;text-decoration:none;border:0;cursor:pointer;transition:transform .2s,background .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.btn.terra{background:var(--terra)}
+.btn.w{background:#fff;color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.demo-tag{display:inline-block;font:800 9.5px/1 var(--sans);letter-spacing:1px;text-transform:uppercase;color:#9a5b00;background:#fff3cd;border:1px dashed #d9a400;border-radius:6px;padding:4px 6px;vertical-align:middle;margin-left:6px}
+body.resenas-reales .demo-tag{display:none}
+.stars{color:#e8a317;letter-spacing:1px}
+
+/* ── barra superior + nav ── */
+.promo{background:var(--brown);color:#f6efe6;font-size:13px;font-weight:600;text-align:center;padding:9px 12px;overflow:hidden;white-space:nowrap}
+.promo span{display:inline-block;margin:0 18px}
+.promo b{color:#ffd9a8}
+@media(max-width:700px){.promo span+span{display:none}}
+.nav{position:sticky;top:0;z-index:60;background:rgba(255,253,249,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .c{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:var(--serif);font-size:24px;font-weight:700;letter-spacing:-.02em;text-decoration:none;color:var(--brown)}
+.nav nav{display:flex;gap:26px;font-size:14px;font-weight:600}
+.nav nav a{text-decoration:none;color:var(--ink2)}
+.nav nav a:hover{color:var(--ink)}
+.nav .cart{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);text-decoration:none}
+@media(max-width:820px){.nav nav{display:none}}
+
+/* ═════════ HERO / COMPRA ═════════ */
+.buy{padding:34px 0 80px}
+.buy .c{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:56px;align-items:stretch}
+@media(max-width:980px){.buy .c{grid-template-columns:1fr;gap:28px}}
+.crumbs{font-size:12.5px;color:var(--mid);margin-bottom:16px}
+.crumbs a{text-decoration:none}
+
+/* galería */
+.gal{position:sticky;top:84px;display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px}
+@media(max-width:980px){.gal{position:relative;top:0;grid-template-columns:1fr}}
+.thumbs{display:flex;flex-direction:column;gap:10px;max-height:640px;overflow:auto;scrollbar-width:none}
+.thumbs::-webkit-scrollbar{display:none}
+@media(max-width:980px){.thumbs{order:2;flex-direction:row;max-height:none;overflow-x:auto}}
+.thumbs button{flex:0 0 auto;width:84px;height:84px;border-radius:12px;border:2px solid transparent;background:#eee center/cover;cursor:pointer;position:relative;transition:border-color .2s,transform .2s}
+.thumbs button:hover{transform:scale(1.03)}
+.thumbs button.on{border-color:var(--ink)}
+.thumbs button .t3d{position:absolute;inset:auto 6px 6px auto;font:800 9px/1 var(--sans);background:var(--ink);color:#fff;border-radius:4px;padding:3px 4px}
+@media(max-width:980px){.thumbs button{width:64px;height:64px}}
+.stage{position:relative;border-radius:var(--r);overflow:hidden;background:var(--cream);aspect-ratio:1/1}
+.slides{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth}
+.slides::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;height:100%;scroll-snap-align:start;position:relative;background:#eee center/cover no-repeat}
+.slide .cap{position:absolute;left:16px;bottom:16px;background:rgba(255,253,249,.94);backdrop-filter:blur(6px);border-radius:999px;padding:9px 15px;font-size:13px;font-weight:700;color:var(--brown);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.slide .vs-l,.slide .vs-r{position:absolute;top:16px;font:900 12px/1 var(--sans);letter-spacing:1px;text-transform:uppercase;border-radius:999px;padding:8px 12px}
+.slide .vs-l{left:16px;background:#c9a24a;color:#1a120a}.slide .vs-r{right:16px;background:rgba(20,18,16,.75);color:#fff}
+.stage .arr{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer;font-size:20px;z-index:3}
+.stage .arr.l{left:12px}.stage .arr.r{right:12px}
+.stage .count{position:absolute;right:14px;top:14px;background:rgba(20,18,16,.7);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;z-index:3}
+
+/* visor 3D (CSS) */
+.v3d{background:radial-gradient(120% 90% at 50% 40%,#fbf7f1 0%,#ece3d6 70%,#e2d6c5 100%);display:grid;place-items:center;cursor:grab;touch-action:pan-y}
+.v3d:active{cursor:grabbing}
+.v3d .scene{perspective:1400px;width:62%;aspect-ratio:3/4}
+.v3d .print{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateY(-24deg) rotateX(6deg);transition:transform .08s linear}
+.v3d .face,.v3d .back,.v3d .edge{position:absolute;backface-visibility:hidden}
+.v3d .face{inset:0;border-radius:6px;background:center/cover;transform:translateZ(4px);overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
+.v3d .face::after{content:'';position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.55) 47%,rgba(255,255,255,.1) 53%,transparent 60%);transform:translateX(var(--shine,0%));transition:transform .08s linear}
+.v3d .back{inset:0;border-radius:6px;transform:rotateY(180deg) translateZ(4px);background:linear-gradient(135deg,#d9dbdd,#b9bdc1 45%,#e8e9ea 55%,#aeb2b6);display:grid;place-items:center}
+.v3d .back .mag{width:26%;aspect-ratio:1;background:#1d1d1d;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.v3d .back .ded{position:absolute;bottom:12%;left:10%;right:10%;text-align:center;font:600 clamp(16px,2.4vw,26px)/1.15 'Caveat',cursive;color:#3c3c3c}
+.v3d .edge{background:linear-gradient(#e9eaeb,#a9adb1);}
+.v3d .edge.r{top:3px;bottom:3px;right:-4px;width:8px;transform:rotateY(90deg) translateZ(0)}
+.v3d .edge.l{top:3px;bottom:3px;left:-4px;width:8px;transform:rotateY(-90deg)}
+.v3d .shadow{position:absolute;bottom:9%;left:50%;width:56%;height:22px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(60,40,20,.28),transparent);filter:blur(4px)}
+.v3d .hint{position:absolute;top:16px;left:16px;font-size:12px;font-weight:700;color:var(--brown2);background:rgba(255,255,255,.75);border-radius:999px;padding:7px 12px}
+.v3d .scene{margin-top:-6%}
+@media(max-width:700px){.v3d .scene{width:52%}.v3d .flip{font-size:12px;padding:8px 13px;bottom:12px}.v3d .hint{font-size:11px}}
+.v3d .flip{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);border:0;background:var(--ink);color:#fff;font-size:13px;font-weight:700;border-radius:999px;padding:10px 16px;cursor:pointer;z-index:2}
+
+/* columna de compra */
+.info .rating{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ink2)}
+.info .rating .stars{font-size:17px}
+.info h1{font-family:var(--serif);font-size:clamp(30px,3.4vw,44px);line-height:1.05;letter-spacing:-.02em;margin:12px 0 6px;color:var(--brown)}
+.info h1 small{display:block;font-family:var(--sans);font-size:clamp(15px,1.5vw,18px);font-weight:700;letter-spacing:0;color:var(--terra);margin-top:10px}
+.info .sub{font-size:16px;line-height:1.55;color:var(--ink2);margin-top:12px}
+.info .sub b{color:var(--ink)}
+.info .from{display:flex;align-items:baseline;gap:10px;margin:16px 0 4px}
+.info .from b{font-size:30px;font-weight:900;letter-spacing:-.01em}
+.info .from span{font-size:13px;color:var(--mid)}
+.bul{list-style:none;margin:20px 0 6px;display:grid;gap:11px}
+.bul li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;font-size:15px;line-height:1.45;color:var(--ink2)}
+.bul li b{color:var(--ink)}
+.bul li i{width:30px;height:30px;border-radius:50%;background:var(--cream2);display:grid;place-items:center;font-style:normal;font-size:15px}
+.bul li a{color:var(--terra);font-weight:700;text-decoration:none;white-space:nowrap}
+
+/* packs (estilo bundle) */
+.packs-h{display:flex;align-items:center;gap:12px;margin:30px 0 14px;font-size:14px;font-weight:900;letter-spacing:.3px;color:var(--brown)}
+.packs-h::before,.packs-h::after{content:'';flex:1;height:1px;background:var(--line)}
+.opt{position:relative;border:1.5px solid var(--line);border-radius:16px;background:#fff;margin-bottom:12px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
+.opt:hover{border-color:#cbbfae}
+.opt.on{border-color:var(--brown);box-shadow:0 0 0 1px var(--brown),0 12px 30px rgba(74,46,26,.12);background:#fffaf4}
+.opt .row{display:grid;grid-template-columns:24px 1fr auto;gap:14px;align-items:center;padding:16px 18px}
+.opt .rad{width:22px;height:22px;border-radius:50%;border:2px solid #c9bdae;display:grid;place-items:center}
+.opt.on .rad{border-color:var(--brown)}
+.opt.on .rad::after{content:'';width:11px;height:11px;border-radius:50%;background:var(--brown)}
+.opt .tit{font-size:17px;font-weight:900;font-style:italic;letter-spacing:-.01em}
+.opt .tit small{display:block;font-style:normal;font-size:12.5px;font-weight:600;color:var(--mid);margin-top:3px;letter-spacing:0}
+.opt .pill{display:inline-block;font-style:italic;font-size:12px;font-weight:800;color:var(--terra);background:var(--terra-s);border-radius:999px;padding:4px 10px;margin-left:8px;vertical-align:2px}
+.opt .pr{text-align:right;white-space:nowrap}
+.opt .pr b{display:block;font-size:19px;font-weight:900;font-style:italic;color:var(--brown)}
+.opt .pr s{font-size:13.5px;color:var(--mid);font-weight:600}
+.opt .pr em{display:block;font-style:normal;font-size:11.5px;font-weight:700;color:var(--green);margin-top:2px}
+.opt .badge{position:absolute;right:16px;top:-12px;background:var(--brown);color:#fff;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:6px;padding:5px 9px}
+.opt .badge.terra{background:var(--terra)}
+.opt .more{display:none;padding:0 18px 16px}
+.opt.on .more{display:block;animation:entra .35s var(--ease)}
+@keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.prev{display:grid;grid-template-columns:1fr;gap:10px}
+.prev .pic{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/10;background:#eee center/cover}
+.prev .sw{position:absolute;left:10px;top:10px;display:flex;gap:6px}
+.prev .sw button{border:0;border-radius:999px;font-size:12px;font-weight:700;padding:6px 11px;background:rgba(255,255,255,.88);cursor:pointer}
+.prev .sw button.on{background:var(--ink);color:#fff}
+.prev .meta{display:flex;flex-wrap:wrap;gap:6px}
+.prev .meta span{font-size:12px;font-weight:600;color:var(--ink2);background:var(--cream);border-radius:8px;padding:6px 9px}
+.gift{display:flex;align-items:center;gap:12px;border-radius:0 0 14px 14px;background:var(--brown);color:#fff;padding:11px 18px;font-size:14.5px;font-weight:800}
+.gift .ico{width:34px;height:34px;border-radius:8px;background:#fff;display:grid;place-items:center;flex:0 0 auto}
+.gift .ico i{width:14px;height:14px;background:#1d1d1d;border-radius:3px;display:block}
+.gift s,.gift span.inc{margin-left:auto;font-size:13px;font-weight:700;opacity:.8}
+.opt:not(.on) .gift{background:var(--cream2);color:var(--brown);border-radius:0 0 14px 14px}
+.cta-main{width:100%;margin-top:8px;font-size:18px;padding:21px 24px;background:var(--brown)}
+.cta-main:hover{background:#3a2314}
+.cta-note{text-align:center;font-size:13px;color:var(--mid);margin-top:10px}
+.trust{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:20px;font-size:13px;font-weight:600;color:var(--ink2)}
+.trust span{display:flex;gap:8px;align-items:center}
+.trust span::before{content:'✓';color:var(--green);font-weight:900}
+.mini-rev{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start;margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.mini-rev .av{width:52px;height:52px;border-radius:50%;background:center/cover}
+.mini-rev p{font-size:15px;line-height:1.55;color:var(--ink2)}
+.mini-rev b{display:block;font-size:13px;margin-top:6px;color:var(--ink)}
+
+/* barra fija móvil */
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(255,253,249,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:12px;align-items:center;transform:translateY(110%);transition:transform .3s var(--ease)}
+.sticky.show{transform:none}
+.sticky .t{flex:1;min-width:0;font-size:13px;line-height:1.3}
+.sticky .t b{display:block;font-size:16px}
+.sticky .btn{padding:14px 20px;font-size:15px;background:var(--brown)}
+
+/* ═════════ 1 · DEL RECUERDO A TU PARED ═════════ */
+.story{background:var(--brown);color:#f6efe6;overflow:hidden}
+.story .h2{color:#fff}.story .h2 em{color:#ffc79c}.story .lead{color:rgba(246,239,230,.8)}
+.story .tag{color:#ffc79c}
+.story-top{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
+.story-nav{display:flex;gap:10px}
+.story-nav button{width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:20px;cursor:pointer}
+.story-nav button:hover{background:rgba(255,255,255,.12)}
+.steps{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:44px max(40px,calc((100vw - 1160px)/2)) 10px;scroll-padding:0 max(40px,calc((100vw - 1160px)/2))}
+.steps::-webkit-scrollbar{display:none}
+@media(max-width:700px){.steps{padding:32px 16px 6px;scroll-padding:0 16px;gap:14px}}
+.step{flex:0 0 min(440px,82vw);scroll-snap-align:start;border-radius:22px;overflow:hidden;background:#2f1d10;position:relative}
+.step .img{aspect-ratio:4/5;background:#222 center/cover;position:relative}
+.step .img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(25,14,6,.92))}
+.step .txt{position:absolute;left:0;right:0;bottom:0;padding:26px;z-index:2}
+.step .n{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#ffc79c;color:var(--brown);font-weight:900;margin-bottom:12px}
+.step h3{font-family:var(--serif);font-size:28px;line-height:1.1;color:#fff}
+.step p{font-size:15px;line-height:1.5;color:rgba(255,255,255,.82);margin-top:8px}
+.prog{display:flex;gap:8px;justify-content:center;margin-top:26px}
+.prog i{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden;position:relative;cursor:pointer}
+.prog i.on::after{content:'';position:absolute;inset:0;background:#ffc79c;animation:fill 5s linear forwards}
+.prog i.done{background:#ffc79c}
+@keyframes fill{from{transform:translateX(-100%)}to{transform:none}}
+/* móvil con galería dibujado */
+.phone-wrap{aspect-ratio:4/5;background:radial-gradient(90% 80% at 50% 30%,#6b4a2f,#2f1d10);display:grid;place-items:center}
+.phone{height:74%;margin-top:-18%;aspect-ratio:9/19;background:#0e0e0e;border-radius:34px;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 0 2px #444 inset;transform:rotate(-5deg)}
+.phone .scr{width:100%;height:100%;background:#fff;border-radius:26px;overflow:hidden;display:flex;flex-direction:column}
+.phone .bar1{height:32px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#111;position:relative}
+.phone .bar1::before{content:'';position:absolute;top:7px;width:56px;height:16px;border-radius:10px;background:#0e0e0e}
+.phone .gh{padding:4px 10px 6px;font-size:15px;font-weight:900;color:#111}
+.phone .gh small{display:block;font-size:9px;color:#888;font-weight:600}
+.phone .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 2px}
+.phone .grid i{aspect-ratio:1;background:#ddd center/cover;display:block;position:relative}
+.phone .grid i.sel{outline:3px solid #2f7cf6;outline-offset:-3px}
+.phone .grid i.sel::after{content:'✓';position:absolute;right:3px;bottom:3px;width:15px;height:15px;border-radius:50%;background:#2f7cf6;color:#fff;font-size:9px;font-weight:900;display:grid;place-items:center}
+.phone .use{margin:auto 10px 12px;background:var(--brown);color:#fff;border-radius:12px;font-size:10px;font-weight:800;text-align:center;padding:9px 6px}
+
+/* ═════════ 2 · COLGADO ═════════ */
+.hang{background:var(--cream)}
+.hang-top{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+@media(max-width:900px){.hang-top{grid-template-columns:1fr;gap:30px}}
+.hang-top .big{border-radius:22px;overflow:hidden;box-shadow:0 30px 60px rgba(74,46,26,.18)}
+.hang-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:60px}
+@media(max-width:1000px){.hang-steps{grid-template-columns:repeat(5,minmax(220px,1fr));overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-right:-16px;padding-right:16px}
+  .hang-steps>div{scroll-snap-align:start}}
+.hang-steps>div{background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.hang-steps .im{aspect-ratio:1;background:#eee center/cover;position:relative}
+.hang-steps .im b{position:absolute;left:12px;top:12px;width:34px;height:34px;border-radius:50%;background:var(--brown);color:#fff;display:grid;place-items:center;font-weight:900}
+.hang-steps .tx{padding:16px}
+.hang-steps h4{font-size:16px;font-weight:800}
+.hang-steps p{font-size:13.5px;line-height:1.5;color:var(--ink2);margin-top:5px}
+.hang-steps .time{display:inline-block;margin-top:8px;font-size:11.5px;font-weight:800;color:var(--terra)}
+.vs-mini{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+.vs-mini>div{border-radius:16px;padding:18px 18px 16px;background:#fff;border:1px solid var(--line)}
+.vs-mini>div.good{background:var(--brown);color:#fff;border-color:var(--brown)}
+.vs-mini h4{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:900;margin-bottom:10px}
+.vs-mini ul{list-style:none;display:grid;gap:7px;font-size:14px;line-height:1.4}
+.vs-mini .bad li::before{content:'✕ ';color:#c0392b;font-weight:900}
+.vs-mini .good li::before{content:'✓ ';color:#ffc79c;font-weight:900}
+
+/* ═════════ 3 · EN TU CASA (lugares) ═════════ */
+.rooms-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:30px 0 22px}
+.rooms-tabs button,.chipbtn{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.rooms-tabs button:hover,.chipbtn:hover{border-color:#bbb}
+.rooms-tabs button.on,.chipbtn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.room-view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:stretch}
+@media(max-width:900px){.room-view{grid-template-columns:1fr}}
+.room-view .big{border-radius:22px;overflow:hidden;aspect-ratio:1/1;background:#eee center/cover;transition:background-image .3s;box-shadow:0 24px 50px rgba(0,0,0,.12)}
+.room-side{background:var(--cream);border-radius:22px;padding:30px;display:flex;flex-direction:column}
+.room-side h3{font-family:var(--serif);font-size:30px;color:var(--brown);line-height:1.1}
+.room-side p{font-size:15.5px;line-height:1.6;color:var(--ink2);margin-top:12px}
+.room-side .tip{margin-top:18px;background:#fff;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5}
+.room-side .tip b{color:var(--terra)}
+.room-side .btn{margin-top:auto}
+.room-strip{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;margin-top:16px}
+.room-strip button{aspect-ratio:1;border-radius:10px;border:2px solid transparent;background:#eee center/cover;cursor:pointer;opacity:.7;transition:all .2s}
+.room-strip button.on,.room-strip button:hover{opacity:1;border-color:var(--ink)}
+@media(max-width:700px){.room-strip{grid-template-columns:repeat(9,64px);overflow-x:auto}}
+
+/* ═════════ 4 · COMBINACIONES ═════════ */
+.combos{background:var(--cream)}
+.combo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px}
+@media(max-width:1000px){.combo-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.combo-grid{grid-template-columns:repeat(11,78vw);overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-right:-16px;padding-right:16px}.combo-grid>a{scroll-snap-align:start}}
+.combo-grid a{display:block;text-decoration:none;background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--line);transition:transform .25s,box-shadow .25s}
+.combo-grid a:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(74,46,26,.15)}
+.combo-grid a.wide{grid-column:span 2}
+@media(max-width:520px){.combo-grid a.wide{grid-column:auto}}
+.combo-grid .im{aspect-ratio:1;background:#eee center/cover;position:relative}
+.combo-grid a.wide .im{aspect-ratio:2/1;background-position:center 30%}
+@media(max-width:520px){.combo-grid a.wide .im{aspect-ratio:1}}
+.combo-grid .n{position:absolute;left:12px;top:12px;background:#fff;border-radius:999px;font-size:12px;font-weight:900;padding:6px 11px}
+.combo-grid .tx{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.combo-grid .tx b{font-size:15px}
+.combo-grid .tx small{display:block;font-size:12.5px;color:var(--mid);font-weight:600;margin-top:2px}
+.combo-grid .tx span{font-size:13px;font-weight:800;color:var(--terra);white-space:nowrap}
+
+/* ═════════ 5 · ALUMINIO VS TRADICIONAL ═════════ */
+.vs-img{border-radius:22px;overflow:hidden;margin-top:40px}
+.vs-table{margin-top:34px;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.vs-table .r{display:grid;grid-template-columns:1.1fr 1.3fr 1.3fr;border-top:1px solid var(--line)}
+.vs-table .r:first-child{border-top:0}
+.vs-table .r>div{padding:16px 20px;font-size:15px;line-height:1.45}
+.vs-table .h>div{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:900;padding-top:20px;padding-bottom:20px}
+.vs-table .r>div:nth-child(1){font-weight:800;color:var(--brown)}
+.vs-table .r>div:nth-child(2){background:#fbf5ec}
+.vs-table .h>div:nth-child(2){background:var(--brown);color:#fff}
+.vs-table .r>div:nth-child(3){color:var(--mid)}
+.vs-table .r>div:nth-child(2)::before{content:'✓ ';color:var(--green);font-weight:900}
+.vs-table .h>div:nth-child(2)::before{content:''}
+.vs-table .r:not(.h)>div:nth-child(3)::before{content:'✕ ';color:#c0392b;font-weight:900}
+@media(max-width:700px){.vs-table .r{grid-template-columns:1fr 1fr}.vs-table .r>div:nth-child(1){grid-column:1/-1;padding-bottom:4px;background:var(--cream)}.vs-table .h>div:nth-child(1){display:none}.vs-table .r>div{padding:12px 14px;font-size:14px}}
+
+.vs2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
+@media(max-width:760px){.vs2{grid-template-columns:1fr}}
+.vs2>div{background:#0c0a08;border-radius:22px;padding:34px 34px 30px;color:#fff}
+.vs2 .win{box-shadow:0 0 0 2px #c9a24a inset,0 24px 50px rgba(0,0,0,.25)}
+.vs2 h3{font:italic 900 clamp(22px,2.6vw,30px)/1.1 var(--sans);text-transform:uppercase;color:#d8b25e;letter-spacing:.5px;margin-bottom:20px;text-align:center}
+.vs2 ul{list-style:none;display:grid;gap:12px}
+.vs2 li{position:relative;padding-left:30px;font-size:15px;font-weight:700;line-height:1.45;text-transform:uppercase;letter-spacing:.3px}
+.vs2 li em{font-style:normal;color:#d8b25e}
+.vs2 .win li::before{content:'✓';position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:#c9a24a;color:#0c0a08;font-size:12px;font-weight:900;display:grid;place-items:center}
+.vs2 .lose li::before{content:'✕';position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:#3a2f26;color:#e8b8a8;font-size:11px;font-weight:900;display:grid;place-items:center}
+.vs2 .lose{opacity:.92}
+/* ═════════ 6 · VENTAJAS (3D flotando) ═════════ */
+.adv{background:radial-gradient(80% 70% at 50% 50%,#3a2516 0%,#1d120a 100%);color:#f6efe6;overflow:hidden}
+.adv .h2{color:#fff}.adv .h2 em{color:#ffc79c}.adv .tag{color:#ffc79c}.adv .lead{color:rgba(246,239,230,.75)}
+.adv-grid{display:grid;grid-template-columns:1fr minmax(260px,420px) 1fr;gap:30px;align-items:center;margin-top:50px}
+@media(max-width:960px){.adv-grid{grid-template-columns:1fr 1fr}.adv-grid .float{grid-column:1/-1;order:-1}}
+@media(max-width:560px){.adv-grid{grid-template-columns:1fr}}
+.adv-col{display:grid;gap:26px}
+.adv-col.l{text-align:right}
+@media(max-width:960px){.adv-col.l{text-align:left}}
+.adv-it{position:relative}
+.adv-it{display:grid;grid-template-columns:62px 1fr;gap:16px;align-items:center;text-align:left}
+.adv-col.l .adv-it{grid-template-columns:1fr 62px}.adv-col.l .adv-it .ic{order:2}.adv-col.l .adv-it>div{text-align:right}
+@media(max-width:960px){.adv-col.l .adv-it{grid-template-columns:62px 1fr}.adv-col.l .adv-it .ic{order:0}.adv-col.l .adv-it>div{text-align:left}}
+.adv-it .ic{display:grid;place-items:center;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c56e,#b8892f);box-shadow:0 0 28px rgba(216,178,94,.35)}
+.adv-it h4{font-size:18px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.3px}
+.adv-it p{font-size:14.5px;line-height:1.5;color:rgba(246,239,230,.72);margin-top:6px}
+.float{display:grid;place-items:center;padding:20px 0}
+.float .scene{perspective:1200px;width:100%;max-width:340px;aspect-ratio:3/4;position:relative}
+.float .print{position:absolute;inset:0;transform-style:preserve-3d;animation:flota 7s ease-in-out infinite}
+@keyframes flota{0%,100%{transform:rotateY(-22deg) rotateX(8deg) translateY(0)}50%{transform:rotateY(18deg) rotateX(4deg) translateY(-18px)}}
+.float .face{position:absolute;inset:0;border-radius:6px;background:center/cover;transform:translateZ(5px);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.55)}
+.float .face::after{content:'';position:absolute;inset:-50%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.5) 48%,transparent 56%);animation:brillo 7s ease-in-out infinite}
+@keyframes brillo{0%,100%{transform:translateX(-30%)}50%{transform:translateX(30%)}}
+.float .edge{position:absolute;top:3px;bottom:3px;width:10px;background:linear-gradient(#f0f0f0,#9da2a6)}
+.float .edge.r{right:-5px;transform:rotateY(90deg)}
+.float .edge.l{left:-5px;transform:rotateY(-90deg)}
+.float .glow{position:absolute;inset:auto 10% -14% 10%;height:30px;background:radial-gradient(closest-side,rgba(255,199,156,.35),transparent);filter:blur(8px)}
+
+/* ═════════ 7 · REGALO A LOS TUYOS ═════════ */
+.who-tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:30px 0 30px}
+.who{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:30px;align-items:start}
+@media(max-width:900px){.who{grid-template-columns:1fr}}
+.who .im{border-radius:22px;overflow:hidden;aspect-ratio:4/3;background:#eee center/cover;box-shadow:0 24px 50px rgba(0,0,0,.12)}
+.who h3{font-family:var(--serif);font-size:32px;color:var(--brown);line-height:1.1}
+.who .idea{font-size:15.5px;line-height:1.6;color:var(--ink2);margin-top:10px}
+.rev{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+.rev .top{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mid)}
+.rev .top .stars{font-size:14px}
+.rev .top .ver{color:var(--green);font-weight:700}
+.rev p{font-size:15.5px;line-height:1.55;margin-top:10px}
+.rev b{display:block;font-size:13.5px;margin-top:10px}
+.rev b small{font-weight:600;color:var(--mid)}
+
+/* ═════════ 8 · POR MOTIVO ═════════ */
+.why{background:var(--cream)}
+.why-row{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:40px max(40px,calc((100vw - 1160px)/2)) 10px;scroll-padding:0 max(40px,calc((100vw - 1160px)/2))}
+.why-row::-webkit-scrollbar{display:none}
+@media(max-width:700px){.why-row{padding:30px 16px 6px;scroll-padding:0 16px}}
+.why-card{flex:0 0 min(340px,80vw);scroll-snap-align:start;background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column}
+.why-card .im{aspect-ratio:4/3;background:#eee center/cover;position:relative}
+.why-card .im span{position:absolute;left:12px;top:12px;background:var(--brown);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:6px 12px}
+.why-card .bd{padding:20px;display:flex;flex-direction:column;flex:1}
+.why-card .q{font-family:var(--serif);font-size:19px;line-height:1.35;color:var(--ink)}
+.why-card .who2{margin-top:auto;padding-top:14px;font-size:13px;font-weight:700}
+.why-card .who2 small{display:block;font-weight:600;color:var(--mid)}
+.row-nav{display:flex;gap:10px;justify-content:flex-end}
+.row-nav button{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer}
+
+/* ═════════ 9 · FAQ ═════════ */
+.faq-wrap{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:56px}
+@media(max-width:900px){.faq-wrap{grid-template-columns:1fr;gap:20px}}
+.faq-cats{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:22px 40px 22px 0;font-size:17px;font-weight:800;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:400;color:var(--terra);transition:transform .2s}
+.faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+.faq details p{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+.faq details[hidden]{display:none}
+.help{margin-top:26px;background:var(--cream);border-radius:18px;padding:22px}
+.help b{font-size:16px}
+.help p{font-size:14.5px;color:var(--ink2);margin-top:6px;line-height:1.5}
+
+/* cierre */
+.final{background:var(--brown);color:#fff;text-align:center}
+.final .h2{color:#fff}.final .lead{color:rgba(255,255,255,.8)}
+.final .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+footer{background:#1d120a;color:rgba(255,255,255,.6);font-size:13px;padding:30px 0 90px}
+footer .c{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
+</style>
+</head>
+<body>
+
+<div class="promo"><span>🧲 <b>Colgado magnético incluido</b> en todos los cuadros</span><span>Envío gratis en España desde 60 €</span><span>Si llega mal, lo reimprimimos</span></div>
+<header class="nav"><div class="c">
+  <a class="logo" href="index.html">Momenturies</a>
+  <nav><a href="cuadro.html">Cuadro</a><a href="sobremesa.html">Sobremesa</a><a href="iman.html">Imán</a><a href="paredes.html">Paredes de ensueño</a><a href="galeria.html">Galería</a></nav>
+  <a class="cart" href="cuadro.html?carrito=1" aria-label="Carrito"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+</div></header>
+
+<!-- ═════════════════ COMPRA ═════════════════ -->
+<section class="buy" id="comprar"><div class="c">
+  <div>
+    <p class="crumbs"><a href="index.html">Inicio</a> / Cuadro</p>
+    <div class="gal">
+      <div class="thumbs" id="thumbs"></div>
+      <div class="stage" id="stage">
+        <span class="count" id="count">1 / 9</span>
+        <button class="arr l" type="button" aria-label="Anterior" data-go="-1">‹</button>
+        <button class="arr r" type="button" aria-label="Siguiente" data-go="1">›</button>
+        <div class="slides" id="slides"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info">
+    <div class="rating"><span class="stars">★★★★★</span> 4,9 · <a href="#regalos" style="color:inherit">1.240 reseñas</a><span class="demo-tag">Ejemplo</span></div>
+    <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
+    <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras, y listo. Dale vida a vuestro hogar en segundos con <b>cuadros metálicos, con colgado magnético</b> fácil de instalar, sin herramientas ni agujeros.</p>
+    <div class="from"><b>desde 17,99 €</b><span>IVA incluido · imán incluido</span></div>
+
+    <ul class="bul">
+      <li><i>✨</i><div><b>Metal, no papel.</b> Alta definición, colores más vivos, con reflejo, más resistente y duradero. <a href="#vs">Ver la diferencia</a></div></li>
+      <li><i>🧲</i><div><b>Colgado magnético.</b> Sin taladro, sin clavos y sin agujeros. Lo quitas y la pared queda como estaba. <a href="#colgado">Cómo se cuelga</a></div></li>
+      <li><i>💌</i><div><b>Añade tu dedicatoria.</b> Unas palabras impresas detrás, gratis. Las leerá quien lo descuelgue dentro de veinte años.</div></li>
+      <li><i>🛋️</i><div><b>Míralo antes de comprar: en tu casa.</b> Salón, dormitorio, pasillo, cocina… lo ves colgado antes de pagar. <a href="#casa">Ver lugares</a></div></li>
+      <li><i>🖼️</i><div><b>Míralo antes de comprar: en composición.</b> Prueba 3, 4, 6 o 9 cuadros y quédate con la que más te guste. <a href="#combinaciones">Ver combinaciones</a></div></li>
+      <li><i>📱</i><div><b>Del recuerdo a casa, sin moverte del sofá.</b> Elige tus fotos, mira cómo quedan y listo. <a href="#recuerdo">Así funciona</a></div></li>
+      <li><i>🎁</i><div><b>Un regalo que no acaba en un cajón.</b> Deja de regalar chorradas que acaban abandonadas: regálale algo que vea todos los días con cariño. <a href="#regalos">Ideas</a></div></li>
+    </ul>
+
+    <div class="packs-h">Uno queda bien · varios quedan mejor</div>
+    <div id="packs"></div>
+
+    <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
+    <p class="cta-note" id="ctaNote">Subes tus fotos y lo ves colgado antes de pagar.</p>
+
+    <div class="trust"><span>Envío gratis en España desde 60 €</span><span>Impreso en 1-2 días laborables</span><span>Si llega mal, lo reimprimimos</span><span>Pago seguro con Shopify</span></div>
+
+    <div class="mini-rev">
+      <div class="av" style="background-image:url(fotos/stock/1544005313-160x160.webp)"></div>
+      <div><p>«Lo colgué en el pasillo en un minuto y al mes lo cambié al salón. Ni un agujero. Las fotos se ven mejor que en el móvil.»</p><b>Marta · Valencia <span class="demo-tag">Ejemplo</span></b></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ═════════════════ 1 · DEL RECUERDO A TU PARED ═════════════════ -->
+<section class="sec story" id="recuerdo">
+  <div class="c story-top">
+    <div><p class="tag">Así funciona</p><h2 class="h2">Del recuerdo<br>a tu <em>pared</em>.</h2><p class="lead">Tus mejores momentos no deberían vivir solo en el móvil. Así llegan a casa, sin herramientas y sin complicarte.</p></div>
+    <div class="story-nav"><button type="button" data-st="-1" aria-label="Anterior">←</button><button type="button" data-st="1" aria-label="Siguiente">→</button></div>
+  </div>
+  <div class="steps" id="steps">
+    <article class="step"><div class="img" style="background-image:url(fotos/stock/ss-Z59RZ5SREK-960x640.webp)"></div><div class="txt"><span class="n">1</span><h3>Primero, vivís el momento</h3><p>Una tarde de playa, un cumpleaños, el primer paso del peque. Lo de siempre: lo vives y haces la foto.</p></div></article>
+    <article class="step"><div class="phone-wrap"><div class="phone"><div class="scr"><div class="bar1"></div><div class="gh">Recientes<small>2.418 fotos</small></div><div class="grid" id="phoneGrid"></div><div class="use">Usar en Momenturies</div></div></div></div><div class="txt"><span class="n">2</span><h3>Está en tu galería</h3><p>Junto a otras dos mil. Eliges esa que siempre enseñas cuando alguien te pregunta por el viaje.</p></div></article>
+    <article class="step"><div class="img" style="background-image:url(fotos/pdp/lugar-salon.jpg)"></div><div class="txt"><span class="n">3</span><h3>La ves en tu casa antes de comprar</h3><p>En el salón, encima de la cama o en el pasillo. Sola o con otras. Pruebas hasta que te convence.</p></div></article>
+    <article class="step"><div class="img" style="background-image:url(fotos/pdp/paso-4-colgado.webp)"></div><div class="txt"><span class="n">4</span><h3>A tu pared, sin herramientas</h3><p>Pegas la base, acercas el cuadro y el imán hace el resto. Sin taladro, sin polvo y sin pedirle nada a nadie.</p></div></article>
+    <article class="step"><div class="img" style="background-image:url(fotos/pdp/gen-intercambia.jpg)"></div><div class="txt"><span class="n">5</span><h3>Y con el tiempo, cámbialo</h3><p>Llega otra foto favorita, cambias el sofá o te mudas. Lo despegas, lo mueves y vuelves a empezar.</p></div></article>
+  </div>
+  <div class="prog" id="prog"></div>
+</section>
+
+<!-- ═════════════════ 2 · COLGADO MAGNÉTICO ═════════════════ -->
+<section class="sec hang" id="colgado"><div class="c">
+  <div class="hang-top">
+    <div class="big"><img src="fotos/pdp/comparativa.webp" alt="Colgar un cuadro con taladro frente al colgado magnético de Momenturies" loading="lazy"/></div>
+    <div>
+      <p class="tag">Colgado magnético</p>
+      <h2 class="h2">Jubila el taladro.<br><em>Para siempre.</em></h2>
+      <p class="lead">Colgar un cuadro no debería acabar con polvo en el suelo, tres agujeros torcidos y una discusión. Cada cuadro lleva un imán premium detrás y una base adhesiva para la pared. Una vez colgado, el imán no se ve: solo tu foto.</p>
+      <div class="vs-mini">
+        <div class="bad"><h4>Lo de siempre</h4><ul><li>Taladro, tacos y nivel</li><li>Agujeros que se quedan</li><li>Moverlo = otro agujero</li><li>Prohibido en pisos de alquiler</li></ul></div>
+        <div class="good"><h4>Con imán</h4><ul><li>Colgado en 10 segundos</li><li>La pared queda intacta</li><li>Lo mueves cuando quieras</li><li>Perfecto si vives de alquiler</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="hang-steps">
+    <div><div class="im" style="background-image:url(fotos/pdp/paso-1-protector.webp)"><b>1</b></div><div class="tx"><h4>Quita el protector</h4><p>Despegas el papel de la base adhesiva.</p><span class="time">2 segundos</span></div></div>
+    <div><div class="im" style="background-image:url(fotos/pdp/paso-2-base.webp)"><b>2</b></div><div class="tx"><h4>Pega la base</h4><p>Donde quieras el cuadro. Aprietas unos segundos y listo.</p><span class="time">5 segundos</span></div></div>
+    <div><div class="im" style="background-image:url(fotos/pdp/paso-3-acerca.webp)"><b>3</b></div><div class="tx"><h4>Acerca el cuadro</h4><p>El imán va detrás. Lo notarás engancharse solo.</p><span class="time">2 segundos</span></div></div>
+    <div><div class="im" style="background-image:url(fotos/pdp/paso-4-colgado.webp)"><b>4</b></div><div class="tx"><h4>Ya está colgado</h4><p>Lo enderezas con la mano. El imán queda oculto detrás.</p><span class="time">1 segundo</span></div></div>
+    <div><div class="im" style="background-image:url(fotos/pdp/paso-5-cambia.webp)"><b>↻</b></div><div class="tx"><h4>Cámbialo cuando quieras</h4><p>Lo despegas del imán y lo pones en otra base. Sin rastro.</p><span class="time">Siempre que quieras</span></div></div>
+  </div>
+</div></section>
+
+<!-- ═════════════════ 3 · EN TU CASA ═════════════════ -->
+<section class="sec" id="casa"><div class="c">
+  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Así queda <em>en tu casa</em>.</h2><p class="lead">Elige una estancia. En el editor haces lo mismo con tus fotos: las ves colgadas, a tamaño real, antes de pagar.</p></div>
+  <div class="rooms-tabs" id="roomTabs" style="justify-content:center"></div>
+  <div class="room-view">
+    <div class="big" id="roomBig"></div>
+    <div class="room-side">
+      <h3 id="roomTit"></h3>
+      <p id="roomTxt"></p>
+      <div class="tip" id="roomTip"></div>
+      <div style="height:22px"></div>
+      <a class="btn" href="cuadro.html">Probar con mis fotos →</a>
+    </div>
+  </div>
+  <div class="room-strip" id="roomStrip"></div>
+</div></section>
+
+<!-- ═════════════════ 4 · COMBINACIONES ═════════════════ -->
+<section class="sec combos" id="combinaciones"><div class="c">
+  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Tus fotos, <em>en composición</em>.</h2><p class="lead">De tres en fila a una pared entera de recuerdos. Toca una y se abre el editor con esa composición ya puesta: solo te queda subir las fotos.</p></div>
+  <div class="combo-grid" id="comboGrid"></div>
+  <div class="center" style="margin-top:34px"><a class="btn ghost" href="paredes.html">Ver las +60 composiciones →</a></div>
+</div></section>
+
+<!-- ═════════════════ 5 · ALUMINIO VS TRADICIONAL ═════════════════ -->
+<section class="sec" id="vs"><div class="c">
+  <div class="center"><p class="tag">Cuadro metálico HD vs póster tradicional</p><h2 class="h2">No es un póster con marco.<br><em>Es otra cosa.</em></h2><p class="lead">La tinta va directa sobre el aluminio: más color, más resistencia y sin marco ni cristal.</p></div>
+  <div class="vs-img"><img src="fotos/metal-vs-marco.jpg" alt="Cuadro de aluminio frente a una foto enmarcada" loading="lazy"/></div>
+  <div class="vs2">
+    <div class="win"><h3>Cuadro metálico HD</h3><ul><li>Aluminio rígido, <em>premium y resistente</em></li><li>Acabado de <em>alta definición HD</em>, brillo, nitidez y <em>efecto reflejo</em></li><li>Ultra resistente, enfocado en <em>la durabilidad</em></li><li><em>100 % impermeable</em>: resiste la humedad</li><li><em>Fácil de limpiar</em> y conservar</li><li><em>No necesita enmarcado</em> para lucir premium</li><li>Montaje magnético <em>sin daños en la pared</em></li><li><em>Intercambiable</em> entre tus cuadros</li><li><em>Regalo original</em>, exclusivo, moderno y <em>memorable</em> para quien lo recibe</li></ul></div>
+    <div class="lose"><h3>Póster tradicional</h3><ul><li>Material <em>frágil y menos duradero</em></li><li><em>Peor calidad visual</em> y muy variable</li><li><em>Se arruga, dobla y estropea</em> con facilidad</li><li><em>Mala resistencia</em> a golpes y <em>humedad</em></li><li><em>Mantenimiento</em> más delicado y constante</li><li><em>Necesita enmarcado</em> para lucir bien, con su coste añadido</li><li>Acabado estándar, <em>básico y común</em></li><li>Regalo muy visto y <em>poca originalidad</em></li></ul></div>
+  </div>
+</div></section>
+
+<!-- ═════════════════ 6 · VENTAJAS ═════════════════ -->
+<section class="sec adv" id="ventajas"><div class="c">
+  <div class="center"><p class="tag">Por qué aluminio</p><h2 class="h2">Hecho para <em>durar</em>.<br>Pensado para moverse.</h2></div>
+  <div class="adv-grid">
+    <div class="adv-col l">
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><div><h4>Alta definición HD</h4><p>Colores intensos, brillo, profundidad, contraste y efecto premium.</p></div></div>
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="m12 3 2.8 5.8 6.2.9-4.5 4.4 1 6.2L12 17.4 6.5 20.3l1-6.2L3 9.7l6.2-.9z"/></svg></span><div><h4>Intercambiable</h4><p>Intercambia tus diseños y muévelo sin daños en la pared.</p></div></div>
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 18M15 3l-3 18"/></svg></span><div><h4>Ultra resistente</h4><p>Aluminio sólido y compacto, sin rasgaduras, 100 % impermeable.</p></div></div>
+    </div>
+    <div class="float"><div class="scene"><div class="print"><div class="face" style="background-image:url(fotos/stock/1474552226712-620x877.webp)"></div><i class="edge r"></i><i class="edge l"></i></div><div class="glow"></div></div></div>
+    <div class="adv-col">
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span><div><h4>Visualización en tiempo real</h4><p>Ves los cambios al instante mientras diseñas.</p></div></div>
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3v9a6 6 0 0 0 12 0V3h-4v9a2 2 0 0 1-4 0V3z"/><path d="M6 7h4M14 7h4"/></svg></span><div><h4>Colgado magnético</h4><p>Sin taladro ni agujeros: se engancha solo en 10 segundos y el imán no se ve.</p></div></div>
+      <div class="adv-it"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1a120a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/></svg></span><div><h4>Dedicatoria por detrás</h4><p>Unas palabras impresas en el dorso, gratis. Para quien lo descuelgue.</p></div></div>
+    </div>
+  </div>
+  <div class="center" style="margin-top:46px"><a class="btn w" href="#comprar">Elegir el mío →</a></div>
+</div></section>
+
+<!-- ═════════════════ 7 · REGALO A LOS TUYOS ═════════════════ -->
+<section class="sec" id="regalos"><div class="c">
+  <div class="center"><p class="tag">Un regalo a los tuyos</p><h2 class="h2">¿Para quién es?</h2><p class="lead">Lo que nos cuentan quienes ya lo han regalado. <span class="demo-tag">Reseñas de ejemplo</span></p></div>
+  <div class="who-tabs" id="whoTabs"></div>
+  <div class="who">
+    <div class="im" id="whoImg"></div>
+    <div><h3 id="whoTit"></h3><p class="idea" id="whoIdea"></p><div id="whoRevs"></div><a class="btn" style="margin-top:20px" href="cuadro.html">Crear su regalo →</a></div>
+  </div>
+</div></section>
+
+<!-- ═════════════════ 8 · POR MOTIVO ═════════════════ -->
+<section class="sec why" id="motivos">
+  <div class="c" style="display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap">
+    <div><p class="tag">Regalos con motivo</p><h2 class="h2">«Se lo regalé<br>por <em>su boda</em>…»</h2><p class="lead">Cada cuadro tiene detrás una historia. Estas son algunas. <span class="demo-tag">Ejemplo</span></p></div>
+    <div class="row-nav"><button type="button" data-why="-1" aria-label="Anterior">←</button><button type="button" data-why="1" aria-label="Siguiente">→</button></div>
+  </div>
+  <div class="why-row" id="whyRow"></div>
+</section>
+
+<!-- ═════════════════ 9 · FAQ ═════════════════ -->
+<section class="sec" id="faq"><div class="c faq-wrap">
+  <div>
+    <p class="tag">Preguntas frecuentes</p><h2 class="h2">Todo lo que nos <em>preguntan</em>.</h2>
+    <p class="lead">Y si te queda alguna duda, escríbenos: contestamos personas, no robots.</p>
+    <div class="faq-cats" id="faqCats"></div>
+    <div class="help"><b>¿Hablamos?</b><p>Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> o desde <a href="contacto.html">contacto</a>.</p></div>
+  </div>
+  <div class="faq" id="faqList"></div>
+</div></section>
+
+<section class="sec final"><div class="c">
+  <h2 class="h2">Esa foto merece salir del móvil.</h2>
+  <p class="lead">Súbela, mírala en tu pared y decide. Sin compromiso hasta que pagas.</p>
+  <div class="btns"><a class="btn w" href="cuadro.html">Subir mi foto →</a><a class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.5)" href="paredes.html">Diseñar una pared</a></div>
+</div></section>
+
+<footer><div class="c"><div><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a><a href="cookies.html">Cookies</a></div><div>© 2026 Momenturies</div></div></footer>
+
+<div class="sticky" id="sticky"><div class="t"><span id="stTit">4 cuadros · Melodía suave</span><b id="stPr">111,97 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
+
+<script>
+/* ── interruptor de reseñas: false = se marcan como «Ejemplo» ── */
+const RESENAS_REALES = false;
+if(RESENAS_REALES) document.body.classList.add('resenas-reales');
+
+const eur = n => n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const $ = s => document.querySelector(s);
+
+/* ═════ GALERÍA ═════ */
+const GAL = [
+  {t:'3d', cap:'Gíralo: así es por delante y por detrás', thumb:'fotos/stock/1474552226712-300x420.webp'},
+  {img:'fotos/pdp/lugar-salon.jpg', cap:'Míralo en tu salón antes de comprar'},
+  {img:'fotos/pdp/combo-W31.jpg', cap:'Elige la combinación y mírala en tu pared'},
+  {img:'fotos/pdp/paso-4-colgado.webp', cap:'Colgado magnético en 10 segundos'},
+  {img:'fotos/pdp/gen-intercambia.jpg', cap:'Cámbialo y muévelo cuando quieras, sin marcas'},
+  {img:'fotos/pdp/comparativa.webp', cap:'Sin taladro, sin clavos, sin agujeros'},
+  {img:'fotos/pdp/gen-metal-vs.jpg', cap:'Cuadro metálico HD frente a póster tradicional', vs:true},
+  {img:'fotos/pdp/gen-recuerdo.jpg', cap:'Del recuerdo de tu móvil a tu pared'},
+  {img:'fotos/pdp/gen-regalo.jpg', cap:'El regalo que de verdad se cuelga'},
+];
+const slides = $('#slides'), thumbs = $('#thumbs');
+GAL.forEach((g,i) => {
+  const s = document.createElement('div');
+  if(g.t === '3d'){
+    s.className = 'slide v3d'; s.id = 'v3d';
+    s.innerHTML = `<span class="hint">↔ Arrastra para girarlo</span><div class="scene"><div class="print" id="p3d"><div class="face" style="background-image:url(fotos/stock/1474552226712-620x877.webp)"></div><div class="back"><div class="mag"></div><div class="ded">Para que nunca se nos olvide este verano. Os quiero.</div></div><i class="edge r"></i><i class="edge l"></i></div></div><div class="shadow"></div><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
+  } else {
+    s.className = 'slide'; s.style.backgroundImage = `url(${g.img})`;
+    s.innerHTML = (g.vs ? '<span class="vs-l">Cuadro metálico HD</span><span class="vs-r">Póster tradicional</span>' : '') + `<span class="cap">${g.cap}</span>`;
+  }
+  slides.appendChild(s);
+  const b = document.createElement('button'); b.type = 'button';
+  b.style.backgroundImage = `url(${g.thumb || g.img})`; b.setAttribute('aria-label', g.cap);
+  if(g.t === '3d') b.innerHTML = '<span class="t3d">3D</span>';
+  b.onclick = () => goSlide(i);
+  thumbs.appendChild(b);
+});
+let cur = 0;
+function goSlide(i){ i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
+function markSlide(){
+  cur = Math.round(slides.scrollLeft / slides.clientWidth);
+  [...thumbs.children].forEach((b,j) => b.classList.toggle('on', j === cur));
+  $('#count').textContent = (cur + 1) + ' / ' + GAL.length;
+  /* mueve solo la tira de miniaturas (scrollIntoView arrastraría también la página) */
+  const on = thumbs.children[cur];
+  if(on && cur !== markSlide.last){ markSlide.last = cur; const vert = thumbs.scrollHeight > thumbs.clientHeight + 2;
+    if(vert) thumbs.scrollTo({top: on.offsetTop - thumbs.clientHeight / 2 + on.offsetHeight / 2, behavior:'smooth'});
+    else thumbs.scrollTo({left: on.offsetLeft - thumbs.clientWidth / 2 + on.offsetWidth / 2, behavior:'smooth'}); }
+}
+slides.addEventListener('scroll', () => requestAnimationFrame(markSlide));
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => goSlide(cur + +b.dataset.go));
+markSlide.last = 0; markSlide();
+
+/* visor 3D: gira solo, se arrastra y se da la vuelta */
+(function(){
+  const box = $('#v3d'), p = $('#p3d'); if(!box) return;
+  let ry = -24, rx = 6, auto = true, drag = false, x0 = 0, ry0 = 0, t = 0;
+  const face = p.querySelector('.face');
+  const draw = () => { p.style.transform = `rotateY(${ry}deg) rotateX(${rx}deg)`; face.style.setProperty('--shine', (ry % 360) * .8 + '%'); };
+  (function loop(){ if(auto && !drag){ t += .012; ry = -10 + Math.sin(t) * 26; rx = 5 + Math.sin(t*.7) * 3; draw(); } requestAnimationFrame(loop); })();
+  box.addEventListener('pointerdown', e => { if(e.target.closest('.flip')) return; drag = true; auto = false; x0 = e.clientX; ry0 = ry; });
+  addEventListener('pointermove', e => { if(!drag) return; ry = ry0 + (e.clientX - x0) * .5; draw(); });
+  addEventListener('pointerup', () => { drag = false; });
+  let back = false;
+  $('#flip').onclick = () => { auto = false; back = !back; ry = back ? 180 : -18; p.style.transition = 'transform .8s var(--ease)'; draw(); setTimeout(() => p.style.transition = '', 820);
+    $('#flip').textContent = back ? 'Ver la foto' : 'Ver el dorso con dedicatoria'; };
+})();
+
+/* ═════ PACKS ═════
+   Precios = suma de las tallas del conjunto × descuento por cantidad (PACK_TIERS de editor.js:
+   2 → -10 %, 3 → -15 %, 4 o más → -20 %). Composiciones de paredes.js con existencias.
+   Para el pack de 10: hoy todas las paredes de 10 están agotadas en Brildor (sale el de 9). */
+const TIERS = [{n:4,pct:20},{n:3,pct:15},{n:2,pct:10}];
+const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
+const RM = 34.99; // Retrato 18×24
+const PACKS = [
+  {id:'1', n:1, tit:'1 cuadro', sub:'Tu foto favorita, sola', from:17.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
+  {id:'W55', n:3, tit:'Trío', name:'Tres apaisados', sub:'3 cuadros de 24×18 cm', gross:3*RM, href:'cuadro.html?pared=W55', img:'fotos/pdp/pack-W55-cerca.jpg', alt:'fotos/pdp/pack-W55-casa.jpg', meta:['3 × 24×18 cm','24 × 60 cm en total','En columna: rincón o pasillo']},
+  {id:'W20', n:4, tit:'Cuarteto', name:'Melodía suave', sub:'4 cuadros de 18×24 cm', gross:4*RM, href:'cuadro.html?pared=W20', img:'fotos/pdp/pack-W20-cerca.jpg', alt:'fotos/pdp/pack-W20-casa.jpg', meta:['4 × 18×24 cm','81 × 24 cm en total','Sobre el sofá o la cómoda'], badge:'Más elegido'},
+  {id:'W21', n:6, tit:'Galería de 6', name:'Líneas limpias', sub:'6 cuadros de 18×24 cm', gross:6*RM, href:'cuadro.html?pared=W21', img:'fotos/pdp/pack-W21-cerca.jpg', alt:'fotos/pdp/pack-W21-casa.jpg', meta:['6 × 18×24 cm','60 × 52 cm en total','Salón o comedor']},
+  {id:'W53', n:9, tit:'Pared de recuerdos', name:'Nueve momentos', sub:'9 cuadros de 18×24 cm', gross:9*RM, href:'cuadro.html?pared=W53', img:'fotos/pdp/pack-W53-cerca.jpg', alt:'fotos/pdp/pack-W53-casa.jpg', meta:['9 × 18×24 cm','60 × 78 cm en total','Una pared entera'], badge:'Mejor precio', terra:true},
+];
+PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; p.note = 'Se abre el editor con esta composición. Subes tus fotos y la ves colgada.'; } });
+const packsEl = $('#packs');
+let sel = 'W20';
+function renderPacks(){
+  packsEl.innerHTML = PACKS.map(p => `
+    <div class="opt ${p.id === sel ? 'on' : ''}" data-id="${p.id}" role="radio" aria-checked="${p.id === sel}" tabindex="0">
+      ${p.badge ? `<span class="badge ${p.terra ? 'terra' : ''}">${p.badge}</span>` : ''}
+      <div class="row">
+        <span class="rad"></span>
+        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}<small>${p.sub}${p.name ? ' · «' + p.name + '»' : ''}</small></div>
+        <div class="pr">${p.price ? `<b>${eur(p.price)}</b><s>${eur(p.gross)}</s><em>Ahorras ${eur(p.save)}</em>` : `<b>desde ${eur(p.from)}</b>`}</div>
+      </div>
+      <div class="more">
+        <div class="prev">
+          <div class="pic" style="background-image:url(${p.alt})"><div class="sw"><button type="button" class="on" data-img="${p.alt}">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div></div>
+          <div class="meta">${p.meta.map(m => `<span>${m}</span>`).join('')}${p.price ? `<span><b>${eur(p.price / p.n)}</b> por cuadro</span>` : ''}</div>
+        </div>
+      </div>
+      <div class="gift"><span class="ico"><i></i></span>+ Colgado magnético GRATIS${p.n > 1 ? ' para los ' + p.n : ''}<span class="inc">incluido</span></div>
+    </div>`).join('');
+}
+function choose(id){
+  sel = id; renderPacks();
+  const p = PACKS.find(x => x.id === id);
+  $('#ctaMain').href = p.href; $('#ctaMain').textContent = p.cta;
+  $('#ctaNote').textContent = p.note;
+  $('#stTit').textContent = p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro';
+  $('#stPr').textContent = p.price ? eur(p.price) : 'desde ' + eur(p.from);
+  $('#stCta').href = p.href; $('#stCta').textContent = p.n > 1 ? 'Diseña tu pared →' : 'Sube tu foto →';
+}
+packsEl.addEventListener('click', e => {
+  const sw = e.target.closest('.sw button');
+  if(sw){ e.stopPropagation(); const pic = sw.closest('.pic'); pic.style.backgroundImage = `url(${sw.dataset.img})`; pic.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === sw)); return; }
+  const o = e.target.closest('.opt'); if(o && o.dataset.id !== sel) choose(o.dataset.id);
+});
+packsEl.addEventListener('keydown', e => { const o = e.target.closest('.opt'); if(o && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); choose(o.dataset.id); } });
+choose(sel);
+
+/* barra fija: aparece cuando el botón principal se sale de la pantalla */
+new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe($('#ctaMain'));
+
+/* ═════ DEL RECUERDO A TU PARED ═════ */
+const PG = ['1438761681033','1474552226712','1491013516836','1499714608240','1502759683299','1507003211169','1518568814500','1519689373023','1529156069898','1544005313','1555685812'];
+$('#phoneGrid').innerHTML = PG.slice(0,4).map(f => `<i style="background-image:url(fotos/stock/${f}-160x160.webp)"></i>`).join('')
+  + `<i class="sel" style="background-image:url(fotos/stock/ss-Z59RZ5SREK-960x640.webp)"></i>`
+  + PG.slice(4).concat(PG.slice(0,4)).map(f => `<i style="background-image:url(fotos/stock/${f}-160x160.webp)"></i>`).join('');
+(function(){
+  const row = $('#steps'), prog = $('#prog'), n = row.children.length;
+  prog.innerHTML = Array.from({length:n}, () => '<i></i>').join('');
+  let i = 0, timer = null, user = false;
+  const stepW = () => row.children[1].offsetLeft - row.children[0].offsetLeft;
+  const mark = () => [...prog.children].forEach((d,j) => { d.className = j < i ? 'done' : j === i ? 'on' : ''; });
+  const go = k => { i = (k + n) % n; row.scrollTo({left: i * stepW()}); mark(); };
+  const play = () => { clearInterval(timer); if(!user) timer = setInterval(() => go(i + 1), 5000); };
+  document.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { user = true; clearInterval(timer); go(i + +b.dataset.st); });
+  [...prog.children].forEach((d,j) => d.onclick = () => { user = true; clearInterval(timer); go(j); });
+  row.addEventListener('pointerdown', () => { user = true; clearInterval(timer); });
+  row.addEventListener('scroll', () => { const k = Math.round(row.scrollLeft / stepW()); if(k !== i){ i = k; mark(); } });
+  new IntersectionObserver(([en]) => { if(en.isIntersecting){ mark(); play(); } else clearInterval(timer); }, {threshold:.4}).observe(row);
+})();
+
+/* ═════ EN TU CASA ═════ */
+const ROOMS = [
+  ['salon','Salón','El salón, encima del sofá','Es la pared que más se mira de la casa. Una fila de cuadros grandes encima del sofá llena el hueco sin recargar.','<b>Truco:</b> deja unos 20-25 cm entre el respaldo del sofá y el borde de abajo de los cuadros.'],
+  ['dormitorio','Dormitorio','Encima del cabecero','Lo primero que ves al despertarte. Tres fotos en fila, con colores suaves, quedan de maravilla.','<b>Truco:</b> que el conjunto no sea más ancho que el cabecero; queda más ordenado.'],
+  ['comedor','Comedor','En la pared del comedor','Donde se juntan las comidas largas y las sobremesas. Fotos de familia y de viajes para que salgan solas las historias.','<b>Truco:</b> centra el conjunto con el aparador o la mesa, no con la pared.'],
+  ['cocina','Cocina','En la cocina, sin miedo al vapor','El aluminio no se ondula con la humedad, así que la cocina deja de ser zona prohibida para las fotos.','<b>Truco:</b> lejos del fuego directo, y se limpia con un paño húmedo.'],
+  ['pasillo','Pasillo','Un pasillo que deja de ser de paso','Una fila de cuadros convierte el pasillo en una pequeña galería. Ideal para contar un viaje en orden.','<b>Truco:</b> cuadros a la altura de los ojos (unos 150 cm al centro) y del mismo tamaño.'],
+  ['escalera','Escalera','Junto a la escalera','La pared de la escalera es enorme y casi siempre está vacía. Una cuadrícula de seis la llena con estilo.','<b>Truco:</b> con imán, recolocarlos hasta que queden perfectos es cuestión de segundos.'],
+  ['recibidor','Recibidor','El recibidor, lo primero al llegar','Lo que ve quien entra por la puerta. Unas fotos sobre el mueble de la entrada dicen mucho de una casa.','<b>Truco:</b> que el conjunto no sea más ancho que el mueble.'],
+  ['despacho','Despacho','En el despacho o el rincón de trabajo','Para las horas delante del ordenador: esa foto que te recuerda por qué trabajas tanto.','<b>Truco:</b> uno grande y dos pequeños encima de la mesa queda limpio y no distrae.'],
+  ['terraza','Terraza','En la terraza cubierta','Aguanta la humedad y no se ondula, así que también puede vivir fuera, en una terraza o un porche cubiertos.','<b>Truco:</b> evita el sol directo todo el día y la lluvia; bajo techo, perfecto.'],
+];
+(function(){
+  const tabs = $('#roomTabs'), strip = $('#roomStrip');
+  tabs.innerHTML = ROOMS.map((r,i) => `<button type="button" data-i="${i}">${r[1]}</button>`).join('');
+  strip.innerHTML = ROOMS.map((r,i) => `<button type="button" data-i="${i}" style="background-image:url(fotos/pdp/lugar-${r[0]}.jpg)" aria-label="${r[1]}"></button>`).join('');
+  const show = i => { const r = ROOMS[i]; $('#roomBig').style.backgroundImage = `url(fotos/pdp/lugar-${r[0]}.jpg)`; $('#roomTit').textContent = r[2]; $('#roomTxt').textContent = r[3]; $('#roomTip').innerHTML = r[4];
+    [tabs, strip].forEach(el => [...el.children].forEach((b,j) => b.classList.toggle('on', j === i))); };
+  [tabs, strip].forEach(el => el.addEventListener('click', e => { const b = e.target.closest('button'); if(b) show(+b.dataset.i); }));
+  show(0);
+})();
+
+/* ═════ COMBINACIONES ═════ */
+const COMBOS = [
+  ['W63',3,'Tres cuadrados'], ['W58',3,'Uno grande y dos'], ['W22',3,'Tres grandes en fila'],
+  ['W28',4,'Cuatro en fila'], ['W27',4,'Los cuatro perfectos'], ['W56',4,'Dos y dos cruzados'],
+  ['W47',5,'Momentos dorados'], ['W31',6,'Seis cuadrados'], ['W39',7,'Galería de siete'],
+  ['W42',8,'Ocho en dos filas'], ['W53',9,'Nueve momentos'],
+];
+$('#comboGrid').innerHTML = COMBOS.map(([w,n,name],i) => `
+  <a href="cuadro.html?pared=${w}" >
+    <div class="im" style="background-image:url(fotos/pdp/combo-${w}.jpg)"><span class="n">${n} cuadros · ${n >= 4 ? '-20 %' : '-15 %'}</span></div>
+    <div class="tx"><div><b>${name}</b><small>Ábrela en el editor</small></div><span>Probar →</span></div>
+  </a>`).join('');
+
+/* ═════ REGALO A LOS TUYOS ═════  (reseñas de EJEMPLO: cambiar por reales) */
+const WHO = [
+  ['hijos','Familia con hijos','Los peques crecen más rápido que las fotos que imprimes. Una pared con sus etapas, que vas cambiando cada año.',
+    [['Laura','Sevilla','Hice una pared con una foto de cada año de mis hijas. Cada cumple cambiamos una y es ya una tradición en casa.'],['Javier','Bilbao','Sin agujeros en la habitación de los niños, que ya tenía bastantes. Lo colgaron ellos solos.']]],
+  ['pareja','Pareja','Vuestro viaje, la pedida o una foto de cualquier domingo. Para el aniversario o porque sí.',
+    [['Carla','Madrid','Le regalé nuestras cuatro fotos favoritas del viaje a Italia por el aniversario. Lloró al leer la dedicatoria de detrás.'],['Pablo','Zaragoza','Pensaba que sería un póster más, pero el aluminio se ve muy premium. Ahora es lo primero que ve la gente al entrar.']]],
+  ['abuelos','Abuelos','Lo que más ilusión les hace: ver a los nietos cada día. Y sin que nadie tenga que subirse a una escalera con el taladro.',
+    [['Elena','Murcia','Mi abuela no tiene móvil. Ahora tiene a sus seis nietos en el salón y se los enseña a todas las vecinas.'],['Rubén','Valladolid','Lo mejor fue que no hizo falta hacer agujeros en su casa. Mi abuelo lo colgó él solo.']]],
+  ['padres','Padres','Para el Día de la Madre, del Padre o simplemente para decir gracias. Esa foto antigua que tanto les gusta, por fin en la pared.',
+    [['Nuria','Barcelona','Escaneé una foto de su boda y se la regalé a mis padres por sus 35 años. La dedicatoria detrás fue lo que más les emocionó.']]],
+  ['mascota','Mascota','Porque también es de la familia. Su mejor cara, en grande, donde todos la vean.',
+    [['Andrea','Málaga','Un cuadro de Toby en la entrada. Él no lo sabe, pero es el rey de la casa.'],['Sergio','Alicante','Le regalé a mi hermana un trío de su gata. Los colores quedan increíbles en el aluminio.']]],
+  ['amigos','Amigos','El viaje de fin de carrera, la boda de la cuadrilla, ese verano. Un regalo de grupo que siempre acierta.',
+    [['Irene','Granada','Hicimos un regalo entre siete amigas con fotos de los últimos diez años. Ahora quieren uno todas.']]],
+  ['hermanos','Hermanos','Las fotos de cuando erais pequeños, al lado de las de ahora. Un regalo que da para muchas risas.',
+    [['Marcos','Oviedo','Le regalé a mi hermano una foto nuestra de pequeños y otra igual de ahora. La tiene en el despacho.']]],
+];
+(function(){
+  const tabs = $('#whoTabs');
+  tabs.innerHTML = WHO.map((w,i) => `<button type="button" class="chipbtn" data-i="${i}">${w[1]}</button>`).join('');
+  const show = i => { const w = WHO[i];
+    $('#whoImg').style.backgroundImage = `url(fotos/combis/quien-${w[0]}.webp)`; $('#whoTit').textContent = 'Para ' + w[1].toLowerCase(); $('#whoIdea').textContent = w[2];
+    $('#whoRevs').innerHTML = w[3].map(r => `<div class="rev"><div class="top"><span class="stars">★★★★★</span><span class="ver">Compra verificada</span><span class="demo-tag">Ejemplo</span></div><p>«${r[2]}»</p><b>${r[0]} <small>· ${r[1]}</small></b></div>`).join('');
+    [...tabs.children].forEach((b,j) => b.classList.toggle('on', j === i)); };
+  tabs.addEventListener('click', e => { const b = e.target.closest('button'); if(b) show(+b.dataset.i); });
+  show(0);
+})();
+
+/* ═════ POR MOTIVO ═════  (reseñas de EJEMPLO) */
+const WHY = [
+  ['boda','Boda','Se lo regalé a mi hermana por su boda: tres fotos del día y la dedicatoria con la fecha detrás. Ahora presiden su salón.','Cristina','Toledo'],
+  ['nacimiento','Nacimiento','Cuando nació nuestro hijo, mis suegros nos regalaron su primera foto en grande. Es lo más bonito del cuarto.','Álvaro','Pamplona'],
+  ['aniversario','Aniversario','Diez años juntos, diez fotos. Una por año. Le dejé la pared montada de sorpresa mientras estaba fuera.','Lucía','Valencia'],
+  ['comunion','Comunión','Para la comunión de mi sobrina: su foto con los abuelos. No es un regalo más de los que acaban en un cajón.','Rocío','Córdoba'],
+  ['navidad','Navidad','El amigo invisible de la familia: la foto de todos en la cena del año pasado. Ganó por goleada.','Daniel','Santander'],
+  ['jubilacion','Jubilación','Sus compañeros le regalamos a Pepe una composición con fotos de sus 30 años en la empresa. Se emocionó muchísimo.','Marta','Logroño'],
+  ['graduacion','Graduación','Mi hija acabó Medicina y le regalé su foto con la orla. Se la llevó al piso de estudiantes y se cuelga sin agujeros.','Carmen','Salamanca'],
+  ['padres-madres','Día de la Madre','Una foto de mi madre con mis hijos. Me dijo que es el regalo que más le ha gustado en años.','Ana','A Coruña'],
+  ['viaje','Un viaje','Volvimos de Japón con 2.000 fotos en el móvil. Ahora seis de ellas están en el pasillo y las miramos cada día.','Hugo','Madrid'],
+  ['cumple','Cumpleaños','Para los 40 de mi pareja, una foto de cada década. Fue el regalo de la fiesta.','Silvia','Palma'],
+];
+(function(){
+  const row = $('#whyRow');
+  row.innerHTML = WHY.map(w => `<article class="why-card"><div class="im" style="background-image:url(fotos/combis/mom-${w[0]}.webp)"><span>${w[1]}</span></div><div class="bd"><span class="stars">★★★★★</span><p class="q">«${w[2]}»</p><div class="who2">${w[3]}<small>${w[4]} · <span class="demo-tag">Ejemplo</span></small></div></div></article>`).join('');
+  document.querySelectorAll('[data-why]').forEach(b => b.onclick = () => row.scrollBy({left: +b.dataset.why * (row.children[0].offsetWidth + 18)}));
+})();
+
+/* ═════ FAQ ═════ */
+const FAQ = [
+  ['colgado','¿De verdad aguanta sin clavos?','Sí. La base adhesiva va pegada a la pared y el cuadro se engancha encima con el imán premium que lleva detrás. La plancha de aluminio pesa poco, así que el imán la sujeta sin problema, y puedes recolocarla las veces que quieras.'],
+  ['colgado','¿En qué paredes se puede pegar la base?','En paredes lisas y limpias: pintura plástica, azulejo, madera lacada, cristal o puertas de armario. En gotelé muy marcado, papel pintado que se despega o pintura recién dada (menos de 3 semanas) no te lo recomendamos. Si dudas, escríbenos con una foto de tu pared.'],
+  ['colgado','¿Deja marca al quitarlo?','No. El cuadro se separa del imán sin esfuerzo y la base adhesiva se retira tirando despacio, en paralelo a la pared. No quedan agujeros ni marcas de taladro, por eso funciona tan bien en pisos de alquiler.'],
+  ['colgado','¿Se ve el imán una vez colgado?','No. El imán va justo detrás, en el centro del cuadro, así que una vez colgado solo se ve tu foto, como si flotara en la pared.'],
+  ['producto','¿Qué diferencia hay con una foto enmarcada?','La tinta va impresa directamente sobre el aluminio, sin papel ni cristal delante. Los colores tienen más fondo, no hay reflejos de cristal, no se ondula con la humedad y pesa mucho menos que un marco. Y se cuelga con imán, sin agujeros.'],
+  ['producto','¿Vale cualquier foto del móvil?','Casi todas. Una foto hecha con el móvil a tamaño completo llega bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta para el tamaño que elijas, el editor te avisa antes de pagar.'],
+  ['producto','¿Qué tamaños y formatos hay?','Tres formatos: cuadrado, clásico y retrato, de 10×15 a 30×40 cm. Los precios van desde 17,99 € (clásico 10×15). Los eliges en el editor viendo ya tu foto encuadrada.'],
+  ['producto','¿Puedo ponerlo en la cocina o el baño?','Sí. El aluminio no absorbe humedad ni se ondula. Solo evita ponerlo justo encima del fuego o en la ducha. Se limpia con un paño suave, seco o un poco húmedo.'],
+  ['producto','¿Cómo funciona la dedicatoria?','En el editor escribes unas palabras para el dorso y eliges la letra. Va impresa detrás del cuadro. Es opcional y no cuesta más.'],
+  ['packs','¿Cómo funcionan los descuentos por cantidad?','Cuantos más cuadros, menos pagas por cada uno: 2 cuadros -10 %, 3 cuadros -15 % y 4 o más -20 %. El descuento se aplica solo en el carrito y puedes mezclar tamaños y productos.'],
+  ['packs','¿Cómo sé cómo quedará la composición?','Al elegir una composición se abre el editor con ella puesta. Subes tus fotos, eliges la estancia (salón, dormitorio, pasillo…) y la ves colgada a escala antes de pagar. Puedes cambiar fotos y orden todas las veces que quieras.'],
+  ['envio','¿Cuánto tarda en llegar?','Lo imprimimos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; con el exprés, 1-2. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
+  ['envio','¿Y si llega dañado?','Lo reimprimimos y te lo reenviamos sin coste. Escríbenos con una foto en los 14 días siguientes a la entrega y no hace falta devolver el primero.'],
+  ['envio','¿Puedo devolverlo?','Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Por eso te dejamos verlo en tu pared antes de pagar. Si llega con un defecto, lo reimprimimos.'],
+  ['regalo','¿Puedo mandarlo directamente como regalo?','Sí. Pones una dirección de entrega distinta a la tuya y añades una nota en los comentarios del pedido. El precio no aparece dentro del paquete, y la dedicatoria del dorso la lee solo quien lo descuelgue.'],
+  ['regalo','¿Llega a tiempo para una fecha concreta?','Si pides con al menos 7 días laborables de margen, normalmente sí. Para fechas justas, elige el envío exprés y escríbenos: haremos lo posible por priorizarlo.'],
+];
+(function(){
+  const cats = [['todas','Todas'],['colgado','Colgado'],['producto','El cuadro'],['packs','Packs'],['envio','Envío'],['regalo','Regalo']];
+  $('#faqCats').innerHTML = cats.map((c,i) => `<button type="button" class="chipbtn ${i ? '' : 'on'}" data-c="${c[0]}">${c[1]}</button>`).join('');
+  $('#faqList').innerHTML = FAQ.map((f,i) => `<details data-c="${f[0]}" ${i ? '' : 'open'}><summary>${f[1]}</summary><p>${f[2]}</p></details>`).join('');
+  $('#faqCats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
+    [...$('#faqCats').children].forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
+})();
+</script>
+</body>
+</html>
