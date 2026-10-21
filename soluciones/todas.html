@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Todas las secciones · por ángulo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+<!--
+  Todas las secciones hechas hasta ahora (21-oct-2026), agrupadas por ángulo/beneficio en pestañas.
+  Cada tarjeta es la sección de verdad: un iframe de su página (portada.html, producto.html,
+  di-adios-clavos.html, en-tu-casa.html, ficha-cuadro.html, la portada y el cuadro en vivo)
+  con todo lo demás escondido. No toca esas páginas ni lo que recuerdan de cada una.
+  Lo que se marca (me quedo / duda / fuera) y el orden se guardan en este navegador; «Copiar resumen» lo pasa a texto.
+-->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0d0d0d;--mid:#6b7280;--line:#e2ddd6;--bg:#f4f1ec;--ok:#2f6f4f;--duda:#b7791f;--no:#b23b2a;--terra:#c2613a}
+body{font-family:'Inter',Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.top{background:#fff;border-bottom:1px solid var(--line)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 20px}
+@media(max-width:600px){.wrap{padding:0 16px}}
+.head{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:end;justify-content:space-between;padding:28px 0 18px}
+.head h1{font-family:Georgia,serif;font-size:30px;line-height:1.1}
+.head p{font-size:14px;color:#555;line-height:1.55;max-width:720px;margin-top:8px}
+.head .back{font-size:13px;color:#555;text-decoration:none;display:inline-block;margin-bottom:8px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;font-size:13px;font-weight:700;padding:9px 14px}
+.seg button.on{background:var(--ink);color:#fff}
+.pill{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:999px;font-size:13px;font-weight:700;padding:9px 14px}
+.pill.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.tabs{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-top:10px;padding-bottom:10px}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-size:13.5px;font-weight:700;white-space:nowrap}
+.tab small{font-weight:600;color:var(--mid);margin-left:4px}
+.tab .ok{color:var(--ok)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.tab.on small{color:rgba(255,255,255,.7)}
+.tab.on .ok{color:#8fd4a8}
+.panel{padding:26px 0 80px}
+.intro-tab{margin-bottom:22px}
+.intro-tab h2{font-family:Georgia,serif;font-size:26px}
+.intro-tab p{font-size:14.5px;color:#555;line-height:1.55;margin-top:6px;max-width:760px}
+.filtro{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.filtro button{border:1px solid var(--line);background:#fff;border-radius:999px;font-size:12.5px;font-weight:700;padding:7px 12px}
+.filtro button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:22px}
+.card.ok{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.card.no{opacity:.5}
+.card.no .frame{display:none}
+.card .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 16px;border-bottom:1px solid var(--line);background:#faf8f5}
+.card .num{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:0 0 auto}
+.card .t{flex:1;min-width:220px}
+.card .t b{display:block;font-size:15px}
+.card .t span{font-size:12.5px;color:var(--mid)}
+.card .t span em{font-style:normal;font-weight:700;color:var(--terra)}
+.card .t a{font-size:12.5px;color:var(--mid);margin-left:8px}
+.votos{display:flex;gap:6px}
+.votos button{border:1.5px solid var(--line);background:#fff;border-radius:999px;font-size:12.5px;font-weight:800;padding:7px 12px}
+.votos button[data-v=ok].on{background:var(--ok);border-color:var(--ok);color:#fff}
+.votos button[data-v=duda].on{background:var(--duda);border-color:var(--duda);color:#fff}
+.votos button[data-v=no].on{background:var(--no);border-color:var(--no);color:#fff}
+.frame{background:#fff;display:flex;justify-content:center;position:relative}
+.frame iframe{display:block;width:100%;height:560px;border:0;background:#fff}
+.movil .frame{background:#e9e4dc;padding:18px 0}
+.movil .frame iframe{width:390px;max-width:100%;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.frame .cargando{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mid)}
+.nota{font-size:12.5px;color:var(--mid);padding:10px 16px;background:#fffbea;border-bottom:1px solid #f1e3b0}
+/* orden final */
+.orden{display:grid;gap:12px}
+.ang{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.ang.vacio{opacity:.55}
+.ang .mv{display:flex;flex-direction:column;gap:4px}
+.ang .mv button{width:32px;height:28px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:14px}
+.ang h3{font-size:16px}
+.ang ul{list-style:none;margin-top:8px;display:grid;gap:6px}
+.ang li{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.ang li .mv2{display:inline-flex;gap:3px}
+.ang li .mv2 button{width:24px;height:22px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px}
+.ang li i{font-style:normal;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;color:#fff}
+.ang li i.ok{background:var(--ok)}.ang li i.duda{background:var(--duda)}
+.ang .fuera{font-size:12.5px;color:var(--mid);margin-top:6px}
+.ang label{font-size:12.5px;font-weight:700;display:flex;gap:6px;align-items:center;white-space:nowrap}
+.resumen{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.resumen textarea{width:100%;min-height:220px;border:1px solid var(--line);border-radius:10px;padding:12px;font:13px/1.5 ui-monospace,Consolas,monospace;resize:vertical}
+.resumen .tools{margin-top:10px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 40px));background:var(--ink);color:#fff;border-radius:999px;padding:11px 18px;font-size:13.5px;font-weight:700;transition:transform .25s;z-index:50}
+.toast.on{transform:translateX(-50%)}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap head">
+  <div>
+    <a class="back" href="index.html">&larr; Soluciones por sección</a>
+    <h1>Todas las secciones, por ángulo</h1>
+    <p>Todo lo que hemos hecho hasta ahora, junto: la portada (la de ahora + A–E), la página de producto (A–E), «Di adiós a los clavos», «En tu casa», la ficha nueva de Aitor y lo que está en vivo. Cada pestaña es un ángulo o beneficio. Marca con cuáles os quedáis y, en la última pestaña, ordenadlas. Se guarda en este navegador; «Copiar resumen» lo pasa a texto para mandarlo.</p>
+  </div>
+  <div class="tools">
+    <div class="seg" id="vista"><button type="button" class="on" data-m="pc">Ordenador</button><button type="button" data-m="movil">Móvil</button></div>
+  </div>
+</div></div>
+
+<div class="tabs"><div class="wrap" id="tabs"></div></div>
+<main class="wrap panel" id="panel"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+
+/* ── las fuentes ── */
+const L = k => String.fromCharCode(64 + k);   // 1 → A
+// portada.html: la versión 0 es la de ahora en la web, 1-5 = A-E
+const POR = {
+  1: ['La de ahora en la web','Foto a sangre · como Mixtiles','Mitad y mitad · texto + collage de producto','De la galería a la pared · animado','Del papel al aluminio · el brillo se enciende','Pruébalo en esta pared · toca las fotos'],
+  2: ['La de ahora en la web','Tres tarjetas con foto grande','Vídeo del editor en un móvil + pasos que avanzan','Línea de tiempo en negro, con lo que tarda cada paso','El móvil que avanza al bajar','Si lo pides hoy · fechas reales en un calendario'],
+  3: ['La de ahora en la web','Tabla comparativa · como Metaleks','Primer plano del producto con puntos que explican','Mosaico de ventajas con una foto grande','Mueve la luz y mira cómo brilla','Papel contra aluminio · arrastra la barra'],
+  4: ['La de ahora en la web','Tres productos grandes · tienda limpia','Selector: un producto grande y sus tamaños','Los tamaños a escala en una pared real','Bento · todo de un vistazo','Tres tarjetas que se inclinan con el ratón'],
+  5: ['La de ahora en la web','Montaje en 3D sobre una entrada real','Antes y después con barra','La carrera con cronómetro','Martillo o imán · el juego','Todo lo que te ahorras · tachado + despiece'],
+  6: ['La de ahora en la web','Una pared para todo el año · las 15 giran','Cámbialos tú · toca dos para intercambiarlos'],
+  7: ['La de ahora en la web','Mosaico de momentos','Tarjetas por persona con su dedicatoria','Próximas fechas para regalar','Encuentra su regalo · tres preguntas','Momentos en movimiento · dos cintas'],
+  8: ['La de ahora en la web','Primeros clientes · la pared vacía que llenarán ellos','Garantías con iconos · «te cubrimos»','Reseñas verificadas · listo para cuando lleguen','Una carta del equipo · sin reseñas inventadas','El ticket · lo que va incluido'],
+  9: ['La de ahora en la web','Dos columnas con temas','Conversación tipo chat','Buscador de respuestas','Pregunta a la izquierda, respuesta con foto a la derecha','¿Mito o verdad? · cartas que se giran'],
+  10:['La de ahora en la web','Banda con foto de una pared','Postal','Mínima con muro de fotos debajo','El sobre y la cuenta atrás','Las 100 primeras paredes · guarda tu hueco'],
+};
+// producto.html: 0-4 = A-E
+const PRO = {
+  1: ['Galería a la izquierda y un solo botón · sin selectores','Foto a sangre con una caja flotante · sin selectores','Pruébala aquí · sube tu foto y mírala en un salón','Editorial · título enorme, tres datos y fotos que pasan','¿Cuántos quieres? · el descuento se ve al momento'],
+  2: ['Cuatro cifras grandes','Foto grande y lista de ventajas','Tres tarjetas altas con foto','Ficha técnica · como una etiqueta','Cinta de palabras grandes y tres razones'],
+  3: ['Pasos que avanzan solos, con su foto','En zigzag · foto y texto alternos','Cuatro móviles, un paso en cada uno','Tarjetas que se deslizan, números grandes','El vídeo del editor con capítulos'],
+  4: ['Corte de lado · las tres capas se separan','Tres escenas animadas: pegar, acercar, mover','Con clavos contra con imán · los pasos contados','El cronómetro de diez segundos','Las tres dudas, respondidas de frente'],
+  5: ['Barra: el mismo cuadro con marco y en aluminio','Dos columnas · la recomendada destacada','Foto real con puntos que se tocan','Interruptor · pon y quita el marco','Cinco frases con foto, alternas'],
+  6: ['Carrusel de composiciones con precio','Filtra por el hueco que tienes','Una grande y la lista al lado','Mosaico oscuro · el precio al pasar el ratón','¿Cuántas fotos tienes? · te enseñamos sus paredes'],
+  7: ['Huecos de reseña vacíos · el primero puede ser el tuyo','Cuatro garantías en negro','Una nota pegada · corta y sincera','Cómo lo hacemos · cuatro pasos de taller','Comparte tu pared · el muro que llenarán los clientes'],
+  8: ['Dos columnas de acordeón','Pestañas por tema','Buscador de respuestas','Como un chat','Lista numerada a dos columnas'],
+  9: ['Dos tarjetas grandes con foto','Completa el pedido · marca y suma','Banda de color con dos fotos','Tres accesos compactos con precio','Una escena con los tres productos · toca cada uno'],
+};
+// la de ahora se coge directamente de la portada en vivo (portada.html la pide por número y, desde que entró «Así se cuelga», de la 5 en adelante va desplazada)
+const EN_VIVO = { 1:'.hero', 2:'#como-funciona', 3:'.benefits-section', 4:'#productos', 5:'#colgado', 6:'#cambialos', 7:'#para-quien', 8:'#opiniones', 9:'#faq', 10:'.newsletter-section' };
+const portada = n => POR[n].map((lab, k) => k
+  ? { id:`por-${n}-${k}`, file:'portada.html', n, k, lab, org:'Portada · ' + L(k) }
+  : { id:`por-${n}-0`, file:'../index.html', sel:EN_VIVO[n], lab, org:'Portada · en vivo ahora' });
+const producto = n => PRO[n].map((lab, k) => ({ id:`pro-${n}-${k}`, file:'producto.html', n, k, lab, org:'Producto · ' + L(k + 1) }));
+const pagina = (id, file, sel, lab, org, extra) => Object.assign({ id, file, sel, lab, org }, extra || {});
+const FICHA = (sel, lab) => pagina('ficha-' + sel.slice(1), '../ficha-cuadro.html', sel, lab, 'Ficha nueva de Aitor');
+const VIVO = (sel, lab) => pagina('cuadro-' + sel.slice(1), '../cuadro.html', sel, lab, 'Ficha del Cuadro · en vivo ahora');
+const CLAVOS = (sel, lab) => pagina('clavos-' + sel.replace(/\W/g, ''), 'di-adios-clavos.html', sel, lab, 'Di adiós a los clavos');
+const CASA = (k, lab) => pagina('casa-' + k, 'en-tu-casa.html', `body section:nth-of-type(${k})`, lab, 'En tu casa');
+
+const ANGULOS = [
+  { id:'arriba', t:'Arriba del todo', d:'Lo primero que se ve: la portada (hero) y la zona de compra de la ficha.', items:[
+    ...portada(1), VIVO('.brand-hero', 'Compra: galería + título + botón'), ...producto(1), FICHA('#comprar', 'Galería de 9 con 3D, 7 puntos clave y packs (3, 4, 6, 9)') ]},
+  { id:'funciona', t:'Cómo funciona', d:'De la foto del móvil a la pared: los pasos.', items:[
+    ...portada(2), VIVO('.pp-section', 'De tu galería a tu pared'), ...producto(3), FICHA('#recuerdo', 'Del recuerdo a tu pared · carrusel de 5 pasos'), CASA(3, 'Del momento a vuestra pared. Y vuelta a empezar (vídeo)') ]},
+  { id:'colgado', t:'Sin clavos', d:'El colgado magnético: base adhesiva + imán, sin agujeros.', items:[
+    ...portada(5), pagina('vivo-cs', '../index.html', '#asi-se-cuelga', 'Así se cuelga · escena 3D por scroll (desliza dentro)', 'Portada · en vivo ahora', { scroll:true }),
+    VIVO('.hg-section', 'Sin clavos y sin daños en la pared'), ...producto(4), FICHA('#colgado', 'Jubila el taladro · comparativa + 5 pasos con foto'),
+    CLAVOS('#o1', 'Manifiesto: solo tipografía, se tacha lo que te ahorras'), CLAVOS('.o2', 'La misma pared. Dos maneras de colgar'), CLAVOS('.o3', 'Desde tu abuela hasta tu hijo de 5 años sabe montarlo'),
+    CLAVOS('#o4', 'Mientras buscas el martillo, ya lo tienes colgado'), CLAVOS('#o5', 'Por dentro es así de sencillo · despiece') ]},
+  { id:'aluminio', t:'Aluminio y calidad', d:'Por qué aluminio: ventajas, comparativa con papel y con marco.', items:[
+    ...portada(3), VIVO('.why-section', 'Por qué el Cuadro'), ...producto(2), VIVO('.vs-section', 'Aluminio HD frente al cuadro enmarcado'), ...producto(5),
+    FICHA('#vs', 'Cuadro metálico HD vs póster tradicional · dos columnas negro y dorado'), FICHA('#ventajas', 'Ventajas: el cuadro flotando en 3D con 6 alrededor') ]},
+  { id:'casa', t:'En tu casa y composiciones', d:'Verlo en tu casa antes de comprar, y la pared entera.', items:[
+    FICHA('#casa', 'Así queda en tu casa · 9 estancias'), CASA(1, 'Mira cómo queda en cada rincón de tu casa'), CASA(2, 'Cambia la pared entera con un toque'),
+    VIVO('.wl-section', '¿Y si en vez de uno cuelgas la pared entera?'), ...producto(6), FICHA('#combinaciones', 'Tus fotos, en composición · 11 combinaciones'),
+    ...portada(6), CLAVOS('.g15', 'Cuelga quince. Cámbialos cuando te apetezca') ]},
+  { id:'productos', t:'Productos y formatos', d:'Cuadro, Sobremesa e Imán.', items:[ ...portada(4), VIVO('.otherfmt', '¿Prefieres otro formato?'), ...producto(9) ]},
+  { id:'regalo', t:'Regalo y para quién', d:'Para quién es y por qué motivo se regala.', items:[
+    ...portada(7), FICHA('#regalos', '¿Para quién es? · pestañas por persona', ), FICHA('#motivos', '«Se lo regalé por…» · tarjetas por motivo') ], nota:'Las dos de la ficha de Aitor llevan reseñas de EJEMPLO (marcadas en amarillo): no se pueden publicar así.' },
+  { id:'confianza', t:'Opiniones y garantías', d:'Reseñas, garantías y confianza. Sin reseñas inventadas.', items:[ ...portada(8), VIVO('.rv-section', 'Todavía no tenemos reseñas'), ...producto(7) ]},
+  { id:'faq', t:'Preguntas', d:'Preguntas frecuentes.', items:[ ...portada(9), VIVO('.fq-section', 'Lo que más nos preguntan'), ...producto(8), FICHA('#faq', '16 preguntas por categorías') ]},
+  { id:'news', t:'Newsletter', d:'Captar el correo.', items:[ ...portada(10) ]},
+];
+
+/* ── estado (solo este navegador) ── */
+const KEY = 'sol-todas-';
+const get = (k, d) => { try{ const v = localStorage.getItem(KEY + k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
+const set = (k, v) => { try{ localStorage.setItem(KEY + k, JSON.stringify(v)); }catch(e){} };
+let votos = get('votos', {});
+let orden = get('orden', ANGULOS.map(a => a.id));
+ANGULOS.forEach(a => { if(!orden.includes(a.id)) orden.push(a.id); });
+let ordenDentro = get('dentro', {});
+let modo = get('modo', 'pc');
+let tabActual = new URLSearchParams(location.search).get('tab') || get('tab', ANGULOS[0].id);
+let filtro = 'todas';
+
+const todos = ANGULOS.flatMap(a => a.items.map(it => Object.assign(it, { ang:a.id })));
+const porId = Object.fromEntries(todos.map(it => [it.id, it]));
+const nombre = it => `${it.org} · ${it.lab}`;
+const toast = t => { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 1800); };
+
+/* ── pestañas ── */
+function pintaTabs(){
+  $('#tabs').innerHTML = ANGULOS.map(a => {
+    const ok = a.items.filter(it => votos[it.id] === 'ok').length;
+    return `<button type="button" class="tab${a.id === tabActual ? ' on' : ''}" data-tab="${a.id}">${a.t}<small>${a.items.length}${ok ? ` · <span class="ok">✓ ${ok}</span>` : ''}</small></button>`;
+  }).join('') + `<button type="button" class="tab${tabActual === 'orden' ? ' on' : ''}" data-tab="orden">Orden final y resumen</button>`;
+}
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if(!b) return; tabActual = b.dataset.tab; set('tab', tabActual); filtro = 'todas'; pintaTabs(); pintaPanel(); scrollTo({ top:0 }); });
+
+/* ── una sección dentro de su iframe, sin lo demás ── */
+const ocultar = el => el.style.setProperty('display', 'none', 'important');
+function aislar(f, it){
+  const doc = f.contentDocument, win = f.contentWindow; if(!doc || !doc.body) return;
+  let sec;
+  if(it.n){   // portada.html / producto.html: la sección N con la versión K puesta (sin tocar lo que esa página recuerda)
+    sec = doc.querySelector(`.sec[data-n="${it.n}"]`); if(!sec) return;
+    const vs = [...sec.querySelectorAll(':scope > .var')];
+    vs.forEach((v, k) => v.classList.toggle('on', k === it.k));
+    const v = vs[it.k];
+    if(v){ v.querySelectorAll('iframe[data-src]').forEach(x => { if(!x.src) x.src = x.dataset.src; }); v.querySelectorAll('video').forEach(x => { x.preload = 'auto'; x.play && x.play().catch(() => {}); }); v.dispatchEvent(new CustomEvent('visible')); }
+    sec.querySelectorAll(':scope > .bar').forEach(ocultar);
+  } else sec = doc.querySelector(it.sel);
+  if(!sec) return;
+  // esconder todo lo que no sea la sección (también lo que se añada después al body)
+  let el = sec;
+  while(el.parentElement && el !== doc.body){
+    [...el.parentElement.children].forEach(s => { if(s !== el && !/^(SCRIPT|STYLE|LINK)$/.test(s.tagName)) ocultar(s); });
+    if(el.parentElement === doc.body) el.setAttribute('data-solo-keep', '');
+    el = el.parentElement;
+  }
+  const st = doc.createElement('style');
+  st.textContent = 'body>:not([data-solo-keep]):not(script):not(style){display:none!important}html,body{margin:0!important;padding:0!important}';
+  doc.head.appendChild(st);
+  sec.style.marginTop = '0';
+  sec.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
+  if(it.scroll){ win.scrollTo(0, 0); return; }
+  const alto = () => { const h = Math.ceil(sec.getBoundingClientRect().height); if(h > 40 && Math.abs(h - f.offsetHeight) > 2) f.style.height = Math.min(h, 3200) + 'px'; };
+  if(win.ResizeObserver) new win.ResizeObserver(alto).observe(sec);
+  alto(); setTimeout(alto, 800); setTimeout(alto, 2500);
+}
+function cargar(card){
+  if(card.dataset.cargado) return; card.dataset.cargado = '1';
+  const it = porId[card.dataset.id], box = $('.frame', card);
+  const f = document.createElement('iframe');
+  f.title = nombre(it);
+  if(it.scroll) f.style.height = '85vh';
+  f.addEventListener('load', () => { try{ aislar(f, it); }catch(e){ console.warn(it.id, e); } const c = $('.cargando', box); if(c) c.remove(); });
+  f.src = it.file;
+  box.appendChild(f);
+}
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ cargar(e.target); io.unobserve(e.target); } }), { rootMargin:'900px 0px' }) : null;
+
+/* ── panel de un ángulo ── */
+function enlace(it){
+  if(it.n) return it.file;   // la página de versiones entera
+  return it.file + (it.sel[0] === '#' ? it.sel : '');
+}
+function pintaAngulo(a){
+  const vis = a.items.filter(it => filtro === 'todas' || (filtro === 'sin' ? !votos[it.id] : votos[it.id] === filtro));
+  const n = s => a.items.filter(it => votos[it.id] === s).length;
+  $('#panel').innerHTML = `
+    <div class="intro-tab"><h2>${a.t}</h2><p>${a.d} ${a.items.length} versiones.</p>
+      <div class="filtro">${[['todas','Todas'],['sin','Sin marcar'],['ok','Me quedo · ' + n('ok')],['duda','Duda · ' + n('duda')],['no','Fuera · ' + n('no')]].map(([k, t]) => `<button type="button" data-f="${k}" class="${k === filtro ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+    ${a.nota ? `<div class="card"><div class="nota">${a.nota}</div></div>` : ''}
+    ${vis.map(it => {
+      const i = a.items.indexOf(it) + 1, v = votos[it.id] || '';
+      return `<article class="card ${v}" data-id="${it.id}">
+        <div class="bar"><span class="num">${i}</span>
+          <div class="t"><b>${it.lab}</b><span><em>${it.org}</em><a href="${enlace(it)}" target="_blank" rel="noopener">abrir aparte ↗</a></span></div>
+          <div class="votos"><button type="button" data-v="ok" class="${v === 'ok' ? 'on' : ''}">✓ Me quedo</button><button type="button" data-v="duda" class="${v === 'duda' ? 'on' : ''}">? Duda</button><button type="button" data-v="no" class="${v === 'no' ? 'on' : ''}">✕ Fuera</button></div>
+        </div>
+        <div class="frame"><span class="cargando">Cargando…</span></div>
+      </article>`;
+    }).join('') || '<p style="color:#6b7280;font-size:14px">Nada con este filtro.</p>'}`;
+  $$('#panel .card[data-id]').forEach(c => { if(c.classList.contains('no')) return; io ? io.observe(c) : cargar(c); });
+}
+$('#panel').addEventListener('click', e => {
+  const f = e.target.closest('.filtro [data-f]');
+  if(f){ filtro = f.dataset.f; pintaPanel(); return; }
+  const b = e.target.closest('.votos [data-v]'); if(!b) return;
+  const card = b.closest('.card'), id = card.dataset.id, v = b.dataset.v;
+  votos[id] = votos[id] === v ? undefined : v; if(!votos[id]) delete votos[id];
+  set('votos', votos);
+  card.className = 'card ' + (votos[id] || '');
+  $$('.votos button', card).forEach(x => x.classList.toggle('on', x.dataset.v === votos[id]));
+  if(votos[id] !== 'no' && !card.dataset.cargado) cargar(card);
+  pintaTabs();
+});
+
+/* ── orden final ── */
+function dentro(a){   // las que se quedan (y las dudas), en el orden elegido
+  const vivos = a.items.filter(it => votos[it.id] === 'ok' || votos[it.id] === 'duda').map(it => it.id);
+  const o = (ordenDentro[a.id] || []).filter(id => vivos.includes(id));
+  vivos.forEach(id => { if(!o.includes(id)) o.push(id); });
+  return o;
+}
+let fuera = get('fueraDeLaPagina', {});
+function texto(){
+  const lin = ['MOMENTURIES · secciones elegidas (' + new Date().toLocaleDateString('es-ES') + ')', ''];
+  let n = 0;
+  orden.forEach(id => {
+    const a = ANGULOS.find(x => x.id === id), ds = dentro(a);
+    if(fuera[id]){ return; }
+    n++; lin.push(`${n}. ${a.t.toUpperCase()}`);
+    if(!ds.length) lin.push('   (sin elegir)');
+    ds.forEach(d => lin.push(`   ${votos[d] === 'ok' ? '✓' : '?'} ${nombre(porId[d])}`));
+  });
+  const quitados = orden.filter(id => fuera[id]).map(id => ANGULOS.find(x => x.id === id).t);
+  if(quitados.length) lin.push('', 'No va: ' + quitados.join(', '));
+  return lin.join('\n');
+}
+function pintaOrden(){
+  $('#panel').innerHTML = `
+    <div class="intro-tab"><h2>Orden final</h2><p>Los ángulos en el orden en que irían, con las versiones que habéis marcado («me quedo» y «duda»). Sube y baja con las flechas. Si un ángulo no va, desmárcalo.</p></div>
+    <div class="orden">${orden.map((id, i) => {
+      const a = ANGULOS.find(x => x.id === id), ds = dentro(a);
+      return `<div class="ang${fuera[id] ? ' vacio' : ''}" data-a="${id}">
+        <div class="mv"><button type="button" data-mv="-1" aria-label="Subir"${i ? '' : ' disabled'}>↑</button><button type="button" data-mv="1" aria-label="Bajar"${i < orden.length - 1 ? '' : ' disabled'}>↓</button></div>
+        <div><h3>${i + 1}. ${a.t}</h3>${ds.length ? `<ul>${ds.map((d, j) => `<li><span class="mv2"><button type="button" data-mv2="-1" data-id="${d}"${j ? '' : ' disabled'}>↑</button><button type="button" data-mv2="1" data-id="${d}"${j < ds.length - 1 ? '' : ' disabled'}>↓</button></span><i class="${votos[d]}">${votos[d] === 'ok' ? '✓' : '?'}</i>${nombre(porId[d])}</li>`).join('')}</ul>` : `<p class="fuera">Sin elegir todavía · <a href="#" data-ir="${id}">elegir</a></p>`}</div>
+        <label><input type="checkbox" data-va ${fuera[id] ? '' : 'checked'}/> Va</label>
+      </div>`;
+    }).join('')}</div>
+    <div class="resumen"><b>Resumen</b><textarea id="txt" readonly>${texto()}</textarea>
+      <div class="tools"><button type="button" class="pill" id="copiar">Copiar resumen</button><button type="button" class="pill ghost" id="borrar">Empezar de cero</button></div></div>`;
+}
+$('#panel').addEventListener('click', e => {
+  if(tabActual !== 'orden') return;
+  const ang = e.target.closest('.ang');
+  const mv = e.target.closest('[data-mv]');
+  if(mv){ const i = orden.indexOf(ang.dataset.a), j = i + +mv.dataset.mv; [orden[i], orden[j]] = [orden[j], orden[i]]; set('orden', orden); pintaOrden(); return; }
+  const mv2 = e.target.closest('[data-mv2]');
+  if(mv2){ const a = ANGULOS.find(x => x.id === ang.dataset.a), o = dentro(a), i = o.indexOf(mv2.dataset.id), j = i + +mv2.dataset.mv2; [o[i], o[j]] = [o[j], o[i]]; ordenDentro[a.id] = o; set('dentro', ordenDentro); pintaOrden(); return; }
+  const ir = e.target.closest('[data-ir]');
+  if(ir){ e.preventDefault(); tabActual = ir.dataset.ir; set('tab', tabActual); pintaTabs(); pintaPanel(); scrollTo({ top:0 }); return; }
+  if(e.target.id === 'copiar'){ const t = $('#txt'); t.select(); (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(() => toast('Copiado'), () => { document.execCommand('copy'); toast('Copiado'); }); return; }
+  if(e.target.id === 'borrar'){ if(!confirm('¿Borrar todo lo marcado en este navegador?')) return; votos = {}; orden = ANGULOS.map(a => a.id); ordenDentro = {}; fuera = {}; ['votos','orden','dentro','fueraDeLaPagina'].forEach(k => set(k, k === 'orden' ? orden : {})); pintaTabs(); pintaOrden(); }
+});
+$('#panel').addEventListener('change', e => {
+  const c = e.target.closest('[data-va]'); if(!c) return;
+  const id = c.closest('.ang').dataset.a; if(c.checked) delete fuera[id]; else fuera[id] = true;
+  set('fueraDeLaPagina', fuera); pintaOrden();
+});
+
+function pintaPanel(){
+  document.body.classList.toggle('movil', modo === 'movil');
+  if(tabActual === 'orden') return pintaOrden();
+  const a = ANGULOS.find(x => x.id === tabActual) || ANGULOS[0]; tabActual = a.id;
+  pintaAngulo(a);
+}
+$('#vista').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if(!b) return;
+  modo = b.dataset.m; set('modo', modo);
+  $$('#vista button').forEach(x => x.classList.toggle('on', x === b));
+  pintaPanel();   // se vuelven a cargar a su ancho nuevo
+});
+$$('#vista button').forEach(x => x.classList.toggle('on', x.dataset.m === modo));
+
+pintaTabs(); pintaPanel();
+})();
+</script>
+</body>
+</html>
