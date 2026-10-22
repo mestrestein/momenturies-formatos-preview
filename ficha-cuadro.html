@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="robots" content="noindex,nofollow"/>
 <title>Cuadro metálico premium · Momenturies</title>
 <meta name="description" content="Tu foto impresa en aluminio HD y colgada con imán, sin agujeros. Míralo en tu casa antes de comprar."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -48,6 +47,8 @@ button{font-family:inherit;color:inherit}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 .demo-tag{display:inline-block;font:800 9.5px/1 var(--sans);letter-spacing:1px;text-transform:uppercase;color:#9a5b00;background:#fff3cd;border:1px dashed #d9a400;border-radius:6px;padding:4px 6px;vertical-align:middle;margin-left:6px}
 body.resenas-reales .demo-tag{display:none}
+/* sin reseñas reales: fuera la nota, el testimonio y las dos secciones de reseñas */
+body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-link){display:none!important}
 .stars{color:#e8a317;letter-spacing:1px}
 
 /* ── barra superior + nav ── */
@@ -424,7 +425,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
       <li><i>🛋️</i><div><b>Míralo antes de comprar: en tu casa.</b> Salón, dormitorio, pasillo, cocina… lo ves colgado antes de pagar. <a href="#casa">Ver lugares</a></div></li>
       <li><i>🖼️</i><div><b>Míralo antes de comprar: en composición.</b> Prueba 3, 4, 6 o 9 cuadros y quédate con la que más te guste. <a href="#combinaciones">Ver combinaciones</a></div></li>
       <li><i>📱</i><div><b>Del recuerdo a casa, sin moverte del sofá.</b> Elige tus fotos, mira cómo quedan y listo. <a href="#recuerdo">Así funciona</a></div></li>
-      <li><i>🎁</i><div><b>Un regalo que no acaba en un cajón.</b> Deja de regalar chorradas que acaban abandonadas: regálale algo que vea todos los días con cariño. <a href="#regalos">Ideas</a></div></li>
+      <li><i>🎁</i><div><b>Un regalo que no acaba en un cajón.</b> Deja de regalar chorradas que acaban abandonadas: regálale algo que vea todos los días con cariño. <a class="resena-link" href="#regalos">Ideas</a></div></li>
     </ul>
 
     <div class="packs-h">Uno queda bien · varios quedan mejor</div>
