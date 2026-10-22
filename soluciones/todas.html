@@ -304,6 +304,12 @@ async function cargarDatos(){
       for(const [item, estado] of Object.entries(viejos)) if(porId[item]){ (votos[item] = votos[item] || {})[yo] = estado; post('voto', { item, titulo:nombre(porId[item]), estado }); }
       set('votos', null); toast('He subido lo que tenías marcado en este navegador');
     }
+    // y los comentarios que escribiste sin sesión
+    const comViejos = (get('comentarios', null) || []).filter(c => c && c.texto && porId[c.item] && !comentarios.some(s => s.item === c.item && s.texto === c.texto));
+    if(comViejos.length){
+      for(const c of comViejos){ const r = await post('comentario', { item:c.item, titulo:nombre(porId[c.item]), texto:c.texto }); if(r) comentarios.push({ id:r.id, item:c.item, texto:c.texto, por:yo, creado:c.creado, estado:'pendiente' }); }
+      set('comentarios', null); toast('He subido tus comentarios de este navegador');
+    }
   }catch(e){ sesion = 'local'; modoLocal(); }
 }
 function guardarOrden(){ set('ordenTodo', ord); post('orden', ord); }
