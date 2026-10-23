@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Momenturies · La web con todas las versiones</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+<!--
+  /finalsolutions (23-oct-2026): la web montada de arriba abajo con las secciones elegidas en soluciones/todas.html.
+  Cada hueco de la página tiene todas las versiones de ese ángulo en carrusel (‹ ›). Cada versión es la sección de verdad:
+  un iframe de su página con todo lo demás escondido (mismo truco que todas.html). Los controles se esconden con «H».
+  Votos y comentarios: Vestuario de Momenturies (/panel/soluciones/*, mismas tablas que todas.html, así que lo de allí
+  también sale aquí). Cada pocos segundos se mira /panel/soluciones/rev y, si alguien ha cambiado algo, se recarga.
+  Sin sesión no se guarda NADA (ni en el navegador): sale un aviso rojo. Era lo que fallaba en todas.html.
+-->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0d0d0d;--mid:#6b7280;--line:#e2ddd6;--bg:#f4f1ec;--terra:#c2613a;--ok:#2f6f4f;--duda:#b7791f;--no:#b23b2a;--ab:#4057a8;--marc:#c2613a;--aitor:#2f62b8}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',Arial,sans-serif;background:#fff;color:var(--ink);overflow-x:hidden}
+button{font-family:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+
+/* cabecera de la web (como la de verdad, para que se vea la página entera) */
+.w-top{background:#0a0804;color:rgba(255,255,255,.78);text-align:center;padding:11px 16px;font-size:12.5px;letter-spacing:.35px}
+.w-nav{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;border-bottom:1px solid #eee;background:#fff}
+.w-nav .logo{display:flex;align-items:center;gap:9px;font:700 15px Georgia,serif;letter-spacing:2.5px;text-transform:uppercase}
+.w-nav i{display:inline-block;width:22px;height:2px;background:#111;box-shadow:0 6px 0 #111,0 -6px 0 #111}
+.w-nav .ic{display:flex;gap:20px;font-size:15px;opacity:.8}
+@media(max-width:600px){.w-nav{padding:0 16px}.w-nav .logo{font-size:13px;letter-spacing:1.5px}.w-top{font-size:11px}}
+
+/* cada hueco de la web */
+.slot{position:relative;background:#fff}
+.slot .frames{position:relative;min-height:220px}
+.slot iframe{display:block;width:100%;height:560px;border:0;background:#fff}
+.slot iframe[hidden]{display:none}
+.slot iframe.scroll{height:88vh}
+.slot .cargando{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--mid);background:repeating-linear-gradient(45deg,#faf8f5,#faf8f5 12px,#f4f1ec 12px,#f4f1ec 24px)}
+
+/* los controles de cada hueco: una píldora flotante que no tapa la sección */
+.ctl{position:absolute;top:12px;left:12px;z-index:30;display:flex;align-items:center;gap:2px;max-width:calc(100% - 24px);background:rgba(17,17,17,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border-radius:999px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;transition:opacity .25s}
+.ctl button{background:none;border:0;color:#fff;height:34px;min-width:34px;border-radius:999px;display:grid;place-items:center;font-size:17px}
+.ctl button:hover{background:rgba(255,255,255,.12)}
+.ctl .info{display:flex;flex-direction:column;padding:0 8px;min-width:0;line-height:1.2;cursor:pointer}
+.ctl .info small{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;white-space:nowrap}
+.ctl .info b{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.ctl .n{font-weight:800;font-size:12px;color:rgba(255,255,255,.7);padding:0 4px;white-space:nowrap}
+.ctl .com{display:flex;align-items:center;gap:6px;padding:0 12px!important;font-size:13px!important;font-weight:700;background:rgba(255,255,255,.12)!important}
+.ctl .com.hay{background:var(--terra)!important}
+.ctl .vt{display:flex;gap:3px;padding:0 6px}
+.ctl .vt i{font-style:normal;font-size:10.5px;font-weight:800;border-radius:99px;padding:3px 6px;background:rgba(255,255,255,.14)}
+.ctl .vt i.ok{background:var(--ok)}.ctl .vt i.duda{background:var(--duda)}.ctl .vt i.ab{background:var(--ab)}.ctl .vt i.no{background:var(--no)}
+.ctl.uno .prev,.ctl.uno .next,.ctl.uno .n{display:none}
+body.limpio .ctl{opacity:0;pointer-events:none}
+@media(max-width:600px){.ctl{top:8px;left:8px;max-width:calc(100% - 16px)}.ctl .info small{display:none}.ctl .info b{max-width:38vw;font-size:12px}.ctl .vt{display:none}}
+
+/* botones fijos: ocultar controles y estado de la conexión */
+.dock{position:fixed;left:14px;bottom:14px;z-index:60;display:flex;gap:8px;align-items:center}
+.dock button{border:0;background:rgba(17,17,17,.88);color:#fff;border-radius:999px;height:40px;padding:0 16px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+body.limpio .dock .ocultar{width:40px;padding:0;opacity:.35;font-size:0}
+body.limpio .dock .ocultar::before{content:'👁';font-size:16px}
+body.limpio .dock .ocultar:hover{opacity:1}
+body.limpio .dock .todo{display:none}
+.estado{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.estado i{width:9px;height:9px;border-radius:50%;background:#bbb}
+.estado.ok i{background:#22a55a;box-shadow:0 0 0 0 rgba(34,165,90,.5);animation:latido 2s infinite}
+@keyframes latido{70%{box-shadow:0 0 0 8px rgba(34,165,90,0)}100%{box-shadow:0 0 0 0 rgba(34,165,90,0)}}
+.estado.mal i{background:var(--no)}
+body.limpio .estado.ok{opacity:.35}
+/* aviso rojo: sin conexión no se guarda nada */
+.alerta{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:70;width:min(720px,calc(100% - 24px));background:var(--no);color:#fff;border-radius:14px;padding:14px 18px;font-size:14px;line-height:1.45;box-shadow:0 14px 40px rgba(178,59,42,.35);display:none;gap:14px;align-items:center}
+.alerta.on{display:flex}
+.alerta b{display:block;font-size:15px}
+.alerta .acc{margin-left:auto;display:flex;gap:8px;flex:0 0 auto}
+.alerta a,.alerta button{background:#fff;color:var(--no);border:0;border-radius:999px;padding:9px 14px;font-weight:800;font-size:13px;text-decoration:none;white-space:nowrap}
+.alerta button.x{background:rgba(255,255,255,.18);color:#fff}
+@media(max-width:600px){.alerta{flex-direction:column;align-items:flex-start}.alerta .acc{margin-left:0}}
+
+/* el panel de comentarios */
+.panel{position:fixed;top:0;right:0;bottom:0;z-index:80;width:min(420px,100%);background:#fff;box-shadow:-20px 0 50px rgba(0,0,0,.18);transform:translateX(105%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.panel.on{transform:none}
+.panel header{padding:18px 20px 14px;border-bottom:1px solid var(--line);background:#faf8f5}
+.panel header small{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--terra);font-weight:800}
+.panel header h3{font:700 20px Georgia,serif;margin:4px 0 6px;line-height:1.2}
+.panel header .meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--mid)}
+.panel header .cerrar{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px}
+.panel .tabsP{display:flex;gap:6px;padding:10px 20px;border-bottom:1px solid var(--line)}
+.panel .tabsP button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:700}
+.panel .tabsP button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.panel .cuerpo{flex:1;overflow-y:auto;padding:16px 20px}
+.votos{display:grid;gap:10px;margin-bottom:18px}
+.voto{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.voto>b{min-width:56px}
+.voto button{border:1.5px solid var(--line);background:#fff;border-radius:999px;font-size:12px;font-weight:800;padding:6px 10px}
+.voto button.on[data-v=ok]{background:var(--ok);border-color:var(--ok);color:#fff}
+.voto button.on[data-v=duda]{background:var(--duda);border-color:var(--duda);color:#fff}
+.voto button.on[data-v=ab]{background:var(--ab);border-color:var(--ab);color:#fff}
+.voto button.on[data-v=no]{background:var(--no);border-color:var(--no);color:#fff}
+.chip{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:5px 10px;background:#eee;color:#555}
+.chip.ok{background:#e3f1e8;color:var(--ok)}.chip.duda{background:#fbf0dc;color:var(--duda)}.chip.ab{background:#e6eaf7;color:var(--ab)}.chip.no{background:#f7e2df;color:var(--no)}
+.hilo{display:grid;gap:10px}
+.msg{border-radius:14px;padding:11px 13px;background:#f6f3ee;border-left:3px solid #bbb;font-size:14px;line-height:1.5}
+.msg.marc{border-left-color:var(--marc);background:#fbf1ec}
+.msg.aitor{border-left-color:var(--aitor);background:#edf2fb}
+.msg .de{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--mid);margin-bottom:4px}
+.msg .de b{font-size:12px;color:var(--ink)}
+.msg.marc .de b{color:var(--marc)}.msg.aitor .de b{color:var(--aitor)}
+.msg p{white-space:pre-wrap;word-wrap:break-word}
+.msg .est{font-size:11.5px;color:var(--mid);margin-top:6px}
+.msg .est a{color:var(--no)}
+.msg.nuevo{animation:brilla 1.6s}
+@keyframes brilla{0%{box-shadow:0 0 0 3px rgba(194,97,58,.45)}100%{box-shadow:0 0 0 3px rgba(194,97,58,0)}}
+.vacio{font-size:13.5px;color:var(--mid);padding:6px 0}
+.panel footer{border-top:1px solid var(--line);padding:12px 20px 16px;background:#fff}
+.panel footer textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;resize:vertical;min-height:70px}
+.panel footer textarea:focus{outline:none;border-color:var(--ink)}
+.panel footer .fila{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.panel footer small{font-size:12px;color:var(--mid)}
+.panel footer small.mal{color:var(--no);font-weight:700}
+.panel footer button{border:0;background:var(--ink);color:#fff;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:800}
+.panel footer button:disabled{background:#ccc;cursor:not-allowed}
+.todo-item{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.todo-item small{display:block;font-size:11.5px;color:var(--mid);margin-bottom:3px}
+.todo-item .msg{margin-top:6px}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%) translateY(20px);z-index:90;background:var(--ink);color:#fff;border-radius:12px;padding:12px 16px;font-size:13.5px;max-width:min(520px,calc(100% - 24px));opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.toast.otro{background:var(--aitor)}
+@media(max-width:600px){.panel{top:auto;height:82vh;width:100%;border-radius:18px 18px 0 0;transform:translateY(105%)}.estado span{display:none}.estado{padding:9px}}
+</style>
+</head>
+<body>
+<div class="alerta" id="alerta" role="alert"></div>
+
+<div class="w-top">Tus fotos en aluminio HD · Se cuelgan sin agujeros · Envío a España y Europa</div>
+<div class="w-nav"><i></i><span class="logo"><svg width="24" height="24" viewBox="0 0 28 28"><rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/><rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/><rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/><rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/></svg>Momenturies</span><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span></div>
+
+<main id="web"></main>
+
+<div class="dock"><button type="button" class="ocultar" id="ocultar" title="Ocultar o mostrar los controles (tecla H)">Ocultar controles</button><button type="button" class="todo" id="verTodo">💬 Todos los comentarios</button></div>
+<div class="estado" id="estado"><i></i><span>Conectando…</span></div>
+
+<aside class="panel" id="panel" aria-label="Comentarios">
+  <header><button type="button" class="cerrar" id="cerrar" aria-label="Cerrar">✕</button><small id="pSlot"></small><h3 id="pTit"></h3><div class="meta" id="pMeta"></div></header>
+  <div class="tabsP"><button type="button" data-t="esta" class="on">Esta versión</button><button type="button" data-t="todo">Todos los comentarios</button></div>
+  <div class="cuerpo" id="pCuerpo"></div>
+  <footer id="pPie"><textarea id="pTexto" placeholder="Qué cambiarías de esta versión: texto, foto, orden, dónde va (portada, ficha)…"></textarea><div class="fila"><small id="pAviso"></small><button type="button" id="pGuardar">Guardar</button></div></footer>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+/* estado compartido (se declara arriba porque la web se pinta antes de conectar) */
+let conexion = 'conectando', yo = null, nombreYo = '', rev = -1, votos = {}, comentarios = [], vistos = null;
+let panelAbierto = false, panelSlot = null, panelTab = 'esta';
+const NOMBRES = { marc:'Marc', aitor:'Aitor' };
+const ESTADOS = [['ok','✓ Me quedo'],['duda','? Duda'],['ab','A/B'],['no','✕ Fuera']];
+const CORTO = { ok:'✓', duda:'?', ab:'A/B', no:'✕' };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
+
+/* ── las versiones. Los id son los mismos que en soluciones/todas.html: lo que se votó o comentó allí sale aquí ── */
+const L = k => String.fromCharCode(64 + k);
+const POR = { 1:['La de ahora en la web','Foto a sangre','Mitad y mitad · texto + collage de producto','De la galería a la pared · animado','Del papel al aluminio','Pruébalo en esta pared · toca las fotos'],
+  2:['La de ahora en la web','Tres tarjetas con foto grande','Vídeo del editor en un móvil + pasos que avanzan'], 4:['La de ahora en la web','','','','','Tres tarjetas que se inclinan con el ratón'],
+  5:['La de ahora en la web','Montaje en 3D sobre una entrada real','Antes y después con barra','','','Todo lo que te ahorras · tachado + despiece'],
+  7:['La de ahora en la web','','Tarjetas por persona con su dedicatoria','','','Momentos en movimiento · dos cintas'], 8:['Garantías y «todavía no tenemos reseñas»'], 9:['La de ahora en la web','Dos columnas con temas'], 10:['La de ahora en la web'] };
+const PRO = { 3:{2:'Cuatro móviles, un paso en cada uno'}, 4:{0:'Corte de lado · las tres capas se separan', 2:'Con clavos contra con imán · los pasos contados'}, 5:{2:'Foto real con puntos que se tocan'},
+  6:{0:'Carrusel de composiciones con precio', 3:'Mosaico oscuro · el precio al pasar el ratón', 4:'¿Cuántas fotos tienes? · te enseñamos sus paredes'} };
+const EN_VIVO = { 1:'.hero', 2:'#como-funciona', 4:'#productos', 8:'#opiniones', 9:'#faq', 10:'.newsletter-section' };
+const NUEVA = (id, sel, lab, extra) => Object.assign({ id:'fin-' + id, file:'../portada-nueva.html', sel, lab, org:'Portada nueva' }, extra || {});
+const por = (n, k) => k ? { id:`por-${n}-${k}`, file:'../soluciones/portada.html', n, k, lab:POR[n][k], org:'Portada · ' + L(k) }
+  : { id:`por-${n}-0`, file:'../index.html', sel:EN_VIVO[n], lab:POR[n][0], org:'Portada · en vivo ahora' };
+const pro = (n, k) => ({ id:`pro-${n}-${k}`, file:'../soluciones/producto.html', n, k, lab:PRO[n][k], org:'Producto · ' + L(k + 1) });
+const ficha = (sel, lab) => ({ id:'ficha-' + sel.slice(1), file:'../ficha-cuadro.html', sel, lab, org:'Ficha de Aitor' });
+const casa = (k, lab) => ({ id:'casa-' + k, file:'../soluciones/en-tu-casa.html', sel:`body section:nth-of-type(${k})`, lab, org:'En tu casa' });
+const TIT = ['Recuerdos juntos','Regalo','Diseño / decoración','Sin obras','Calidad del material','Recién lanzados','Familia','Minimalista','Adiós al marco','Editor 3D','Construye tu pared','De tu móvil a casa'];
+const tit = k => ({ id:'ang-' + k, file:'../index.html', sel:'.hero', angulo:k, lab:'Titular · ' + TIT[k], org: k >= 10 ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' });
+
+const SLOTS = [
+  { id:'arriba', t:'Arriba del todo', v:[ NUEVA('hx', '.hx', 'Hero en carrusel · 5 ángulos'), por(1,0), por(1,2), por(1,3), por(1,5), tit(3), tit(4), tit(9), tit(10) ]},
+  { id:'funciona', t:'Cómo funciona', v:[ NUEVA('cf', '#como-funciona', 'El móvil hace el pedido en 6 pasos'), por(2,0), por(2,1), por(2,2), pro(3,2), casa(3, 'Del momento a vuestra pared (vídeo)') ]},
+  { id:'colgado', t:'Sin clavos', v:[ NUEVA('cs', '#asi-se-cuelga', 'Así se cuelga · 3D con paso de intercambio (desliza dentro)', { scroll:true }), por(5,1), por(5,2), por(5,5), pro(4,0), pro(4,2), ficha('#colgado', 'Jubila el taladro · comparativa + 5 pasos') ]},
+  { id:'aluminio', t:'Aluminio y calidad', v:[ pro(5,2), ficha('#vs', 'Cuadro metálico HD vs póster · negro y dorado'), ficha('#ventajas', 'Ventajas: el cuadro flotando en 3D con 6 alrededor') ]},
+  { id:'casa', t:'En tu casa', v:[ NUEVA('ec', '#en-tu-casa', 'Así queda en tu casa · 9 estancias'), ficha('#casa', 'Así queda en tu casa · 9 estancias (original)'), casa(1, 'Mira cómo queda en cada rincón (vídeo)') ]},
+  { id:'paredes', t:'Paredes y composiciones', v:[ NUEVA('pw', '#paredes', 'Carrusel de paredes · empiezas con la que eliges'), NUEVA('cp', '#cambia-la-pared', 'Cambia la pared entera con un toque (vídeo)'), casa(2, 'Cambia la pared entera (original)'), pro(6,0), pro(6,3), pro(6,4), ficha('#combinaciones', 'Tus fotos, en composición · 11 combinaciones') ]},
+  { id:'productos', t:'Productos y formatos', v:[ por(4,0), por(4,5) ]},
+  { id:'regalo', t:'Regalo y para quién', v:[ NUEVA('rg', '#para-quien', 'Tarjetas por persona + dos cintas'), por(7,2), por(7,5) ]},
+  { id:'confianza', t:'Opiniones y garantías', v:[ Object.assign(por(8,0), { lab:'La de ahora en la web' }) ]},
+  { id:'faq', t:'Preguntas', v:[ NUEVA('pq', '#faq', 'Dos columnas con temas'), por(9,1), por(9,0) ]},
+  { id:'news', t:'Newsletter', v:[ por(10,0) ]},
+];
+const porId = {}; SLOTS.forEach(s => s.v.forEach(v => { v.slot = s; porId[v.id] = v; }));
+const nombre = v => `${v.org} · ${v.lab}`;
+
+/* ── una sección dentro de su iframe, sin lo demás (de todas.html) ── */
+const ocultar = el => el.style.setProperty('display', 'none', 'important');
+function aislar(f, it){
+  const doc = f.contentDocument, win = f.contentWindow; if(!doc || !doc.body) return;
+  let sec;
+  if(it.n){
+    sec = doc.querySelector(`.sec[data-n="${it.n}"]`); if(!sec) return;
+    const vs = [...sec.querySelectorAll(':scope > .var')];
+    vs.forEach((v, k) => v.classList.toggle('on', k === it.k));
+    const v = vs[it.k];
+    if(v){ v.querySelectorAll('iframe[data-src]').forEach(x => { if(!x.src) x.src = x.dataset.src; }); v.querySelectorAll('video').forEach(x => { x.preload = 'auto'; x.play && x.play().catch(() => {}); }); v.dispatchEvent(new CustomEvent('visible')); }
+    sec.querySelectorAll(':scope > .bar, :scope > .nota').forEach(ocultar);
+  } else sec = doc.querySelector(it.sel);
+  if(!sec) return;
+  let el = sec;
+  while(el.parentElement && el !== doc.body){
+    [...el.parentElement.children].forEach(s => { if(s !== el && !/^(SCRIPT|STYLE|LINK)$/.test(s.tagName)) ocultar(s); });
+    if(el.parentElement === doc.body) el.setAttribute('data-solo-keep', '');
+    el = el.parentElement;
+  }
+  const st = doc.createElement('style');
+  st.textContent = 'body>:not([data-solo-keep]):not(script):not(style){display:none!important}html,body{margin:0!important;padding:0!important}';
+  doc.head.appendChild(st);
+  sec.style.marginTop = '0';
+  /* lo que mide «una pantalla» (el hero) se mide con la ventana de fuera, no con la del hueco */
+  const vista = Math.max(540, innerHeight - 99);
+  st.textContent += `.hx{height:${innerWidth > 860 ? Math.min(820, vista) : Math.min(780, vista)}px!important}`;
+  sec.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
+  if(it.angulo != null){ const sc = doc.createElement('script'); sc.src = new URL('angles.js', doc.baseURI).href; sc.onload = () => { try{ win.applyAngle(it.angulo); }catch(e){} }; doc.body.appendChild(sc); }
+  /* los enlaces se abren fuera, para no navegar dentro del hueco */
+  doc.addEventListener('click', e => { const a = e.target.closest('a[href]'); if(!a || a.getAttribute('href').startsWith('#')) return; e.preventDefault(); window.open(a.href, '_blank', 'noopener'); }, true);
+  if(it.scroll){ win.scrollTo(0, 0); return; }
+  const alto = () => { const h = Math.ceil(sec.getBoundingClientRect().height); if(h > 40 && Math.abs(h - f.offsetHeight) > 2) f.style.height = Math.min(h, 6000) + 'px'; };
+  if(win.ResizeObserver) new win.ResizeObserver(alto).observe(sec);
+  alto(); setTimeout(alto, 800); setTimeout(alto, 2500);
+}
+
+/* ── la web: un hueco por ángulo, con su carrusel de versiones ── */
+const guardaVer = (k, v) => { try{ localStorage.setItem('fin-ver-' + k, v); }catch(e){} };
+const leeVer = k => { try{ return localStorage.getItem('fin-ver-' + k); }catch(e){ return null; } };
+const actual = {};
+$('#web').innerHTML = SLOTS.map(s => `<section class="slot" data-slot="${s.id}" id="s-${s.id}">
+  <div class="ctl${s.v.length < 2 ? ' uno' : ''}"><button type="button" class="prev" aria-label="Versión anterior">‹</button>
+    <div class="info" data-abrir><small>${esc(s.t)}</small><b></b></div><span class="n"></span>
+    <button type="button" class="next" aria-label="Versión siguiente">›</button><span class="vt"></span>
+    <button type="button" class="com" data-abrir>💬 <span>0</span></button></div>
+  <div class="frames"><span class="cargando">Cargando…</span></div></section>`).join('');
+
+function cargarVersion(slotEl, it){
+  const box = $('.frames', slotEl);
+  let f = box.querySelector(`iframe[data-id="${it.id}"]`);
+  $$('iframe', box).forEach(x => { x.hidden = x !== f; });
+  if(f) return;
+  const anterior = [...box.querySelectorAll('iframe')].find(x => x.offsetHeight);
+  f = document.createElement('iframe');
+  f.dataset.id = it.id; f.title = nombre(it);
+  if(it.scroll) f.classList.add('scroll');
+  else if(anterior) f.style.height = anterior.style.height;   // misma altura mientras carga: la página no salta
+  f.hidden = false;
+  $$('iframe', box).forEach(x => { x.hidden = true; });
+  const c = $('.cargando', box); if(c) c.style.display = '';
+  f.addEventListener('load', () => { try{ aislar(f, it); }catch(e){ console.warn(it.id, e); } if(c) c.style.display = 'none'; });
+  f.src = it.file;
+  box.appendChild(f);
+}
+function ponerVersion(slotId, k, cargar){
+  const s = SLOTS.find(x => x.id === slotId), el = $(`.slot[data-slot="${slotId}"]`);
+  k = (k + s.v.length) % s.v.length; actual[slotId] = k; guardaVer(slotId, s.v[k].id);
+  const it = s.v[k];
+  $('.info b', el).textContent = `${it.org} · ${it.lab}`;
+  $('.n', el).textContent = `${k + 1} / ${s.v.length}`;
+  pintaCtl(slotId);
+  if(cargar || el.dataset.visto) cargarVersion(el, it);
+  if(panelAbierto && panelSlot === slotId) pintaPanel();
+}
+SLOTS.forEach(s => { const g = s.v.findIndex(v => v.id === leeVer(s.id)); actual[s.id] = g < 0 ? 0 : g; ponerVersion(s.id, actual[s.id], false); });
+const io = new IntersectionObserver(es => es.forEach(e => { if(!e.isIntersecting) return; const el = e.target; el.dataset.visto = '1'; cargarVersion(el, SLOTS.find(s => s.id === el.dataset.slot).v[actual[el.dataset.slot]]); io.unobserve(el); }), { rootMargin:'700px 0px' });
+$$('.slot').forEach(el => io.observe(el));
+$('#web').addEventListener('click', e => {
+  const el = e.target.closest('.slot'); if(!el) return; const id = el.dataset.slot;
+  if(e.target.closest('.prev')) return ponerVersion(id, actual[id] - 1, true);
+  if(e.target.closest('.next')) return ponerVersion(id, actual[id] + 1, true);
+  if(e.target.closest('[data-abrir]')) return abrirPanel(id);
+});
+
+/* ── ocultar los controles para ver la web limpia ── */
+const limpio = v => { document.body.classList.toggle('limpio', v); $('#ocultar').textContent = v ? 'Mostrar controles' : 'Ocultar controles'; try{ localStorage.setItem('fin-limpio', v ? '1' : ''); }catch(e){} };
+$('#ocultar').addEventListener('click', () => limpio(!document.body.classList.contains('limpio')));
+addEventListener('keydown', e => {
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if(e.key === 'h' || e.key === 'H') limpio(!document.body.classList.contains('limpio'));
+  if(e.key === 'Escape') cerrarPanel();
+});
+try{ if(localStorage.getItem('fin-limpio')) limpio(true); }catch(e){}
+
+/* ═════ conexión con el Vestuario ═════ */
+const enMomenturies = /(^|\.)momenturies\.com$/.test(location.hostname);
+const toast = (t, otro) => { const el = $('#toast'); el.textContent = t; el.classList.toggle('otro', !!otro); el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), otro ? 5000 : 2600); };
+
+function pintaEstado(){
+  const e = $('#estado'), a = $('#alerta');
+  e.className = 'estado ' + (conexion === 'ok' ? 'ok' : conexion === 'conectando' ? '' : 'mal');
+  $('span', e).textContent = conexion === 'ok' ? `En vivo · ${nombreYo}` : conexion === 'conectando' ? 'Conectando…' : 'No se guarda';
+  let html = '';
+  if(conexion === 'fuera') html = `<div><b>Esta copia no está en momenturies.com</b>Puedes mirar, pero no se guarda ningún comentario ni voto.</div><div class="acc"><a href="https://momenturies.com/finalsolutions/">Abrir la buena</a></div>`;
+  else if(conexion === 'sin') html = `<div><b>No has entrado con tu código del Vestuario</b>Lo que escribas no se va a guardar y el otro no lo verá.</div><div class="acc"><a href="/panel/finalsolutions">Entrar con mi código</a></div>`;
+  else if(conexion === 'caido') html = `<div><b>Se ha cortado la conexión con el Vestuario</b>Lo que escribas ahora no se guarda. Lo sigo intentando cada pocos segundos.</div><div class="acc"><button type="button" data-reintentar>Reintentar ya</button></div>`;
+  a.innerHTML = html; a.classList.toggle('on', !!html && !a.dataset.cerrado);
+  if(panelAbierto) pintaPie();
+}
+$('#alerta').addEventListener('click', e => { if(e.target.closest('[data-reintentar]')) comprobar(true); });
+$('#estado').addEventListener('click', () => { delete $('#alerta').dataset.cerrado; pintaEstado(); });
+
+async function api(ruta, cuerpo){
+  const r = await fetch('/panel/soluciones/' + ruta, cuerpo === undefined ? { credentials:'same-origin', cache:'no-store' }
+    : { method:'POST', credentials:'same-origin', headers:{ 'content-type':'application/json' }, body:JSON.stringify(cuerpo) });
+  if(r.status === 401){ const err = new Error('sin sesión'); err.sin = true; throw err; }
+  if(!/json/.test(r.headers.get('content-type') || '')){ const err = new Error('El Vestuario no contesta'); err.caido = true; throw err; }
+  const j = await r.json();
+  if(!r.ok) throw new Error(j.error || r.status);
+  return j;
+}
+function aplicar(d){
+  yo = d.yo; nombreYo = d.nombre || NOMBRES[yo] || yo; rev = d.rev ?? rev;
+  votos = {}; (d.votos || []).forEach(v => { (votos[v.item] = votos[v.item] || {})[v.usuario] = v.estado; });
+  const antes = vistos;
+  comentarios = d.comentarios || [];
+  vistos = new Set(comentarios.map(c => c.id));
+  // lo nuevo del otro: aviso abajo (no la primera vez que se carga)
+  if(antes) comentarios.filter(c => !antes.has(c.id) && c.por !== yo).forEach(c => {
+    const it = porId[c.item];
+    toast(`${NOMBRES[c.por] || c.por} ha comentado${it ? ' en ' + it.slot.t + ' · ' + it.lab : ''}: «${c.texto.slice(0, 90)}»`, true);
+    c.nuevo = true;
+  });
+  SLOTS.forEach(s => pintaCtl(s.id));
+  if(panelAbierto) pintaPanel();
+}
+async function comprobar(forzar){
+  if(!enMomenturies){ conexion = 'fuera'; return pintaEstado(); }
+  try{
+    const r = await api('rev');
+    if(forzar || r.rev !== rev || conexion !== 'ok'){ aplicar(await api('datos')); }
+    conexion = 'ok';
+  }catch(e){ conexion = e.sin ? 'sin' : 'caido'; }
+  pintaEstado();
+}
+/* cada 5 s si la pestaña se ve y has tocado algo hace poco; si no, cada 30 s; con la pestaña escondida, nada */
+let ultimoGesto = Date.now();
+['pointerdown', 'keydown', 'scroll', 'mousemove'].forEach(ev => addEventListener(ev, () => { ultimoGesto = Date.now(); }, { passive:true }));
+(function bucle(){
+  const quieto = Date.now() - ultimoGesto > 4 * 60000;
+  setTimeout(() => { if(document.visibilityState === 'visible') comprobar().finally(bucle); else bucle(); }, quieto ? 30000 : 5000);
+})();
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') comprobar(); });
+comprobar(true);
+
+/* ── lo que se ve en la píldora de cada hueco ── */
+function comsDe(id){ return comentarios.filter(c => c.item === id); }
+function pintaCtl(slotId){
+  const s = SLOTS.find(x => x.id === slotId), el = $(`.slot[data-slot="${slotId}"]`), it = s.v[actual[slotId]];
+  const n = comsDe(it.id).length, total = s.v.reduce((a, v) => a + comsDe(v.id).length, 0);
+  const b = $('.com', el); b.classList.toggle('hay', n > 0);
+  $('span', b).textContent = n + (total > n ? ` · ${total - n} en otras` : '');
+  $('.vt', el).innerHTML = Object.entries(votos[it.id] || {}).map(([p, v]) => `<i class="${v}" title="${NOMBRES[p] || p}">${(NOMBRES[p] || p)[0]} ${CORTO[v]}</i>`).join('');
+}
+
+/* ═════ panel de comentarios ═════ */
+function abrirPanel(slotId){ panelSlot = slotId; panelAbierto = true; panelTab = 'esta'; $('#panel').classList.add('on'); pintaPanel(); }
+function cerrarPanel(){ panelAbierto = false; $('#panel').classList.remove('on'); }
+$('#cerrar').addEventListener('click', cerrarPanel);
+$('#verTodo').addEventListener('click', () => { panelSlot = panelSlot || SLOTS[0].id; panelAbierto = true; panelTab = 'todo'; $('#panel').classList.add('on'); pintaPanel(); });
+$$('.tabsP button').forEach(b => b.addEventListener('click', () => { panelTab = b.dataset.t; pintaPanel(); }));
+const fecha = s => s ? String(s).slice(8, 10) + '/' + String(s).slice(5, 7) + ' ' + String(s).slice(11, 16) : '';
+const msg = c => `<div class="msg ${esc(c.por)}${c.nuevo ? ' nuevo' : ''}"><div class="de"><b>${esc(NOMBRES[c.por] || c.por)}</b><span>${fecha(c.creado)}</span></div><p>${esc(c.texto)}</p>
+  <div class="est">${c.estado === 'hecho' ? '✓ Hecho' : c.estado === 'descartado' ? 'Descartado' : 'Pendiente de hacer'}${c.respuesta ? ': ' + esc(c.respuesta) : ''}${c.por === yo && c.estado === 'pendiente' && conexion === 'ok' ? ` · <a href="#" data-quitar="${c.id}">quitar</a>` : ''}</div></div>`;
+function pintaPanel(){
+  const s = SLOTS.find(x => x.id === panelSlot), it = s.v[actual[s.id]];
+  $$('.tabsP button').forEach(b => b.classList.toggle('on', b.dataset.t === panelTab));
+  $('#pSlot').textContent = s.t + (s.v.length > 1 ? ` · versión ${actual[s.id] + 1} de ${s.v.length}` : '');
+  $('#pTit').textContent = it.lab;
+  $('#pMeta').innerHTML = `<span>${esc(it.org)}</span><a href="${esc(it.file + (it.sel && it.sel[0] === '#' ? it.sel : ''))}" target="_blank" rel="noopener">abrir aparte ↗</a>`;
+  $('#pPie').style.display = panelTab === 'esta' ? '' : 'none';
+  if(panelTab === 'todo'){
+    const cs = comentarios.filter(c => porId[c.item]).slice().reverse();
+    $('#pCuerpo').innerHTML = cs.length ? cs.map(c => { const v = porId[c.item]; return `<button type="button" class="todo-item" data-ir="${c.item}"><small>${esc(v.slot.t)} · ${esc(v.lab)}</small>${msg(c)}</button>`; }).join('') : '<p class="vacio">Todavía no hay comentarios en estas secciones.</p>';
+    return;
+  }
+  const mios = votos[it.id] || {};
+  const filas = ['marc', 'aitor'].map(p => p === yo && conexion === 'ok'
+    ? `<div class="voto"><b>${NOMBRES[p]}</b>${ESTADOS.map(([k, t]) => `<button type="button" data-v="${k}" class="${mios[p] === k ? 'on' : ''}">${t}</button>`).join('')}</div>`
+    : `<div class="voto"><b>${NOMBRES[p]}</b><span class="chip ${mios[p] || ''}">${mios[p] ? ESTADOS.find(e => e[0] === mios[p])[1] : 'sin elegir'}</span></div>`).join('');
+  const cs = comsDe(it.id);
+  $('#pCuerpo').innerHTML = `<div class="votos">${filas}</div><div class="hilo">${cs.length ? cs.map(msg).join('') : '<p class="vacio">Nadie ha comentado esta versión todavía.</p>'}</div>`;
+  cs.forEach(c => { delete c.nuevo; });
+  pintaPie();
+}
+function pintaPie(){
+  const ok = conexion === 'ok', aviso = $('#pAviso');
+  $('#pGuardar').disabled = !ok; $('#pTexto').disabled = !ok;
+  aviso.className = ok ? '' : 'mal';
+  aviso.textContent = ok ? `Comentas como ${nombreYo}. ${yo === 'marc' ? 'Aitor' : 'Marc'} lo verá al momento.` : conexion === 'sin' ? 'No has entrado con tu código: no se guardaría.' : conexion === 'fuera' ? 'Fuera de momenturies.com no se guarda.' : 'Sin conexión con el Vestuario: no se guardaría.';
+}
+$('#pCuerpo').addEventListener('click', async e => {
+  const ir = e.target.closest('[data-ir]');
+  if(ir){ const v = porId[ir.dataset.ir]; ponerVersion(v.slot.id, v.slot.v.indexOf(v), true); panelSlot = v.slot.id; panelTab = 'esta'; $(`#s-${v.slot.id}`).scrollIntoView({ behavior:'smooth' }); pintaPanel(); return; }
+  const s = SLOTS.find(x => x.id === panelSlot), it = s.v[actual[s.id]];
+  const b = e.target.closest('.voto [data-v]');
+  if(b && conexion === 'ok'){
+    const v = (votos[it.id] || {})[yo] === b.dataset.v ? null : b.dataset.v;
+    try{ await api('voto', { item:it.id, titulo:nombre(it), estado:v }); (votos[it.id] = votos[it.id] || {}); if(v) votos[it.id][yo] = v; else delete votos[it.id][yo]; pintaPanel(); pintaCtl(s.id); }
+    catch(err){ toast('No se ha guardado: ' + err.message); comprobar(); }
+    return;
+  }
+  const q = e.target.closest('[data-quitar]');
+  if(q){ e.preventDefault(); try{ await api('quitar', { id:+q.dataset.quitar }); comentarios = comentarios.filter(c => c.id !== +q.dataset.quitar); pintaPanel(); pintaCtl(s.id); }catch(err){ toast('No se ha podido quitar: ' + err.message); } }
+});
+$('#pGuardar').addEventListener('click', async () => {
+  const ta = $('#pTexto'), texto = ta.value.trim(); if(!texto) return ta.focus();
+  const s = SLOTS.find(x => x.id === panelSlot), it = s.v[actual[s.id]];
+  $('#pGuardar').disabled = true;
+  try{
+    const r = await api('comentario', { item:it.id, titulo:`${s.t} · ${nombre(it)}`, texto });
+    comentarios.push({ id:r.id, item:it.id, texto, por:yo, creado:new Date().toISOString().replace('T', ' '), estado:'pendiente' }); vistos && vistos.add(r.id);
+    ta.value = ''; toast('Guardado. ' + (yo === 'marc' ? 'Aitor' : 'Marc') + ' ya lo puede ver.'); pintaPanel(); pintaCtl(s.id);
+  }catch(err){ toast('NO se ha guardado: ' + err.message); comprobar(); }
+  finally{ pintaPie(); }
+});
+})();
+</script>
+</body>
+</html>
