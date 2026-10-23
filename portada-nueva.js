@@ -39,7 +39,8 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
     hx.style.setProperty('--hx-t', dur(i) + 'ms');
     nav[i].classList.add('on');
     clearTimeout(timer);
-    if(!quieto && visible) timer = setTimeout(() => ir(i + 1), dur(i));
+    /* data-parado (lo pone /finalsolutions al probar un ángulo): se queda quieto en esta diapositiva */
+    if(!quieto && visible && !hx.dataset.parado) timer = setTimeout(() => ir(i + 1), dur(i));
   }
   nav.forEach((b, k) => b.addEventListener('click', () => ir(k)));
   $$('.hx-arr button', hx).forEach(b => b.addEventListener('click', () => ir(i + +b.dataset.d)));

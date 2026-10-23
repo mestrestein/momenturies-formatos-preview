@@ -52,6 +52,9 @@ a{color:inherit}
 .ctl .vt i{font-style:normal;font-size:10.5px;font-weight:800;border-radius:99px;padding:3px 6px;background:rgba(255,255,255,.14)}
 .ctl .vt i.ok{background:var(--ok)}.ctl .vt i.duda{background:var(--duda)}.ctl .vt i.ab{background:var(--ab)}.ctl .vt i.no{background:var(--no)}
 .ctl.uno .prev,.ctl.uno .next,.ctl.uno .n{display:none}
+.ctl.ang{top:58px;background:rgba(194,97,58,.92)}
+.ctl.ang .info small{color:rgba(255,255,255,.75)}
+@media(max-width:600px){.ctl.ang{top:52px}}
 body.limpio .ctl{opacity:0;pointer-events:none}
 @media(max-width:600px){.ctl{top:8px;left:8px;max-width:calc(100% - 16px)}.ctl .info small{display:none}.ctl .info b{max-width:38vw;font-size:12px}.ctl .vt{display:none}}
 
@@ -178,18 +181,60 @@ const TIT = ['Recuerdos juntos','Regalo','Diseño / decoración','Sin obras','Ca
 const tit = k => ({ id:'ang-' + k, file:'../index.html', sel:'.hero', angulo:k, lab:'Titular · ' + TIT[k], org: k >= 10 ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' });
 
 const SLOTS = [
-  { id:'arriba', t:'Arriba del todo', v:[ NUEVA('hx', '.hx', 'Hero en carrusel · 5 ángulos'), por(1,0), por(1,2), por(1,3), por(1,5), tit(3), tit(4), tit(9), tit(10) ]},
+  { id:'arriba', t:'Arriba del todo', angulos:true, v:[ NUEVA('hx', '.hx', 'Hero en carrusel · 5 ángulos'), por(1,2), por(1,3) ]},
   { id:'funciona', t:'Cómo funciona', v:[ NUEVA('cf', '#como-funciona', 'El móvil hace el pedido en 6 pasos'), por(2,0), por(2,1), por(2,2), pro(3,2), casa(3, 'Del momento a vuestra pared (vídeo)') ]},
   { id:'colgado', t:'Sin clavos', v:[ NUEVA('cs', '#asi-se-cuelga', 'Así se cuelga · 3D con paso de intercambio (desliza dentro)', { scroll:true }), por(5,1), por(5,2), por(5,5), pro(4,0), pro(4,2), ficha('#colgado', 'Jubila el taladro · comparativa + 5 pasos') ]},
   { id:'aluminio', t:'Aluminio y calidad', v:[ pro(5,2), ficha('#vs', 'Cuadro metálico HD vs póster · negro y dorado'), ficha('#ventajas', 'Ventajas: el cuadro flotando en 3D con 6 alrededor') ]},
   { id:'casa', t:'En tu casa', v:[ NUEVA('ec', '#en-tu-casa', 'Así queda en tu casa · 9 estancias'), ficha('#casa', 'Así queda en tu casa · 9 estancias (original)'), casa(1, 'Mira cómo queda en cada rincón (vídeo)') ]},
-  { id:'paredes', t:'Paredes y composiciones', v:[ NUEVA('pw', '#paredes', 'Carrusel de paredes · empiezas con la que eliges'), NUEVA('cp', '#cambia-la-pared', 'Cambia la pared entera con un toque (vídeo)'), casa(2, 'Cambia la pared entera (original)'), pro(6,0), pro(6,3), pro(6,4), ficha('#combinaciones', 'Tus fotos, en composición · 11 combinaciones') ]},
+  { id:'paredes', t:'Paredes y composiciones', v:[ NUEVA('pw', '#paredes', 'Carrusel de paredes · empiezas con la que eliges'), NUEVA('cp', '#cambia-la-pared', 'Cambia la pared entera con un toque (vídeo)'), Object.assign(por(1,5), { org:'Portada · E (no para el hero)' }), casa(2, 'Cambia la pared entera (original)'), pro(6,0), pro(6,3), pro(6,4), ficha('#combinaciones', 'Tus fotos, en composición · 11 combinaciones') ]},
   { id:'productos', t:'Productos y formatos', v:[ por(4,0), por(4,5) ]},
   { id:'regalo', t:'Regalo y para quién', v:[ NUEVA('rg', '#para-quien', 'Tarjetas por persona + dos cintas'), por(7,2), por(7,5) ]},
   { id:'confianza', t:'Opiniones y garantías', v:[ Object.assign(por(8,0), { lab:'La de ahora en la web' }) ]},
   { id:'faq', t:'Preguntas', v:[ NUEVA('pq', '#faq', 'Dos columnas con temas'), por(9,1), por(9,0) ]},
   { id:'news', t:'Newsletter', v:[ por(10,0) ]},
 ];
+/* ── pruebas de ángulo: el mismo diseño con otro titular, subtítulo y botón (los 5 del carrusel nuevo + los de angles.js) ── */
+const ANG = [
+  { id:'orig', t:'El suyo' },
+  { id:'recuerdos', t:'No dejes tus recuerdos en el móvil', slide:0, tag:'Tus fotos, en aluminio', h1:'No dejes tus recuerdos <em>en el móvil.</em>', sub:'Elige tus fotos, mira cómo quedan en tu pared y cuélgalas en segundos, sin hacer agujeros.', cta:'Elegir mis fotos' },
+  { id:'movil', t:'Mira cómo queda desde el móvil', slide:1, tag:'Míralo antes de pedirlo', h1:'Mira cómo queda en tu casa, <em>desde el móvil.</em>', sub:'Con tus fotos y a tamaño real. Cambia de habitación o de combinación con un toque hasta que te convenza.', cta:'Ver cómo queda en mi casa' },
+  { id:'colgado', t:'Colgado e intercambio', slide:2, tag:'Sin clavos', h1:'Se cuelga con un imán. <em>Y se cambia cuando quieras.</em>', sub:'Pegas la base, acercas el cuadro y queda recto. Si mañana te apetece otro orden, lo despegas y lo cambias sin dejar marca.', cta:'Elegir mis fotos' },
+  { id:'regalo', t:'Regalo emocional', slide:3, tag:'Para regalar', h1:'El regalo que se queda <em>en su pared.</em>', sub:'Su foto favorita impresa en aluminio, con tu dedicatoria escrita detrás. Llega lista para colgar.', cta:'Hacer un regalo' },
+  { id:'pared', t:'Decora tu pared con los tuyos', slide:4, tag:'Paredes de ensueño', h1:'Decora tu pared <em>con los tuyos.</em>', sub:'Composiciones con los tamaños y la separación ya pensados. Cuantos más cuadros, más barato sale cada uno: hasta un 20 % menos.', cta:'Elegir mi pared' },
+  { id:'galeria', t:'Recuerdos juntos (Aitor)', tag:'Inmortaliza recuerdos juntos', h1:'No pierdas los recuerdos en tu galería, conviértelos en realidad', sub:'Elige tus fotos, mira cómo quedan en tu casa, elige tu combinación favorita y cuélgalas en segundos sin daños en la pared.', cta:'Elegir mis fotos' },
+  { id:'construye', t:'Construye tu pared (Aitor)', tag:'Inmortaliza recuerdos juntos', h1:'Construye tu pared junto a los tuyos, dale vida a tu hogar', sub:'Cuadros de aluminio HD con colgado magnético: sin daños en la pared y ajustables cuando quieras.', cta:'Construir mi pared' },
+  { id:'sinobras', t:'Sin obras', tag:'Sin taladro', h1:'Cuélgalo sin hacer un solo agujero', sub:'Base adhesiva en la pared, el cuadro se engancha con un imán. Diez segundos, sin herramientas.', cta:'Probarlo' },
+  { id:'calidad', t:'Calidad del material', tag:'Aluminio, no papel', h1:'Del móvil a tu pared, crea un hogar lleno de historias junto a los tuyos', sub:'Sube tus fotos, combínalas y mira cómo queda en casa. Cuélgalo sin daños en la pared.', cta:'Ver el material' },
+  { id:'editor', t:'Editor 3D', tag:'Lo diseñas tú', h1:'Gíralo, ajústalo, decide tú cómo queda', sub:'Sube tu foto y muévela en un editor 3D real hasta que quede como quieres. Lo ves antes de pedirlo, no después.', cta:'Abrir el editor' },
+];
+/* dónde está cada texto en cada diseño */
+const PIEZAS = { 'fin-hx':{ tag:'.hx-tag', h1:'h1', sub:'p.sub', cta:'.hx-cta' }, 'por-1-2':{ tag:'p.tag', h1:'h1', sub:'p.lead', cta:'a.btn' }, 'por-1-3':{ tag:'p.tag', h1:'h1', sub:'p.lead', cta:'a.btn' } };
+const angK = {};   // ángulo puesto en cada hueco
+function restaurar(raiz){ if(raiz) raiz.querySelectorAll('[data-orig]').forEach(el => { el.innerHTML = el.dataset.orig; delete el.dataset.orig; }); }
+function ponerAngulo(f, it, a){
+  const doc = f && f.contentDocument; if(!doc || !PIEZAS[it.id]) return;
+  let raiz;
+  if(it.id === 'fin-hx'){
+    /* en el carrusel nuevo: los 5 suyos van a su diapositiva y se queda quieto; los demás se escriben en la primera */
+    const hx = doc.querySelector('.hx'); if(!hx) return;
+    if(a.id === 'orig') delete hx.dataset.parado; else hx.dataset.parado = '1';
+    const k = a.slide != null ? a.slide : 0, nav = [...hx.querySelectorAll('.hx-nav button')];
+    hx.querySelectorAll('.hx-t').forEach(restaurar);
+    if(nav[k]) nav[k].click();
+    if(a.slide != null || a.id === 'orig') return;
+    raiz = hx.querySelectorAll('.hx-t')[k];
+  } else raiz = doc.querySelector(`.sec[data-n="${it.n}"] > .var.on`) || doc.body;
+  restaurar(raiz);
+  if(a.id === 'orig') return;
+  Object.entries(PIEZAS[it.id]).forEach(([k, sel]) => {
+    const el = raiz.querySelector(sel); if(!el) return;
+    el.dataset.orig = el.innerHTML;
+    if(k === 'cta') el.innerHTML = esc(a.cta) + ' <span>→</span>';
+    else if(k === 'h1') el.innerHTML = a.h1;
+    else el.textContent = a[k];
+  });
+}
+
 const porId = {}; SLOTS.forEach(s => s.v.forEach(v => { v.slot = s; porId[v.id] = v; }));
 const nombre = v => `${v.org} · ${v.lab}`;
 
@@ -239,13 +284,14 @@ $('#web').innerHTML = SLOTS.map(s => `<section class="slot" data-slot="${s.id}" 
     <div class="info" data-abrir><small>${esc(s.t)}</small><b></b></div><span class="n"></span>
     <button type="button" class="next" aria-label="Versión siguiente">›</button><span class="vt"></span>
     <button type="button" class="com" data-abrir>💬 <span>0</span></button></div>
+  ${s.angulos ? `<div class="ctl ang"><button type="button" class="aprev" aria-label="Ángulo anterior">‹</button><div class="info" data-abrir><small>Prueba de ángulo</small><b></b></div><span class="n"></span><button type="button" class="anext" aria-label="Ángulo siguiente">›</button></div>` : ''}
   <div class="frames"><span class="cargando">Cargando…</span></div></section>`).join('');
 
 function cargarVersion(slotEl, it){
   const box = $('.frames', slotEl);
   let f = box.querySelector(`iframe[data-id="${it.id}"]`);
   $$('iframe', box).forEach(x => { x.hidden = x !== f; });
-  if(f) return;
+  if(f){ if(it.slot.angulos) ponerAngulo(f, it, ANG[angK[it.slot.id] || 0]); return; }
   const anterior = [...box.querySelectorAll('iframe')].find(x => x.offsetHeight);
   f = document.createElement('iframe');
   f.dataset.id = it.id; f.title = nombre(it);
@@ -254,7 +300,8 @@ function cargarVersion(slotEl, it){
   f.hidden = false;
   $$('iframe', box).forEach(x => { x.hidden = true; });
   const c = $('.cargando', box); if(c) c.style.display = '';
-  f.addEventListener('load', () => { try{ aislar(f, it); }catch(e){ console.warn(it.id, e); } if(c) c.style.display = 'none'; });
+  f.addEventListener('load', () => { try{ aislar(f, it); }catch(e){ console.warn(it.id, e); } if(c) c.style.display = 'none';
+    if(it.slot.angulos) setTimeout(() => ponerAngulo(f, it, ANG[angK[it.slot.id] || 0]), 400); });
   f.src = it.file;
   box.appendChild(f);
 }
@@ -268,11 +315,32 @@ function ponerVersion(slotId, k, cargar){
   if(cargar || el.dataset.visto) cargarVersion(el, it);
   if(panelAbierto && panelSlot === slotId) pintaPanel();
 }
+/* lo que se vota y se comenta es la versión con su ángulo puesto: «por-1-2.a-sinobras» (sin ángulo, el id de siempre) */
+function clave(slotId){ const s = SLOTS.find(x => x.id === slotId), it = s.v[actual[slotId]], k = s.angulos ? (angK[slotId] || 0) : 0; return k ? `${it.id}.a-${ANG[k].id}` : it.id; }
+function deClave(id){ const m = /^(.*)\.a-([\w-]+)$/.exec(id || ''); return m ? { it:porId[m[1]], ang:ANG.find(a => a.id === m[2]) } : { it:porId[id] }; }
+function etiqueta(id){ const { it, ang } = deClave(id); return it ? it.lab + (ang ? ` · ángulo «${ang.t}»` : '') : id; }
+function cambiarAngulo(slotId, d){
+  const s = SLOTS.find(x => x.id === slotId), el = $(`.slot[data-slot="${slotId}"]`);
+  const k = ((angK[slotId] || 0) + d + ANG.length) % ANG.length; angK[slotId] = k; guardaVer(slotId + '-ang', ANG[k].id);
+  pintaAng(slotId);
+  const it = s.v[actual[slotId]];
+  ponerAngulo($(`iframe[data-id="${it.id}"]`, el), it, ANG[k]);
+  pintaCtl(slotId);
+  if(panelAbierto && panelSlot === slotId) pintaPanel();
+}
+function pintaAng(slotId){
+  const el = $(`.slot[data-slot="${slotId}"] .ctl.ang`); if(!el) return;
+  const k = angK[slotId] || 0;
+  $('.info b', el).textContent = ANG[k].t; $('.n', el).textContent = `${k + 1} / ${ANG.length}`;
+}
+SLOTS.filter(s => s.angulos).forEach(s => { const g = ANG.findIndex(a => a.id === leeVer(s.id + '-ang')); angK[s.id] = g < 0 ? 0 : g; pintaAng(s.id); });
 SLOTS.forEach(s => { const g = s.v.findIndex(v => v.id === leeVer(s.id)); actual[s.id] = g < 0 ? 0 : g; ponerVersion(s.id, actual[s.id], false); });
 const io = new IntersectionObserver(es => es.forEach(e => { if(!e.isIntersecting) return; const el = e.target; el.dataset.visto = '1'; cargarVersion(el, SLOTS.find(s => s.id === el.dataset.slot).v[actual[el.dataset.slot]]); io.unobserve(el); }), { rootMargin:'700px 0px' });
 $$('.slot').forEach(el => io.observe(el));
 $('#web').addEventListener('click', e => {
   const el = e.target.closest('.slot'); if(!el) return; const id = el.dataset.slot;
+  if(e.target.closest('.aprev')) return cambiarAngulo(id, -1);
+  if(e.target.closest('.anext')) return cambiarAngulo(id, 1);
   if(e.target.closest('.prev')) return ponerVersion(id, actual[id] - 1, true);
   if(e.target.closest('.next')) return ponerVersion(id, actual[id] + 1, true);
   if(e.target.closest('[data-abrir]')) return abrirPanel(id);
@@ -323,8 +391,8 @@ function aplicar(d){
   vistos = new Set(comentarios.map(c => c.id));
   // lo nuevo del otro: aviso abajo (no la primera vez que se carga)
   if(antes) comentarios.filter(c => !antes.has(c.id) && c.por !== yo).forEach(c => {
-    const it = porId[c.item];
-    toast(`${NOMBRES[c.por] || c.por} ha comentado${it ? ' en ' + it.slot.t + ' · ' + it.lab : ''}: «${c.texto.slice(0, 90)}»`, true);
+    const it = deClave(c.item).it;
+    toast(`${NOMBRES[c.por] || c.por} ha comentado${it ? ' en ' + it.slot.t + ' · ' + etiqueta(c.item) : ''}: «${c.texto.slice(0, 90)}»`, true);
     c.nuevo = true;
   });
   SLOTS.forEach(s => pintaCtl(s.id));
@@ -353,10 +421,10 @@ comprobar(true);
 function comsDe(id){ return comentarios.filter(c => c.item === id); }
 function pintaCtl(slotId){
   const s = SLOTS.find(x => x.id === slotId), el = $(`.slot[data-slot="${slotId}"]`), it = s.v[actual[slotId]];
-  const n = comsDe(it.id).length, total = s.v.reduce((a, v) => a + comsDe(v.id).length, 0);
+  const key = clave(slotId), n = comsDe(key).length, total = comentarios.filter(c => { const d = deClave(c.item).it; return d && d.slot === s; }).length;
   const b = $('.com', el); b.classList.toggle('hay', n > 0);
   $('span', b).textContent = n + (total > n ? ` · ${total - n} en otras` : '');
-  $('.vt', el).innerHTML = Object.entries(votos[it.id] || {}).map(([p, v]) => `<i class="${v}" title="${NOMBRES[p] || p}">${(NOMBRES[p] || p)[0]} ${CORTO[v]}</i>`).join('');
+  $('.vt', el).innerHTML = Object.entries(votos[key] || {}).map(([p, v]) => `<i class="${v}" title="${NOMBRES[p] || p}">${(NOMBRES[p] || p)[0]} ${CORTO[v]}</i>`).join('');
 }
 
 /* ═════ panel de comentarios ═════ */
@@ -376,15 +444,16 @@ function pintaPanel(){
   $('#pMeta').innerHTML = `<span>${esc(it.org)}</span><a href="${esc(it.file + (it.sel && it.sel[0] === '#' ? it.sel : ''))}" target="_blank" rel="noopener">abrir aparte ↗</a>`;
   $('#pPie').style.display = panelTab === 'esta' ? '' : 'none';
   if(panelTab === 'todo'){
-    const cs = comentarios.filter(c => porId[c.item]).slice().reverse();
-    $('#pCuerpo').innerHTML = cs.length ? cs.map(c => { const v = porId[c.item]; return `<button type="button" class="todo-item" data-ir="${c.item}"><small>${esc(v.slot.t)} · ${esc(v.lab)}</small>${msg(c)}</button>`; }).join('') : '<p class="vacio">Todavía no hay comentarios en estas secciones.</p>';
+    const cs = comentarios.filter(c => deClave(c.item).it).slice().reverse();
+    $('#pCuerpo').innerHTML = cs.length ? cs.map(c => { const v = deClave(c.item).it; return `<button type="button" class="todo-item" data-ir="${esc(c.item)}"><small>${esc(v.slot.t)} · ${esc(etiqueta(c.item))}</small>${msg(c)}</button>`; }).join('') : '<p class="vacio">Todavía no hay comentarios en estas secciones.</p>';
     return;
   }
-  const mios = votos[it.id] || {};
+  const key = clave(s.id), mios = votos[key] || {};
+  if(s.angulos) $('#pTit').textContent = etiqueta(key);
   const filas = ['marc', 'aitor'].map(p => p === yo && conexion === 'ok'
     ? `<div class="voto"><b>${NOMBRES[p]}</b>${ESTADOS.map(([k, t]) => `<button type="button" data-v="${k}" class="${mios[p] === k ? 'on' : ''}">${t}</button>`).join('')}</div>`
     : `<div class="voto"><b>${NOMBRES[p]}</b><span class="chip ${mios[p] || ''}">${mios[p] ? ESTADOS.find(e => e[0] === mios[p])[1] : 'sin elegir'}</span></div>`).join('');
-  const cs = comsDe(it.id);
+  const cs = comsDe(key);
   $('#pCuerpo').innerHTML = `<div class="votos">${filas}</div><div class="hilo">${cs.length ? cs.map(msg).join('') : '<p class="vacio">Nadie ha comentado esta versión todavía.</p>'}</div>`;
   cs.forEach(c => { delete c.nuevo; });
   pintaPie();
@@ -397,12 +466,14 @@ function pintaPie(){
 }
 $('#pCuerpo').addEventListener('click', async e => {
   const ir = e.target.closest('[data-ir]');
-  if(ir){ const v = porId[ir.dataset.ir]; ponerVersion(v.slot.id, v.slot.v.indexOf(v), true); panelSlot = v.slot.id; panelTab = 'esta'; $(`#s-${v.slot.id}`).scrollIntoView({ behavior:'smooth' }); pintaPanel(); return; }
+  if(ir){ const { it:v, ang } = deClave(ir.dataset.ir); if(!v) return;
+    if(v.slot.angulos){ angK[v.slot.id] = ang ? ANG.indexOf(ang) : 0; guardaVer(v.slot.id + '-ang', ANG[angK[v.slot.id]].id); pintaAng(v.slot.id); }
+    ponerVersion(v.slot.id, v.slot.v.indexOf(v), true); panelSlot = v.slot.id; panelTab = 'esta'; $(`#s-${v.slot.id}`).scrollIntoView({ behavior:'smooth' }); pintaPanel(); return; }
   const s = SLOTS.find(x => x.id === panelSlot), it = s.v[actual[s.id]];
   const b = e.target.closest('.voto [data-v]');
   if(b && conexion === 'ok'){
-    const v = (votos[it.id] || {})[yo] === b.dataset.v ? null : b.dataset.v;
-    try{ await api('voto', { item:it.id, titulo:nombre(it), estado:v }); (votos[it.id] = votos[it.id] || {}); if(v) votos[it.id][yo] = v; else delete votos[it.id][yo]; pintaPanel(); pintaCtl(s.id); }
+    const key = clave(s.id), v = (votos[key] || {})[yo] === b.dataset.v ? null : b.dataset.v;
+    try{ await api('voto', { item:key, titulo:`${s.t} · ${it.org} · ${etiqueta(key)}`, estado:v }); (votos[key] = votos[key] || {}); if(v) votos[key][yo] = v; else delete votos[key][yo]; pintaPanel(); pintaCtl(s.id); }
     catch(err){ toast('No se ha guardado: ' + err.message); comprobar(); }
     return;
   }
@@ -414,8 +485,9 @@ $('#pGuardar').addEventListener('click', async () => {
   const s = SLOTS.find(x => x.id === panelSlot), it = s.v[actual[s.id]];
   $('#pGuardar').disabled = true;
   try{
-    const r = await api('comentario', { item:it.id, titulo:`${s.t} · ${nombre(it)}`, texto });
-    comentarios.push({ id:r.id, item:it.id, texto, por:yo, creado:new Date().toISOString().replace('T', ' '), estado:'pendiente' }); vistos && vistos.add(r.id);
+    const key = clave(s.id);
+    const r = await api('comentario', { item:key, titulo:`${s.t} · ${it.org} · ${etiqueta(key)}`, texto });
+    comentarios.push({ id:r.id, item:key, texto, por:yo, creado:new Date().toISOString().replace('T', ' '), estado:'pendiente' }); vistos && vistos.add(r.id);
     ta.value = ''; toast('Guardado. ' + (yo === 'marc' ? 'Aitor' : 'Marc') + ' ya lo puede ver.'); pintaPanel(); pintaCtl(s.id);
   }catch(err){ toast('NO se ha guardado: ' + err.message); comprobar(); }
   finally{ pintaPie(); }
