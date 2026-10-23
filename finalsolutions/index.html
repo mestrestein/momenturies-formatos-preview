@@ -298,7 +298,7 @@ function pintaEstado(){
   $('span', e).textContent = conexion === 'ok' ? `En vivo · ${nombreYo}` : conexion === 'conectando' ? 'Conectando…' : 'No se guarda';
   let html = '';
   if(conexion === 'fuera') html = `<div><b>Esta copia no está en momenturies.com</b>Puedes mirar, pero no se guarda ningún comentario ni voto.</div><div class="acc"><a href="https://momenturies.com/finalsolutions/">Abrir la buena</a></div>`;
-  else if(conexion === 'sin') html = `<div><b>No has entrado con tu código del Vestuario</b>Lo que escribas no se va a guardar y el otro no lo verá.</div><div class="acc"><a href="/panel/finalsolutions">Entrar con mi código</a></div>`;
+  else if(conexion === 'sin') html = `<div><b>No has entrado con tu código del Vestuario</b>Lo que escribas no se va a guardar y el otro no lo verá. Entra en la pestaña que se abre y vuelve aquí: se conecta sola.</div><div class="acc"><a href="/panel/finalsolutions" target="_blank" rel="noopener">Entrar con mi código</a></div>`;
   else if(conexion === 'caido') html = `<div><b>Se ha cortado la conexión con el Vestuario</b>Lo que escribas ahora no se guarda. Lo sigo intentando cada pocos segundos.</div><div class="acc"><button type="button" data-reintentar>Reintentar ya</button></div>`;
   a.innerHTML = html; a.classList.toggle('on', !!html && !a.dataset.cerrado);
   if(panelAbierto) pintaPie();
