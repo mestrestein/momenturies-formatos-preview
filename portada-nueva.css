@@ -235,8 +235,30 @@
 .rg-k .img{aspect-ratio:4/3;background:center/cover}
 .rg-k .t{padding:20px 22px 24px}
 .rg-k small{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--terra);font-weight:700}
-.rg-k b{display:block;font-family:var(--serif);font-size:24px;margin:6px 0 12px}
-.rg-k q{display:block;font-family:'Caveat',cursive;font-size:22px;color:#3b3632;line-height:1.25;border-left:2px solid var(--terra);padding-left:12px;quotes:none}
+.rg-k b{display:block;font-family:var(--serif);font-size:24px;margin:6px 0 8px}
+.rg-k .img{position:relative}
+.rg-k .rg-que{font-size:14px;color:var(--mid);line-height:1.5}
+/* el dorso del cuadro, como llega: aluminio, el imán arriba y la dedicatoria escrita */
+.rg-k .dorsos{position:absolute;right:12px;bottom:12px;display:flex;align-items:flex-end}
+.rg-k .dorso{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:112px;aspect-ratio:3/4;padding:22px 9px 10px;text-align:center;border-radius:3px;
+  background:linear-gradient(135deg,#d6d7da 0%,#f3f3f4 42%,#e2e3e5 60%,#c6c7ca 100%);box-shadow:0 12px 24px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.6);transform:rotate(4deg);transition:transform .35s var(--ease)}
+.rg-k .dorso i{position:absolute;top:8px;left:50%;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#555,#1c1c1c);box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.rg-k .dorso .ded{font-family:'Caveat',cursive;font-size:16.5px;line-height:1.08;color:#2b2622}
+.rg-k .dorso small{font:600 9px var(--sans);letter-spacing:.5px;text-transform:none;color:#6b6560}
+/* conjuntos de 3 o 4: cada dorso con su frase, en abanico */
+.rg-k .dorsos.n3 .dorso,.rg-k .dorsos.n4 .dorso{width:74px;padding:16px 5px 6px}
+.rg-k .dorsos.n3 .dorso i,.rg-k .dorsos.n4 .dorso i{width:11px;height:11px;margin-left:-5.5px;top:6px}
+.rg-k .dorsos.n3 .ded,.rg-k .dorsos.n4 .ded{font-size:13px}
+.rg-k .dorsos.n3,.rg-k .dorsos.n4{left:10px;right:10px;justify-content:center;gap:6px}
+.rg-k .dorsos.n4 .dorso{width:calc(25% - 5px);max-width:70px}
+.rg-k .dorsos.n3 .dorso{width:calc(33% - 5px);max-width:84px}
+.rg-k .dorsos.n4 .ded{font-size:12.5px}
+.rg-k .dorsos .dorso:nth-child(1){transform:rotate(-7deg) translateY(4px)}
+.rg-k .dorsos .dorso:nth-child(2){transform:rotate(-2deg)}
+.rg-k .dorsos .dorso:nth-child(3){transform:rotate(3deg) translateY(2px)}
+.rg-k .dorsos .dorso:nth-child(4){transform:rotate(8deg) translateY(6px)}
+.rg-k .dorsos.n1 .dorso{transform:rotate(4deg)}
+.rg-k:hover .dorsos .dorso{transform:none}
 .rg-cintas{margin-top:46px}
 .rg-cinta{display:flex;gap:16px;width:max-content;animation:rgMar 60s linear infinite}
 .rg-cinta.r{animation-direction:reverse;margin-top:16px;animation-duration:70s}
