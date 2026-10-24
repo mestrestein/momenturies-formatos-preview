@@ -580,7 +580,7 @@ const PIVOT_R = 3;
    para que su posición en pantalla no cambie al acercar o alejar. */
 const camFrame = { x: 0, y: 0 };
 
-const P_SHORT = 2.0, P_LONG = 2.0*Math.SQRT2, PD = 0.04, GAP = 0.42;   // lado corto/largo (ratio A4)
+const P_SHORT = 2.0, P_LONG = 2.0*Math.SQRT2, PD = 0.04, GAP = 0.42, GAP_CUADROS = GAP;   // lado corto/largo (ratio A4)
 /* unidades 3D por cm real (la Sobremesa S, 15,2cm de lado largo, mide P_LONG). Declarada aquí
    arriba de todo — createPoster() se llama ya al arrancar la página (antes de que el resto
    del fichero termine de ejecutarse), así que si CM viviera más abajo (como antes) petaba con
@@ -1010,7 +1010,17 @@ function layout(){
     /* pared prediseñada: cada cuadro va exactamente donde dice la composición */
     const wl = layoutWall(); maxW = wl.maxW; totalH = wl.totalH; fcx = wl.cx; fcy = wl.cy;
   } else {
-  const perRow = n <= 3 ? n : Math.ceil(n / Math.ceil(n / 4));
+  /* 24-oct · imanes sueltos en la nevera: más juntos (1,5 cm) y, si son muchos, más por fila para que no se salgan
+     de la puerta (52 × 132 cm aprovechables) */
+  const iman = enNevera() && POSTERS.every(p => p.ptype === 'nevera');
+  const GAP = iman ? 1.5*CM : GAP_CUADROS;
+  let perRow = n <= 3 ? n : Math.ceil(n / Math.ceil(n / 4));
+  if(iman && n > 4){
+    const pw = Math.max(...POSTERS.map(baseW))/CM, ph = Math.max(...POSTERS.map(baseH))/CM;
+    let cols = 4;
+    while(cols < n && Math.ceil(n/cols)*(ph + 1.5) - 1.5 > 132 && (cols + 1)*(pw + 1.5) - 1.5 <= 52) cols++;
+    perRow = Math.ceil(n / Math.ceil(n / cols));
+  }
   const rows = [];
   for(let i = 0; i < n; i += perRow) rows.push(POSTERS.slice(i, i + perRow));
 
@@ -3334,7 +3344,12 @@ function dropMagnets(from){
    se ha subido (+) o bajado (−) la vista con las flechas; neveraPan() lo limita para no salirse de la nevera. */
 var NEVERA_PAN = 0, _panNow = false, FRIDGE_VIEW = null;   // FRIDGE_VIEW: qué trozo de nevera se ve (cm), para el mapa
 function enNevera(){ return ROOM_CFG.mode === 'geo' && /^nevera-/.test(ROOM_CFG.scene || ''); }
-function neveraCentro(sc, Hcm){ return WALL && WALL.fridge ? 80 : sc.furnCm + sc.gapCm + Hcm/2; }
+function neveraCentro(sc, Hcm){
+  if(WALL && WALL.fridge) return 80;
+  /* sueltos: el de abajo a 100 cm, a mano; si son muchos, bajan lo que haga falta para no salirse por arriba */
+  const c = sc.furnCm + sc.gapCm + Hcm/2;
+  return Math.max(Math.min(c, 146 - Hcm/2), Math.min(80, 14 + Hcm/2));
+}
 function neveraPan(sc, Hcm, topCm, botCm){
   const C = neveraCentro(sc, Hcm), mid = C + (topCm + botCm)/2, half = (topCm - botCm)/2;
   const lo = Math.min(0, half - 6 - mid), hi = Math.max(0, 168 - half - mid);   // del suelo a un poco por encima de la nevera
@@ -5486,11 +5501,11 @@ function arreglarEncuadre(w){
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
 function clearWall(){
   if(!WALL) return;
-  /* 24-oct · nevera: al quitar el conjunto se vuelve a un imán solo */
+  /* 24-oct · nevera: al quitar el conjunto quedan sueltos los imanes con foto (o uno vacío) */
   if(WALL.fridge){
-    /* se queda uno: el primero con foto (o el primero, si ninguno la tiene) */
-    const keep = POSTERS.find(p => p.srcImg) || POSTERS[0];
-    for(let i = POSTERS.length - 1; i >= 0; i--) if(POSTERS[i] !== keep) disposePoster(i);
+    /* se quedan los que tienen foto, en filas dentro de la puerta; si ninguno la tiene, uno solo vacío */
+    const conFoto = POSTERS.filter(p => p.srcImg || p.pendingImg), keep = conFoto.length ? conFoto : [POSTERS[0]];
+    for(let i = POSTERS.length - 1; i >= 0; i--) if(!keep.includes(POSTERS[i])) disposePoster(i);
     const p0 = POSTERS[0];
     if(!p0.srcImg){ applyProductSize(p0, defSizeOf(PRODUCTS.nevera)); setOrientation(p0, 'portrait'); }   // el de partida: XS
     selected = 0; NEVERA_PAN = 0;
@@ -5506,6 +5521,7 @@ function clearWall(){
   const hint = document.getElementById('pvHint');
   if(hint) hint.innerHTML = '<span class="es">Arrastra para girar · rueda o pellizco para zoom · toca un cuadro para editarlo</span><span class="en">Drag to rotate · scroll or pinch to zoom · tap a print to edit it</span>';
   dirty3D = true;
+  if(enNevera()) syncViewerHint();   // en la nevera, la ayuda de recorrerla
 }
 
 /* Nombre de lo que hay puesto ahora mismo, para la barra de arriba */
