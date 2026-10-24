@@ -5391,6 +5391,13 @@ function arreglarEncuadre(w){
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
 function clearWall(){
   if(!WALL) return;
+  /* 24-oct · nevera: al quitar el conjunto se vuelve a un imán solo; los que ya llevan foto se quedan sueltos */
+  if(WALL.fridge){
+    for(let i = POSTERS.length - 1; i >= 0 && POSTERS.length > 1; i--) if(!POSTERS[i].srcImg && !POSTERS[i].pendingImg) disposePoster(i);
+    const p0 = POSTERS[0];
+    if(!p0.srcImg){ applyProductSize(p0, defSizeOf(PRODUCTS.nevera)); setOrientation(p0, 'portrait'); }   // el de partida: XS
+    selected = 0; NEVERA_PAN = 0;
+  }
   WALL = null;
   editorRootEl.classList.remove('ed-wall');
   if(roomGroup) roomGroup.visible = false;
