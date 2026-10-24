@@ -30,6 +30,12 @@
       <button type="button" id="pvZoomOut" title="Alejar" aria-label="Alejar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
+      <button type="button" id="pvUp" class="pv-pan" hidden title="Subir por la nevera" aria-label="Subir por la nevera">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
+      </button>
+      <button type="button" id="pvDown" class="pv-pan" hidden title="Bajar por la nevera" aria-label="Bajar por la nevera">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
       <button type="button" id="pvBruma" class="pv-bruma" title="Bruma de los bordes: quitar / poner" aria-label="Bruma de los bordes" aria-pressed="true">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h16M3 13h18M5 17h14"/></svg>
       </button>
@@ -1028,8 +1034,9 @@ function layout(){
       // apoyado (Sobremesa): más aire arriba, para que no roce la barra de arriba ni la decoración de la balda
       let top = totalH/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -totalH/2 - (sc.gapCm + reveal)*CM;
       if(sc.verCm){   // nevera: se ve de verCm[0] a verCm[1] cm del suelo (la puerta entera, sin suelo de más)
-        const F = sc.furnCm + sc.gapCm;
-        top = Math.max(totalH/2 + 4*CM, -totalH/2 + (sc.verCm[1] - F)*CM); bot = Math.min(-totalH/2 - 4*CM, -totalH/2 + (sc.verCm[0] - F)*CM);
+        const C = neveraCentro(sc, totalH/CM);
+        top = Math.max(totalH/2 + 4*CM, (sc.verCm[1] - C)*CM); bot = Math.min(-totalH/2 - 4*CM, (sc.verCm[0] - C)*CM);
+        const pan = neveraPan(sc, totalH/CM, top/CM, bot/CM); top += pan*CM; bot += pan*CM;
       }
       if(sc.restCm != null){
         /* Sobremesa: se queda CERCA (el Sobremesa y un trozo del mueble), y la habitación entera
@@ -1529,6 +1536,14 @@ function zoomMinMueble(){
 function stepZoom(dz){ setZoom(tZ+dz); }
 document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9));
 document.getElementById('pvZoomOut').addEventListener('click', ()=>stepZoom(.9));
+/* 24-oct · nevera: subir y bajar por la puerta (18 cm por toque; neveraPan() pone el tope) */
+function panNevera(dCm){
+  const antes = NEVERA_PAN;
+  NEVERA_PAN = (NEVERA_PAN || 0) + dCm; layout();
+  if(Math.abs(NEVERA_PAN - antes) < 0.5) toast(dCm > 0 ? 'Ya estás arriba del todo' : 'Ya estás abajo del todo');
+}
+document.getElementById('pvUp').addEventListener('click', ()=>panNevera(18));
+document.getElementById('pvDown').addEventListener('click', ()=>panNevera(-18));
 
 /* acercar la cámara sola al escribir la dedicatoria (Aitor: "por detrás se tiene que ver
    cerca para apreciar lo que has escrito") y devolverla a como estaba al salir del campo. */
@@ -2226,7 +2241,9 @@ const PRODUCTS = {
                     {k:'L',d:[20.3,25.4],price:44.99, variantId:null, stock:false, es:'Grande', en:'Large'} ] },
   nevera: { name:'Imán',                 short:'Imán',     hanger:'iman-nevera', def:'XS',
             note:'Imán trasero incluido.',
-            sizes:[ {k:'XS',d:[7,10],price:9.99, variantId:null} ] },
+            /* 24-oct: también en S (10×15, la foto de siempre). Precio provisional; en Shopify su SKU es IMA-S */
+            sizes:[ {k:'XS',d:[7,10],price:9.99, variantId:null},
+                    {k:'S', d:[10,15],price:14.99, variantId:null} ] },
 };
 /* colgado del póster de pared: las 3 opciones van incluidas en el precio */
 const MOUNTS = {
@@ -2722,7 +2739,9 @@ function syncPanelHead(){
   const wn = document.getElementById('wallSizeNote');
   if(wn){
     wn.hidden = !WALL;
-    if(WALL) wn.innerHTML = wallSizes(WALL).length > 1
+    if(WALL) wn.innerHTML = WALL.fridge
+      ? '<span class="es">Imán <b>' + p.sizeKey + '</b> fijado por el conjunto «' + WALL.name + '». Para otra medida, cambia de conjunto.</span><span class="en">Magnet size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” set. Pick another set for a different size.</span>'
+      : wallSizes(WALL).length > 1
       ? '<span class="es">En un conjunto todos los cuadros van a la misma medida. Cámbiala arriba, en <b>Tamaño</b>.</span><span class="en">In a set every print is the same size. Change it up top, under <b>Size</b>.</span>'
       : '<span class="es">Talla <b>' + p.sizeKey + '</b> fijada por la pared «' + WALL.name + '». Para otra medida, cambia de pared.</span><span class="en">Size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” wall. Pick another wall for a different size.</span>';
   }
@@ -2775,6 +2794,7 @@ function openEditor(){
   editorOpen = true; needResize = true; dirty3D = true;
   resize3D();                      // encuadre correcto ya en el primer fotograma
   if(!raf3d) animate();
+  syncTools();                     // la nevera del imán se pone sin pasar por setScene: rótulo de Entorno y flechas
 }
 function closeEditor(){
   closePanel();
@@ -3092,7 +3112,7 @@ async function saveDesign(){
     const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
       bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
-    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
+    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
 
@@ -3110,9 +3130,10 @@ async function restoreDesign(saved){
   _restoring = true;
   try{
     const st = store();
-    const savedWall = saved.wall && findWall(saved.wall) ? wallAt(findWall(saved.wall), saved.wallSize) : null;
+    const savedWall = saved.fridgeWall && saved.fridgeWall.pieces ? saved.fridgeWall
+      : saved.wall && findWall(saved.wall) ? wallAt(findWall(saved.wall), saved.wallSize) : null;
     if(saved.scene){ ROOM_BY_USER = true; ROOM = null; ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = findScene(saved.scene).id; VIEW = '3d'; }
-    if(savedWall) applyWall(savedWall, {quiet:true});
+    if(savedWall) applyWall(savedWall, {quiet:true, keepOrder:!!savedWall.fridge});
     for(let k = 0; k < saved.items.length; k++){
       const it = saved.items[k];
       const p = savedWall ? (POSTERS[it.slot] || POSTERS[k]) : (k === 0 ? POSTERS[0] : addPoster());
@@ -3217,6 +3238,17 @@ window.MOMENTURIES_EDITOR_VIVO = {
      · el pedido se hace con la pared completa
    `var` a propósito: layout() se llama en el arranque, antes de llegar aquí. */
 var WALL = null;
+/* 24-oct · NEVERA. Los imanes sueltos van con el borde de abajo a furnCm+gapCm (100 cm, a mano); un conjunto de
+   imanes va con su centro en medio de la puerta (que va de 10,5 a 149,5 cm del suelo). NEVERA_PAN = cuántos cm
+   se ha subido (+) o bajado (−) la vista con las flechas; neveraPan() lo limita para no salirse de la nevera. */
+var NEVERA_PAN = 0;
+function neveraCentro(sc, Hcm){ return WALL && WALL.fridge ? 80 : sc.furnCm + sc.gapCm + Hcm/2; }
+function neveraPan(sc, Hcm, topCm, botCm){
+  const C = neveraCentro(sc, Hcm), mid = C + (topCm + botCm)/2, half = (topCm - botCm)/2;
+  const lo = Math.min(0, half - 6 - mid), hi = Math.max(0, 168 - half - mid);   // del suelo a un poco por encima de la nevera
+  NEVERA_PAN = Math.max(lo, Math.min(hi, NEVERA_PAN || 0));
+  return NEVERA_PAN;
+}
 const WALLS = window.MOMENTURIES_WALLS || [];
 /* medida en cm de lo que hay colgado ahora mismo (una pared o los cuadros sueltos).
    La usa el arrastre sobre la foto del cliente para no dejar que se salga de la foto. */
@@ -3225,6 +3257,69 @@ const WALLS = window.MOMENTURIES_WALLS || [];
    hace en moveComposition(), que solo se llama con el editor ya montado. */
 var COMP_U = { w:0, h:0 };
 function findWall(id){ return WALLS.find(w => w.id === id) || null; }
+
+/* ── CONJUNTOS DE NEVERA (24-oct) ──
+   Como las paredes de ensueño, pero de imanes XS (7×10) y S (10×15), y van en medio de la puerta de la nevera.
+   Se pueden juntar varios (uno debajo de otro) o llenar la puerta entera de arriba a abajo. Una pieza:
+   [talla, 'v'|'h', x, y] en cm, origen arriba a la izquierda. */
+const NEVERA_HUECO = { w:52, h:132 };     // lo que se aprovecha de la puerta (57,8 × 139 cm), con margen
+const NEVERA_GAP = 1.5;
+function fridgeWall(id, name, list){
+  const pieces = list.map(([size, orient, x, y]) => {
+    const d = PRODUCTS.nevera.sizes.find(s => s.k === size).d, w = orient === 'h' ? d[1] : d[0], h = orient === 'h' ? d[0] : d[1];
+    return { format:'iman', size, orient, x, y, w, h };
+  });
+  const width = Math.max(...pieces.map(pc => pc.x + pc.w)), height = Math.max(...pieces.map(pc => pc.y + pc.h));
+  return { id, name, fridge:true, n:pieces.length, width:+width.toFixed(1), height:+height.toFixed(1), pieces };
+}
+/* rejilla de cols × rows imanes de una talla */
+function fridgeGrid(size, cols, rows, orient){
+  const d = PRODUCTS.nevera.sizes.find(s => s.k === size).d, w = orient === 'h' ? d[1] : d[0], h = orient === 'h' ? d[0] : d[1], out = [];
+  for(let r = 0; r < rows; r++) for(let c = 0; c < cols; c++) out.push([size, orient || 'v', c*(w + NEVERA_GAP), r*(h + NEVERA_GAP)]);
+  return out;
+}
+const FRIDGE_WALLS = [
+  fridgeWall('N01', 'Trío en fila',        fridgeGrid('XS', 3, 1)),
+  fridgeWall('N02', 'Columna de tres',     fridgeGrid('XS', 1, 3)),
+  fridgeWall('N03', 'Cuatro en cuadro',    fridgeGrid('XS', 2, 2)),
+  fridgeWall('N04', 'Dos grandes',         fridgeGrid('S', 2, 1)),
+  fridgeWall('N05', 'Uno grande y dos',    [['S','v',0,0], ['XS','h',11.5,0], ['XS','h',11.5,8]]),
+  fridgeWall('N06', 'El del medio grande', [['XS','v',0,2.5], ['S','v',8.5,0], ['XS','v',20,2.5]]),
+  fridgeWall('N07', 'Escalera',            [['XS','v',0,0], ['XS','v',8.5,4], ['XS','v',17,8], ['XS','v',25.5,12]]),
+  fridgeWall('N08', 'Postal y tres',       [['S','h',4.5,0], ['XS','v',0,11.5], ['XS','v',8.5,11.5], ['XS','v',17,11.5]]),
+  fridgeWall('N09', 'Seis en rejilla',     fridgeGrid('XS', 3, 2)),
+  fridgeWall('N10', 'Cuatro grandes',      fridgeGrid('S', 2, 2)),
+  fridgeWall('N11', 'Mosaico',             [['S','v',0,0], ['XS','v',11.5,0], ['XS','v',20,0], ['S','h',11.5,11.5], ['XS','h',0,16.5]]),
+  fridgeWall('N12', 'Doce en rejilla',     fridgeGrid('XS', 4, 3)),
+];
+/* la puerta entera, de arriba a abajo: todos los imanes de una talla que caben */
+function fridgeFill(size){
+  const d = PRODUCTS.nevera.sizes.find(s => s.k === size).d;
+  const cols = Math.floor((NEVERA_HUECO.w + NEVERA_GAP) / (d[0] + NEVERA_GAP)), rows = Math.floor((NEVERA_HUECO.h + NEVERA_GAP) / (d[1] + NEVERA_GAP));
+  return fridgeWall('LL-' + size, size === 'XS' ? 'Nevera llena de pequeños' : 'Nevera llena de grandes', fridgeGrid(size, cols, rows));
+}
+/* b debajo de a (4 cm de separación), los dos centrados. null si no cabe en la puerta. */
+const NEVERA_SEP = 4;
+function fridgeStack(a, b){
+  const width = Math.max(a.width, b.width), height = a.height + NEVERA_SEP + b.height;
+  if(width > NEVERA_HUECO.w + 0.01 || height > NEVERA_HUECO.h + 0.01) return null;
+  const mv = (w, dy) => w.pieces.map(pc => Object.assign({}, pc, { x: +(pc.x + (width - w.width)/2).toFixed(2), y: +(pc.y + dy).toFixed(2) }));
+  const parts = (a.parts || [a.name]).concat(b.parts || [b.name]);
+  const pieces = mv(a, 0).concat(mv(b, a.height + NEVERA_SEP));
+  return { id:'MIX', name:'Tu nevera', parts, fridge:true, n:pieces.length, width:+width.toFixed(1), height:+height.toFixed(1), pieces };
+}
+/* el mismo conjunto repetido hacia abajo hasta llenar la puerta */
+function fridgeRepeat(w){
+  const base = w.unit || w;
+  let out = base, k = 1;
+  for(;;){ const nx = fridgeStack(out, base); if(!nx) break; out = nx; k++; }
+  if(k < 2) return null;
+  return Object.assign({}, out, { name: base.name + ' ×' + k, unit: base });
+}
+const isFridgeMode = () => defaultType === 'nevera';
+const wallList = () => isFridgeMode() ? FRIDGE_WALLS : WALLS;
+/* con un conjunto de nevera puesto, ¿tocar otro lo añade debajo (true) o lo cambia (false)? */
+let fridgeAdd = true;
 const wallModalEl = document.getElementById('wallModal');
 const editorRootEl = document.getElementById('editor');
 
@@ -3253,7 +3348,18 @@ function layoutWall(){
      ocupen más pared y no queden pequeños en medio de una pared enorme. */
   const revealW = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
   let top = H*CM/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -H*CM/2 - (sc.gapCm + revealW)*CM;
-  if(sc.verCm){ const F = sc.furnCm + sc.gapCm; top = Math.max(H*CM/2 + 4*CM, -H*CM/2 + (sc.verCm[1] - F)*CM); bot = Math.min(-H*CM/2 - 4*CM, -H*CM/2 + (sc.verCm[0] - F)*CM); }
+  if(sc.verCm){
+    if(WALL.fridge){
+      /* 24-oct · conjunto de imanes, en medio de la puerta: se ve el conjunto con aire y como poco 90 cm de nevera.
+         Con las flechas (neveraPan) se sube y se baja por la puerta. */
+      const half = Math.max(H/2 + 12, 45);
+      top = half*CM; bot = -half*CM;
+    } else {
+      const C = neveraCentro(sc, H);
+      top = Math.max(H*CM/2 + 4*CM, (sc.verCm[1] - C)*CM); bot = Math.min(-H*CM/2 - 4*CM, (sc.verCm[0] - C)*CM);
+    }
+    const pan = neveraPan(sc, H, top/CM, bot/CM); top += pan*CM; bot += pan*CM;
+  }
   return { maxW: Math.max(W + 60, sc.viewCm)*CM, totalH: top - bot, cx: 0, cy: (top + bot)/2 };
 }
 
@@ -4955,6 +5061,7 @@ function placeRoom(compH){
      quedaba 1-4 cm en el aire. Los cuadros colgados siguen con su gapCm. */
   const below = sc.restCm != null ? (BASE_H - BAMBU_SINK) + sc.restCm*CM : (sc.gapCm + sc.furnCm)*CM;
   g.position.set(0, -compH/2 - below, -0.22 - (sc.restZCm || 0)*CM);
+  if(sc.verCm) g.position.y = -neveraCentro(sc, compH/CM)*CM;   // nevera: el centro de los imanes, a su altura
   if(sc.restCm != null){
     /* la primera vez el póster aún no está colocado en este punto de layout(): se repite en el
        fotograma siguiente y cuando han llegado los muebles descargados */
@@ -5027,8 +5134,13 @@ function syncShadow(p){
   p.shadow.visible = !!WALL && ROOM_CFG.mode !== 'none';   // sin entorno no hay pared: la sombra sobraba
 }
 
+/* la talla de una pieza de conjunto: de FORMATS (cuadros) o, en los conjuntos de nevera (format 'iman'), del Imán */
+function pieceSize(pc){
+  const list = pc.format === 'iman' ? PRODUCTS.nevera.sizes : (FORMATS[pc.format] || {sizes:[]}).sizes;
+  return list.find(x => x.k === pc.size);
+}
 function wallGross(w){
-  return w.pieces.reduce((s, pc) => { const sz = FORMATS[pc.format].sizes.find(x => x.k === pc.size); return s + (sz ? sz.price : 0); }, 0);
+  return w.pieces.reduce((s, pc) => { const sz = pieceSize(pc); return s + (sz ? sz.price : 0); }, 0);
 }
 /* El precio que se enseña de un conjunto YA lleva el descuento por cantidad (PACK_TIERS),
    igual que en la portada, en paredes.html y en pared2d. Si aquí saliera el bruto, el
@@ -5036,7 +5148,7 @@ function wallGross(w){
 function wallPct(w){ const t = PACK_TIERS.find(t => w.pieces.length >= t.n); return t ? t.pct : 0; }
 function wallPrice(w){ return Math.round(wallGross(w) * (100 - wallPct(w))) / 100; }
 /* un conjunto solo se puede elegir si TODAS sus tallas tienen existencias */
-function wallInStock(w){ return w.pieces.every(pc => inStock(FORMATS[pc.format].sizes.find(x => x.k === pc.size))); }
+function wallInStock(w){ return w.pieces.every(pc => inStock(pieceSize(pc))); }
 /* ── TAMAÑO DEL CONJUNTO ── (la geometría la calcula paredes.js: MOMENTURIES_wallAt)
    Un conjunto de una sola talla se puede pedir en las demás tallas de su formato. WALL es
    entonces esa versión: mismo id y nombre, con .vk (talla) y .base (el original). */
@@ -5045,7 +5157,7 @@ const wallSizeKeys = window.MOMENTURIES_wallSizeKeys || (() => []);
 const HUECOS = window.MOMENTURIES_HUECOS || [];
 const huecoOf = window.MOMENTURIES_huecoOf || (() => '');
 function wallKOf(w){ return w.vk || w.pieces[0].size; }
-function wallSizes(w){ return wallSizeKeys(w).map(k => wallAt(w, k)); }     // [] si mezcla tallas
+function wallSizes(w){ return w.fridge ? [] : wallSizeKeys(w).map(k => wallAt(w, k)); }     // [] si mezcla tallas (o es de nevera)
 function wallPieceDims(w){ const d = FORMATS[w.pieces[0].format].sizes.find(s => s.k === wallKOf(w)).d; return cm(d[0]) + ' × ' + cm(d[1]); }
 /* la talla pedida (o la suya) si hay existencias, y si no la más cercana que tenga · qué versión
    se enseña en cada hueco. Las dos viven en paredes.js; aquí mandan las existencias de FORMATS. */
@@ -5084,6 +5196,13 @@ function disposePoster(i){
    Ahora se reparte por parecido de proporción (vertical con vertical, horizontal con horizontal, la cuadrada
    donde menos se recorte). Lo mismo al subir fotos con un conjunto puesto (moveToFittingSlot). */
 function applyPieceTo(p, pc){
+  if(pc.format === 'iman'){                // conjunto de nevera: cada hueco es un imán XS o S
+    p.ptype = 'nevera'; p.mount = PRODUCTS.nevera.hanger;
+    applyProductSize(p, pieceSize(pc) || PRODUCTS.nevera.sizes[0]);
+    const o = pc.orient === 'h' ? 'landscape' : 'portrait';
+    if(p.orient !== o) setOrientation(p, o); else applyMountVisual(p);
+    return;
+  }
   p.ptype = 'metal';
   if(!PRODUCTS.metal.mounts.includes(p.mount)) p.mount = PRODUCTS.metal.hanger;
   applyProductSize(p, FORMATS[pc.format].sizes.find(s => s.k === pc.size) || defSizeOf(PRODUCTS.metal, pc.format), pc.format);
@@ -5091,7 +5210,10 @@ function applyPieceTo(p, pc){
   if(p.orient !== o) setOrientation(p, o); else applyMountVisual(p);
 }
 function photoRatio(p){ const im = p && p.srcImg; return im && im.naturalWidth ? im.naturalWidth / im.naturalHeight : 0; }
-function pieceRatio(pc){ const r = FORMATS[pc.format].ratio; return pc.orient === 'h' ? 1 / r : r; }   // ancho/alto del hueco
+function pieceRatio(pc){   // ancho/alto del hueco
+  const r = pc.format === 'iman' ? (d => d[0] / d[1])((pieceSize(pc) || PRODUCTS.nevera.sizes[0]).d) : FORMATS[pc.format].ratio;
+  return pc.orient === 'h' ? 1 / r : r;
+}
 function fitCost(ph, pc){ return ph ? Math.abs(Math.log(ph) - Math.log(pieceRatio(pc))) : 0; }
 function matchPhotosToPieces(w){
   const n = w.pieces.length;
@@ -5141,14 +5263,19 @@ function applyWall(w, opts){
     disposePoster(i);
   }
   while(POSTERS.length < n) createPoster();
-  matchPhotosToPieces(w);                 // cada foto al hueco de su forma (vertical con vertical…)
+  /* al añadir un conjunto a la nevera, los imanes que ya había se quedan en su sitio (van primero) */
+  if(!opts.keepOrder) matchPhotosToPieces(w);   // cada foto al hueco de su forma (vertical con vertical…)
   // cada hueco impone producto (cuadro de pared), talla y orientación
   w.pieces.forEach((pc, i) => applyPieceTo(POSTERS[i], pc));
   if(selected >= n) selected = n - 1;
   /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
      uno (y le quepa). Antes se ponía directamente el salón 3D. */
   const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomOk(ROOM, w));
-  if(!keep){
+  NEVERA_PAN = 0;
+  if(w.fridge){
+    /* los imanes, siempre en una nevera (la que hubiera puesta, o la menta) */
+    if(!(ROOM_CFG.mode === 'geo' && NEVERA_SCENES.test(ROOM_CFG.scene))) setScene('nevera-menta');
+  } else if(!keep){
     /* si el cliente había elegido la habitación, primero la otra foto de esa misma (la cercana) */
     const alt = (ROOM_BY_USER || opts.keepRoom) && ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom ? roomFor(ROOM, w) : null;
     const r = alt || bestRoomFor(w); if(r) setRoom(r);
@@ -5160,13 +5287,16 @@ function applyWall(w, opts){
   layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
   if(!ROOM_BY_USER) arreglarEncuadre(w);
   const hint = document.getElementById('pvHint');
-  if(hint) hint.innerHTML = ROOM_CFG.mode === 'photo'
+  if(hint) hint.innerHTML = w.fridge
+    ? '<span class="es">Toca un imán para poner tu foto · sube y baja por la nevera con las flechas</span><span class="en">Tap a magnet to add your photo · move up and down the fridge with the arrows</span>'
+    : ROOM_CFG.mode === 'photo'
     ? '<span class="es">Toca un cuadro para poner tu foto · arrastra para verlos en 3D</span><span class="en">Tap a print to add your photo · drag to see them in 3D</span>'
     : '<span class="es">Toca un cuadro para poner tu foto · arrastra para girar la pared</span><span class="en">Tap a print to add your photo · drag to rotate the wall</span>';
   dirty3D = true;
   if(!opts.quiet){
     const b = document.getElementById('btnSample'); if(b) b.hidden = true;
-    toast('Pared «' + w.name + '» · ' + n + ' cuadros. Toca cada uno para poner tu foto');
+    toast(w.fridge ? '«' + w.name + '» · ' + n + (n === 1 ? ' imán' : ' imanes') + '. Toca cada uno para poner tu foto'
+                   : 'Pared «' + w.name + '» · ' + n + ' cuadros. Toca cada uno para poner tu foto');
   }
 }
 
@@ -5290,6 +5420,8 @@ function syncTools(){
     : '<span class="es">Uno suelto</span><span class="en">Single print</span>';
   if(rn) rn.innerHTML = roomLabel();
   const wx = document.getElementById('btnWallFree'); if(wx) wx.hidden = !WALL;
+  const enNevera = ROOM_CFG.mode === 'geo' && NEVERA_SCENES.test(ROOM_CFG.scene || '');
+  ['pvUp', 'pvDown'].forEach(id => { const b = document.getElementById(id); if(b) b.hidden = !enNevera; });
   const rx = document.getElementById('btnRoomFree'); if(rx) rx.hidden = ROOM_CFG.mode === 'none';
   const ts = document.getElementById('toolSize');
   if(ts){
@@ -5319,6 +5451,7 @@ let wallPreferN = 0;   // >0: el cliente tiene N fotos y viene de «verlas junta
 function renderWallModal(){
   const fl = document.getElementById('wallFilters'), grid = document.getElementById('wallGrid');
   if(!fl || !grid) return;
+  if(isFridgeMode()){ renderFridgeModal(fl, grid); return; }
   /* 11-oct: el filtro es el hueco donde va (por el ancho que ocupa), no el nº de cuadros */
   fl.innerHTML = '';
   [{k:'all'}].concat(HUECOS).forEach(h => {
@@ -5359,14 +5492,90 @@ function renderWallModal(){
   });
 }
 function openWallModal(){ renderWallModal(); wallModalEl.classList.add('open'); }
+/* ── ventana de los conjuntos de nevera ── */
+/* iman.html no carga paredes.js (ni su wallSVG): la miniatura se dibuja aquí, con la silueta de la puerta detrás
+   para que se vea qué parte de la nevera ocupa */
+function fridgeSVG(w){
+  const SC = 2, PW = 57.8*SC, PH = 139*SC, ox = (PW - w.width*SC)/2, oy = (PH - w.height*SC)/2;
+  let out = '<svg viewBox="-6 -6 ' + (PW + 12) + ' ' + (PH + 12) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + w.name + '">'
+    + '<rect x="0" y="0" width="' + PW + '" height="' + PH + '" rx="14" fill="#e6efe9" stroke="#c9d6cf" stroke-width="2"/>';
+  w.pieces.forEach(pc => {
+    out += '<rect x="' + (ox + pc.x*SC) + '" y="' + (oy + pc.y*SC) + '" width="' + pc.w*SC + '" height="' + pc.h*SC + '" rx="1.5" fill="'
+      + (pc.size === 'S' ? '#3a444e' : '#6b7681') + '"/>';
+  });
+  return out + '</svg>';
+}
+function fridgeCard(w, small, onPick, opts){
+  opts = opts || {};
+  const b = document.createElement('button'), ok = wallInStock(w) && !opts.noFit;
+  b.type = 'button'; b.className = 'wall-opt' + (opts.active ? ' active' : '') + (ok ? '' : ' sold-out');
+  if(!ok){ b.disabled = true; b.title = opts.noFit ? 'No cabe en la nevera' : 'Sin existencias'; }
+  b.innerHTML = '<div class="wall-opt-svg wall-opt-fridge">' + fridgeSVG(w) + '</div>'
+    + '<b>' + (opts.title || w.name) + '</b>'
+    + '<small>' + small + '</small>'
+    + '<span class="wall-opt-price">' + wallPrice(w).toFixed(2).replace('.', ',') + '€'
+    + (wallPct(w) ? '<s>' + wallGross(w).toFixed(2).replace('.', ',') + '€</s>' : '') + '</span>'
+    + (opts.noFit ? '<em class="wall-soldout"><span class="es">No cabe más</span><span class="en">No room left</span></em>' : ok ? '' : wallSoldOutTag);
+  b.onclick = () => { if(!b.disabled){ onPick(); closeWallModal(); } };
+  return b;
+}
+const imanesTxt = w => w.n + ' <span class="es">' + (w.n === 1 ? 'imán' : 'imanes') + '</span><span class="en">' + (w.n === 1 ? 'magnet' : 'magnets') + '</span>';
+const ocupaTxt = w => '<br><span class="es">Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</span><span class="en">Takes ' + w.width + ' × ' + w.height + ' cm</span>';
+function renderFridgeModal(fl, grid){
+  const t = wallModalEl.querySelector('.mmodal-title');
+  if(t) t.innerHTML = '<span class="es">Conjuntos de imanes</span><span class="en">Magnet sets</span>'
+    + '<span class="qty"><span class="es">van en medio de la nevera; puedes juntar varios o llenarla entera</span><span class="en">they go in the middle of the fridge; combine several or fill it up</span></span>';
+  const hay = !!(WALL && WALL.fridge);
+  /* con un conjunto puesto: el siguiente se añade debajo o lo sustituye */
+  fl.innerHTML = '';
+  if(hay){
+    [[true, 'Añadir debajo', 'Add below'], [false, 'Cambiar el que hay', 'Replace it']].forEach(([v, es, en]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'wall-filter' + (fridgeAdd === v ? ' active' : '');
+      b.innerHTML = '<span class="es">' + es + '</span><span class="en">' + en + '</span>';
+      b.onclick = () => { fridgeAdd = v; renderWallModal(); };
+      fl.appendChild(b);
+    });
+  }
+  grid.innerHTML = '';
+  const free = document.createElement('button');
+  free.type = 'button'; free.className = 'wall-opt wall-opt-free' + (WALL ? '' : ' active');
+  free.innerHTML = '<div class="wall-opt-svg"><svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect x="22" y="18" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/><rect x="50" y="26" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/><rect x="78" y="18" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/></svg></div>'
+    + '<b><span class="es">Imanes sueltos</span><span class="en">Loose magnets</span></b><small><span class="es">Tú eliges cuántos y de qué tamaño.</span><span class="en">You choose how many and which size.</span></small>';
+  free.onclick = () => { clearWall(); closeWallModal(); };
+  grid.appendChild(free);
+  /* llenar la puerta de arriba a abajo */
+  ['XS', 'S'].forEach(k => {
+    const w = fridgeFill(k), d = PRODUCTS.nevera.sizes.find(s => s.k === k).d;
+    grid.appendChild(fridgeCard(w, imanesTxt(w) + ' <span class="es">de ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span><span class="en">of ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span>' + ocupaTxt(w),
+      () => applyWall(w), { active: hay && WALL.id === w.id }));
+  });
+  if(hay && !/^LL-/.test(WALL.id)){
+    const r = fridgeRepeat(WALL);
+    if(r) grid.appendChild(fridgeCard(r, '<span class="es">Tu conjunto repetido hasta abajo</span><span class="en">Your set repeated to the bottom</span><br>' + imanesTxt(r),
+      () => applyWall(r, { keepOrder:true }), { title:'<span class="es">Repite el tuyo</span><span class="en">Repeat yours</span>' }));
+  }
+  FRIDGE_WALLS.forEach(w => {
+    const add = hay && fridgeAdd, st = add ? fridgeStack(WALL, w) : null;
+    grid.appendChild(fridgeCard(w, imanesTxt(w) + ocupaTxt(w), () => {
+      if(add){
+        applyWall(st, { keepOrder:true, quiet:true });
+        toast('Añadido «' + w.name + '» · ' + st.n + ' imanes en la nevera');
+      } else applyWall(w);
+    }, { active: !add && hay && WALL.id === w.id, noFit: add && !st }));
+  });
+}
 /* 14-oct · Quien sube varias fotos sueltas casi siempre quiere colgarlas juntas: se le ofrece verlas
    en un conjunto de ese mismo número de cuadros (el selector los pone primero). Las fotos se quedan. */
 function syncSuggest(){
   const b = document.getElementById('edSuggest'); if(!b) return;
   const n = POSTERS.filter(p => p.srcImg).length;
-  const hay = !WALL && n >= 2 && n <= 20 && WALLS.some(w => !w.dup && w.n === n && wallInStock(wallPick(w)));
+  const hay = !WALL && n >= 2 && n <= 20 && (isFridgeMode() ? FRIDGE_WALLS.some(w => w.n === n)
+    : WALLS.some(w => !w.dup && w.n === n && wallInStock(wallPick(w))));
   b.hidden = !hay;
-  if(hay) b.innerHTML = '<span class="es">' + n + ' fotos · <b>Míralas juntas en una pared</b> →</span><span class="en">' + n + ' photos · <b>See them together on a wall</b> →</span>';
+  if(hay) b.innerHTML = isFridgeMode()
+    ? '<span class="es">' + n + ' fotos · <b>Míralas juntas en la nevera</b> →</span><span class="en">' + n + ' photos · <b>See them together on the fridge</b> →</span>'
+    : '<span class="es">' + n + ' fotos · <b>Míralas juntas en una pared</b> →</span><span class="en">' + n + ' photos · <b>See them together on a wall</b> →</span>';
   // con alguna foto ya puesta, sobra «o prueba con una foto de ejemplo»
   const ej = document.getElementById('btnSample'); if(ej && n > 0) ej.hidden = true;
 }
@@ -5380,9 +5589,14 @@ document.getElementById('btnWalls').addEventListener('click', openWallModal);
 /* sin paredes cargadas, o en una página fijada a sobremesa/imán, no hay "conjunto" que elegir:
    son un cuadro suelto por naturaleza, así que también se quita la píldora "Conjunto" de arriba
    (antes solo se ocultaba el botón de abajo, y la de arriba se podía seguir tocando). */
-if(!WALLS.length || (_EDCFG.lock && _EDCFG.product && _EDCFG.product !== 'metal')){
+/* 24-oct: el imán sí tiene conjuntos (los de nevera, FRIDGE_WALLS) */
+if(isFridgeMode() ? false : (!WALLS.length || (_EDCFG.lock && _EDCFG.product && _EDCFG.product !== 'metal'))){
   document.getElementById('btnWalls').hidden = true;
   const tw = document.getElementById('toolWall'); if(tw) tw.hidden = true;
+}
+if(isFridgeMode()){
+  const bw = document.getElementById('btnWalls');
+  if(bw) bw.innerHTML = bw.innerHTML.replace(/<span class="es">[^<]*<\/span><span class="en">[^<]*<\/span>/, '<span class="es">Conjuntos de imanes</span><span class="en">Magnet sets</span>');
 }
 document.getElementById('btnWallChange').addEventListener('click', openWallModal);
 document.getElementById('btnWallFree').addEventListener('click', clearWall);
