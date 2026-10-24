@@ -22,6 +22,9 @@
   <div id="pvStage">
     <canvas id="pvCanvas"></canvas>
     <div class="pv-badge" id="pvBadge">3D · GÍRALO</div>
+    <!-- 24-oct · nevera: mapa de la puerta (dónde estás, tócalo para ir) y «+ Añadir otro conjunto» bajo los imanes -->
+    <div class="fridge-map" id="fridgeMap" hidden title="Toca para ir a esa parte de la nevera"><svg viewBox="-36 -4 72 168" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <button type="button" class="fridge-add" id="fridgeAddBtn" hidden><span class="fridge-add-plus">+</span><span class="es">Añadir otro conjunto</span><span class="en">Add another set</span></button>
     <div class="pv-hint" id="pvHint"><span class="es">Arrastra para girar · rueda o pellizco para zoom · toca un cuadro para editarlo</span><span class="en">Drag to rotate · scroll or pinch to zoom · tap a print to edit it</span></div>
     <div class="pv-zoom" id="pvZoom">
       <button type="button" id="pvZoomIn" title="Acercar" aria-label="Acercar">
@@ -29,12 +32,6 @@
       </button>
       <button type="button" id="pvZoomOut" title="Alejar" aria-label="Alejar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-      <button type="button" id="pvUp" class="pv-pan" hidden title="Subir por la nevera" aria-label="Subir por la nevera">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>
-      </button>
-      <button type="button" id="pvDown" class="pv-pan" hidden title="Bajar por la nevera" aria-label="Bajar por la nevera">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <button type="button" id="pvBruma" class="pv-bruma" title="Bruma de los bordes: quitar / poner" aria-label="Bruma de los bordes" aria-pressed="true">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h16M3 13h18M5 17h14"/></svg>
@@ -908,7 +905,8 @@ function updateMountAnim(p){
   p.magnet.scale.set(ms,ms,ms);
 }
 
-function drawPlaceholder(x, W, H){
+function drawPlaceholder(x, W, H, simple){
+  if(simple){ drawPlaceholderIman(x, W, H); return; }
   x.fillStyle = '#ffffff'; x.fillRect(0,0,W,H);
   x.strokeStyle = '#e6e1d9'; x.lineWidth = 6; x.strokeRect(40,40,W-80,H-80);
   x.strokeStyle = '#c9c3ba'; x.lineWidth = 9; x.lineCap='round'; x.lineJoin='round';
@@ -931,6 +929,26 @@ function drawPlaceholder(x, W, H){
   x.fillText('Toca para elegirla', cx, H*0.62 + fs*1.05);
 }
 
+/* 24-oct · el imán mide 7×10: el «SUBE TU FOTO» del cuadro salía ilegible. Aquí solo una cámara grande y un «+» */
+function drawPlaceholderIman(x, W, H){
+  const u = Math.min(W, H) / 100, cx = W/2, cy = H*0.46;
+  x.fillStyle = '#fbfaf7'; x.fillRect(0, 0, W, H);
+  x.strokeStyle = '#d9d3c9'; x.lineWidth = 2.2*u; x.setLineDash([5*u, 4*u]);
+  x.strokeRect(6*u, 6*u, W - 12*u, H - 12*u); x.setLineDash([]);
+  x.strokeStyle = '#a8a196'; x.lineWidth = 4*u; x.lineCap = 'round'; x.lineJoin = 'round';
+  const w = 26*u, h = 19*u;
+  x.beginPath();
+  x.moveTo(cx - w, cy - h + 6*u); x.lineTo(cx - 9*u, cy - h + 6*u); x.lineTo(cx - 5*u, cy - h);
+  x.lineTo(cx + 5*u, cy - h); x.lineTo(cx + 9*u, cy - h + 6*u); x.lineTo(cx + w, cy - h + 6*u);
+  x.lineTo(cx + w, cy + h); x.lineTo(cx - w, cy + h); x.closePath(); x.stroke();
+  x.beginPath(); x.arc(cx, cy + 3*u, 8*u, 0, Math.PI*2); x.stroke();
+  // el «+» en un círculo negro, abajo a la derecha de la cámara
+  const bx = cx + w - 2*u, by = cy + h + 2*u, r = 10*u;
+  x.fillStyle = '#1a1a1a'; x.beginPath(); x.arc(bx, by, r, 0, Math.PI*2); x.fill();
+  x.strokeStyle = '#fff'; x.lineWidth = 3*u;
+  x.beginPath(); x.moveTo(bx - 5*u, by); x.lineTo(bx + 5*u, by); x.moveTo(bx, by - 5*u); x.lineTo(bx, by + 5*u); x.stroke();
+}
+
 function makePoster(){
   const pr = PRODUCTS[defaultType] || PRODUCTS.metal;
   const fmt0 = pr.formats ? ((window.MOMENTURIES_EDITOR||{}).format && pr.formats[(window.MOMENTURIES_EDITOR||{}).format] ? window.MOMENTURIES_EDITOR.format : FORMAT_DEFAULT) : null;
@@ -939,7 +957,7 @@ function makePoster(){
   const tw = Math.max(200, Math.round(gw*TEX_PER_UNIT)), th = Math.max(200, Math.round(gh*TEX_PER_UNIT));
   const c = document.createElement('canvas');
   c.width = tw; c.height = th;
-  drawPlaceholder(c.getContext('2d'), c.width, c.height);
+  drawPlaceholder(c.getContext('2d'), c.width, c.height, defaultType === 'nevera');
   const frontMat = makeFrontMat(tune(new THREE.CanvasTexture(c)));
   const sideMat  = makeSideMat();
   const backMat  = makeBackMat();
@@ -1223,10 +1241,18 @@ function layout(){
     gsap.killTweensOf(group.scale); gsap.killTweensOf(camFrame);
     group.scale.set(s, s, s); group.userData.framed = true; dirty3D = true;
     camFrame.x = px; camFrame.y = py;
+  } else if(_panNow){
+    // arrastrando por la nevera: la vista sigue al dedo, sin retraso
+    gsap.killTweensOf(camFrame); camFrame.x = px; camFrame.y = py; dirty3D = true;
   } else {
     gsap.to(group.scale, { x:s, y:s, z:s, duration:.45, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
     gsap.to(camFrame,    { x:px, y:py,    duration:.45, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
   }
+  if(enNevera() && ROOM_CFG.mode === 'geo'){
+    const sc = findScene(ROOM_CFG.scene), Hcm = (WALL ? WALL.height : totalH/CM);
+    if(sc.verCm){ const C = neveraCentro(sc, WALL ? WALL.height : COMP_U.h/CM); FRIDGE_VIEW = { C, cy: C + fcy/CM, half: visH/2/s/CM }; }
+  } else FRIDGE_VIEW = null;
+  if(_panNow) return;
   applySelection();
 }
 
@@ -1362,6 +1388,7 @@ function syncViewerHint(){
   const b = document.getElementById('pvBadge'), h = document.getElementById('pvHint');
   const mine = isMyWall();
   if(b) b.textContent = mine ? 'TU PARED · COLÓCALOS' : isFlat() ? '2D · DE FRENTE' : '3D · GÍRALO';
+  if(h && enNevera() && !isFlat()){ h.innerHTML = '<span class="es">Arrastra arriba y abajo para recorrer la nevera · toca un imán para poner tu foto</span><span class="en">Drag up and down to move along the fridge · tap a magnet to add your photo</span>'; return; }
   if(h) h.innerHTML = mine
     ? '<span class="es">Arrastra los cuadros para colocarlos · rueda o pellizco para acercarte · toca uno para editarlo</span><span class="en">Drag the prints to place them · scroll or pinch to zoom · tap one to edit it</span>'
     : isFlat()
@@ -1383,7 +1410,7 @@ function moveTextTo(mx,my){
 }
 
 /* pointer events con captura (como Futsides) + pinch-zoom */
-let drag=false, apId=null, sx=0, sy=0, sRy=0, sRx=0, moved=0;
+let drag=false, apId=null, sx=0, sy=0, sRy=0, sRx=0, moved=0, sPan=0;
 let compDrag=null;                       // arrastre de la composición sobre la foto del cliente
 let pc=0, p1=null, p2=null, lpd=0;
 
@@ -1405,7 +1432,7 @@ canvas.addEventListener('pointerdown', e=>{
       }
     }
     hintEl.style.opacity='0';
-    apId=e.pointerId; sx=e.clientX; sy=e.clientY; sRy=tRy; sRx=tRx; moved=0;
+    apId=e.pointerId; sx=e.clientX; sy=e.clientY; sRy=tRy; sRx=tRx; moved=0; sPan=NEVERA_PAN||0;
     p1={id:e.pointerId,x:e.clientX,y:e.clientY};
     if(textDrag){ moveTextTo(e.clientX,e.clientY); }
     else {
@@ -1440,6 +1467,14 @@ canvas.addEventListener('pointermove', e=>{
   if(compDrag){
     const q = photoPxAt(e.clientX, e.clientY);      // si el dedo se sale de la foto, se queda donde estaba
     if(q) moveComposition(compDrag.ax + (q.x - compDrag.px), compDrag.ay + (q.y - compDrag.py));
+    return;
+  }
+  /* 24-oct · en la nevera, arriba/abajo recorre la puerta (como hacer scroll) y a los lados gira un poco */
+  if(enNevera() && FIT && !isFlat()){
+    const cmPx = FIT.visH / (stage.clientHeight || 1) / FIT.s / CM * (cZ / BASEZ);
+    NEVERA_PAN = sPan + (e.clientY - sy) * cmPx;
+    tRy = Math.max(-.5, Math.min(.5, sRy + (e.clientX - sx)*.006));
+    _panNow = true; layout(); _panNow = false;
     return;
   }
   tRy = sRy+(e.clientX-sx)*.0105;
@@ -1537,13 +1572,58 @@ function stepZoom(dz){ setZoom(tZ+dz); }
 document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9));
 document.getElementById('pvZoomOut').addEventListener('click', ()=>stepZoom(.9));
 /* 24-oct · nevera: subir y bajar por la puerta (18 cm por toque; neveraPan() pone el tope) */
-function panNevera(dCm){
-  const antes = NEVERA_PAN;
-  NEVERA_PAN = (NEVERA_PAN || 0) + dCm; layout();
-  if(Math.abs(NEVERA_PAN - antes) < 0.5) toast(dCm > 0 ? 'Ya estás arriba del todo' : 'Ya estás abajo del todo');
+/* ── mapa de la nevera ── la puerta en pequeño con los imanes y un marco con lo que se ve */
+const FRIDGE_COLORS = { 'nevera-menta':'#a9d8c4', 'nevera-roja':'#c8382f', 'nevera-crema':'#f0e6cc' };
+const fridgeMapEl = document.getElementById('fridgeMap');
+let _fmKey = '';
+function syncFridgeMap(){
+  const on = !!FRIDGE_VIEW && editorOpen && !panelOpen;
+  if(fridgeMapEl.hidden === on) fridgeMapEl.hidden = !on;
+  if(!on) return;
+  const V = FRIDGE_VIEW, half = V.half * (cZ / BASEZ), Y = y => 160 - y;
+  const key = [ROOM_CFG.scene, V.C, V.cy.toFixed(1), half.toFixed(1), POSTERS.length, POSTERS.map(p => (p.baseX||0).toFixed(2) + (p.baseY||0).toFixed(2) + p.sizeKey + p.orient + (p.srcImg ? 1 : 0)).join()].join('|');
+  if(key === _fmKey) return; _fmKey = key;
+  const col = FRIDGE_COLORS[ROOM_CFG.scene] || '#cfd8d3';
+  let out = '<rect x="-30" y="' + Y(154) + '" width="60" height="148" rx="7" fill="' + col + '" stroke="rgba(0,0,0,.25)" stroke-width="1"/>'
+    + '<rect x="-7" y="' + Y(149) + '" width="14" height="2" rx="1" fill="#e2e4e6"/>';
+  POSTERS.forEach(p => {
+    const w = baseW(p)/CM, h = baseH(p)/CM, x = (p.baseX||0)/CM, y = V.C + (p.baseY||0)/CM;
+    out += '<rect x="' + (x - w/2).toFixed(1) + '" y="' + Y(y + h/2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" rx=".8" fill="' + (p.srcImg ? '#1a1a1a' : '#fff') + '" stroke="rgba(0,0,0,.35)" stroke-width=".5"/>';
+  });
+  const top = Math.min(162, V.cy + half), bot = Math.max(-2, V.cy - half);
+  out += '<rect class="fm-win" x="-34" y="' + Y(top).toFixed(1) + '" width="68" height="' + (top - bot).toFixed(1) + '" rx="4"/>';
+  fridgeMapEl.firstElementChild.innerHTML = out;
 }
-document.getElementById('pvUp').addEventListener('click', ()=>panNevera(18));
-document.getElementById('pvDown').addEventListener('click', ()=>panNevera(-18));
+function fridgeMapGo(ev){
+  if(!FRIDGE_VIEW) return;
+  const svg = fridgeMapEl.firstElementChild, r = svg.getBoundingClientRect();
+  // viewBox 72 × 168 con meet: escala por la dimensión que manda
+  const k = Math.min(r.width / 72, r.height / 168), oy = (r.height - 168*k) / 2;
+  const yRoom = 160 - ((ev.clientY - r.top - oy) / k - 4);
+  NEVERA_PAN = (NEVERA_PAN || 0) + (yRoom - FRIDGE_VIEW.cy);
+  layout();
+}
+let _fmDrag = false;
+fridgeMapEl.addEventListener('pointerdown', e => { _fmDrag = true; try{ fridgeMapEl.setPointerCapture(e.pointerId); }catch(_){} fridgeMapGo(e); });
+fridgeMapEl.addEventListener('pointermove', e => { if(_fmDrag){ _panNow = true; fridgeMapGo(e); _panNow = false; } });
+['pointerup', 'pointercancel'].forEach(t => fridgeMapEl.addEventListener(t, () => { _fmDrag = false; }));
+
+/* ── «+ Añadir otro conjunto», en la nevera, justo debajo de los imanes ── */
+const fridgeAddEl = document.getElementById('fridgeAddBtn');
+const _faV = new THREE.Vector3();
+function syncFridgeAdd(){
+  const cabe = WALL && WALL.fridge && FRIDGE_WALLS.some(w => fridgeStack(WALL, w));
+  const on = !!(cabe && editorOpen && !panelOpen && FRIDGE_VIEW);
+  let ok = false;
+  if(on){
+    _faV.set(0, -(WALL.height/2 + 3)*CM, 0); group.localToWorld(_faV); _faV.project(camera);
+    const W = stage.clientWidth, H = stage.clientHeight, x = (_faV.x + 1)/2*W, y = (1 - _faV.y)/2*H;
+    ok = y > 120 && y < H - (W < 600 ? 250 : 190) && x > 40 && x < W - 40;   // nunca encima de las barras ni del zoom
+    if(ok) fridgeAddEl.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px) translate(-50%,0)';
+  }
+  if(fridgeAddEl.hidden === ok) fridgeAddEl.hidden = !ok;
+}
+fridgeAddEl.addEventListener('click', () => { fridgeAdd = true; openWallModal(); });
 
 /* acercar la cámara sola al escribir la dedicatoria (Aitor: "por detrás se tiene que ver
    cerca para apreciar lo que has escrito") y devolverla a como estaba al salir del campo. */
@@ -1619,6 +1699,7 @@ function animate(){
   group.position.y = camFrame.y * zr;
   renderer.render(scene,camera);
   dirty3D=false;
+  syncFridgeMap(); syncFridgeAdd();
 }
 
 /* ═══════════ SUBIR FOTOS (flujo Mixtiles: varias de golpe, una por póster) ═══════════ */
@@ -1813,7 +1894,7 @@ function buildFrontCanvas(p, W, H){
     x.fillStyle='#fff'; x.fillRect(0,0,W,H);
     x.drawImage(p.srcImg, cw.sx,cw.sy,cw.sw,cw.sh, 0,0,W,H);
   } else {
-    drawPlaceholder(x, W, H);
+    drawPlaceholder(x, W, H, p.ptype === 'nevera');
   }
   const scl=W/texW(p);
   if(FRONT_TEXT && p.frontText && p.frontText.trim()){
@@ -2794,7 +2875,7 @@ function openEditor(){
   editorOpen = true; needResize = true; dirty3D = true;
   resize3D();                      // encuadre correcto ya en el primer fotograma
   if(!raf3d) animate();
-  syncTools();                     // la nevera del imán se pone sin pasar por setScene: rótulo de Entorno y flechas
+  syncTools(); syncViewerHint();   // la nevera del imán se pone sin pasar por setScene: rótulo de Entorno y ayuda
 }
 function closeEditor(){
   closePanel();
@@ -3237,11 +3318,22 @@ window.MOMENTURIES_EDITOR_VIVO = {
      · "Añadir fotos" rellena los huecos vacíos en orden; la X de una miniatura vacía el hueco
      · el pedido se hace con la pared completa
    `var` a propósito: layout() se llama en el arranque, antes de llegar aquí. */
-var WALL = null;
+var WALL = null, WALL_PREV_N = 0;
+/* 24-oct · los imanes que entran en la nevera aparecen uno detrás de otro, con un pequeño rebote */
+function dropMagnets(from){
+  const list = POSTERS.slice(from), paso = Math.min(.06, 1.1 / Math.max(1, list.length));
+  list.forEach((p, k) => {
+    gsap.killTweensOf(p.rig.scale);
+    p.rig.scale.set(.01, .01, .01);
+    gsap.to(p.rig.scale, { x:1, y:1, z:1, duration:.42, delay:.2 + k*paso, ease:'back.out(1.8)', onUpdate:()=>{ dirty3D = true; } });
+  });
+  dirty3D = true;
+}
 /* 24-oct · NEVERA. Los imanes sueltos van con el borde de abajo a furnCm+gapCm (100 cm, a mano); un conjunto de
    imanes va con su centro en medio de la puerta (que va de 10,5 a 149,5 cm del suelo). NEVERA_PAN = cuántos cm
    se ha subido (+) o bajado (−) la vista con las flechas; neveraPan() lo limita para no salirse de la nevera. */
-var NEVERA_PAN = 0;
+var NEVERA_PAN = 0, _panNow = false, FRIDGE_VIEW = null;   // FRIDGE_VIEW: qué trozo de nevera se ve (cm), para el mapa
+function enNevera(){ return ROOM_CFG.mode === 'geo' && /^nevera-/.test(ROOM_CFG.scene || ''); }
 function neveraCentro(sc, Hcm){ return WALL && WALL.fridge ? 80 : sc.furnCm + sc.gapCm + Hcm/2; }
 function neveraPan(sc, Hcm, topCm, botCm){
   const C = neveraCentro(sc, Hcm), mid = C + (topCm + botCm)/2, half = (topCm - botCm)/2;
@@ -5253,6 +5345,7 @@ function applyWall(w, opts){
   if(!w) return;
   ROOM_LEJOS = 0;
   if(!wallInStock(w)){ toast('La pared «' + w.name + '» no tiene existencias ahora mismo'); return; }
+  WALL_PREV_N = WALL && WALL.fridge ? POSTERS.length : 0;
   WALL = w;
   _userEdited = true;
   const n = w.pieces.length;
@@ -5265,6 +5358,7 @@ function applyWall(w, opts){
   while(POSTERS.length < n) createPoster();
   /* al añadir un conjunto a la nevera, los imanes que ya había se quedan en su sitio (van primero) */
   if(!opts.keepOrder) matchPhotosToPieces(w);   // cada foto al hueco de su forma (vertical con vertical…)
+  const nuevos = w.fridge && !_restoring ? (opts.keepOrder && WALL_PREV_N ? WALL_PREV_N : 0) : -1;
   // cada hueco impone producto (cuadro de pared), talla y orientación
   w.pieces.forEach((pc, i) => applyPieceTo(POSTERS[i], pc));
   if(selected >= n) selected = n - 1;
@@ -5285,10 +5379,11 @@ function applyWall(w, opts){
   flipToFace(0); tRx = 0;                 // la pared se ve de frente
   closePanel();
   layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
-  if(!ROOM_BY_USER) arreglarEncuadre(w);
+  if(!ROOM_BY_USER && !w.fridge) arreglarEncuadre(w);
+  if(nuevos >= 0) dropMagnets(nuevos);
   const hint = document.getElementById('pvHint');
   if(hint) hint.innerHTML = w.fridge
-    ? '<span class="es">Toca un imán para poner tu foto · sube y baja por la nevera con las flechas</span><span class="en">Tap a magnet to add your photo · move up and down the fridge with the arrows</span>'
+    ? '<span class="es">Arrastra arriba y abajo para recorrer la nevera · toca un imán para poner tu foto</span><span class="en">Drag up and down to move along the fridge · tap a magnet to add your photo</span>'
     : ROOM_CFG.mode === 'photo'
     ? '<span class="es">Toca un cuadro para poner tu foto · arrastra para verlos en 3D</span><span class="en">Tap a print to add your photo · drag to see them in 3D</span>'
     : '<span class="es">Toca un cuadro para poner tu foto · arrastra para girar la pared</span><span class="en">Tap a print to add your photo · drag to rotate the wall</span>';
@@ -5391,9 +5486,11 @@ function arreglarEncuadre(w){
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
 function clearWall(){
   if(!WALL) return;
-  /* 24-oct · nevera: al quitar el conjunto se vuelve a un imán solo; los que ya llevan foto se quedan sueltos */
+  /* 24-oct · nevera: al quitar el conjunto se vuelve a un imán solo */
   if(WALL.fridge){
-    for(let i = POSTERS.length - 1; i >= 0 && POSTERS.length > 1; i--) if(!POSTERS[i].srcImg && !POSTERS[i].pendingImg) disposePoster(i);
+    /* se queda uno: el primero con foto (o el primero, si ninguno la tiene) */
+    const keep = POSTERS.find(p => p.srcImg) || POSTERS[0];
+    for(let i = POSTERS.length - 1; i >= 0; i--) if(POSTERS[i] !== keep) disposePoster(i);
     const p0 = POSTERS[0];
     if(!p0.srcImg){ applyProductSize(p0, defSizeOf(PRODUCTS.nevera)); setOrientation(p0, 'portrait'); }   // el de partida: XS
     selected = 0; NEVERA_PAN = 0;
@@ -5427,8 +5524,6 @@ function syncTools(){
     : '<span class="es">Uno suelto</span><span class="en">Single print</span>';
   if(rn) rn.innerHTML = roomLabel();
   const wx = document.getElementById('btnWallFree'); if(wx) wx.hidden = !WALL;
-  const enNevera = ROOM_CFG.mode === 'geo' && NEVERA_SCENES.test(ROOM_CFG.scene || '');
-  ['pvUp', 'pvDown'].forEach(id => { const b = document.getElementById(id); if(b) b.hidden = !enNevera; });
   const rx = document.getElementById('btnRoomFree'); if(rx) rx.hidden = ROOM_CFG.mode === 'none';
   const ts = document.getElementById('toolSize');
   if(ts){
@@ -5500,24 +5595,38 @@ function renderWallModal(){
 }
 function openWallModal(){ renderWallModal(); wallModalEl.classList.add('open'); }
 /* ── ventana de los conjuntos de nevera ── */
-/* iman.html no carga paredes.js (ni su wallSVG): la miniatura se dibuja aquí, con la silueta de la puerta detrás
-   para que se vea qué parte de la nevera ocupa */
-function fridgeSVG(w){
-  const SC = 2, PW = 57.8*SC, PH = 139*SC, ox = (PW - w.width*SC)/2, oy = (PH - w.height*SC)/2;
-  let out = '<svg viewBox="-6 -6 ' + (PW + 12) + ' ' + (PH + 12) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + w.name + '">'
-    + '<rect x="0" y="0" width="' + PW + '" height="' + PH + '" rx="14" fill="#e6efe9" stroke="#c9d6cf" stroke-width="2"/>';
-  w.pieces.forEach(pc => {
-    out += '<rect x="' + (ox + pc.x*SC) + '" y="' + (oy + pc.y*SC) + '" width="' + pc.w*SC + '" height="' + pc.h*SC + '" rx="1.5" fill="'
-      + (pc.size === 'S' ? '#3a444e' : '#6b7681') + '"/>';
+/* iman.html no carga paredes.js (ni su wallSVG): la miniatura se dibuja aquí. 24-oct: la puerta del color de la
+   nevera puesta, los imanes con fotos de ejemplo y, si el conjunto es pequeño, acercada a él (para que se vea). */
+const FRIDGE_SAMPLES = ['1472719674214-480x640', '1474552226712-300x420', '1491013516836-300x420', '1548858806-480x640',
+  '1557495235-480x640', '1586498024141-480x640', '1603367563698-480x640', '1624272864537-480x640', '1655141011386-480x640',
+  '1606983340126-480x640', '1738956952892-480x640', '1752652011858-480x640', '1758686254601-480x640', '1770831208268-480x640']
+  .map(n => 'fotos/stock/' + n + '.webp');
+function fridgeSVG(w, opts){
+  opts = opts || {};
+  const DW = 57.8, DH = 139, col = FRIDGE_COLORS[ROOM_CFG.scene] || '#a9d8c4';
+  const ox = (DW - w.width)/2, oy = (DH - w.height)/2;
+  /* encuadre: la puerta entera para «llenar»; si no, el conjunto con aire (como poco 34 cm de alto) */
+  const vh = opts.entera ? DH + 8 : Math.max(w.height + 12, 34), vw = opts.entera ? DW + 8 : Math.max(w.width + 12, vh * 0.9);
+  const vx = DW/2 - vw/2, vy = opts.entera ? -4 : DH/2 - vh/2;
+  let out = '<svg viewBox="' + vx.toFixed(1) + ' ' + vy.toFixed(1) + ' ' + vw.toFixed(1) + ' ' + vh.toFixed(1) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + w.name + '">'
+    + '<rect x="-30" y="-30" width="' + (DW + 60) + '" height="' + (DH + 60) + '" fill="#ece8e1"/>'
+    + '<rect x="0" y="0" width="' + DW + '" height="' + DH + '" rx="6" fill="' + col + '" stroke="rgba(0,0,0,.18)" stroke-width=".6"/>'
+    + '<rect x="-1.6" y="30" width="1.4" height="44" rx=".7" fill="#d9dcdf" stroke="rgba(0,0,0,.2)" stroke-width=".3"/>';
+  w.pieces.forEach((pc, i) => {
+    const x = ox + pc.x, y = oy + pc.y, id = 'fc' + w.id.replace(/\W/g, '') + i;
+    out += '<rect x="' + (x + .35) + '" y="' + (y + .5) + '" width="' + pc.w + '" height="' + pc.h + '" rx=".5" fill="rgba(0,0,0,.18)"/>'
+      + '<clipPath id="' + id + '"><rect x="' + x + '" y="' + y + '" width="' + pc.w + '" height="' + pc.h + '" rx=".5"/></clipPath>'
+      + '<image href="' + FRIDGE_SAMPLES[i % FRIDGE_SAMPLES.length] + '" x="' + x + '" y="' + y + '" width="' + pc.w + '" height="' + pc.h + '" preserveAspectRatio="xMidYMid slice" clip-path="url(#' + id + ')"/>';
   });
   return out + '</svg>';
 }
+/* ── ventana de los conjuntos de nevera ── */
 function fridgeCard(w, small, onPick, opts){
   opts = opts || {};
   const b = document.createElement('button'), ok = wallInStock(w) && !opts.noFit;
   b.type = 'button'; b.className = 'wall-opt' + (opts.active ? ' active' : '') + (ok ? '' : ' sold-out');
   if(!ok){ b.disabled = true; b.title = opts.noFit ? 'No cabe en la nevera' : 'Sin existencias'; }
-  b.innerHTML = '<div class="wall-opt-svg wall-opt-fridge">' + fridgeSVG(w) + '</div>'
+  b.innerHTML = '<div class="wall-opt-svg wall-opt-fridge">' + fridgeSVG(w, opts) + '</div>'
     + '<b>' + (opts.title || w.name) + '</b>'
     + '<small>' + small + '</small>'
     + '<span class="wall-opt-price">' + wallPrice(w).toFixed(2).replace('.', ',') + '€'
@@ -5528,15 +5637,23 @@ function fridgeCard(w, small, onPick, opts){
 }
 const imanesTxt = w => w.n + ' <span class="es">' + (w.n === 1 ? 'imán' : 'imanes') + '</span><span class="en">' + (w.n === 1 ? 'magnet' : 'magnets') + '</span>';
 const ocupaTxt = w => '<br><span class="es">Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</span><span class="en">Takes ' + w.width + ' × ' + w.height + ' cm</span>';
+function fridgeHead(es, en, sub_es, sub_en){
+  const h = document.createElement('div');
+  h.className = 'wall-sec';
+  h.innerHTML = '<b><span class="es">' + es + '</span><span class="en">' + en + '</span></b>'
+    + (sub_es ? '<small><span class="es">' + sub_es + '</span><span class="en">' + sub_en + '</span></small>' : '');
+  return h;
+}
 function renderFridgeModal(fl, grid){
+  const hay = !!(WALL && WALL.fridge), add = hay && fridgeAdd;
   const t = wallModalEl.querySelector('.mmodal-title');
-  if(t) t.innerHTML = '<span class="es">Conjuntos de imanes</span><span class="en">Magnet sets</span>'
-    + '<span class="qty"><span class="es">van en medio de la nevera; puedes juntar varios o llenarla entera</span><span class="en">they go in the middle of the fridge; combine several or fill it up</span></span>';
-  const hay = !!(WALL && WALL.fridge);
+  if(t) t.innerHTML = add
+    ? '<span class="es">Añade otro conjunto</span><span class="en">Add another set</span><span class="qty"><span class="es">va debajo de los que ya tienes</span><span class="en">it goes below the ones you have</span></span>'
+    : '<span class="es">Conjuntos de imanes</span><span class="en">Magnet sets</span><span class="qty"><span class="es">van en medio de la puerta de la nevera</span><span class="en">they go in the middle of the fridge door</span></span>';
   /* con un conjunto puesto: el siguiente se añade debajo o lo sustituye */
   fl.innerHTML = '';
   if(hay){
-    [[true, 'Añadir debajo', 'Add below'], [false, 'Cambiar el que hay', 'Replace it']].forEach(([v, es, en]) => {
+    [[true, '+ Añadir debajo', '+ Add below'], [false, 'Cambiar el que hay', 'Replace it']].forEach(([v, es, en]) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'wall-filter' + (fridgeAdd === v ? ' active' : '');
       b.innerHTML = '<span class="es">' + es + '</span><span class="en">' + en + '</span>';
@@ -5545,25 +5662,11 @@ function renderFridgeModal(fl, grid){
     });
   }
   grid.innerHTML = '';
-  const free = document.createElement('button');
-  free.type = 'button'; free.className = 'wall-opt wall-opt-free' + (WALL ? '' : ' active');
-  free.innerHTML = '<div class="wall-opt-svg"><svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg"><rect x="22" y="18" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/><rect x="50" y="26" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/><rect x="78" y="18" width="22" height="32" rx="2" fill="none" stroke="#8a929a" stroke-width="2" stroke-dasharray="4 3"/></svg></div>'
-    + '<b><span class="es">Imanes sueltos</span><span class="en">Loose magnets</span></b><small><span class="es">Tú eliges cuántos y de qué tamaño.</span><span class="en">You choose how many and which size.</span></small>';
-  free.onclick = () => { clearWall(); closeWallModal(); };
-  grid.appendChild(free);
-  /* llenar la puerta de arriba a abajo */
-  ['XS', 'S'].forEach(k => {
-    const w = fridgeFill(k), d = PRODUCTS.nevera.sizes.find(s => s.k === k).d;
-    grid.appendChild(fridgeCard(w, imanesTxt(w) + ' <span class="es">de ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span><span class="en">of ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span>' + ocupaTxt(w),
-      () => applyWall(w), { active: hay && WALL.id === w.id }));
-  });
-  if(hay && !/^LL-/.test(WALL.id)){
-    const r = fridgeRepeat(WALL);
-    if(r) grid.appendChild(fridgeCard(r, '<span class="es">Tu conjunto repetido hasta abajo</span><span class="en">Your set repeated to the bottom</span><br>' + imanesTxt(r),
-      () => applyWall(r, { keepOrder:true }), { title:'<span class="es">Repite el tuyo</span><span class="en">Repeat yours</span>' }));
-  }
+  // 1 · empieza con un conjunto
+  grid.appendChild(add ? fridgeHead('Elige el que quieres añadir', 'Pick the one to add')
+                       : fridgeHead('Empieza con un conjunto', 'Start with a set', 'Pon una foto en cada imán', 'Put a photo on each magnet'));
   FRIDGE_WALLS.forEach(w => {
-    const add = hay && fridgeAdd, st = add ? fridgeStack(WALL, w) : null;
+    const st = add ? fridgeStack(WALL, w) : null;
     grid.appendChild(fridgeCard(w, imanesTxt(w) + ocupaTxt(w), () => {
       if(add){
         applyWall(st, { keepOrder:true, quiet:true });
@@ -5571,6 +5674,27 @@ function renderFridgeModal(fl, grid){
       } else applyWall(w);
     }, { active: !add && hay && WALL.id === w.id, noFit: add && !st }));
   });
+  // 2 · llena tu nevera
+  grid.appendChild(fridgeHead('Llena tu nevera', 'Fill your fridge', 'De arriba a abajo', 'From top to bottom'));
+  if(hay && !/^LL-/.test(WALL.id)){
+    const r = fridgeRepeat(WALL);
+    if(r) grid.appendChild(fridgeCard(r, '<span class="es">Tu conjunto repetido hasta abajo</span><span class="en">Your set repeated to the bottom</span><br>' + imanesTxt(r),
+      () => applyWall(r, { keepOrder:true }), { title:'<span class="es">Repite el tuyo</span><span class="en">Repeat yours</span>', entera:true }));
+  }
+  ['XS', 'S'].forEach(k => {
+    const w = fridgeFill(k), d = PRODUCTS.nevera.sizes.find(s => s.k === k).d;
+    grid.appendChild(fridgeCard(w, imanesTxt(w) + ' <span class="es">de ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span><span class="en">of ' + cm(d[0]) + '×' + cm(d[1]) + ' cm</span>',
+      () => applyWall(w), { active: hay && WALL.id === w.id, entera:true,
+        title: k === 'XS' ? '<span class="es">Llena de pequeños</span><span class="en">Full of small ones</span>' : '<span class="es">Llena de grandes</span><span class="en">Full of big ones</span>' }));
+  });
+  // 3 · sueltos
+  grid.appendChild(fridgeHead('O sueltos', 'Or loose', 'Tú eliges cuántos y de qué tamaño', 'You choose how many and which size'));
+  const free = document.createElement('button');
+  free.type = 'button'; free.className = 'wall-opt wall-opt-free' + (WALL ? '' : ' active');
+  free.innerHTML = '<div class="wall-opt-svg wall-opt-fridge">' + fridgeSVG({ id:'free', name:'', width:7, height:10, pieces:[{x:0, y:0, w:7, h:10}] }) + '</div>'
+    + '<b><span class="es">Imanes sueltos</span><span class="en">Loose magnets</span></b><small><span class="es">Empiezas con uno y añades los que quieras.</span><span class="en">Start with one and add as many as you like.</span></small>';
+  free.onclick = () => { clearWall(); closeWallModal(); };
+  grid.appendChild(free);
 }
 /* 14-oct · Quien sube varias fotos sueltas casi siempre quiere colgarlas juntas: se le ofrece verlas
    en un conjunto de ese mismo número de cuadros (el selector los pone primero). Las fotos se quedan. */
