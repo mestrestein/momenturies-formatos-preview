@@ -73,12 +73,11 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .crumbs a{text-decoration:none}
 
 /* galería */
-.gal{position:sticky;top:84px;display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px}
-@media(max-width:980px){.gal{position:relative;top:0;grid-template-columns:1fr}}
-.thumbs{display:flex;flex-direction:column;gap:10px;max-height:640px;overflow:auto;scrollbar-width:none}
+.gal{position:sticky;top:84px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media(max-width:980px){.gal{position:relative;top:0}}
+.thumbs{order:2;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px}
 .thumbs::-webkit-scrollbar{display:none}
-@media(max-width:980px){.thumbs{order:2;flex-direction:row;max-height:none;overflow-x:auto}}
-.thumbs button{flex:0 0 auto;width:84px;height:84px;border-radius:12px;border:2px solid transparent;background:#eee center/cover;cursor:pointer;position:relative;transition:border-color .2s,transform .2s}
+.thumbs button{flex:0 0 auto;width:76px;height:76px;border-radius:12px;border:2px solid transparent;background:#eee center/cover;cursor:pointer;position:relative;transition:border-color .2s,transform .2s}
 .thumbs button:hover{transform:scale(1.03)}
 .thumbs button.on{border-color:var(--ink)}
 .thumbs button .t3d{position:absolute;inset:auto 6px 6px auto;font:800 9px/1 var(--sans);background:var(--ink);color:#fff;border-radius:4px;padding:3px 4px}
@@ -129,6 +128,21 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .bul li b{color:var(--ink)}
 .bul li i{width:30px;height:30px;border-radius:50%;background:var(--cream2);display:grid;place-items:center;font-style:normal;font-size:15px}
 .bul li a{color:var(--terra);font-weight:700;text-decoration:none;white-space:nowrap}
+
+/* cupón (de prueba) */
+.coupon{display:inline-flex;align-items:center;gap:10px;background:var(--terra-s);border:1.5px dashed var(--terra);border-radius:10px;padding:7px 8px 7px 12px;font-size:13.5px;font-weight:700;color:var(--brown)}
+.coupon code{font:900 13px/1 var(--sans);letter-spacing:1.5px;background:#fff;color:var(--terra);border-radius:6px;padding:7px 10px;cursor:pointer;border:0}
+.coupon code.ok{background:var(--green);color:#fff}
+/* estrellas bajo el título (de prueba) */
+.info .rating5{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;font-weight:700;color:var(--ink2)}
+.info .rating5 .stars{font-size:18px}
+.info .rating5 a{color:inherit}
+/* 4 ventajas en rejilla */
+.bul4{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 4px}
+.bul4 li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:var(--cream);border-radius:14px;padding:12px 12px;font-size:12.5px;line-height:1.35;color:var(--mid)}
+.bul4 li b{display:block;font-size:14px;line-height:1.25;color:var(--ink);margin-bottom:2px}
+.bul4 li i{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:17px}
+@media(max-width:420px){.bul4 li{grid-template-columns:1fr;gap:6px;align-items:start}}
 
 /* packs (estilo bundle) */
 .packs-h{display:flex;align-items:center;gap:12px;margin:30px 0 14px;font-size:14px;font-weight:900;letter-spacing:.3px;color:var(--brown)}
@@ -413,19 +427,17 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   </div>
 
   <div class="info">
-    <div class="rating"><span class="stars">★★★★★</span> 4,9 · <a href="#regalos" style="color:inherit">1.240 reseñas</a><span class="demo-tag">Ejemplo</span></div>
+    <div class="coupon">🏷️ −10 % en tu primer pedido <code id="cupon" title="Copiar código">HOLA10</code></div>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
+    <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras, y listo. Dale vida a vuestro hogar en segundos con <b>cuadros metálicos, con colgado magnético</b> fácil de instalar, sin herramientas ni agujeros.</p>
     <div class="from"><b>desde 17,99 €</b><span>IVA incluido · imán incluido</span></div>
 
-    <ul class="bul">
-      <li><i>✨</i><div><b>Metal, no papel.</b> Alta definición, colores más vivos, con reflejo, más resistente y duradero. <a href="#vs">Ver la diferencia</a></div></li>
-      <li><i>🧲</i><div><b>Colgado magnético.</b> Sin taladro, sin clavos y sin agujeros. Lo quitas y la pared queda como estaba. <a href="#colgado">Cómo se cuelga</a></div></li>
-      <li><i>💌</i><div><b>Añade tu dedicatoria.</b> Unas palabras impresas detrás, gratis. Las leerá quien lo descuelgue dentro de veinte años.</div></li>
-      <li><i>🛋️</i><div><b>Míralo antes de comprar: en tu casa.</b> Salón, dormitorio, pasillo, cocina… lo ves colgado antes de pagar. <a href="#casa">Ver lugares</a></div></li>
-      <li><i>🖼️</i><div><b>Míralo antes de comprar: en composición.</b> Prueba 3, 4, 6 o 9 cuadros y quédate con la que más te guste. <a href="#combinaciones">Ver combinaciones</a></div></li>
-      <li><i>📱</i><div><b>Del recuerdo a casa, sin moverte del sofá.</b> Elige tus fotos, mira cómo quedan y listo. <a href="#recuerdo">Así funciona</a></div></li>
-      <li><i>🎁</i><div><b>Un regalo que no acaba en un cajón.</b> Deja de regalar chorradas que acaban abandonadas: regálale algo que vea todos los días con cariño. <a class="resena-link" href="#regalos">Ideas</a></div></li>
+    <ul class="bul4">
+      <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos</div></li>
+      <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros</div></li>
+      <li><i>🛋️</i><div><b>Míralo en tu casa</b>Colgado en tu pared antes de pagar</div></li>
+      <li><i>💌</i><div><b>Con dedicatoria detrás</b>Un regalo que no acaba en un cajón</div></li>
     </ul>
 
     <div class="packs-h">Uno queda bien · varios quedan mejor</div>
@@ -642,6 +654,9 @@ markSlide.last = 0; markSlide();
   $('#flip').onclick = () => { auto = false; back = !back; ry = back ? 180 : -18; p.style.transition = 'transform .8s var(--ease)'; draw(); setTimeout(() => p.style.transition = '', 820);
     $('#flip').textContent = back ? 'Ver la foto' : 'Ver el dorso con dedicatoria'; };
 })();
+
+/* cupón de prueba: copiar al tocar */
+$('#cupon').onclick = e => { navigator.clipboard && navigator.clipboard.writeText('HOLA10'); e.target.textContent = '¡Copiado!'; e.target.classList.add('ok'); setTimeout(() => { e.target.textContent = 'HOLA10'; e.target.classList.remove('ok'); }, 1500); };
 
 /* ═════ PACKS ═════
    Precios = suma de las tallas del conjunto × descuento por cantidad (PACK_TIERS de editor.js:
