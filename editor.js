@@ -2285,20 +2285,24 @@ async function checkoutWithShopify(buyerIdentity, shipId){
    plancha (40×60).
    stock:false = sin existencias en Brildor (revisado el 1-oct-2026 en su ficha). La talla se
    sigue enseñando, tachada y con "Sin existencias", pero no se puede elegir. Cuando vuelva,
-   quitar el stock:false aquí Y en OUT_OF_STOCK de paredes/_build_paredes.py (y regenerar). */
+   quitar el stock:false aquí Y en OUT_OF_STOCK de paredes/_build_paredes.py (y regenerar).
+   26-oct-2026: precios de Marc y clásico con las placas de Futsides (10×15, A4, 25,5×36, 30,5×43,1).
+   Con la tienda conectada mandan los de Shopify; estos son el respaldo. */
 const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
     sizes:[ {k:'S', d:[10,10], price:14.99, stock:false},
-            {k:'M', d:[15,15], price:22.99, stock:false},
+            {k:'M', d:[15,15], price:24.99},
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
-    sizes:[ {k:'S', d:[10,15], price:17.99},
-            {k:'M', d:[20,30], price:39.99, stock:false} ] },
+    sizes:[ {k:'S', d:[10,15], price:19.99},
+            {k:'M', d:[21,29.7], price:34.99},
+            {k:'L', d:[25.5,36], price:44.99},
+            {k:'XL',d:[30.5,43.1], price:59.99} ] },
   retrato: { id:'retrato', es:'Retrato', en:'Portrait', ratio:3/4,
     sizes:[ {k:'S', d:[12,16], price:19.99},
-            {k:'M', d:[18,24], price:34.99},
-            {k:'L', d:[24,32], price:49.99, stock:false},
-            {k:'XL',d:[30,40], price:69.99} ] },   // 30×40 (1-oct): en stock en Brildor y cabe en la plancha; precio provisional
+            {k:'M', d:[18,24], price:29.99},
+            {k:'L', d:[24,32], price:44.99},
+            {k:'XL',d:[30,40], price:54.99} ] },
 };
 const inStock = s => !!s && s.stock !== false;
 /* la talla que se pone al cambiar de formato o al restaurar un diseño: la pedida si hay
@@ -2796,7 +2800,7 @@ backInput.addEventListener('input', () => backFontDD.render());
    OJO AL MARGEN: las Paredes de ensueño llevan de 3 a 10 piezas por definición, así que
    entran de lleno en el tramo más alto. Los porcentajes son un valor de partida:
    se cambian aquí y en el bloque .pk- de cuadro.html / pdp.css. */
-const PACK_TIERS = [ {n:4, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
+const PACK_TIERS = [ {n:5, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];   // 26-oct: 2 → 10 %, 3-4 → 15 %, 5 o más → 20 %
 function packPieces(){ return POSTERS.filter(p=>p.srcImg).length; }
 function packPct(){ const n = packPieces(), t = PACK_TIERS.find(t=>n>=t.n); return t ? t.pct : 0; }
 function coGross(){ return POSTERS.filter(p=>p.srcImg).reduce((s,p)=>s+(p.price||0),0); }
@@ -5318,7 +5322,8 @@ function applyPieceTo(p, pc){
 }
 function photoRatio(p){ const im = p && p.srcImg; return im && im.naturalWidth ? im.naturalWidth / im.naturalHeight : 0; }
 function pieceRatio(pc){   // ancho/alto del hueco
-  const r = pc.format === 'iman' ? (d => d[0] / d[1])((pieceSize(pc) || PRODUCTS.nevera.sizes[0]).d) : FORMATS[pc.format].ratio;
+  const sz = pieceSize(pc) || (pc.format === 'iman' ? PRODUCTS.nevera.sizes[0] : null);
+  const r = sz ? sz.d[0] / sz.d[1] : FORMATS[pc.format].ratio;   // el clásico S es 2:3 y el resto ~1:1,41
   return pc.orient === 'h' ? 1 / r : r;
 }
 function fitCost(ph, pc){ return ph ? Math.abs(Math.log(ph) - Math.log(pieceRatio(pc))) : 0; }
