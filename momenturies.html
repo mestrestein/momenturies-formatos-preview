@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Momenturies — Tus fotos en aluminio HD</title>
-<meta name="description" content="Convierte tus fotos en cuadros de aluminio HD. Sube la foto, la ves en 3D y la recibes lista para colgar sin agujeros. Cuadro, sobremesa e imán."/>
 <link rel="canonical" href="https://momenturies.com/"/>
+<meta name="description" content="Convierte tus fotos en cuadros de aluminio HD. Sube la foto, la ves en 3D y la recibes lista para colgar sin agujeros. Cuadro, sobremesa e imán."/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Momenturies"/>
 <meta property="og:title" content="Momenturies — Tus fotos en aluminio HD"/>
@@ -20,7 +20,7 @@
 <!-- rendimiento: la tipografía no bloquea el primer render; las fotos de stock viven en fotos/stock/ (WebP a 2x, localizadas 11-sep-2026) -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="image" href="fotos/hero-salon-1.jpg" fetchpriority="high"/>
+<link rel="preload" as="image" href="fotos/portada-nueva/hero-recuerdo.webp" fetchpriority="high"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"/></noscript>
 
@@ -1414,6 +1414,8 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
   });
 })();
 </script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'"/>
+<link rel="stylesheet" href="portada.css?v=95023557"/>
 </head>
 <body>
 <div id="sp"></div>
@@ -1494,7 +1496,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       <span class="es">Imán</span><span class="en">Fridge magnet</span>
     </a>
     <div class="menu-sep"></div>
-    <a href="#colgado" class="menu-item menu-item-sm" onclick="closeMenu()">
+    <a href="#asi-se-cuelga" class="menu-item menu-item-sm" onclick="closeMenu()">
       <span class="es">Cómo se cuelga</span><span class="en">How it hangs</span>
     </a>
     <a href="#como-funciona" class="menu-item menu-item-sm" onclick="closeMenu()">
@@ -1519,280 +1521,104 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 </div>
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-media" aria-hidden="true">
-    <div class="hero-slide is-on" style="background-image:url('fotos/hero-salon-1.jpg')"></div>
-    <div class="hero-slide" style="background-image:url('fotos/hero-salon-2.jpg')"></div>
+<!-- HERO EN CARRUSEL: cinco ángulos (recuerdos, míralo en tu casa, colgado e intercambio, regalo, tu pared). portada-nueva.js -->
+<section class="hx" id="hx" aria-roledescription="carrusel" aria-label="Momenturies">
+  <div class="hx-copy">
+    <div class="hx-txt">
+      <div class="hx-t on">
+        <p class="hx-tag">Tus fotos, en aluminio</p>
+        <h1>No dejes tus recuerdos <em>en el móvil.</em></h1>
+        <p class="sub">Elige tus fotos, mira cómo quedan en tu pared y cuélgalas en segundos, sin hacer agujeros.</p>
+        <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#productos" class="hx-link">Ver formatos y precios</a></div>
+        <div class="hx-trust"><span>Imán incluido</span><span>Lo ves en tu casa antes de pedirlo</span><span>Envío a España y Europa</span></div>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Míralo antes de pedirlo</p>
+        <h1>Mira cómo queda en tu casa, <em>desde el móvil.</em></h1>
+        <p class="sub">Con tus fotos y a tamaño real. Cambia de habitación o de combinación con un toque hasta que te convenza.</p>
+        <div class="hx-btns"><a href="cuadro.html?pared=W27" class="hx-cta" data-photo-pick>Ver cómo queda en mi casa <span>→</span></a></div>
+        <div class="hx-trust"><span>Salón, cocina, dormitorio, escalera…</span><span>Más de 30 combinaciones</span></div>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Sin clavos</p>
+        <h1>Se cuelga con un imán. <em>Y se cambia cuando quieras.</em></h1>
+        <p class="sub">Pegas la base, acercas el cuadro y queda recto. Si mañana te apetece otro orden, lo despegas y lo cambias sin dejar marca.</p>
+        <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#asi-se-cuelga" class="hx-link">Ver cómo se cuelga</a></div>
+        <div class="hx-trust"><span>Sin taladro</span><span>Base e imán incluidos</span></div>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Para regalar</p>
+        <h1>El regalo que se queda <em>en su pared.</em></h1>
+        <p class="sub">Su foto favorita impresa en aluminio, con tu dedicatoria escrita detrás. Llega lista para colgar.</p>
+        <div class="hx-btns"><a href="cuadro.html" class="hx-cta terra" data-photo-pick>Hacer un regalo <span>→</span></a><a href="#para-quien" class="hx-link">Ideas por persona</a></div>
+        <div class="hx-trust"><span>Dedicatoria gratis</span><span>Se envía sin precio dentro</span></div>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Paredes de ensueño</p>
+        <h1>Decora tu pared <em>con los tuyos.</em></h1>
+        <p class="sub">Composiciones con los tamaños y la separación ya pensados. Cuantos más cuadros, más barato sale cada uno: hasta un 20 % menos.</p>
+        <div class="hx-btns"><a href="#paredes" class="hx-cta">Elegir mi pared <span>→</span></a><a href="paredes.html" class="hx-link">Ver las más de 30</a></div>
+        <div class="hx-trust"><span>-10 % con 2</span><span>-15 % con 3</span><span>-20 % con 4 o más</span></div>
+      </div>
+    </div>
+    <div class="hx-nav" role="tablist">
+      <button type="button" class="on" role="tab">Tus recuerdos</button>
+      <button type="button" role="tab">En tu casa</button>
+      <button type="button" role="tab">Sin clavos</button>
+      <button type="button" role="tab">Para regalar</button>
+      <button type="button" role="tab">Tu pared</button>
+    </div>
   </div>
-  <div class="hero-left">
-    <p class="hero-tag reveal"><span class="es" id="angleHeroTag-es">INMORTALIZA RECUERDOS JUNTOS</span><span class="en" id="angleHeroTag-en">KEEP YOUR MEMORIES TOGETHER</span></p>
-    <h1 class="hero-h1 reveal"><span class="es" id="angleHeroH1-es">No pierdas los recuerdos en tu galería,<br>conviértelos en realidad</span><span class="en" id="angleHeroH1-en">Don't lose the memories in your gallery,<br>make them real</span></h1>
-    <p class="hero-sub reveal"><span class="es" id="angleHeroSub-es">Elige tus fotos, mira cómo quedan en tu casa, elige tu combinación favorita y cuélgalas en segundos sin daños en la pared.</span><span class="en" id="angleHeroSub-en">Pick your photos, see how they look in your home, choose your favourite layout and hang them in seconds with no damage to the wall.</span></p>
-    <div class="hero-btns reveal">
-      <a href="cuadro.html" class="hero-cta" data-photo-pick><span class="es" id="angleHeroCta-es">Elegir mis fotos</span><span class="en" id="angleHeroCta-en">Pick my photos</span> <span class="hero-cta-arr">→</span></a>
-      <a href="#productos" class="hero-cta-outline"><span class="es">Ver formatos y precios</span><span class="en">See formats and prices</span></a>
-    </div>
-    <div class="hero-trust reveal">
-      <span class="hero-trust-item"><span class="es" id="angleTrust1-es">Sin agujeros ni marco</span><span class="en" id="angleTrust1-en">No holes, no frame</span></span>
-      <span class="hero-trust-sep">·</span>
-      <span class="hero-trust-item"><span class="es" id="angleTrust2-es">Vista previa en 3D</span><span class="en" id="angleTrust2-en">3D preview</span></span>
-      <span class="hero-trust-sep">·</span>
-      <span class="hero-trust-item"><span class="es" id="angleTrust3-es">Imán incluido</span><span class="en" id="angleTrust3-en">Magnet included</span></span>
-    </div>
+  <div class="hx-media">
+    <div class="hx-m on pos-top"><img src="fotos/portada-nueva/hero-recuerdo.webp" alt="Una mano con el móvil delante de la misma foto colgada en el salón" fetchpriority="high"/></div>
+    <div class="hx-m pos-right"><video data-src="fotos/historia/DondeLimpio-web.mp4" poster="fotos/historia/DondeLimpio-poster.jpg" muted loop playsinline preload="none" aria-label="La misma pared en el salón, la cocina, el recibidor y el dormitorio, elegida desde el móvil"></video></div>
+    <div class="hx-m pos-top"><img src="fotos/portada-nueva/hero-intercambia.webp" alt="Una mujer cambia un cuadro de sitio en la pared" loading="lazy"/></div>
+    <div class="hx-m pos-top"><img src="fotos/portada-nueva/hero-regalo.webp" alt="Una abuela abre su regalo: una foto de sus nietos en aluminio" loading="lazy"/></div>
+    <div class="hx-m"><img src="fotos/hero-salon-1.jpg" alt="Una pared de salón con varias fotos en aluminio" loading="lazy"/></div>
+    <div class="hx-arr"><button type="button" data-d="-1" aria-label="Anterior">‹</button><button type="button" data-d="1" aria-label="Siguiente">›</button></div>
   </div>
 </section>
 
-<!-- SUBE TU FOTO (la demo, al lado) -->
-<section class="upload-section" id="como-funciona">
-  <div class="container up-inner">
-    <div class="up-copy reveal">
-      <p class="s-tag"><span class="es" id="angleUpTag-es">Paso a paso</span><span class="en" id="angleUpTag-en">Step by step</span></p>
-      <h2 class="s-h2"><span class="es" id="angleUpH2-es">Elige tus fotos.<br>Elige cómo queda. Listo.</span><span class="en" id="angleUpH2-en">Pick your photos.<br>Pick how it looks. Done.</span></h2>
-      <p class="s-lead">
-        <span class="es" id="angleUpLead-es">Todo desde el móvil y en un par de minutos: eliges las fotos de tu galería, eliges la combinación y el entorno, le añades tu dedicatoria y ya está.</span>
-        <span class="en" id="angleUpLead-en">All from your phone in a couple of minutes: pick the photos from your gallery, pick the layout and the room, add your dedication and that's it.</span>
-      </p>
-      <ol class="up-steps">
-        <li>
-          <span class="up-n">1</span>
-          <div><b><span class="es">Elige tus fotos de la galería</span><span class="en">Pick your photos</span></b>
-          <span class="es">Las que ya tienes en el móvil. Una o diez, las que quieras colgar.</span>
-          <span class="en">The ones already on your phone. One or ten, whichever you want to hang.</span></div>
-        </li>
-        <li>
-          <span class="up-n">2</span>
-          <div><b><span class="es">Elige la combinación y el entorno</span><span class="en">Pick the layout and the room</span></b>
-          <span class="es">Ves la pared montada en un salón de verdad antes de decidir nada.</span>
-          <span class="en">You see the wall laid out in a real living room before deciding anything.</span></div>
-        </li>
-        <li>
-          <span class="up-n">3</span>
-          <div><b><span class="es">Añade tu dedicatoria</span><span class="en">Add your dedication</span></b>
-          <span class="es">Escríbela y elige la letra: va impresa detrás del cuadro. Es opcional y no cuesta nada.</span>
-          <span class="en">Write it and pick the font: it is printed on the back. Optional and free.</span></div>
-        </li>
-        <li>
-          <span class="up-n">4</span>
-          <div><b><span class="es">Lo recibes listo para colgar</span><span class="en">It arrives ready to hang</span></b>
-          <span class="es">Lo imprimimos en 1-2 días laborables y lo enviamos a España y Europa, con los imanes puestos.</span>
-          <span class="en">We print it in 1-2 working days and ship to Spain and Europe, magnets included.</span></div>
-        </li>
+<!-- CÓMO FUNCIONA: el móvil hace el pedido entero (portada-nueva.js). En PC, los pasos al lado; en móvil, solo el móvil y el título -->
+<section class="cf" id="como-funciona">
+  <div class="cf-in">
+    <div class="cf-copy">
+      <p class="s-tag">Así funciona</p>
+      <h2 class="s-h2">De tu galería a tu pared.</h2>
+      <p class="cf-lead">Todo desde el móvil y en un par de minutos. Lo que ves en la pantalla es lo que te llega a casa.</p>
+      <ol class="cf-pasos" id="cfPasos">
+        <li><span>1</span><div><b>Elige tus fotos</b><small>Las que ya tienes en el móvil. Una o diez.</small></div></li>
+        <li><span>2</span><div><b>Mira cómo queda</b><small>Las ves colgadas en una pared, a tamaño real.</small></div></li>
+        <li><span>3</span><div><b>Elige la combinación, mira cómo queda en casa</b><small>Más de 30 combinaciones. Las pruebas en el salón, el dormitorio o la cocina con un toque.</small></div></li>
+        <li><span>4</span><div><b>Añade tu dedicatoria</b><small>Va impresa detrás, con la letra que elijas. No cuesta más.</small></div></li>
+        <li><span>5</span><div><b>Listo para colgar</b><small>Llega en pocos días con los imanes ya puestos.</small></div></li>
       </ol>
-      <a href="cuadro.html" class="psec-cta" data-photo-pick><span class="es">Elegir mis fotos</span><span class="en">Pick my photos</span> <span>→</span></a>
+      <a href="cuadro.html" class="psec-cta" data-photo-pick>Elegir mis fotos <span>→</span></a>
     </div>
-  <div class="up-demo">
-    <!-- DEMO: la app de verdad grabada en un móvil (_grabar_demos.js). Los rótulos van encima, según el tiempo del vídeo. -->
-    <div class="dm-tabs" role="tablist">
-      <button type="button" class="dm-tab on" data-demo="paredes" role="tab" aria-selected="true"><span class="es">Una pared entera</span><span class="en">A whole wall</span></button>
-      <button type="button" class="dm-tab" data-demo="regalo" role="tab" aria-selected="false"><span class="es">Un regalo con dedicatoria</span><span class="en">A gift with a dedication</span></button>
-    </div>
-    <div class="phone-mockup dm-phone">
-      <div class="phone-screen">
-        <video class="dm-video" id="dmVideo" muted playsinline preload="none" poster="fotos/demo/demo-paredes.jpg" aria-label="Demo de la app en el móvil"></video>
-      </div>
-    </div>
-    <div class="dm-steps" id="dmSteps"></div>
-    <div class="phone-hint dm-cap" id="dmCap" aria-live="polite"></div>
-  </div>
-
-  </div>
-</section>
-
-<!-- BENEFITS -->
-<section class="benefits-section">
-  <div class="container">
-    <div class="ben-grid">
-
-      <!-- COLUMNA IZQUIERDA — VISOR 3D INTERACTIVO -->
-      <div class="ben-poster-col">
-        <div class="ben-3d-wrap ben-photo">
-          <img src="fotos/ventajas-brillo.jpg" alt="Cuadros de aluminio HD en un salón, con el reflejo de la ventana en el brillo del metal" width="750" height="1000" loading="lazy" decoding="async">
-          <div class="ben-3d-label"><span class="es">Brillo real del aluminio</span><span class="en">Real aluminium gloss</span></div>
+    <div class="cf-demo" id="cfDemo">
+      <p class="cf-tit" aria-live="polite"><em>1</em><span>Elige tus fotos</span></p>
+      <div class="cf-movil" aria-hidden="true">
+        <div class="cf-pant">
+          <div class="cf-app"><svg viewBox="0 0 28 28"><rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/><rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/><rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/><rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/></svg>Momenturies</div>
+          <div class="cf-v cf-gal on"><h5>Recientes</h5><div class="g"></div><div class="barra">Elige tus fotos</div></div>
+          <div class="cf-v cf-sala">
+            <div class="cf-room"><img class="a" alt=""/><img class="b" alt=""/><div class="cf-wall"></div></div>
+            <div class="cf-panel"><p class="lab"></p><div class="cf-info"><p class="nom"></p><p class="det"></p></div><div class="cf-chips"></div></div>
+            <div class="cf-buy">Añadir a la cesta · <b></b></div>
+          </div>
+          <div class="cf-v cf-ded"><div class="cf-card"><div class="gira"><div class="cara frente"></div><div class="cara dorso"><p></p></div></div></div><div class="fuentes"><span class="on">Caveat</span><span>Lora</span><span>Inter</span></div></div>
+          <div class="cf-v cf-ok"><div class="ic">✓</div><b>Listo para colgar</b><p>Lo imprimimos en 1-2 días y te llega con la base y los imanes puestos.</p><div class="caja"><i></i><i></i><i></i><i></i></div></div>
+          <div class="cf-tap"></div>
         </div>
       </div>
-
-      <!-- COLUMNA DERECHA — COPY + TABLA -->
-      <div class="ben-copy">
-        <div>
-          <p class="s-tag">POR QUÉ EN ALUMINIO</p>
-          <h2 class="s-h2">La diferencia que se ve y se siente</h2>
-        </div>
-
-        <ul class="ben-list">
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">Impresión directa sobre metal</div>
-              <div class="ben-item-desc">La tinta se funde en el aluminio. No hay papel que se transparente ni pierda definición.</div>
-            </div>
-          </li>
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">Se limpia con un paño</div>
-              <div class="ben-item-desc">La superficie es lisa y sellada. Un paño húmedo y queda como el primer día.</div>
-            </div>
-          </li>
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">No se dobla ni se arruga</div>
-              <div class="ben-item-desc">Es una plancha rígida de aluminio, no una lámina. Aguanta la luz y la humedad mejor que el papel.</div>
-            </div>
-          </li>
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">Sin marco</div>
-              <div class="ben-item-desc">Se cuelga tal cual. Limpio y actual, el aluminio ya es el acabado.</div>
-            </div>
-          </li>
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">Brillo con profundidad</div>
-              <div class="ben-item-desc">La luz rebota en el metal y da a la foto un brillo que el papel mate no tiene.</div>
-            </div>
-          </li>
-          <li class="ben-item">
-            <span class="ben-item-icon">—</span>
-            <div>
-              <div class="ben-item-title">Colgado en segundos</div>
-              <div class="ben-item-desc">Base adhesiva a la pared, el cuadro se engancha con imán. Sin clavos ni herramientas.</div>
-            </div>
-          </li>
-        </ul>
-
-        <div class="ben-table-wrap">
-          <table class="ben-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th class="ben-th-paper">Papel / lienzo</th>
-                <th class="ben-th-metal">✦ Aluminio HD</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Soporte</td>
-                <td>Papel montado</td>
-                <td><strong>Plancha de aluminio</strong></td>
-              </tr>
-              <tr>
-                <td>Se dobla o arruga</td>
-                <td>Sí</td>
-                <td><strong>No</strong></td>
-              </tr>
-              <tr>
-                <td>Limpieza</td>
-                <td>Con cuidado, no mojar</td>
-                <td><strong>Paño húmedo</strong></td>
-              </tr>
-              <tr>
-                <td>Colgado</td>
-                <td>Marco y clavo</td>
-                <td><strong>Imán, sin agujeros</strong></td>
-              </tr>
-              <tr>
-                <td>Acabado</td>
-                <td>Mate</td>
-                <td><strong>Brillo con reflejo</strong></td>
-              </tr>
-              <tr>
-                <td>Marco</td>
-                <td>Necesario</td>
-                <td><strong>No hace falta</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+      <div class="cf-dots"></div>
+      <a href="cuadro.html" class="psec-cta" data-photo-pick>Elegir mis fotos <span>→</span></a>
     </div>
-
-    <div class="ben-mvm">
-    <div class="mvm-photo reveal">
-      <img src="fotos/metal-vs-marco.jpg" alt="Un cuadro de aluminio HD al lado de una lámina enmarcada tradicional" loading="lazy" width="1800" height="771">
-    </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRODUCTOS: carrusel -->
-<section class="products-carousel-section" id="productos">
-  <div class="container">
-    <div class="pc-header">
-      <div>
-        <p class="s-tag reveal"><span class="es" id="anglePcTag-es">Nuestros formatos</span><span class="en" id="anglePcTag-en">Our formats</span></p>
-        <h2 class="s-h2 reveal"><span class="es" id="anglePcH2-es">El mismo aluminio HD,<br>tres formas de tenerlo</span><span class="en" id="anglePcH2-en">The same HD aluminium,<br>three ways to have it</span></h2>
-      </div>
-      <div class="carousel-arrows">
-        <button class="c-btn" onclick="productsSlide(-1)" aria-label="Formato anterior">←</button>
-        <button class="c-btn" onclick="productsSlide(1)" aria-label="Formato siguiente">→</button>
-      </div>
-    </div>
-
-    <div class="pc-track-wrap">
-      <div class="pc-track" id="pcTrack">
-
-        <article class="pc-card">
-          <a class="pc-media" href="ficha-cuadro.html" tabindex="-1" aria-hidden="true">
-            <img src="fotos/producto-metalico.jpg" alt="Los tres tamaños del cuadro colgados en la pared" loading="lazy" width="1120" height="1400">
-            <span class="pc-badge"><span class="es">El favorito</span><span class="en">The favourite</span></span>
-          </a>
-          <div class="pc-body">
-            <h3><span class="es">Cuadro</span><span class="en">Wall print</span></h3>
-            <p><span class="es">Se cuelga sin agujeros, con el imán premium incluido.</span><span class="en">Hangs without holes, premium magnet included.</span></p>
-            <div class="pc-meta">
-              <span class="pc-price"><span class="es">Desde 17,99€</span><span class="en">From €17.99</span></span>
-              <span class="pc-dims"><span class="es">3 formatos · 10×10–30×30 cm</span><span class="en">3 formats · 10×10–30×30 cm</span></span>
-            </div>
-            <a href="ficha-cuadro.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
-          </div>
-        </article>
-
-        <article class="pc-card">
-          <a class="pc-media" href="sobremesa.html" tabindex="-1" aria-hidden="true">
-            <img src="fotos/producto-sobremesa.jpg" alt="Sobremesa de aluminio de pie sobre su peana de bambú" loading="lazy" width="900" height="1125">
-            <span class="pc-badge"><span class="es">Para tu mesa</span><span class="en">For your desk</span></span>
-          </a>
-          <div class="pc-body">
-            <h3><span class="es">Sobremesa</span><span class="en">Desk print</span></h3>
-            <p><span class="es">De pie sobre tu mesa, con peana de bambú incluida.</span><span class="en">Standing on your desk, bamboo stand included.</span></p>
-            <div class="pc-meta">
-              <span class="pc-price"><span class="es">Desde 28,99€</span><span class="en">From €28.99</span></span>
-              <span class="pc-dims"><span class="es">3 tamaños</span><span class="en">3 sizes</span></span>
-            </div>
-            <a href="sobremesa.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
-          </div>
-        </article>
-
-        <article class="pc-card">
-          <a class="pc-media" href="iman.html" tabindex="-1" aria-hidden="true">
-            <img src="fotos/producto-iman-nevera.jpg" alt="Imán de aluminio sujeto con la mano" loading="lazy" width="900" height="1125">
-            <span class="pc-badge"><span class="es">El detalle diario</span><span class="en">The everyday detail</span></span>
-          </a>
-          <div class="pc-body">
-            <h3><span class="es">Imán</span><span class="en">Fridge magnet</span></h3>
-            <p><span class="es">En la puerta de la nevera. El que ves cada día.</span><span class="en">On the fridge door. The one you see every day.</span></p>
-            <div class="pc-meta">
-              <span class="pc-price">9,99€</span>
-              <span class="pc-dims">7×10 cm</span>
-            </div>
-            <a href="iman.html" class="pc-cta"><span class="es">Crear el mío</span><span class="en">Create mine</span> <span>→</span></a>
-          </div>
-        </article>
-
-      </div>
-    </div>
-
-    <div class="pc-dots" id="pcDots"></div>
   </div>
 </section>
 
 <!-- ASÍ SE CUELGA: escena 3D por scroll (colgado-scroll.js + pared3d.js); se carga al acercarse -->
-<section class="cs-section" id="asi-se-cuelga" aria-label="Así se cuelga un cuadro Momenturies">
+<section class="cs-section" id="asi-se-cuelga" data-intercambio aria-label="Así se cuelga un cuadro Momenturies">
   <div class="cs-sticky">
     <div class="cs-stage">
       <canvas role="img" aria-label="Animación: lámina protectora, imán de pared y cuadro se montan en la pared sin clavos"></canvas>
@@ -1800,7 +1626,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       <div class="cs-tag"><span class="es">Imán de pared</span><span class="en">Wall magnet</span><small><span class="es">va encima de la lámina</span><span class="en">goes on the sheet</span></small></div>
       <div class="cs-tag"><span class="es">Tu cuadro, por detrás</span><span class="en">Your print, from behind</span><small><span class="es">imán y dedicatoria</span><span class="en">magnet and dedication</span></small></div>
     </div>
-    <div class="cs-head"><p><span class="es">Así se cuelga</span><span class="en">How it hangs</span></p><div class="cs-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="cs-head"><p><span class="es">Así se cuelga</span><span class="en">How it hangs</span></p><div class="cs-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="cs-caps">
       <div class="cs-cap"><h3><span class="es">Tres piezas. Ni un agujero.</span><span class="en">Three pieces. Not one hole.</span></h3><p><span class="es">Todo viene en la caja. Baja despacio y míralo montarse.</span><span class="en">It all comes in the box. Scroll slowly and watch it go up.</span></p></div>
       <div class="cs-cap"><h3><span class="es">Primero, la lámina</span><span class="en">First, the sheet</span></h3><p><span class="es">Se pega donde lo quieras. Protege la pintura y, el día que lo cambies, sale sin dejar marca.</span><span class="en">Stick it wherever you want. It protects the paint and comes off clean the day you move things around.</span></p></div>
@@ -1808,260 +1634,151 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       <div class="cs-cap"><h3><span class="es">Acercas el cuadro y… clic</span><span class="en">Bring the print close and… click</span></h3><p><span class="es">Lleva su imán detrás, junto a tu dedicatoria. Notas cómo tira y se queda centrado solo.</span><span class="en">It has its own magnet on the back, next to your dedication. You feel the pull and it centres itself.</span></p></div>
       <div class="cs-cap"><h3><span class="es">¿Se ha quedado torcido?</span><span class="en">A little crooked?</span></h3><p><span class="es">Lo enderezas con un dedo. Ni nivel, ni metro, ni otro agujero.</span><span class="en">Straighten it with one finger. No level, no tape, no new hole.</span></p></div>
       <div class="cs-cap"><h3><span class="es">Y luego viene otro. Y otro.</span><span class="en">Then another one. And another.</span></h3><p><span class="es">Cada cuadro con su imán. La pared se va llenando de los tuyos sin que nadie saque la caja de herramientas.</span><span class="en">Each print on its own magnet. The wall fills up with your people and nobody gets the toolbox out.</span></p></div>
+      <div class="cs-cap"><h3><span class="es">¿Te apetece otro orden? Cámbialos.</span><span class="en">Fancy a new order? Swap them.</span></h3><p><span class="es">Despegas uno, lo pones donde estaba el otro y vuelve a hacer clic. Sin agujeros nuevos y sin medir otra vez.</span><span class="en">Lift one off, put it where the other was and it clicks back. No new holes, no measuring again.</span></p></div>
       <div class="cs-cap"><h3><span class="es">Tu salón, ahora sí</span><span class="en">Your living room, finally</span></h3><p><span class="es">De una pared vacía a la tuya en lo que tardas en hacerte un café.</span><span class="en">From a bare wall to yours in the time it takes to make a coffee.</span></p>
         <div class="cs-ctas"><a href="cuadro.html"><span class="es">Crear mi cuadro</span><span class="en">Create my print</span></a><a href="paredes.html"><span class="es">Ver paredes montadas</span><span class="en">See ready-made walls</span></a></div></div>
     </div>
   </div>
 </section>
 
-<section class="adios-section" id="colgado">
-  <div class="container">
-    <p class="adios-tag">COLGADO MAGNÉTICO</p>
-    <h2 class="adios-h2">Di adiós a los clavos y<br>a los daños en la pared</h2>
-    <p class="adios-sub">Móntalo en segundos, sin herramientas.</p>
 
-    <h3 class="adios-claim">Desde tu abuela hasta tu hijo de 5 años sabe montarlo</h3>
-
-
-
-
-    <div class="adios-grid">
-
-      <!-- Cuadro tradicional -->
-      <div class="adios-col adios-col-bad">
-        <div class="adios-col-header">
-          <div class="adios-col-title">Cuadro tradicional</div>
-          <span class="adios-col-badge adios-badge-bad">El método antiguo</span>
-        </div>
-        <ul class="adios-steps-bad">
-          <li><span class="adios-x">×</span> Comprar marco y clavo</li>
-          <li><span class="adios-x">×</span> Buscar el martillo y el nivel</li>
-          <li><span class="adios-x">×</span> Marcar la pared (y equivocarte)</li>
-          <li><span class="adios-x">×</span> Clavar (y dejar marca permanente)</li>
-          <li><span class="adios-x">×</span> Ajustar hasta que quede recto</li>
-          <li><span class="adios-x">×</span> Rezar para que no se caiga</li>
-        </ul>
-        <div class="adios-pills">
-          <span class="adios-pill-bad">Agujeros permanentes</span>
-          <span class="adios-pill-bad">Difícil de mover</span>
-          <span class="adios-pill-bad">Herramientas necesarias</span>
-        </div>
-      </div>
-
-      <!-- Sistema Magnético -->
-      <div class="adios-col adios-col-good">
-        <div class="adios-col-header">
-          <div class="adios-col-title">Sistema Magnético</div>
-          <span class="adios-col-badge adios-badge-good">Momenturies</span>
-        </div>
-        <ul class="adios-steps-good">
-          <li class="adios-step-good">
-            <div class="adios-step-num">1</div>
-            <div>
-              <div class="adios-step-title">Pega el adhesivo en la pared</div>
-              <div class="adios-step-desc">Incluido en el pedido. Se adhiere en cualquier superficie.</div>
-            </div>
-          </li>
-          <li class="adios-step-good">
-            <div class="adios-step-num">2</div>
-            <div>
-              <div class="adios-step-title">Coloca el cuadro sobre el imán</div>
-              <div class="adios-step-desc">Clic. Se engancha solo. Perfectamente centrado.</div>
-            </div>
-          </li>
-          <li class="adios-step-good">
-            <div class="adios-step-num">3</div>
-            <div>
-              <div class="adios-step-title">¡Listo!</div>
-              <div class="adios-step-desc">10 segundos. Sin herramientas. Sin marcas. Para siempre.</div>
-            </div>
-          </li>
-        </ul>
-        <div class="adios-pills">
-          <span class="adios-pill-good">Sin marcas en la pared</span>
-          <span class="adios-pill-good">Intercambiable en segundos</span>
-          <span class="adios-pill-good">Sin herramientas</span>
-        </div>
-      </div>
-
+<!-- ALUMINIO Y CALIDAD: foto real con puntos que se tocan + la comparativa entera en un desplegable (portada.js) -->
+<section class="al" id="aluminio"><div class="c">
+  <div class="center"><p class="s-tag">La diferencia</p><h2 class="s-h2">No es un póster con marco. Es aluminio HD.</h2><p class="s-lead">La tinta va directa sobre el metal: más color, más brillo y sin marco ni cristal. Toca los puntos.</p></div>
+  <div class="al-foto"><img src="fotos/metal-vs-marco.jpg" alt="Cuadro de aluminio frente a una foto enmarcada" loading="lazy"/>
+    <button type="button" class="pt" style="left:22%;top:42%" data-t="Sin marco ni cristal|La foto ocupa todo el cuadro. Nada se pone por delante.">1</button>
+    <button type="button" class="pt" style="left:30%;top:66%" data-t="Colores con fondo|La tinta va directa al aluminio: negros más negros y cielos con profundidad.">2</button>
+    <button type="button" class="pt" style="left:75%;top:40%" data-t="El marco de siempre|Papel tras un cristal: refleja la luz y se ondula con la humedad.">3</button>
+    <button type="button" class="pt" style="left:84%;top:66%" data-t="Y un clavo detrás|Para colgarlo hace falta taladro. Para cambiarlo de sitio, otro agujero.">4</button>
+    <div class="globo"><b></b><span></span></div>
+  </div>
+  <details class="al-vs">
+    <summary><span>Cuadro metálico HD frente a póster tradicional</span><em>Ver la comparativa</em></summary>
+    <div class="al-tabla" role="table" aria-label="Cuadro metálico HD frente a póster tradicional">
+      <div class="al-fila al-cab" role="row"><span role="columnheader">Cuadro metálico HD</span><span role="columnheader">Póster tradicional</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Aluminio rígido, <em>premium y resistente</em></span><span class="no" role="cell">Material <em>frágil y menos duradero</em></span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>Alta definición HD</em>: brillo, nitidez y efecto reflejo</span><span class="no" role="cell"><em>Peor calidad visual</em> y muy variable</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Ultra resistente, pensado para <em>durar</em></span><span class="no" role="cell"><em>Se arruga, dobla y estropea</em> con facilidad</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>100 % impermeable</em>: resiste la humedad</span><span class="no" role="cell"><em>Mala resistencia</em> a golpes y humedad</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>Fácil de limpiar</em> y conservar</span><span class="no" role="cell"><em>Mantenimiento</em> delicado y constante</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>No necesita marco</em> para lucir</span><span class="no" role="cell"><em>Necesita marco</em>, con su coste añadido</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Imán <em>sin daños en la pared</em> e intercambiable</span><span class="no" role="cell">Acabado <em>básico y común</em></span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Regalo <em>original y memorable</em></span><span class="no" role="cell">Regalo muy visto, <em>poco original</em></span></div>
     </div>
+  </details>
+</div></section>
+
+<!-- EN TU CASA: 9 estancias (de la ficha de Aitor) y, en cada una, 3 estilos. La de Aitor es su foto; las otras dos se
+     montan encima de la habitación vacía (fotos/entornos, entornos.js) con una pared de paredes.js a escala real -->
+<section class="ec" id="en-tu-casa"><div class="c">
+  <div class="center"><p class="s-tag">Míralo antes de comprar</p><h2 class="s-h2">Así queda en tu casa.</h2><p class="s-lead">Elige una estancia y un estilo. En el editor haces lo mismo con tus fotos: las ves colgadas, a tamaño real, antes de pagar.</p></div>
+  <div class="ec-tabs" id="ecTabs"></div>
+  <div class="ec-view">
+    <div class="ec-big" id="ecBig"></div>
+    <div class="ec-side">
+      <h3 id="ecTit"></h3>
+      <p id="ecTxt"></p>
+      <div class="tip" id="ecTip"></div>
+      <p class="ec-est-t">Elige el estilo</p>
+      <div class="ec-estilos" id="ecEstilos"></div>
+      <a class="hx-cta" href="cuadro.html" data-photo-pick>Ver cómo queda en mi casa <span>→</span></a>
+    </div>
+  </div>
+</div></section>
+
+<!-- PAREDES DE ENSUEÑO: carrusel; cada tarjeta abre el editor con esa pared ya puesta (datos de paredes.js) -->
+<section class="pw" id="paredes"><div class="c">
+  <div class="pw-top">
+    <div><p class="s-tag">Paredes de ensueño</p><h2 class="s-h2">Elige una pared y empieza con tus fotos.</h2><p class="s-lead">Cada composición lleva los tamaños y la separación resueltos y el descuento por cantidad ya aplicado. Toca la que te guste y la rellenas con las tuyas.</p></div>
+    <div class="pw-ctrl"><button type="button" data-d="-1" aria-label="Anteriores">‹</button><button type="button" data-d="1" aria-label="Siguientes">›</button></div>
+  </div>
+  <div class="pw-riel" id="pwRiel"></div>
+  <div class="pw-mas"><a class="hx-link" href="paredes.html">Ver todas, con filtros por tamaño de hueco</a></div>
+</div></section>
+
+<!-- ¿CUÁNTAS FOTOS TIENES?: + y − y salen las paredes de ese número (de soluciones/producto.html, 6-E) -->
+<section class="cu" id="cuantas"><div class="c">
+  <div><p class="s-tag">Según tus fotos</p><h2 class="s-h2">¿Cuántas fotos quieres colgar?</h2><div class="cu-num"><button type="button" data-d="-1" aria-label="Menos">−</button><b>4</b><button type="button" data-d="1" aria-label="Más">+</button></div><p class="s-lead">Te enseñamos las paredes pensadas para ese número de fotos.</p></div>
+  <div class="cu-g"></div>
+</div></section>
+
+<!-- PRUÉBALO EN ESTA PARED: tocar una foto la cuelga en el siguiente hueco (de soluciones/portada.html, 1-E) -->
+<section class="pe" id="pruebalo">
+  <div class="pe-sala">
+    <div class="pe-huecos"><div class="h">+</div><div class="h">+</div><div class="h g">+</div><div class="h">+</div><div class="h">+</div></div>
+  </div>
+  <div class="pe-caja">
+    <p class="s-tag">Pruébalo aquí mismo</p>
+    <h2>Toca tus fotos. Mira cómo queda la pared.</h2>
+    <p>Así funciona el editor, pero con tus fotos y en tu casa. Toca las de abajo para colgarlas.</p>
+    <div class="pe-tira">
+      <button type="button" data-img="fotos/stock/1752652011858-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1586498024141-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1557495235-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1758686254601-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1548858806-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1603367563698-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1606983340126-480x640.webp" aria-label="Foto"></button><button type="button" data-img="fotos/stock/1770831208268-480x640.webp" aria-label="Foto"></button>
+    </div>
+    <div class="pe-pie">
+      <div class="pe-precio"><span class="np">0 de 5 cuadros</span><b class="tot">0,00 €</b></div>
+      <a class="hx-cta" href="cuadro.html" data-photo-pick>Hacer la mía <span>→</span></a>
+    </div>
+    <button type="button" class="pe-otra">Vaciar la pared</button>
   </div>
 </section>
 
-<section class="pared15-section" id="cambialos">
-  <div class="container">
-    <div class="pared15-head">
-      <p class="s-tag"><span class="es">PAREDES DE ENSUEÑO</span><span class="en">DREAM WALLS</span></p>
-      <h2 class="s-h2"><span class="es">Cuelga quince.<br>Cámbialos cuando te apetezca.</span><span class="en">Hang fifteen.<br>Swap them whenever you like.</span></h2>
-      <p><span class="es">Cada cuadro va sobre su propio imán: lo despegas, lo pones en otro sitio y vuelve a quedar recto. Sin medir, sin taladrar y sin un agujero nuevo.</span><span class="en">Every print sits on its own magnet: lift it off, put it somewhere else and it hangs straight again. No measuring, no drilling, no new holes.</span></p>
-    </div>
-    <div class="pared15-stage" id="pared15">
-      <div class="pared15-n" id="pared15n" aria-live="off"></div>
-      <canvas id="pared15c" aria-label="Animación: se cuelgan quince cuadros con imán y se intercambian entre ellos" role="img"></canvas>
-    </div>
+<!-- PRODUCTOS: tres tarjetas que se inclinan con el ratón (de soluciones/portada.html, 4-E); en móvil, carrusel -->
+<section class="pr" id="productos"><div class="c">
+  <div class="pr-head"><p class="s-tag">Nuestros formatos</p><h2 class="s-h2">El mismo aluminio HD, tres formas de tenerlo.</h2><p class="s-lead">Pasa el ratón por encima: así juega la luz con el metal.</p></div>
+  <div class="pr-g" id="prG">
+    <a class="pr-card" href="cuadro.html" data-tilt-card><span class="badge">El favorito</span><div class="img" style="background-image:url(fotos/producto-metalico.jpg)"></div><div class="glare"></div><div class="t"><b>Cuadro</b><p>Para la pared. Se cuelga con el imán premium, sin agujeros.</p><div class="tallas"><span>Cuadrado</span><span>Clásico</span><span>Retrato</span></div><div class="pp"><b>desde 17,99 €</b><em>Crear el mío →</em></div></div></a>
+    <a class="pr-card" href="sobremesa.html" data-tilt-card><div class="img" style="background-image:url(fotos/producto-sobremesa.jpg)"></div><div class="glare"></div><div class="t"><b>Sobremesa</b><p>Con peana de bambú. Para la mesita, la estantería o el escritorio.</p><div class="tallas"><span>10×15</span><span>13×18</span><span>20×25</span></div><div class="pp"><b>desde 28,99 €</b><em>Crear el mío →</em></div></div></a>
+    <a class="pr-card" href="iman.html" data-tilt-card><div class="img" style="background-image:url(fotos/producto-iman-nevera.jpg)"></div><div class="glare"></div><div class="t"><b>Imán</b><p>Pequeño y con imán detrás. Para la nevera o para sumar a cualquier pedido.</p><div class="tallas"><span>7×10 cm</span></div><div class="pp"><b>desde 9,99 €</b><em>Crear el mío →</em></div></div></a>
   </div>
+  <div class="pr-dots" id="prDots"><i class="on"></i><i></i><i></i></div>
+</div></section>
+<!-- PARA QUIÉN: tarjetas por persona con su dedicatoria + dos cintas de momentos -->
+<section class="rg" id="para-quien">
+  <div class="c"><p class="s-tag">Para quién</p><h2 class="s-h2">Un recuerdo para cada persona.<br>Con tus palabras detrás.</h2></div>
+  <div class="rg-rail">
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-padres.webp)"><span class="dorsos n1" aria-label="Por detrás"><span class="dorso"><span class="ded">Gracias por enseñarme a mirar atrás con cariño.</span><small>Lucía, 2026</small></span></span></div><div class="t"><small>Para tus padres</small><b>Por todo lo que no os digo</b><p class="rg-que">Tu dedicatoria va impresa detrás.</p></div></a>
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-pareja.webp)"><span class="dorsos n1" aria-label="Por detrás"><span class="dorso"><span class="ded">Lo que más me gusta de esta foto es lo que no se ve.</span><small>Tu Álex</small></span></span></div><div class="t"><small>Para tu pareja</small><b>Nuestro primer año</b><p class="rg-que">Tu dedicatoria va impresa detrás.</p></div></a>
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-abuelos.webp)"><span class="dorsos n4" aria-label="Por detrás"><span class="dorso"><span class="ded">El primer baño de Leo</span></span><span class="dorso"><span class="ded">Navidad en el pueblo</span></span><span class="dorso"><span class="ded">Para que nos tengáis cerca</span></span><span class="dorso"><span class="ded">Os queremos, abuelos</span></span></span></div><div class="t"><small>Para tus abuelos</small><b>La familia, en la pared</b><p class="rg-que">Cuatro fotos, cuatro dedicatorias distintas.</p></div></a>
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-hijos.webp)"><span class="dorsos n3" aria-label="Por detrás"><span class="dorso"><span class="ded">Tu primer paso</span></span><span class="dorso"><span class="ded">El verano que aprendiste a nadar</span></span><span class="dorso"><span class="ded">Algún día lo entenderás</span></span></span></div><div class="t"><small>Para tus hijos</small><b>Cuando eras así de pequeño</b><p class="rg-que">Una frase distinta detrás de cada foto.</p></div></a>
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-amigos.webp)"><span class="dorsos n1" aria-label="Por detrás"><span class="dorso"><span class="ded">El año que viene, la misma foto. Sin excusas.</span><small>Cádiz, agosto</small></span></span></div><div class="t"><small>Para tus amigos</small><b>El viaje de siempre</b><p class="rg-que">Tu dedicatoria va impresa detrás.</p></div></a>
+    <a class="rg-k" href="cuadro.html" data-photo-pick><div class="img" style="background-image:url(fotos/combis/quien-mascota.webp)"><span class="dorsos n1" aria-label="Por detrás"><span class="dorso"><span class="ded">El único que nunca se queja de las fotos.</span><small>Toby</small></span></span></div><div class="t"><small>Para ti</small><b>El de cuatro patas</b><p class="rg-que">Tu dedicatoria va impresa detrás.</p></div></a>
+  </div>
+  <div class="rg-cintas">
+    <div class="rg-cinta" data-dup><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-pareja.webp)"></div><b>Tu pareja</b><span>Vuestra foto favorita</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-abuelos.webp)"></div><b>Los abuelos</b><span>Los nietos, en grande</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-mascota.webp)"></div><b>La mascota</b><span>La que manda en casa</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-amigos.webp)"></div><b>Los amigos</b><span>El viaje de siempre</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-hijos.webp)"></div><b>Los peques</b><span>Cada año, una foto</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-padres.webp)"></div><b>Papá y mamá</b><span>Para el que hace las fotos</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/quien-hermanos.webp)"></div><b>Hermanos</b><span>Los de toda la vida</span></a></div>
+    <div class="rg-cinta r" data-dup><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-boda.webp)"></div><b>La boda</b><span>El día que no se repite</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-nacimiento.webp)"></div><b>Un nacimiento</b><span>Las primeras fotos</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-viaje.webp)"></div><b>Un viaje</b><span>Para no olvidar el sitio</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-graduacion.webp)"></div><b>Una graduación</b><span>Años de esfuerzo</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-aniversario.webp)"></div><b>Un aniversario</b><span>Los que llevamos</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-navidad.webp)"></div><b>Navidad</b><span>Toda la familia junta</span></a><a class="rg-m" href="cuadro.html"><div class="img" style="background-image:url(fotos/combis/mom-cumple.webp)"></div><b>Un cumpleaños</b><span>Las velas de este año</span></a></div>
+  </div>
+  <div class="rg-cta"><a class="hx-cta terra" href="cuadro.html" data-photo-pick>Hacer un regalo <span>→</span></a></div>
 </section>
 
-<section class="gift-section" id="para-quien">
-  <div class="container">
-    <p class="s-tag"><span class="es">PARA QUIÉN</span><span class="en">WHO IT'S FOR</span></p>
-    <h2 class="s-h2"><span class="es">Hazle un regalo que<br>no acabe en un cajón</span><span class="en">Give a gift that<br>doesn't end up in a drawer</span></h2>
-    <p class="s-lead"><span class="es">Hazle un regalo que tenga en su casa para siempre. Toca el que se parezca al tuyo y empiezas justo por ahí.</span><span class="en">Give something they'll keep at home for good. Tap the one closest to yours and you start right there.</span></p>
-    <div class="persona-tabs gift-tabs" id="giftTabs" role="tablist">
-      <button type="button" class="persona-tab active" data-tab="pareja" role="tab"><span class="es">Pareja</span><span class="en">Partner</span></button>
-      <button type="button" class="persona-tab" data-tab="familia" role="tab"><span class="es">Familia</span><span class="en">Family</span></button>
-      <button type="button" class="persona-tab" data-tab="mascota" role="tab"><span class="es">Mascotas</span><span class="en">Pets</span></button>
-      <button type="button" class="persona-tab" data-tab="ocasiones" role="tab"><span class="es">Ocasiones</span><span class="en">Occasions</span></button>
-    </div>
-    <div class="gift-grid" id="giftGrid"></div>
+<!-- OPINIONES: lista para cuando lleguen las de verdad. Solo se publican opiniones de compras reales (de soluciones/portada.html, 8-C).
+     Para meterlas: RESENAS en portada.js (vacío = se ven los dos huecos de ejemplo, marcados como ejemplo) -->
+<section class="op" id="opiniones"><div class="c">
+  <div class="op-resumen">
+    <p class="s-tag">Opiniones</p>
+    <div class="n" id="opNota">—</div>
+    <div class="est" id="opEst">☆☆☆☆☆</div>
+    <div class="bar3"><span>5★</span><i><b></b></i></div><div class="bar3"><span>4★</span><i><b></b></i></div><div class="bar3"><span>3★</span><i><b></b></i></div><div class="bar3"><span>2★</span><i><b></b></i></div><div class="bar3"><span>1★</span><i><b></b></i></div>
+    <p id="opTxt">Somos una marca nueva y aún no hay opiniones. Solo publicamos las de compras reales, con foto si nos la mandas.</p>
+    <a class="hx-cta terra" href="cuadro.html" data-photo-pick>Haz uno de los primeros pedidos <span>→</span></a>
   </div>
-</section>
-
-<!-- RECIÉN EMPEZAMOS + GARANTÍAS (fusión de reviews + trust) -->
-<section class="trust-section" id="opiniones">
-  <div class="container">
-    <div class="reviews-header">
-      <p class="s-tag"><span class="es">Recién empezamos</span><span class="en">We're just starting</span></p>
-      <h2 class="s-h2"><span class="es">Somos una marca nueva.<br>Todavía no tenemos reseñas.</span><span class="en">We're a new brand.<br>No reviews yet.</span></h2>
-      <p class="s-lead" style="margin:16px auto 0">
-        <span class="es">Preferimos decírtelo antes que inventarnos estrellas. Si haces uno de los primeros pedidos y nos mandas una foto de cómo queda en tu casa, te devolvemos el 50%. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
-        <span class="en">We'd rather tell you than invent star ratings. If you place one of the first orders and send us a photo of it on your wall, we refund you 50%. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a>.</span>
-      </p>
+  <div>
+    <div class="op-lista" id="opLista">
+      <div class="r molde"><div class="img" style="background-image:url(fotos/paredes/W27-1.webp)"></div><div><div class="est">★★★★★</div><b>Aquí irá la primera opinión</b><p>Con la foto de cómo ha quedado en su casa, el producto que compró y la fecha.</p><small>✓ Compra verificada</small></div></div>
+      <div class="r molde"><div class="img" style="background-image:url(fotos/combis/mom-cumple.webp)"></div><div><div class="est">★★★★★</div><b>Y aquí la segunda</b><p>Cada opinión va ligada a su pedido: nadie puede opinar sin haber comprado.</p><small>✓ Compra verificada</small></div></div>
     </div>
-    <div class="trust-grid">
-      <div class="trust-item reveal">
-        <div class="trust-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <h3><span class="es">Lo ves antes de pedirlo</span><span class="en">See it before you order</span></h3>
-        <p><span class="es">Giras el cuadro en 3D con tu foto ya puesta. Lo que ves es lo que llega.</span><span class="en">Rotate the print in 3D with your photo on it. What you see is what ships.</span></p>
-      </div>
-      <div class="trust-item reveal">
-        <div class="trust-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
-        </div>
-        <h3><span class="es">Colgado sin obras</span><span class="en">No drilling</span></h3>
-        <p><span class="es">Base adhesiva e imán incluidos. Sin taladro y sin marcas en la pared.</span><span class="en">Adhesive base and magnet included. No drill, no marks on the wall.</span></p>
-      </div>
-      <div class="trust-item reveal">
-        <div class="trust-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <h3><span class="es">Si algo sale mal</span><span class="en">If something's wrong</span></h3>
-        <p><span class="es">Si llega defectuoso o dañado en el envío, lo reimprimimos sin coste.</span><span class="en">If it arrives faulty or damaged in transit, we reprint it at no cost.</span></p>
-      </div>
-    </div>
+    <p class="op-aviso" id="opAviso">Ejemplo de cómo se verán. No son opiniones reales.</p>
   </div>
-</section>
-
-<!-- FAQ -->
-<section class="faq-section" id="faq">
-  <div class="container">
-    <p class="s-tag" style="text-align:center">FAQ</p>
-    <h2 class="s-h2" style="text-align:center"><span class="es">Preguntas frecuentes</span><span class="en">Frequently asked questions</span></h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Qué tamaños están disponibles?</span><span class="en">What sizes are available?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">El cuadro va en tres formatos reales — cuadrado, clásico y retrato — cada uno en varios tamaños, de 10×10 a 30×40 cm. Aparte tienes la sobremesa, en tres tamaños de 10,2×15,2 a 20,3×25,4, y el imán (7×10).</span><span class="en">The wall print comes in three real formats — square, classic and portrait — each in several sizes, from 10×10 to 30×40 cm. There's also the desk print, in three sizes from 10.2×15.2 to 20.3×25.4, and the fridge magnet (7×10).</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Cuánto tarda en llegar mi pedido?</span><span class="en">How long does delivery take?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Lo preparamos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; al resto de Europa, algo más. Verás el plazo y el precio exactos en el checkout antes de pagar.</span><span class="en">We make it in 1-2 working days. Shipping within Spain usually adds 3-5 working days; longer for the rest of Europe. You'll see the exact time and price at checkout before paying.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Cómo es el acabado?</span><span class="en">What's the finish like?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Acabado brillo. La foto se imprime directamente sobre la plancha de aluminio, sin papel de por medio, así que la luz rebota en el metal y da profundidad y reflejo. Las fotos con buena luz y contraste son las que más lucen.</span><span class="en">Gloss finish. The photo is printed straight onto the aluminium sheet, no paper in between, so light bounces off the metal and gives depth and reflection. Photos with good light and contrast look best.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Puedo devolver mi pedido?</span><span class="en">Can I return my order?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Si llega con un defecto de fabricación o dañado en el transporte, lo reimprimimos y reenviamos sin coste: escríbenos con una foto en los 14 días siguientes a recibirlo.</span><span class="en">Each piece is made with your photo, so the standard right of withdrawal doesn't apply (art. 103.c of the Spanish Consumer Act). If it arrives with a manufacturing defect or damaged in transit, we reprint and reship it at no cost: write to us with a photo within 14 days of delivery.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Cómo funciona el colgado magnético?</span><span class="en">How does the magnetic mounting work?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Cada pedido incluye una base adhesiva que pegas en la pared sin clavos ni herramientas. El cuadro se engancha encima con un imán. Sin marcas ni agujeros, y se recoloca cuando quieras.</span><span class="en">Every order includes an adhesive base you stick to the wall, no nails or tools. The print attaches on top with a magnet. No marks, no holes, and you can move it whenever.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Puedo enviarlo directamente como regalo?</span><span class="en">Can I ship it straight as a gift?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Sí. Puedes poner una dirección de entrega distinta a la tuya y añadir una nota en los comentarios del pedido. El precio no aparece dentro del paquete.</span><span class="en">Yes. You can enter a delivery address different from yours and add a note in the order comments. The price is not shown inside the parcel.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Cambian los colores al imprimirse en aluminio?</span><span class="en">Do colours shift when printed on aluminium?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">El brillo del aluminio realza los colores y el contraste frente a una impresión en papel mate. Puede haber pequeñas diferencias respecto a lo que ves en tu pantalla, que no está calibrada. Te recomendamos una foto con buena luz natural.</span><span class="en">The aluminium's gloss lifts colour and contrast compared with a matte paper print. There can be small differences from what you see on your screen, which isn't colour-calibrated. We recommend a photo with good natural light.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Vale cualquier foto del móvil?</span><span class="en">Will any phone photo do?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Casi todas. Lo que importa es la resolución: una foto hecha con el móvil a tamaño completo va bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si la foto se queda corta para el tamaño que elijas, el editor te lo avisa antes de pagar.</span><span class="en">Almost all of them. What matters is resolution: a full-size photo taken with your phone works up to the large size. What doesn't work are screenshots or photos forwarded on WhatsApp, which arrive compressed. If your photo falls short for the size you pick, the editor warns you before you pay.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Puedo añadir un texto o una dedicatoria?</span><span class="en">Can I add text or a dedication?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Sí. En el editor puedes escribir una dedicatoria en el dorso, con la letra que elijas, que solo ve quien lo descuelga. Es opcional y no cuesta más.</span><span class="en">Yes. In the editor you can write a dedication on the back, in the font you choose, that only the person who takes it down will see. It is optional and free.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Cómo se limpia?</span><span class="en">How do I clean it?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Con un paño suave, seco o un poco húmedo. Sin productos ni estropajos. Al ser aluminio, no absorbe humedad ni se ondula como el papel, así que aguanta bien en cocina o baño.</span><span class="en">With a soft cloth, dry or slightly damp. No cleaning products or scourers. Being aluminium, it doesn't absorb moisture or warp like paper, so it holds up well in a kitchen or bathroom.</span></div>
-      </div>
-      <div class="faq-item">
-        <h4 class="faq-q-h">
-          <button type="button" class="faq-q" onclick="toggleFaq(this)" aria-expanded="false">
-          <span class="es">¿Y si llega dañado o hay un error de impresión?</span><span class="en">What if it arrives damaged or misprinted?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        </h4>
-        <div class="faq-a"><span class="es">Nos escribes a hola@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta que nos devuelvas el primero.</span><span class="en">Email us at hola@momenturies.com with a photo of the problem and we'll reprint it at no cost. You don't need to send the first one back.</span></div>
-      </div>
-    </div>
+</div></section>
+<!-- PREGUNTAS: dos columnas con temas (portada.js pinta la lista) -->
+<section class="pq" id="faq"><div class="c">
+  <div>
+    <p class="s-tag">Preguntas</p>
+    <h2 class="s-h2">Lo que nos preguntáis.</h2>
+    <div class="pq-chips" id="pqChips"><button type="button" class="on" data-c="*">Todas</button><button type="button" data-c="colgar">Colgar</button><button type="button" data-c="foto">Fotos</button><button type="button" data-c="pedido">Pedido</button><button type="button" data-c="regalo">Regalo</button></div>
+    <div class="pq-ayuda"><b>¿No está tu pregunta?</b><p>Escríbenos y te contesta una persona.</p><a href="mailto:hola@momenturies.com">hola@momenturies.com</a></div>
   </div>
-</section>
+  <div id="pqLista"></div>
+</div></section>
 
 <!-- NEWSLETTER — el formulario llega al Vestuario (lo reenvía el worker de momenturies.com); en local no envía -->
 <section class="newsletter-section">
@@ -2100,7 +1817,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
         <h4><span class="es">Ayuda</span><span class="en">Help</span></h4>
         <ul>
           <li><a href="#como-funciona"><span class="es">Cómo funciona</span><span class="en">How it works</span></a></li>
-          <li><a href="#colgado"><span class="es">Cómo se cuelga</span><span class="en">How it hangs</span></a></li>
+          <li><a href="#asi-se-cuelga"><span class="es">Cómo se cuelga</span><span class="en">How it hangs</span></a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a href="nosotros.html"><span class="es">Nosotros</span><span class="en">About us</span></a></li>
           <li><a href="contacto.html"><span class="es">Contacto</span><span class="en">Contact</span></a></li>
@@ -2356,17 +2073,7 @@ document.addEventListener('keydown',e=>{
   if(p)p.addEventListener('click',function(){p.classList.toggle('vs-on')});
 })();
 
-// ── HERO — las dos fotos del salón se van turnando ──
-(function(){
-  var s=[].slice.call(document.querySelectorAll('.hero-slide'));
-  if(s.length<2) return;
-  var i=0;
-  setInterval(function(){
-    s[i].classList.remove('is-on');
-    i=(i+1)%s.length;
-    s[i].classList.add('is-on');
-  },6500);
-})();
+
 </script>
 <!-- paredes.js ya no hace falta aquí: el carrusel lo pinta combis.js con imágenes ya montadas -->
 <script src="fotos/combis/combis.js?v=59465662"></script>
@@ -2485,9 +2192,9 @@ function combiSlide(dir){
   function js(src, ok){ var s = document.createElement('script'); s.src = src; s.onload = ok; document.body.appendChild(s); }
   var io = new IntersectionObserver(function(es){
     if(!es[0].isIntersecting) return; io.disconnect();
-    var luego = function(){ js('colgado-scroll.js?v=3aeeed0d', function(){}); };
+    var luego = function(){ js('colgado-scroll.js?v=767e44b3', function(){}); };
     if(window.Pared3D) return luego();
-    var p3 = function(){ js('pared3d.js?v=7ff0f47a', luego); };
+    var p3 = function(){ js('pared3d.js?v=4876907e', luego); };
     if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
   }, { rootMargin:'900px 0px' });
   io.observe(sec);
@@ -2501,7 +2208,7 @@ function combiSlide(dir){
   var io = new IntersectionObserver(function(es){
     if(!es[0].isIntersecting) return; io.disconnect();
     /* la escena «Así se cuelga» puede haber cargado ya three.js y pared3d.js: no cargarlos dos veces */
-    var p3 = function(){ if(window.Pared3D) arrancar(); else js('pared3d.js?v=7ff0f47a', arrancar); };
+    var p3 = function(){ if(window.Pared3D) arrancar(); else js('pared3d.js?v=4876907e', arrancar); };
     if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
   }, { rootMargin:'600px 0px' });
   io.observe(st);
@@ -2546,5 +2253,8 @@ function combiSlide(dir){
 </script>
 <script src="photo-handoff.js?v=be4aae08"></script>
 <script src="carrito.js?v=f5f6d436"></script>
+<script src="paredes.js?v=1072d07a"></script>
+<script src="fotos/entornos/entornos.js?v=f4b1f2e9"></script>
+<script src="portada.js?v=7b7175f8"></script>
 </body>
 </html>

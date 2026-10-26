@@ -8,6 +8,8 @@
   const stage = sec.querySelector('.cs-stage'), canvas = sec.querySelector('canvas');
   const capts = [...sec.querySelectorAll('.cs-cap')], dots = [...sec.querySelectorAll('.cs-dots i')];
   const tags = [...sec.querySelectorAll('.cs-tag')];
+  /* data-intercambio (portada-nueva.html): un paso más antes de alejarse, dos cuadros se despegan y se cambian de sitio */
+  const SWAP = sec.hasAttribute('data-intercambio');
 
   const X = 22, Y = -14;                                   // donde va el cuadro principal (cm, sobre la luz de la ventana)
   const P = Pared3D({ canvas, stage, foto:'fotos/entornos/salon-luz.jpg', fotoPx:[2304, 2236], pxPorCm:9.75,
@@ -20,10 +22,10 @@
   /* en pantalla vertical no cabe a lo ancho: los pequeños van encima de los de los lados */
   const vertical = stage.clientWidth / stage.clientHeight < .8;
   const MAS = (vertical
-    ? [['1586498024141', 18, 24, X - 28, Y - 6], ['1738956952892', 18, 24, X + 28, Y - 6],
-       ['1603367563698', 12, 16, X - 28, Y + 18], ['1548858806', 12, 16, X + 28, Y + 18]]
-    : [['1586498024141', 18, 24, X - 29, Y], ['1738956952892', 18, 24, X + 29, Y],
-       ['1603367563698', 12, 16, X - 49, Y + 4], ['1548858806', 12, 16, X + 49, Y - 4]])
+    ? [['1586498024141', 18, 24, X - 28, Y - 6], ['1758686254601', 18, 24, X + 28, Y - 6],
+       ['1557495235', 12, 16, X - 28, Y + 18], ['1548858806', 12, 16, X + 28, Y + 18]]
+    : [['1586498024141', 18, 24, X - 29, Y], ['1758686254601', 18, 24, X + 29, Y],
+       ['1557495235', 12, 16, X - 49, Y + 4], ['1548858806', 12, 16, X + 49, Y - 4]])
     .map(([f, w, h, x, y]) => ({ c:P.cuadro('fotos/stock/' + f + '-480x640.webp', w, h), i:P.imanPared(), w, h, x, y }));
   MAS.forEach(m => m.i.scale.setScalar(m.w / 30));
 
@@ -67,9 +69,11 @@
   }
 
   /* tramos del scroll (0–1) */
-  const T = { lam:[.12, .24], im:[.24, .36], A:[.36, .54], tuerce:[.56, .66], mas:[.66, .88], lejos:[.86, 1] };
+  const T = SWAP
+    ? { lam:[.1, .2], im:[.2, .3], A:[.3, .45], tuerce:[.47, .55], mas:[.55, .72], swap:[.75, .87], lejos:[.89, 1], brillo:[.41, .5], viva:[.42, .88], galeria:[.53, .7], paso:.035 }
+    : { lam:[.12, .24], im:[.24, .36], A:[.36, .54], tuerce:[.56, .66], mas:[.66, .88], lejos:[.86, 1], brillo:[.5, .6], viva:[.5, .9], galeria:[.62, .8], paso:.045 };
   const tramo = (p, r) => cl((p - r[0]) / (r[1] - r[0]));
-  const CAPS = [0, .12, .24, .36, .56, .66, .88];          // dónde empieza cada texto
+  const CAPS = SWAP ? [0, .1, .2, .3, .47, .55, .75, .89] : [0, .12, .24, .36, .56, .66, .88];   // dónde empieza cada texto
 
   const fCerca = { x:X - 4, y:Y - 4, w:135, h:95 }, fGaleria = { x:X + 2, y:Y - 8, w:150, h:105 }, fSalon = { x:X - 12, y:Y - 8, w:205, h:150 };
   if(vertical){ fCerca.x = X; fCerca.w = 100; fGaleria.x = X; fGaleria.y = Y - 2; fGaleria.w = 80; fSalon.x = X - 6; fSalon.w = 110; }
@@ -80,22 +84,32 @@
   function pose(p, t){
     /* 1 · las tres piezas, sueltas o montándose */
     if(p < T.lam[0]) flotar(lam, SUELTO.lam, t, 0); else montar(lam, SUELTO.lam, tramo(p, T.lam), X, Y, .03);
-    if(p < T.im[0]) flotar(im, SUELTO.im, t, 1.7); else montar(im, SUELTO.im, tramo(p, T.im), X, Y - 2, .1);
+    if(p < T.im[0]) flotar(im, SUELTO.im, t, 1.7); else montar(im, SUELTO.im, tramo(p, T.im), X, Y, .1);   // centrado en el recuadro «pega el imán aquí»
     if(p < T.A[0]) flotar(A, SUELTO.A, t, 3.1); else montar(A, SUELTO.A, tramo(p, T.A) * 1.08, X, Y, .5, true);
     /* 2 · se tuerce un poco y se endereza con un dedo */
-    brilloA(tramo(p, [.5, .6]));
+    brilloA(tramo(p, T.brillo));
     const k = tramo(p, T.tuerce); if(k > 0 && k < 1) A.rotation.z = -.075 * (k < .4 ? E.out(k / .4) : 1 - E.io((k - .4) / .6));
     /* 3 · llegan los demás: primero su imán, luego el cuadro con su clic */
     MAS.forEach((m, n) => {
-      const u = tramo(p, [T.mas[0] + n * .045, T.mas[0] + n * .045 + .07]);
+      const u = tramo(p, [T.mas[0] + n * T.paso, T.mas[0] + n * T.paso + .07]);
       if(u <= 0){ m.i.visible = false; m.c.visible = false; return; }
-      P.llegar(m.i, cl(u * 2.2), m.x, m.y - 2 * m.h / 40, .1, { x:m.x + 20, y:m.y - 30, z:60 });
+      P.llegar(m.i, cl(u * 2.2), m.x, m.y, .1, { x:m.x + 20, y:m.y - 30, z:60 });
       P.llegar(m.c, (u - .4) / .55, m.x, m.y, .5, { x:m.x + 25, y:m.y - 35, z:75 }, true);
-      m.brillo(cl(((p - T.mas[0] - n * .045) / .07 - .9) / .6));
+      m.brillo(cl(((p - T.mas[0] - n * T.paso) / .07 - .9) / .6));
     });
+    /* 3b · intercambio: los dos de los lados se despegan, se cruzan por delante y vuelven a hacer clic */
+    if(SWAP){
+      const s = tramo(p, T.swap);
+      if(s > 0) [[MAS[0], MAS[1], 1], [MAS[1], MAS[0], -1]].forEach(([m, o, lado]) => {
+        const u = E.io(cl(s / .88)), arco = Math.sin(u * Math.PI);
+        m.c.position.set(lerp(m.x, o.x, u), lerp(m.y, o.y, u) + arco * 7 * lado, .5 + arco * 16);
+        m.c.rotation.set(0, arco * .25 * lado, -arco * .1 * lado);
+        if(s > .88){ const k = (s - .88) * 3; m.c.position.z = .5 + Math.sin(k * 70) * .25 * Math.exp(-k * 16); }
+      });
+    }
     /* 4 · la pared «despierta» y la cámara se aleja hasta ver el salón */
-    pared.copy(apagada).lerp(viva, E.io(tramo(p, [.5, .9])));
-    const g = E.io(tramo(p, [.62, .8])), l = E.io(tramo(p, T.lejos));
+    pared.copy(apagada).lerp(viva, E.io(tramo(p, T.viva)));
+    const g = E.io(tramo(p, T.galeria)), l = E.io(tramo(p, T.lejos));
     P.encuadre(mezclaF(mezclaF(fCerca, fGaleria, g), fSalon, l));
   }
 
