@@ -148,7 +148,7 @@
 <section class="otherfmt">
   <h2><span class="es">¿Prefieres un solo cuadro?</span><span class="en">Prefer a single print?</span></h2>
   <div class="otherfmt-grid">
-      <a class="otherfmt-card" href="ficha-cuadro.html"><b><span class="es">Cuadro</span><span class="en">Wall print</span></b><span class="es">Desde 17,99€ · 3 formatos · imán premium incluido</span><span class="en">From €17.99 · 3 formats · premium magnet included</span></a>
+      <a class="otherfmt-card" href="ficha-cuadro.html"><b><span class="es">Cuadro</span><span class="en">Wall print</span></b><span class="es">Desde 19,99€ · 3 formatos · imán premium incluido</span><span class="en">From €19.99 · 3 formats · premium magnet included</span></a>
       <a class="otherfmt-card" href="galeria.html"><b><span class="es">Galería de arte</span><span class="en">Art gallery</span></b><span class="es">Obras maestras y diseños listos para tu pared</span><span class="en">Masterpieces and designs ready for your wall</span></a>
   </div>
 </section>
@@ -157,7 +157,7 @@
   &copy; 2026 Momenturies · <a href="momenturies.html"><span class="es">Inicio</span><span class="en">Home</span></a>
 </footer>
 
-<script src="paredes.js?v=1072d07a"></script>
+<script src="paredes.js?v=a0a70684"></script>
 <script src="fotos/paredes/paredes-fotos.js?v=ad6bfb2e"></script>
 <script>
 /* Tarjetas de las paredes de ensueño. Cada tarjeta enseña la pared colgada en 3 habitaciones
@@ -167,7 +167,7 @@
   'use strict';
   var WALLS = window.MOMENTURIES_WALLS || [], PH = window.MOMENTURIES_WALL_PHOTOS || {};
   /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) */
-  var TIERS = [ {n:4, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
+  var TIERS = [ {n:5, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
   var pct = function(w){ for(var i = 0; i < TIERS.length; i++) if(w.n >= TIERS[i].n) return TIERS[i].pct; return 0; };
   var net = function(w){ return Math.round(w.price * (100 - pct(w))) / 100; };
   var eur = function(v){ return v.toFixed(2).replace('.', ',') + ' €'; };
@@ -176,7 +176,7 @@
   var HUECOS = window.MOMENTURIES_HUECOS || [], FS = window.MOMENTURIES_FORMAT_SIZES || {};
   var versions = window.MOMENTURIES_wallVersions, forHueco = window.MOMENTURIES_wallForHueco;
   var kOf = function(v){ return v.vk || v.pieces[0].size; };
-  var dims = function(v){ var d = FS[v.pieces[0].format][kOf(v)]; return d[0] + '×' + d[1]; };
+  var dims = function(v){ var d = FS[v.pieces[0].format][kOf(v)]; return (d[0] + '×' + d[1]).replace(/\./g, ','); };
 
   /* w = el conjunto en la talla que se enseña (el original o una versión de MOMENTURIES_wallAt).
      Las fotos de las otras tallas van con la clave "<pared>-<talla>" (fotos/_build_paredes_fotos.py). */

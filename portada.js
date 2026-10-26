@@ -5,7 +5,7 @@
 (function(){
 const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const eur = n => n.toFixed(2).replace('.', ',') + ' €';
-const TRAMOS = [[4, 20], [3, 15], [2, 10]];
+const TRAMOS = [[5, 20], [3, 15], [2, 10]];
 const pctDe = n => { const t = TRAMOS.find(t => n >= t[0]); return t ? t[1] : 0; };
 const WALLS = window.MOMENTURIES_WALLS || [];
 const pared = id => WALLS.find(w => w.id === id);
@@ -318,7 +318,7 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   const raiz = $('#pruebalo'); if(!raiz) return;
   const huecos = $$('.h', raiz), botones = $$('.pe-tira button', raiz);
   botones.forEach(b => b.style.backgroundImage = `url(${b.dataset.img})`);
-  const PRECIO = h => h.classList.contains('g') ? 69.99 : 34.99;     // 30×40 en el centro, 18×24 alrededor
+  const PRECIO = h => h.classList.contains('g') ? 54.99 : 29.99;     // 30×40 en el centro, 18×24 alrededor
   const orden = [2, 1, 3, 0, 4];                                        // se llena desde el centro
   let auto = true;
   const pinta = () => {
@@ -393,7 +393,7 @@ const RESENAS = [];
     ['foto', '¿Puedo ver cómo queda antes de pedirlo?', 'Sí, y es lo que más usáis. En el editor colocas tus fotos en una pared a tamaño real, cambias de habitación o de combinación con un toque y lo giras en 3D. Lo que ves es lo que te llega.'],
     ['foto', '¿Cómo es el acabado? ¿Brilla mucho?', 'Es acabado brillo, en alta definición: la tinta va directa sobre el aluminio, sin papel ni cristal, y por eso los colores tienen esa profundidad. Como toda superficie brillante, frente a una ventana puede dar algún reflejo; en una pared sin luz directa luce más.'],
     ['foto', '¿En qué se diferencia de un lienzo o un póster con marco?', 'No necesita marco ni cristal, no se ondula con la humedad, aguanta golpes y se cuelga con imán en vez de con clavo. Y la foto tiene más color y más nitidez que en papel.'],
-    ['pedido', '¿Qué tamaños hay?', 'El cuadro va en tres formatos (cuadrado, clásico y retrato), cada uno en varios tamaños, de 10×10 a 30×40 cm. Aparte están la sobremesa, de 10,2×15,2 a 20,3×25,4, y el imán para la nevera.'],
+    ['pedido', '¿Qué tamaños hay?', 'El cuadro va en tres formatos (cuadrado, clásico y retrato), cada uno en varios tamaños, de 10×10 a 30,5×43,1 cm. Aparte están la sobremesa, de 10,2×15,2 a 20,3×25,4, y el imán para la nevera.'],
     ['pedido', '¿Hay descuento si pido varios?', 'Sí, y se aplica solo: 10 % con dos cuadros, 15 % con tres y 20 % con cuatro o más. Las paredes ya montadas llevan el descuento puesto.'],
     ['pedido', '¿Cuánto tarda en llegar?', 'Lo preparamos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; al resto de Europa, algo más. Verás el plazo y el precio exactos antes de pagar.'],
     ['pedido', '¿Y si llega dañado o con un fallo de impresión?', 'Escríbenos a hola@momenturies.com con una foto del problema en los 14 días siguientes y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],

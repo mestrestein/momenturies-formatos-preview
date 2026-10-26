@@ -416,7 +416,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <div class="rating"><span class="stars">★★★★★</span> 4,9 · <a href="#regalos" style="color:inherit">1.240 reseñas</a><span class="demo-tag">Ejemplo</span></div>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras, y listo. Dale vida a vuestro hogar en segundos con <b>cuadros metálicos, con colgado magnético</b> fácil de instalar, sin herramientas ni agujeros.</p>
-    <div class="from"><b>desde 17,99 €</b><span>IVA incluido · imán incluido</span></div>
+    <div class="from"><b>desde 19,99 €</b><span>IVA incluido · imán incluido</span></div>
 
     <ul class="bul">
       <li><i>✨</i><div><b>Metal, no papel.</b> Alta definición, colores más vivos, con reflejo, más resistente y duradero. <a href="#vs">Ver la diferencia</a></div></li>
@@ -573,7 +573,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 
 <footer><div class="c"><div><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a><a href="cookies.html">Cookies</a></div><div>© 2026 Momenturies</div></div></footer>
 
-<div class="sticky" id="sticky"><div class="t"><span id="stTit">4 cuadros · Melodía suave</span><b id="stPr">111,97 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
+<div class="sticky" id="sticky"><div class="t"><span id="stTit">4 cuadros · Melodía suave</span><b id="stPr">101,97 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
 
 <script>
 /* ── interruptor de reseñas: false = se marcan como «Ejemplo» ── */
@@ -645,13 +645,13 @@ markSlide.last = 0; markSlide();
 
 /* ═════ PACKS ═════
    Precios = suma de las tallas del conjunto × descuento por cantidad (PACK_TIERS de editor.js:
-   2 → -10 %, 3 → -15 %, 4 o más → -20 %). Composiciones de paredes.js con existencias.
+   2 → -10 %, 3 o 4 → -15 %, 5 o más → -20 %). Composiciones de paredes.js con existencias.
    Para el pack de 10: hoy todas las paredes de 10 están agotadas en Brildor (sale el de 9). */
-const TIERS = [{n:4,pct:20},{n:3,pct:15},{n:2,pct:10}];
+const TIERS = [{n:5,pct:20},{n:3,pct:15},{n:2,pct:10}];
 const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
-const RM = 34.99; // Retrato 18×24
+const RM = 29.99; // Retrato 18×24
 const PACKS = [
-  {id:'1', n:1, tit:'1 cuadro', sub:'Tu foto favorita, sola', from:17.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
+  {id:'1', n:1, tit:'1 cuadro', sub:'Tu foto favorita, sola', from:19.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
   {id:'W55', n:3, tit:'Trío', name:'Tres apaisados', sub:'3 cuadros de 24×18 cm', gross:3*RM, href:'cuadro.html?pared=W55', img:'fotos/pdp/pack-W55-cerca.jpg', alt:'fotos/pdp/pack-W55-casa.jpg', meta:['3 × 24×18 cm','24 × 60 cm en total','En columna: rincón o pasillo']},
   {id:'W20', n:4, tit:'Cuarteto', name:'Melodía suave', sub:'4 cuadros de 18×24 cm', gross:4*RM, href:'cuadro.html?pared=W20', img:'fotos/pdp/pack-W20-cerca.jpg', alt:'fotos/pdp/pack-W20-casa.jpg', meta:['4 × 18×24 cm','81 × 24 cm en total','Sobre el sofá o la cómoda'], badge:'Más elegido'},
   {id:'W21', n:6, tit:'Galería de 6', name:'Líneas limpias', sub:'6 cuadros de 18×24 cm', gross:6*RM, href:'cuadro.html?pared=W21', img:'fotos/pdp/pack-W21-cerca.jpg', alt:'fotos/pdp/pack-W21-casa.jpg', meta:['6 × 18×24 cm','60 × 52 cm en total','Salón o comedor']},
@@ -808,10 +808,10 @@ const FAQ = [
   ['colgado','¿Se ve el imán una vez colgado?','No. El imán va justo detrás, en el centro del cuadro, así que una vez colgado solo se ve tu foto, como si flotara en la pared.'],
   ['producto','¿Qué diferencia hay con una foto enmarcada?','La tinta va impresa directamente sobre el aluminio, sin papel ni cristal delante. Los colores tienen más fondo, no hay reflejos de cristal, no se ondula con la humedad y pesa mucho menos que un marco. Y se cuelga con imán, sin agujeros.'],
   ['producto','¿Vale cualquier foto del móvil?','Casi todas. Una foto hecha con el móvil a tamaño completo llega bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta para el tamaño que elijas, el editor te avisa antes de pagar.'],
-  ['producto','¿Qué tamaños y formatos hay?','Tres formatos: cuadrado, clásico y retrato, de 10×15 a 30×40 cm. Los precios van desde 17,99 € (clásico 10×15). Los eliges en el editor viendo ya tu foto encuadrada.'],
+  ['producto','¿Qué tamaños y formatos hay?','Tres formatos: cuadrado, clásico y retrato, de 10×15 a 30,5×43,1 cm. Los precios van desde 19,99 € (clásico 10×15 y retrato 12×16). Los eliges en el editor viendo ya tu foto encuadrada.'],
   ['producto','¿Puedo ponerlo en la cocina o el baño?','Sí. El aluminio no absorbe humedad ni se ondula. Solo evita ponerlo justo encima del fuego o en la ducha. Se limpia con un paño suave, seco o un poco húmedo.'],
   ['producto','¿Cómo funciona la dedicatoria?','En el editor escribes unas palabras para el dorso y eliges la letra. Va impresa detrás del cuadro. Es opcional y no cuesta más.'],
-  ['packs','¿Cómo funcionan los descuentos por cantidad?','Cuantos más cuadros, menos pagas por cada uno: 2 cuadros -10 %, 3 cuadros -15 % y 4 o más -20 %. El descuento se aplica solo en el carrito y puedes mezclar tamaños y productos.'],
+  ['packs','¿Cómo funcionan los descuentos por cantidad?','Cuantos más cuadros, menos pagas por cada uno: 2 cuadros -10 %, 3 o 4 cuadros -15 % y 5 o más -20 %. El descuento se aplica solo en el carrito y puedes mezclar tamaños y productos.'],
   ['packs','¿Cómo sé cómo quedará la composición?','Al elegir una composición se abre el editor con ella puesta. Subes tus fotos, eliges la estancia (salón, dormitorio, pasillo…) y la ves colgada a escala antes de pagar. Puedes cambiar fotos y orden todas las veces que quieras.'],
   ['envio','¿Cuánto tarda en llegar?','Lo imprimimos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; con el exprés, 1-2. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
   ['envio','¿Y si llega dañado?','Lo reimprimimos y te lo reenviamos sin coste. Escríbenos con una foto en los 14 días siguientes a la entrega y no hace falta devolver el primero.'],
