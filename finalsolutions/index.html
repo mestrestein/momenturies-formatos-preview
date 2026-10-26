@@ -173,12 +173,12 @@ const PRO = { 3:{2:'Cuatro móviles, un paso en cada uno'}, 4:{0:'Corte de lado 
 const EN_VIVO = { 1:'.hero', 2:'#como-funciona', 4:'#productos', 8:'#opiniones', 9:'#faq', 10:'.newsletter-section' };
 const NUEVA = (id, sel, lab, extra) => Object.assign({ id:'fin-' + id, file:'../portada-nueva.html', sel, lab, org:'Portada nueva' }, extra || {});
 const por = (n, k) => k ? { id:`por-${n}-${k}`, file:'../soluciones/portada.html', n, k, lab:POR[n][k], org:'Portada · ' + L(k) }
-  : { id:`por-${n}-0`, file:'../index.html', sel:EN_VIVO[n], lab:POR[n][0], org:'Portada · en vivo ahora' };
+  : { id:`por-${n}-0`, file:'../portada-anterior.html', sel:EN_VIVO[n], lab:POR[n][0], org:'Portada · en vivo ahora' };
 const pro = (n, k) => ({ id:`pro-${n}-${k}`, file:'../soluciones/producto.html', n, k, lab:PRO[n][k], org:'Producto · ' + L(k + 1) });
 const ficha = (sel, lab) => ({ id:'ficha-' + sel.slice(1), file:'../ficha-cuadro.html', sel, lab, org:'Ficha de Aitor' });
 const casa = (k, lab) => ({ id:'casa-' + k, file:'../soluciones/en-tu-casa.html', sel:`body section:nth-of-type(${k})`, lab, org:'En tu casa' });
 const TIT = ['Recuerdos juntos','Regalo','Diseño / decoración','Sin obras','Calidad del material','Recién lanzados','Familia','Minimalista','Adiós al marco','Editor 3D','Construye tu pared','De tu móvil a casa'];
-const tit = k => ({ id:'ang-' + k, file:'../index.html', sel:'.hero', angulo:k, lab:'Titular · ' + TIT[k], org: k >= 10 ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' });
+const tit = k => ({ id:'ang-' + k, file:'../portada-anterior.html', sel:'.hero', angulo:k, lab:'Titular · ' + TIT[k], org: k >= 10 ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' });
 
 const SLOTS = [
   { id:'arriba', t:'Arriba del todo', angulos:true, v:[ NUEVA('hx', '.hx', 'Hero en carrusel · 5 ángulos'), por(1,2), por(1,3) ]},

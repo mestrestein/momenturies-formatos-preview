@@ -178,7 +178,7 @@ const PRO = {
 const EN_VIVO = { 1:'.hero', 2:'#como-funciona', 3:'.benefits-section', 4:'#productos', 5:'#colgado', 6:'#cambialos', 7:'#para-quien', 8:'#opiniones', 9:'#faq', 10:'.newsletter-section' };
 const portada = n => POR[n].map((lab, k) => k
   ? { id:`por-${n}-${k}`, file:'portada.html', n, k, lab, org:'Portada · ' + L(k) }
-  : { id:`por-${n}-0`, file:'../index.html', sel:EN_VIVO[n], lab, org:'Portada · en vivo ahora' });
+  : { id:`por-${n}-0`, file:'../portada-anterior.html', sel:EN_VIVO[n], lab, org:'Portada · en vivo ahora' });
 const producto = n => PRO[n].map((lab, k) => ({ id:`pro-${n}-${k}`, file:'producto.html', n, k, lab, org:'Producto · ' + L(k + 1) }));
 const pagina = (id, file, sel, lab, org, extra) => Object.assign({ id, file, sel, lab, org }, extra || {});
 const FICHA = (sel, lab) => pagina('ficha-' + sel.slice(1), '../ficha-cuadro.html', sel, lab, 'Ficha nueva de Aitor');
@@ -195,7 +195,7 @@ const VIDEO = (file, lab) => ({ id:'vid-' + file.replace(/\W/g, '-'), file:'../'
 
 // titulares de angles.js (herramienta de ángulos de septiembre; los «Socio» son los titulares que propuso Aitor)
 const ANG_TIT = ['Socio · Recuerdos juntos (H1 A)','Regalo','Diseño / decoración','Sin obras','Calidad del material','Recién lanzados','Familia','Minimalista','Adiós al marco','Editor 3D','Socio · Construye tu pared (H1 B)','Socio · De tu móvil a casa (H1 C)'];
-const titulares = () => ANG_TIT.map((lab, k) => ({ id:'ang-' + k, file:'../index.html', sel:'.hero', angulo:k, lab:'Titular · ' + lab.replace(/^Socio · /, ''), org: /^Socio/.test(lab) ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' }));
+const titulares = () => ANG_TIT.map((lab, k) => ({ id:'ang-' + k, file:'../portada-anterior.html', sel:'.hero', angulo:k, lab:'Titular · ' + lab.replace(/^Socio · /, ''), org: /^Socio/.test(lab) ? 'Titulares de Aitor' : 'Ángulos de venta (sep)' }));
 
 const ANGULOS = [
   { id:'arriba', t:'Arriba del todo', d:'Lo primero que se ve: la portada (hero) y la zona de compra de la ficha.', items:[
@@ -204,7 +204,7 @@ const ANGULOS = [
   { id:'funciona', t:'Cómo funciona', d:'De la foto del móvil a la pared: los pasos.', items:[
     ...portada(2), VIVO('.pp-section', 'De tu galería a tu pared'), ...producto(3), FICHA('#recuerdo', 'Del recuerdo a tu pared · carrusel de 5 pasos'), CASA(3, 'Del momento a vuestra pared. Y vuelta a empezar (vídeo)') ]},
   { id:'colgado', t:'Sin clavos', d:'El colgado magnético: base adhesiva + imán, sin agujeros.', items:[
-    ...portada(5), pagina('vivo-cs', '../index.html', '#asi-se-cuelga', 'Así se cuelga · escena 3D por scroll (desliza dentro)', 'Portada · en vivo ahora', { scroll:true }),
+    ...portada(5), pagina('vivo-cs', '../portada-anterior.html', '#asi-se-cuelga', 'Así se cuelga · escena 3D por scroll (desliza dentro)', 'Portada · en vivo ahora', { scroll:true }),
     VIVO('.hg-section', 'Sin clavos y sin daños en la pared'), ...producto(4), FICHA('#colgado', 'Jubila el taladro · comparativa + 5 pasos con foto'),
     CLAVOS('#o1', 'Manifiesto: solo tipografía, se tacha lo que te ahorras'), CLAVOS('.o2', 'La misma pared. Dos maneras de colgar'), CLAVOS('.o3', 'Desde tu abuela hasta tu hijo de 5 años sabe montarlo'),
     CLAVOS('#o4', 'Mientras buscas el martillo, ya lo tienes colgado'), CLAVOS('#o5', 'Por dentro es así de sencillo · despiece') ]},
@@ -233,7 +233,7 @@ const ANGULOS = [
     VIDEO('fotos/historia/Como-web.mp4', 'En tu casa · Como'), VIDEO('fotos/historia/Donde-web.mp4', 'En tu casa · Donde'), VIDEO('fotos/historia/Historia-web.mp4', 'En tu casa · Historia'),
     ENTERA('https://mestrestein.github.io/momenturies-guiones/', 'Panel de vídeos para anuncios (plan, guiones, rodaje)', 'Fuera de la web') ]},
   { id:'paginas', t:'Páginas enteras', d:'Cada página de la web tal cual, de arriba abajo. Se desliza dentro de cada una.', items:[
-    ENTERA('../index.html', 'Portada'), ENTERA('../cuadro.html', 'Cuadro (la ficha de ahora)'), ENTERA('../ficha-cuadro.html', 'Ficha nueva del Cuadro (Aitor, sin publicar)'),
+    ENTERA('../portada-anterior.html', 'Portada'), ENTERA('../cuadro.html', 'Cuadro (la ficha de ahora)'), ENTERA('../ficha-cuadro.html', 'Ficha nueva del Cuadro (Aitor, sin publicar)'),
     ENTERA('../sobremesa.html', 'Sobremesa'), ENTERA('../iman.html', 'Imán'), ENTERA('../producto.html', 'Todos los formatos'), ENTERA('../paredes.html', 'Paredes de ensueño'),
     ENTERA('../cuadro.html?pared=W20', 'El editor, con una pared puesta'), ENTERA('../versiones.html', 'Versiones del personalizador de paredes'),
     ENTERA('../colgador-scene.html', 'Escena «Así se cuelga» (la de Futsides)'), ENTERA('../momenturies%20-%20visor%203D.html', 'Visor 3D suelto'),

@@ -22,10 +22,10 @@
   /* en pantalla vertical no cabe a lo ancho: los pequeños van encima de los de los lados */
   const vertical = stage.clientWidth / stage.clientHeight < .8;
   const MAS = (vertical
-    ? [['1586498024141', 18, 24, X - 28, Y - 6], ['1738956952892', 18, 24, X + 28, Y - 6],
-       ['1603367563698', 12, 16, X - 28, Y + 18], ['1548858806', 12, 16, X + 28, Y + 18]]
-    : [['1586498024141', 18, 24, X - 29, Y], ['1738956952892', 18, 24, X + 29, Y],
-       ['1603367563698', 12, 16, X - 49, Y + 4], ['1548858806', 12, 16, X + 49, Y - 4]])
+    ? [['1586498024141', 18, 24, X - 28, Y - 6], ['1758686254601', 18, 24, X + 28, Y - 6],
+       ['1557495235', 12, 16, X - 28, Y + 18], ['1548858806', 12, 16, X + 28, Y + 18]]
+    : [['1586498024141', 18, 24, X - 29, Y], ['1758686254601', 18, 24, X + 29, Y],
+       ['1557495235', 12, 16, X - 49, Y + 4], ['1548858806', 12, 16, X + 49, Y - 4]])
     .map(([f, w, h, x, y]) => ({ c:P.cuadro('fotos/stock/' + f + '-480x640.webp', w, h), i:P.imanPared(), w, h, x, y }));
   MAS.forEach(m => m.i.scale.setScalar(m.w / 30));
 
@@ -84,7 +84,7 @@
   function pose(p, t){
     /* 1 · las tres piezas, sueltas o montándose */
     if(p < T.lam[0]) flotar(lam, SUELTO.lam, t, 0); else montar(lam, SUELTO.lam, tramo(p, T.lam), X, Y, .03);
-    if(p < T.im[0]) flotar(im, SUELTO.im, t, 1.7); else montar(im, SUELTO.im, tramo(p, T.im), X, Y - 2, .1);
+    if(p < T.im[0]) flotar(im, SUELTO.im, t, 1.7); else montar(im, SUELTO.im, tramo(p, T.im), X, Y, .1);   // centrado en el recuadro «pega el imán aquí»
     if(p < T.A[0]) flotar(A, SUELTO.A, t, 3.1); else montar(A, SUELTO.A, tramo(p, T.A) * 1.08, X, Y, .5, true);
     /* 2 · se tuerce un poco y se endereza con un dedo */
     brilloA(tramo(p, T.brillo));
@@ -93,7 +93,7 @@
     MAS.forEach((m, n) => {
       const u = tramo(p, [T.mas[0] + n * T.paso, T.mas[0] + n * T.paso + .07]);
       if(u <= 0){ m.i.visible = false; m.c.visible = false; return; }
-      P.llegar(m.i, cl(u * 2.2), m.x, m.y - 2 * m.h / 40, .1, { x:m.x + 20, y:m.y - 30, z:60 });
+      P.llegar(m.i, cl(u * 2.2), m.x, m.y, .1, { x:m.x + 20, y:m.y - 30, z:60 });
       P.llegar(m.c, (u - .4) / .55, m.x, m.y, .5, { x:m.x + 25, y:m.y - 35, z:75 }, true);
       m.brillo(cl(((p - T.mas[0] - n * T.paso) / .07 - .9) / .6));
     });

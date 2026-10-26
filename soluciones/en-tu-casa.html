@@ -42,7 +42,12 @@ body{font-family:var(--sans);background:#f4f1ec;color:var(--black);overflow-x:hi
 .steps li i{font-style:normal;font-weight:800;font-size:12px;letter-spacing:1px;color:#b9b2a9;padding-top:2px}
 .steps li.on{background:#fff;color:var(--black);box-shadow:0 6px 18px rgba(0,0,0,.06)}
 .steps li.on i{color:var(--terra)}
-@media(max-width:900px){.story{grid-template-columns:1fr}.steps{display:none}.sec{padding:64px 0}.frame{border-radius:14px}}
+@media(max-width:900px){.story{grid-template-columns:1fr}.sec{padding:64px 0}.frame{border-radius:14px}
+  /* móvil (26-oct): los pasos en una tira bajo el vídeo; tocar uno lleva el vídeo a ese momento */
+  .steps{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px}
+  .steps::-webkit-scrollbar{display:none}
+  .steps li{flex:0 0 auto;display:flex;gap:6px;white-space:nowrap;font-size:13.5px;padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.55)}
+  .steps li i{padding-top:0}}
 </style>
 </head>
 <body>
@@ -97,8 +102,8 @@ body{font-family:var(--sans);background:#f4f1ec;color:var(--black);overflow-x:hi
       <div class="frame"><video id="hist" src="../fotos/historia/Historia-web.mp4" poster="../fotos/historia/Historia-poster.jpg" autoplay muted loop playsinline preload="metadata"></video></div>
       <ol class="steps" id="steps">
         <li data-t="0"><i>01</i>Vivís el momento</li>
-        <li data-t="3.8"><i>02</i>Hacéis la foto y la veis juntos</li>
-        <li data-t="6.8"><i>03</i>Elegís las que queréis</li>
+        <li data-t="3.8"><i>02</i>Se queda en el móvil</li>
+        <li data-t="6.8"><i>03</i>Elegís las que merecen salir de ahí</li>
         <li data-t="10.2"><i>04</i>La veis en casa, a tamaño real</li>
         <li data-t="13.5"><i>05</i>Donde quieras</li>
         <li data-t="18.1"><i>06</i>Como quieras</li>
@@ -120,6 +125,8 @@ body{font-family:var(--sans);background:#f4f1ec;color:var(--black);overflow-x:hi
   function upd(){var t=v.currentTime,k=0;for(var i=0;i<ts.length;i++)if(t>=ts[i])k=i;li.forEach(function(l,i){l.classList.toggle('on',i===k)})}
   v.addEventListener('timeupdate',upd);upd();
   li.forEach(function(l){l.addEventListener('click',function(){v.currentTime=+l.dataset.t;v.play()})});
+  // en móvil la tira sigue al paso que se está viendo
+  var antes=-1;v.addEventListener('timeupdate',function(){var k=li.findIndex(function(l){return l.classList.contains('on')});if(k!==antes&&innerWidth<=900){antes=k;var s=li[k].parentNode;s.scrollTo({left:li[k].offsetLeft-s.clientWidth/2+li[k].offsetWidth/2,behavior:'smooth'})}});
   // los vídeos solo corren cuando se ven
   if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){e.isIntersecting?e.target.play().catch(function(){}):e.target.pause()})},{threshold:.25});
     [].forEach.call(document.querySelectorAll('video'),function(x){io.observe(x)})}

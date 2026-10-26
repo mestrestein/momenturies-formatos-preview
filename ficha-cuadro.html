@@ -324,8 +324,9 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .adv{background:radial-gradient(80% 70% at 50% 50%,#3a2516 0%,#1d120a 100%);color:#f6efe6;overflow:hidden}
 .adv .h2{color:#fff}.adv .h2 em{color:#ffc79c}.adv .tag{color:#ffc79c}.adv .lead{color:rgba(246,239,230,.75)}
 .adv-grid{display:grid;grid-template-columns:1fr minmax(260px,420px) 1fr;gap:30px;align-items:center;margin-top:50px}
-@media(max-width:960px){.adv-grid{grid-template-columns:1fr 1fr}.adv-grid .float{grid-column:1/-1;order:-1}}
-@media(max-width:560px){.adv-grid{grid-template-columns:1fr}}
+/* en móvil y tableta: tres ventajas arriba, el cuadro en 3D en medio y tres abajo (26-oct) */
+@media(max-width:960px){.adv-grid{grid-template-columns:1fr;gap:30px;margin-top:34px}.adv-col{gap:18px}}
+@media(max-width:560px){.adv-it{grid-template-columns:50px 1fr;gap:14px}.adv-col.l .adv-it{grid-template-columns:50px 1fr}.adv-it .ic{width:50px;height:50px}.adv-it .ic svg{width:21px;height:21px}.adv-it h4{font-size:16px}}
 .adv-col{display:grid;gap:26px}
 .adv-col.l{text-align:right}
 @media(max-width:960px){.adv-col.l{text-align:left}}
