@@ -1720,6 +1720,8 @@ function ingestFiles(files, mode){
   const imgs = Array.from(files||[]).filter(f=>f.type && f.type.indexOf('image/')===0);
   if(!imgs.length) return;
   _userEdited = true;
+  // píxel de Meta (consent.js): la primera foto que sube es la señal de que va en serio
+  if(window.mmTrack && !ingestFiles.medida){ ingestFiles.medida = true; mmTrack('CustomizeProduct', {content_name:(PRODUCTS[defaultType]||PRODUCTS.metal).name, content_ids:[defaultType], content_type:'product'}); }
   let skipped = 0;
   imgs.forEach((file, k)=>{
     let idx;
@@ -2876,6 +2878,13 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
 
   if(lowRes){
     toast('Alguna foto se vería algo borrosa a este tamaño. Seguimos con el pedido igualmente.');
+  }
+  // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
+  const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
+  if(window.mmTrack && firma !== window.mmCarritoMedido){
+    window.mmCarritoMedido = firma;
+    mmTrack('AddToCart', {value:Math.round(conFoto.reduce((s,p)=>s+(p.price||0),0)*100)/100, currency:'EUR', num_items:conFoto.length,
+      content_type:'product', content_ids:[...new Set(conFoto.map(p=>p.ptype))]});
   }
   // el carrito es el panel lateral: de ahí se pasa al pago
   openCheckout();

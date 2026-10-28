@@ -205,7 +205,7 @@ footer{background:#1d120a;color:rgba(255,255,255,.6);font-size:13px;padding:30px
 footer .c{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 </style>
-<script src="consent.js?v=026c0c05" defer></script>
+<script src="consent.js?v=7d550b68" defer></script>
 </head>
 <body>
 
@@ -362,6 +362,14 @@ function pintar(){
 }
 $('#tallas').addEventListener('click', e => { const o = e.target.closest('.opt'); if(o){ sel = o.dataset.id; pintar(); } });
 $('#tallas').addEventListener('keydown', e => { const o = e.target.closest('.opt'); if(o && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); sel = o.dataset.id; pintar(); } });
+// píxel de Meta (consent.js): AddToCart antes de saltar al pago de Shopify (el resto lo mide Shopify)
+['#ctaMain', '#stCta'].forEach(s => $(s).addEventListener('click', e => {
+  const t = TALLAS.find(x => x.id === sel), href = e.currentTarget.href;
+  if(!window.mmTrack || !mmTrack('AddToCart', {value:Math.round(t.precio * cant * 100) / 100, currency:'EUR', num_items:cant,
+    content_type:'product', content_ids:['COL-' + t.id], content_name:'Colgador de imán'})) return;
+  e.preventDefault();
+  setTimeout(() => { location.href = href; }, 300);    // margen para que salga el evento antes de cambiar de página
+}));
 $('#menos').onclick = () => { if(cant > 1){ cant--; pintar(); } };
 $('#mas').onclick = () => { if(cant < 50){ cant++; pintar(); } };
 pintar();
