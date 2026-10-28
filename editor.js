@@ -2960,7 +2960,9 @@ const _urlType = new URLSearchParams(location.search).get('type');
 const _EDCFG = window.MOMENTURIES_EDITOR || {};
 if(_EDCFG.lock) document.documentElement.classList.add('ed-locked');
 if(_urlType && PRODUCTS[_urlType]){
-  openEditorWithType(_urlType);
+  /* 28-oct · al terminar de cargar el script: abrir aquí mismo tocaba editorRootEl antes de declararse y fallaba */
+  if(_urlType === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-menta'; }   // el imán, en su nevera
+  queueMicrotask(() => openEditorWithType(_urlType));
 }else if(_EDCFG.product && PRODUCTS[_EDCFG.product]){
   /* pagina dedicada: fija el producto pero NO abre el editor (se ve antes el marketing) */
   defaultType = _EDCFG.product;
