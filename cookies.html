@@ -24,7 +24,14 @@
   .legal-nav{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin-bottom:8px}
   .legal-nav a{color:var(--mid)}
 </style>
-<script src="consent.js?v=026c0c05" defer></script>
+<script src="consent.js?v=7d550b68" defer></script>
+<style>
+.legal-table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 18px}
+.legal-table th,.legal-table td{border-bottom:1px solid #e6e6e6;padding:8px 6px;text-align:left;vertical-align:top}
+.legal-table th{font-weight:600}
+.legal-btn{font:600 14px/1 inherit;padding:12px 18px;border-radius:999px;border:0;background:#1a1a1a;color:#fff;cursor:pointer}
+@media(max-width:560px){.legal-table{font-size:13px}.legal-table th:nth-child(2),.legal-table td:nth-child(2){display:none}}
+</style>
 </head>
 <body>
 
@@ -56,16 +63,27 @@
     <a href="contacto.html">Contacto</a>
   </div>
   <h1>Política de cookies</h1>
-  <p class="legal-updated">Última actualización: 31 de agosto de 2026.</p>
+  <p class="legal-updated">Última actualización: 28 de octubre de 2026.</p>
 
   <h2>1. Qué son las cookies</h2>
   <p>Son pequeños archivos que un sitio web guarda en tu navegador para recordar información entre visitas.</p>
 
-  <h2>2. Qué usamos hoy</h2>
-  <div class="legal-pending">
-    A día de hoy, momenturies.com <strong>no tiene analítica ni publicidad activadas</strong>. Solo usa almacenamiento técnico necesario para que el editor funcione (por ejemplo, recordar tu diseño mientras lo montas). Ese tipo de cookies/almacenamiento técnico no requiere consentimiento, según la normativa de cookies (LSSI).
-  </div>
-  <p>Cuando activemos Google Analytics y/o Meta Pixel para medir visitas y anuncios, esta página se actualizará con el detalle de cada cookie (nombre, finalidad, duración, si es propia o de tercero) y se mostrará un aviso para pedir tu consentimiento antes de activarlas, con opción de rechazarlas.</p>
+  <h2>2. Qué cookies usamos</h2>
+  <p>Al entrar por primera vez te enseñamos un aviso para que elijas. Las de publicidad solo se activan si las aceptas, y puedes cambiar de opinión cuando quieras desde <a href="#" data-mm-cookies>Configurar cookies</a> (también está en el pie de la web).</p>
+  <table class="legal-table">
+    <thead><tr><th>Nombre</th><th>De quién</th><th>Para qué</th><th>Duración</th></tr></thead>
+    <tbody>
+      <tr><td colspan="4"><strong>Necesarias</strong> (no requieren consentimiento)</td></tr>
+      <tr><td>mm_cookies</td><td>Momenturies</td><td>Recordar lo que has elegido en este aviso</td><td>Hasta que lo borres</td></tr>
+      <tr><td>Almacenamiento del editor</td><td>Momenturies</td><td>Recordar tu diseño, el carrito y tus preferencias mientras montas el pedido</td><td>Hasta que lo borres</td></tr>
+      <tr><td>Cookies del pago</td><td>Shopify</td><td>Hacer funcionar el carrito y el pago en checkout.momenturies.com</td><td>Según Shopify</td></tr>
+      <tr><td colspan="4"><strong>Publicidad</strong> (solo si las aceptas)</td></tr>
+      <tr><td>_fbp</td><td>Meta (Facebook e Instagram)</td><td>Medir qué anuncios funcionan y enseñarte los nuestros en Facebook e Instagram</td><td>3 meses</td></tr>
+      <tr><td>_fbc</td><td>Meta</td><td>Saber que llegaste desde un anuncio de Meta</td><td>3 meses</td></tr>
+    </tbody>
+  </table>
+  <p>Con las de publicidad, Meta Platforms Ireland Ltd. recibe datos de tu visita (páginas vistas, productos que miras o añades al carrito y, si compras, el pedido). Si tienes cuenta en Meta, puede relacionarlos con ella. Meta puede tratarlos fuera del Espacio Económico Europeo con las garantías de la Comisión Europea. Más información en la <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener">política de privacidad de Meta</a>.</p>
+  <p><button type="button" class="legal-btn" data-mm-cookies>Cambiar mis cookies</button></p>
 
   <h2>3. Cómo gestionar las cookies desde tu navegador</h2>
   <p>Puedes bloquear o eliminar las cookies en cualquier momento desde la configuración de tu navegador: <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a>, <a href="https://support.mozilla.org/es/kb/Deshabilitar%20cookies%20de%20terceros" target="_blank" rel="noopener">Firefox</a>, <a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari</a>, <a href="https://support.microsoft.com/es-es/microsoft-edge" target="_blank" rel="noopener">Edge</a>.</p>
