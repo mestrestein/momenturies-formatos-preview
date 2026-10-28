@@ -31,7 +31,8 @@
   }
   const uvPlano = (w, h) => ({
     generateTopUV(g, v, a, b, c){ return [a, b, c].map(i => new THREE.Vector2((v[i * 3] + w / 2) / w, (v[i * 3 + 1] + h / 2) / h)); },
-    generateSideWallUV(){ return [0, 0, 0, 0].map(() => new THREE.Vector2(0, 0)); },
+    /* el canto toma el color del borde de la foto (como si la impresión diera la vuelta): sin filo oscuro alrededor */
+    generateSideWallUV(g, v, a, b, c, d){ return [a, b, c, d].map(i => new THREE.Vector2(Math.min(1, Math.max(0, (v[i * 3] + w / 2) / w)), Math.min(1, Math.max(0, (v[i * 3 + 1] + h / 2) / h)))); },
   });
 
   function laminaTex(){
@@ -109,8 +110,6 @@
 
     /* materiales compartidos */
     const alu = new THREE.MeshPhysicalMaterial({ color:0xeeeeee, metalness:1, roughness:.16, envMapIntensity:1.7 });
-    /* el canto de la placa: aluminio oscuro y mate, para que no se lea como un marco blanco alrededor de la foto */
-    const canto = new THREE.MeshPhysicalMaterial({ color:0x6f6f6f, metalness:1, roughness:.42, envMapIntensity:.6 });
     const negro = new THREE.MeshPhysicalMaterial({ color:0x161616, metalness:.15, roughness:.55, clearcoat:.3, clearcoatRoughness:.5 });
     const cargador = new THREE.TextureLoader();
 
@@ -131,8 +130,8 @@
       const geo = new THREE.ExtrudeGeometry(rr(w, h, .3), { depth:.32, bevelEnabled:false, curveSegments:8, UVGenerator:uvPlano(w, h) });
       const tapas = geo.groups[0], mitad = tapas.count / 2;
       geo.groups.splice(0, 1, { start:tapas.start, count:mitad, materialIndex:1 }, { start:tapas.start + mitad, count:mitad, materialIndex:0 });
-      geo.groups.forEach((gr, k) => { if(k > 1) gr.materialIndex = 2; });
-      const placa = new THREE.Mesh(geo, [cara, alu, canto]); placa.position.z = .45; placa.castShadow = true; g.add(placa);
+      geo.groups.forEach((gr, k) => { if(k > 1) gr.materialIndex = 0; });
+      const placa = new THREE.Mesh(geo, [cara, alu]); placa.position.z = .45; placa.castShadow = true; g.add(placa);
       const im = new THREE.Mesh(new THREE.BoxGeometry(w * .4, h * .3, .4), negro); im.position.z = .2; im.castShadow = true; g.add(im);
       scene.add(g); return g;
     }
