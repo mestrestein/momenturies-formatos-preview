@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Colgador de imán · Momenturies</title>
-<meta name="description" content="El colgador magnético de nuestros cuadros, suelto: cuelga sin taladro ni agujeros. Grande de 8×8 cm (12,99 €) o pequeño de 2×2 cm (3,99 €)."/>
+<meta name="description" content="Cuelga lo que quieras, hasta 1 kg, sin taladro ni agujeros, y muévelo cuando quieras. Grande de 8×8 cm (12,99 €) o pequeño de 2×2 cm (3,99 €)."/>
 <link rel="canonical" href="https://momenturies.com/colgador-iman.html"/>
 <meta property="og:type" content="product"/>
 <meta property="og:site_name" content="Momenturies"/>
@@ -132,6 +132,27 @@ button{font-family:inherit;color:inherit}
 .sticky .t b{display:block;font-size:16px}
 .sticky .btn{padding:14px 20px;font-size:15px;background:var(--brown)}
 
+/* ═════════ CUELGA LO QUE QUIERAS ═════════ */
+.any-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:56px;align-items:center}
+@media(max-width:900px){.any-top{grid-template-columns:1fr;gap:28px}}
+.kg{background:var(--brown);color:#fff;border-radius:26px;padding:40px 36px;position:relative;overflow:hidden;margin-top:28px}
+.kg::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,199,156,.12)}
+.kg b{display:block;font-family:var(--serif);font-size:clamp(76px,10vw,128px);line-height:.9;letter-spacing:-.04em;color:#ffc79c}
+.kg b small{font-size:.42em;letter-spacing:0;color:#fff;margin-left:6px}
+.kg p{font-size:16px;line-height:1.55;color:rgba(255,255,255,.82);margin-top:16px;max-width:340px;position:relative}
+.things{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:520px){.things{grid-template-columns:repeat(2,1fr)}}
+.things>div{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 16px;display:grid;gap:10px;align-content:start}
+.things svg{width:34px;height:34px;stroke:var(--terra);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.things b{font-size:15px;line-height:1.25}
+.things span{font-size:13px;line-height:1.45;color:var(--mid)}
+.move{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+@media(max-width:860px){.move{grid-template-columns:1fr;gap:12px}}
+.move>div{display:grid;grid-template-columns:52px 1fr;gap:16px;align-items:center;background:var(--cream);border-radius:18px;padding:18px 20px}
+.move i{width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:22px}
+.move b{display:block;font-size:16px}
+.move span{font-size:14px;line-height:1.45;color:var(--ink2)}
+
 /* ═════════ CÓMO SE CUELGA ═════════ */
 .hang{background:var(--cream)}
 .hang-top{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
@@ -210,14 +231,14 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   </div>
 
   <div class="info">
-    <h1>Colgador de imán<small>Cuelga tus cuadros sin taladro ni agujeros</small></h1>
-    <p class="sub">El mismo colgador que llevan nuestros cuadros, ahora suelto. <b>Pegas la base en la pared, acercas el cuadro y el imán lo sujeta.</b> Con bases de más puedes cambiar el cuadro de habitación cuando quieras, sin volver a hacer agujeros.</p>
+    <h1>Colgador de imán<small>Cuelga lo que quieras, hasta 1 kg, sin agujeros</small></h1>
+    <p class="sub">El mismo colgador que llevan nuestros cuadros, ahora suelto, para colgar <b>cualquier cosa de hasta 1 kg</b>: un cuadro, una lámina, un espejo pequeño o el dibujo de los peques. <b>Pegas la base en la pared, acercas lo que quieras colgar y el imán lo sujeta.</b> Y cuando te apetezca, lo cambias de sitio.</p>
 
     <ul class="bul4">
       <li><i>🧲</i><div><b>Sin herramientas</b>Ni taladro, ni tacos, ni nivel</div></li>
+      <li><i>⚖️</i><div><b>Hasta 1 kg</b>Cuadros, láminas, espejos…</div></li>
+      <li><i>🔄</i><div><b>Muévelo cuando quieras</b>Una base en cada pared</div></li>
       <li><i>🏠</i><div><b>La pared intacta</b>Ideal si vives de alquiler</div></li>
-      <li><i>🔄</i><div><b>Cámbialo de sitio</b>Una base en cada pared</div></li>
-      <li><i>👁️</i><div><b>No se ve</b>Queda oculto detrás del cuadro</div></li>
     </ul>
 
     <div class="packs-h">Elige el tamaño</div>
@@ -230,6 +251,31 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <p class="cta-note">Cada cuadro ya lleva su colgador incluido. Si vas a pedir cuadros, <a href="ficha-cuadro.html">empieza por el cuadro</a>.</p>
 
     <div class="trust"><span>Envío gratis en España desde 60 €</span><span>Sale en 1-2 días laborables</span><span>Si llega mal, lo reponemos</span><span>Pago seguro con Shopify</span></div>
+  </div>
+</div></section>
+
+<!-- ═════════════════ CUELGA LO QUE QUIERAS ═════════════════ -->
+<section class="sec" id="cuelga"><div class="c">
+  <div class="any-top">
+    <div>
+      <p class="tag">No solo nuestros cuadros</p>
+      <h2 class="h2">Cuelga <em>lo que quieras</em>.<br>Muévelo cuando quieras.</h2>
+      <p class="lead">Si pesa 1 kg o menos, se cuelga con imán. Sin taladro, sin clavos y sin pedirle a nadie que suba la escalera.</p>
+      <div class="kg"><b>1<small>kg</small></b><p>Es lo que aguanta. De sobra para un cuadro mediano, una lámina enmarcada o un espejo pequeño.</p></div>
+    </div>
+    <div class="things">
+      <div><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="m7 16 3.5-4 2.5 3 2-2 2 3"/><circle cx="9" cy="8" r="1.4"/></svg><b>Cuadros y fotos</b><span>Los nuestros o los que ya tienes por casa.</span></div>
+      <div><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><rect x="6" y="8" width="12" height="8"/></svg><b>Láminas enmarcadas</b><span>Con marco ligero, de madera o aluminio.</span></div>
+      <div><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6.5" ry="9"/><path d="m9 8 2.5-2.5M9.5 11.5 14 7"/></svg><b>Espejos pequeños</b><span>Para el recibidor o el baño.</span></div>
+      <div><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 15c1.5-3 3-3 4 0s2.5 1 4-2"/><circle cx="15" cy="8" r="1.6"/></svg><b>Dibujos de los peques</b><span>Y cambiarlos cada vez que traigan uno nuevo.</span></div>
+      <div><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1"/><path d="M7 21l2-4M17 21l-2-4M7 9h6M7 12h4"/></svg><b>Pizarras y corchos</b><span>Para la cocina, el despacho o la entrada.</span></div>
+      <div><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="1.5"/><path d="M4 9h16M8 3v4M16 3v4M8 13h2M12 13h2M8 16h2M12 16h2"/></svg><b>Calendarios</b><span>Lo quitas en diciembre y no queda ni rastro.</span></div>
+    </div>
+  </div>
+  <div class="move">
+    <div><i>↔️</i><div><b>Recolócalo sin miedo</b><span>¿Ha quedado torcido o un poco alto? Lo despegas y lo vuelves a poner.</span></div></div>
+    <div><i>🛋️</i><div><b>Cámbialo de habitación</b><span>Deja una base en cada pared y pasa el cuadro de una a otra en segundos.</span></div></div>
+    <div><i>📦</i><div><b>Llévatelo al mudarte</b><span>La base se retira sin agujeros. La fianza del piso, intacta.</span></div></div>
   </div>
 </div></section>
 
@@ -349,9 +395,11 @@ markSlide();
 
 /* ═════ FAQ ═════ */
 const FAQ = [
+  ['¿Cuánto peso aguanta?','Hasta 1 kg. Da de sobra para un cuadro mediano, una lámina con marco ligero o un espejo pequeño. Para algo más pesado, escríbenos y lo vemos.'],
+  ['¿Qué puedo colgar, además de vuestros cuadros?','Casi cualquier cosa plana de hasta 1 kg: cuadros y láminas de otras tiendas, espejos pequeños, pizarras, corchos, calendarios o dibujos. El imán va detrás de lo que cuelgas y la base, en la pared.'],
   ['¿Qué lleva cada colgador?','Las dos piezas: el imán, que va detrás del cuadro, y la base adhesiva, que va en la pared. Al acercarlos se enganchan solos.'],
   ['¿Cuál elijo, el grande o el pequeño?','El grande (8×8 cm) para los cuadros grandes y el pequeño (2×2 cm) para los pequeños. Si dudas, escríbenos con la medida de tu cuadro y te decimos cuál.'],
-  ['¿Mis cuadros de Momenturies ya lo llevan?','Sí. Cada cuadro llega con su colgador incluido. Este es para tener bases de más o uno de repuesto.'],
+  ['¿Mis cuadros de Momenturies ya lo llevan?','Sí. Cada cuadro llega con su colgador incluido. Este es para colgar otras cosas, tener bases de más o uno de repuesto.'],
   ['¿En qué paredes se puede pegar la base?','En paredes lisas y limpias: pintura plástica, azulejo, madera lacada, cristal o puertas de armario. En gotelé muy marcado, papel pintado que se despega o pintura recién dada (menos de 3 semanas) no te lo recomendamos. Si dudas, escríbenos con una foto de tu pared.'],
   ['¿Deja marca al quitarlo?','No. El cuadro se separa del imán sin esfuerzo y la base adhesiva se retira tirando despacio, en paralelo a la pared. No quedan agujeros ni marcas de taladro.'],
   ['¿Cuánto tarda en llegar?','Sale en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
