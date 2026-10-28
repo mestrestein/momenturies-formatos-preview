@@ -5772,6 +5772,17 @@ window.MOMENTURIES_openWall = function(id, k){
   const id = qs.get('pared') || _EDCFG.wall;
   if(id && findWall(id)) window.MOMENTURIES_openWall(id, qs.get('talla'));
 })();
+/* 28-oct · ficha del imán: iman.html?conjunto=N03 (o LL-XS / LL-S, la nevera llena) abre el editor con ese conjunto de nevera;
+   ?conjunto=suelto lo abre con un imán suelto (&talla=S para el de 10×15). ?type=nevera no sirve aquí: corre antes de que exista el editor. */
+(function fridgeEntry(){
+  const qs = new URLSearchParams(location.search), id = qs.get('conjunto');
+  if(!id || !isFridgeMode()) return;
+  const w = /^LL-(XS|S)$/.test(id) ? fridgeFill(id.slice(3)) : FRIDGE_WALLS.find(x => x.id === id);
+  openEditorWithType('nevera');
+  if(w){ applyWall(w); return; }
+  const p = POSTERS[selected], s = PRODUCTS.nevera.sizes.find(x => x.k === qs.get('talla'));
+  if(p && s && !p.srcImg){ applyProductSize(p, s); layout(); updateTotal(); syncConfigUI(); }
+})();
 /* ?entorno=geo → salón geométrico (versión 1) · ?entorno=<id> → esa foto de entorno */
 /* ?entorno=salon|dormitorio (escenas dibujadas). Los ids viejos de foto (salon-claro, aparador,
    salon-luz...) ya no existen en 3D: se quedan en el salón, las fotos están en pared2d.html */
