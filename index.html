@@ -2219,7 +2219,7 @@ function combiSlide(dir){
     if(!es[0].isIntersecting) return; io.disconnect();
     var luego = function(){ js('colgado-scroll.js?v=767e44b3', function(){}); };
     if(window.Pared3D) return luego();
-    var p3 = function(){ js('pared3d.js?v=4876907e', luego); };
+    var p3 = function(){ js('pared3d.js?v=921910b3', luego); };
     if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
   }, { rootMargin:'900px 0px' });
   io.observe(sec);
@@ -2233,7 +2233,7 @@ function combiSlide(dir){
   var io = new IntersectionObserver(function(es){
     if(!es[0].isIntersecting) return; io.disconnect();
     /* la escena «Así se cuelga» puede haber cargado ya three.js y pared3d.js: no cargarlos dos veces */
-    var p3 = function(){ if(window.Pared3D) arrancar(); else js('pared3d.js?v=4876907e', arrancar); };
+    var p3 = function(){ if(window.Pared3D) arrancar(); else js('pared3d.js?v=921910b3', arrancar); };
     if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
   }, { rootMargin:'600px 0px' });
   io.observe(st);

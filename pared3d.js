@@ -126,8 +126,9 @@
         cara.map = tex; cara.emissiveMap = tex; cara.needsUpdate = true;
       }; img.src = src;
       /* placa de aluminio con grosor de verdad; la foto solo en la cara: las tapas van juntas en el grupo 0
-         (primero la de atrás, luego la de delante), así que la de atrás pasa a aluminio */
-      const geo = new THREE.ExtrudeGeometry(rr(w - .2, h - .2, .35), { depth:.32, bevelEnabled:true, bevelThickness:.05, bevelSize:.07, bevelSegments:3, curveSegments:8, UVGenerator:uvPlano(w, h) });
+         (primero la de atrás, luego la de delante), así que la de atrás pasa a aluminio.
+         Sin bisel: la foto llega hasta el borde, que el cuadro no lleva marco y un bisel se leía como un filo negro */
+      const geo = new THREE.ExtrudeGeometry(rr(w, h, .3), { depth:.32, bevelEnabled:false, curveSegments:8, UVGenerator:uvPlano(w, h) });
       const tapas = geo.groups[0], mitad = tapas.count / 2;
       geo.groups.splice(0, 1, { start:tapas.start, count:mitad, materialIndex:1 }, { start:tapas.start + mitad, count:mitad, materialIndex:0 });
       geo.groups.forEach((gr, k) => { if(k > 1) gr.materialIndex = 2; });
