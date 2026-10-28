@@ -406,3 +406,9 @@ const RESENAS = [];
   pinta('*');
 })();
 })();
+
+/* ═════ DISEÑOS PERSONALIZADOS (28-oct): flechas del carrusel ═════ */
+(() => {
+  const riel = document.getElementById('dpRiel'); if(!riel) return;
+  document.querySelectorAll('.dp-ctrl button').forEach(b => b.addEventListener('click', () => riel.scrollBy({ left: +b.dataset.d * riel.clientWidth * .8, behavior:'smooth' })));
+})();
