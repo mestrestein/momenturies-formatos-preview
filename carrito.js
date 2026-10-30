@@ -4,7 +4,6 @@
    piezas y precios. Aquí solo se lee ese resumen; para pagar o seguir se vuelve al editor
    (cuadro.html?carrito=1 / ?retomar=1), o se abre directamente si la página ya lo tiene cargado. */
 (function () {
-  var CUENTA = 'https://shopify.com/108862079310/account?locale=es';   // portal de clientes de Shopify
   var ENVIO_GRATIS = 60;
   var DB = 'momenturies', STORE = 'handoff', KEY = 'design', TTL = 30 * 24 * 3600e3;
 
@@ -187,9 +186,6 @@
     montar();
     botones = [].slice.call(document.querySelectorAll('[aria-label="Carrito"]')).filter(function (b) { return b !== panel; });
     botones.forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); abrir(); }); });
-    [].forEach.call(document.querySelectorAll('[aria-label="Mi cuenta"]'), function (b) {
-      b.addEventListener('click', function (e) { e.preventDefault(); location.href = CUENTA; });
-    });
     leer().then(function (s) { saved = s && s.at && Date.now() - s.at < TTL ? s : null; badge(); });
     // el editor guarda a los 0,7 s de cada cambio: el contador se pone al día solo
     setInterval(function () { if (!panel.classList.contains('open')) leer().then(function (s) { saved = s && s.at && Date.now() - s.at < TTL ? s : null; badge(); }); }, 4000);
