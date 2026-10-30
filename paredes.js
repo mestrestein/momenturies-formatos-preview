@@ -24,8 +24,10 @@ window.MOMENTURIES_wallSVG = function(w, photos, opts){
 };
 /* ── TAMAÑO DEL CONJUNTO ──
    Un conjunto cuyas piezas son todas del mismo formato y la misma talla se puede pedir en las
-   demás tallas de ese formato: es la misma composición, más grande o más pequeña (las tallas de
-   un formato guardan la proporción, así que todo crece a la vez, separación incluida).
+   demás tallas de ese formato: es la misma composición, más grande o más pequeña.
+   30-oct-2026: la separación entre cuadros NO crece con la talla (antes se escalaba todo y en la
+   L salían 9 cm de hueco y en la S 1 cm), y el clásico ya no guarda la proporción entre tallas
+   (S 10×15 es 2:3, las demás ~A4): por eso cada eje se escala aparte (ver MOMENTURIES_wallAt).
    Los que mezclan tallas se quedan con la suya. */
 window.MOMENTURIES_wallSizeKeys = function(w){
   w = w.base || w;
@@ -39,14 +41,23 @@ window.MOMENTURIES_wallAt = function(w, k){
   var base = w.base || w, f = base.pieces[0].format, s = base.pieces[0].size;
   if(!k || k === s || window.MOMENTURIES_wallSizeKeys(base).indexOf(k) < 0) return base;
   var FS = window.MOMENTURIES_FORMAT_SIZES[f], INFO = window.MOMENTURIES_SIZE_INFO[f][k];
-  var r = FS[k][0] / FS[s][0], r2 = function(v){ return Math.round(v*r*100)/100; };
+  /* los centros se mueven en cada eje lo que crece un cuadro + su separación, así el hueco entre
+     vecinos se queda en base.gap (3 cm). Eje de la orientación que más se repite. */
+  var g = base.gap || 3, nh = 0;
+  base.pieces.forEach(function(pc){ if(pc.orient === 'h') nh++; });
+  var d0 = FS[s].slice(), d1 = FS[k].slice();
+  if(nh*2 > base.pieces.length){ d0.reverse(); d1.reverse(); }
+  var rx = (d1[0] + g) / (d0[0] + g), ry = (d1[1] + g) / (d0[1] + g);
   var out = {}; for(var key in base) out[key] = base[key];
   out.base = base; out.vk = k;
   out.pieces = base.pieces.map(function(pc){
-    return { format:f, size:k, orient:pc.orient, x:r2(pc.x), y:r2(pc.y),
-             w: pc.orient === 'h' ? FS[k][1] : FS[k][0], h: pc.orient === 'h' ? FS[k][0] : FS[k][1] };
+    var w = pc.orient === 'h' ? FS[k][1] : FS[k][0], h = pc.orient === 'h' ? FS[k][0] : FS[k][1];
+    return { format:f, size:k, orient:pc.orient, x:(pc.x + pc.w/2)*rx - w/2, y:(pc.y + pc.h/2)*ry - h/2, w:w, h:h };
   });
-  out.width = Math.round(base.width*r*10)/10; out.height = Math.round(base.height*r*10)/10;
+  var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  out.pieces.forEach(function(pc){ x0 = Math.min(x0, pc.x); y0 = Math.min(y0, pc.y); x1 = Math.max(x1, pc.x + pc.w); y1 = Math.max(y1, pc.y + pc.h); });
+  out.pieces.forEach(function(pc){ pc.x = Math.round((pc.x - x0)*100)/100; pc.y = Math.round((pc.y - y0)*100)/100; });
+  out.width = Math.round((x1 - x0)*10)/10; out.height = Math.round((y1 - y0)*10)/10;
   out.price = Math.round(INFO.price*base.n*100)/100; out.soldOut = !INFO.stock;
   return out;
 };

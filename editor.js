@@ -1169,8 +1169,11 @@ function layout(){
          ocupe en torno al 40% del ancho (su ancho real, sin el aire de maxW); si no, uno pequeño salía perdido en la habitación */
       /* 12-oct · Cuánto ocupa el conjunto depende de su ancho: los pequeños se acercan hasta un 40% del
          ancho (con el tope de ROOM_ZOOM_MAX) y los grandes se quedan en un 28%, con más habitación alrededor */
-      const llenar = WALL ? ROOM_FILL_SMALL - (ROOM_FILL_SMALL - ROOM_FILL_BIG) * Math.max(0, Math.min(1, (WALL.width - 60) / 90)) : 0;
-      const sAuto = WALL ? Math.max(SIN_BRUMA ? s0 : 0, Math.min(sFit, Math.max(s0, Math.min(usableW*llenar/(WALL.width*CM), sCover*ROOM_ZOOM_MAX)))) : s0;
+      /* 30-oct · un conjunto con varias tallas se encuadra siempre como su talla más grande (como maxSizeOf con un
+         cuadro suelto): si no, cada talla ocupaba el mismo ancho de pantalla y la S y la XL se veían iguales */
+      const fw = WALL ? (wallBiggest(WALL) || WALL).width : 0;
+      const llenar = WALL ? ROOM_FILL_SMALL - (ROOM_FILL_SMALL - ROOM_FILL_BIG) * Math.max(0, Math.min(1, (fw - 60) / 90)) : 0;
+      const sAuto = WALL ? Math.max(SIN_BRUMA ? s0 : 0, Math.min(sFit, Math.max(s0, Math.min(usableW*llenar/(fw*CM), sCover*ROOM_ZOOM_MAX)))) : s0;
       /* el cliente puede alejarse desde ese encuadre hasta ver la habitación entera (ROOM_LEJOS) */
       s = s0 + (sAuto - s0) * (1 - ROOM_LEJOS);
       fitAuto = sAuto; fitMin = s0;
@@ -5289,7 +5292,7 @@ function setWallSize(k){
   if(!WALL || wallKOf(WALL) === k) return;
   const v = wallAt(WALL, k);
   if(!wallInStock(v)) return;
-  applyWall(v, {quiet:true, keepRoom:true});
+  applyWall(v, {quiet:true, keepRoom:true, sizeChange:true});
   toast('Cuadros de ' + wallPieceDims(v) + ' cm. El conjunto ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm');
 }
 const wallSoldOutTag = '<em class="wall-soldout"><span class="es">Sin existencias</span><span class="en">Out of stock</span></em>';
@@ -5395,7 +5398,9 @@ function applyWall(w, opts){
   if(selected >= n) selected = n - 1;
   /* el entorno: la foto 2D que mejor le va a este conjunto, salvo que el cliente ya haya elegido
      uno (y le quepa). Antes se ponía directamente el salón 3D. */
-  const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !roomOk(ROOM, w));
+  /* al cambiar solo la talla, la habitación se queda mientras el conjunto quepa (aunque una S quede pequeña en ella:
+     es justo lo que se quiere ver) */
+  const keep = (ROOM_BY_USER || opts.keepRoom) && !(ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom && !(opts.sizeChange ? roomFits(ROOM, w) : roomOk(ROOM, w)));
   NEVERA_PAN = 0;
   if(w.fridge){
     /* los imanes, siempre en una nevera (la que hubiera puesta, o la menta) */
@@ -5403,7 +5408,7 @@ function applyWall(w, opts){
   } else if(!keep){
     /* si el cliente había elegido la habitación, primero la otra foto de esa misma (la cercana) */
     const alt = (ROOM_BY_USER || opts.keepRoom) && ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom ? roomFor(ROOM, w) : null;
-    const r = alt || bestRoomFor(w); if(r) setRoom(r);
+    const r = alt || roomForAllSizes(w) || bestRoomFor(w); if(r) setRoom(r);
   }
   editorRootEl.classList.add('ed-wall');
   wallPreferN = 0; syncSuggest();
@@ -5507,9 +5512,18 @@ function bestRoomFor(w, ranked){
 /* Si en la habitación que tocaba el conjunto no entra entero sin alejarse de más (layout lo marca
    en FIT.apurado), se van probando las siguientes hasta dar con una donde quede bien. Solo
    cuando la habitación la ha puesto el editor: la que elige el cliente se respeta. */
+/* 30-oct · un conjunto que se puede pedir en varias tallas va a la habitación que le toca a la más grande: si no,
+   al cambiar de talla se saltaba a otra foto (más de lejos) y el conjunto se veía igual de grande */
+function wallBiggest(w){
+  const vs = wallSizes(w).filter(wallInStock);
+  return vs.length < 2 ? null : vs.reduce((m, v) => v.width*v.height > m.width*m.height ? v : m);
+}
+function roomForAllSizes(w){ const big = wallBiggest(w); return big ? bestRoomFor(big) : null; }
 function arreglarEncuadre(w){
   if(!FIT || !FIT.apurado || ROOM_CFG.mode !== 'photo' || !ROOM || ROOM.custom) return;
-  const primera = ROOM, lista = (bestRoomFor(w, true) || []).filter(r => r !== primera && roomOk(r, w)).slice(0, 10);
+  const big = wallBiggest(w), cabeTodo = r => !big || roomFits(r, big) ? 0 : 1;
+  const primera = ROOM, lista = (bestRoomFor(w, true) || []).filter(r => r !== primera && roomOk(r, w))
+    .sort((a, b) => cabeTodo(a) - cabeTodo(b)).slice(0, 10);
   for(const r of lista){ setRoom(r); if(FIT && !FIT.apurado) return; }
   setRoom(primera);
 }
