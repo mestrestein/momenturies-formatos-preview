@@ -176,7 +176,15 @@
         <div class="font-dd" id="backFontDD" data-for="backText"></div>
         <input class="txt-date" id="backDate" maxlength="12" placeholder="Fecha">
       </div>
-      <p class="txt-hint txt-back"><span class="es">Se imprime detrás del cuadro. Arrástrala para colocarla · la letra se ajusta sola al tamaño.</span><span class="en">Printed on the back. Drag it to place it · the letter size adjusts itself.</span></p>
+      <div class="txt-row txt-back txt-place">
+        <div class="zone-tabs" id="backZoneTabs" role="group" aria-label="Sitio de la dedicatoria">
+          <button type="button" class="zone-tab" data-zone="top"><span class="es">Arriba</span><span class="en">Top</span></button>
+          <button type="button" class="zone-tab" data-zone="bottom"><span class="es">Abajo</span><span class="en">Bottom</span></button>
+        </div>
+        <label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span>
+          <input type="range" id="backSizeRange" min="24" max="90" step="2" value="56"></label>
+      </div>
+      <p class="txt-hint txt-back"><span class="es">Se imprime detrás del cuadro, arriba o abajo del imán. Si escribes mucho, la letra se hace más pequeña para que quepa.</span><span class="en">Printed on the back, above or below the magnet. Long text gets smaller so it fits.</span></p>
     </div>
   </aside>
 
@@ -975,7 +983,8 @@ function makePoster(){
            orient:'portrait', crop:{scale:1,fx:0,fy:0},
            ptype:defaultType, mount:pr.hanger, format:fmt0, sizeKey:s0.k, sizeScale:1, price:s0.price,
            frontText:'', frontX:50, frontY:14, frontSize:62, frontFont:FONT_DEFAULT, frontDate:'',
-           backText:'',  backX:50,  backY:50,  backSize:46,  backFont:FONT_DEFAULT,  backDate:'' };
+           backText:'',  backX:50,  backY:50,  backSize:46,  backFont:FONT_DEFAULT,  backDate:'',
+           backZone:'bottom', backMax:56 };
 }
 
 function createPoster(){
@@ -1413,8 +1422,9 @@ function moveTextTo(mx,my){
   const p = POSTERS[selected]; if(!p) return;
   if(textDrag==='back'){
     const h = pickHit(mx,my,[p.backPlane]); if(!h||!h.uv) return;
-    p.backX = clampPct(h.uv.x*100); p.backY = clampPct((1-h.uv.y)*100);
-    applyBackText(selected);
+    // solo arriba o abajo del imán: el arrastre elige la franja, no un punto libre
+    const z = (1-h.uv.y) < 0.5 ? 'top' : 'bottom';
+    if(z !== p.backZone){ p.backZone = z; syncBackZoneUI(); applyBackText(selected); }
   } else {
     const h = pickHit(mx,my,[p.mesh]); if(!h||!h.uv) return;
     p.frontX = clampPct(h.uv.x*100); p.frontY = clampPct((1-h.uv.y)*100);
@@ -1438,8 +1448,9 @@ canvas.addEventListener('pointerdown', e=>{
       const h = pickHit(e.clientX,e.clientY,objs);
       if(h){
         const cx=h.uv?h.uv.x*100:0, cy=h.uv?(1-h.uv.y)*100:0;
+        const bz = backZoneBox(p, 100, 100);
         if(p.backPlane && h.object===p.backPlane && p.backText && p.backText.trim()
-           && Math.abs(cx-p.backX)<32 && Math.abs(cy-p.backY)<18){ textDrag='back'; }
+           && cy>=bz.y0-4 && cy<=bz.y1+4){ textDrag='back'; }
         else if(h.object===p.mesh && h.face && h.face.normal.z>0.5 && p.frontText && p.frontText.trim()
            && Math.abs(cx-p.frontX)<32 && Math.abs(cy-p.frontY)<18){ textDrag='front'; }
       }
@@ -1837,28 +1848,17 @@ function fitTextSize(ctx, text, fontOfSize, maxWpx, maxHpx, minPx, maxPx, lhFact
   ctx.font = fontOfSize(minPx);
   return { size: minPx, lines: computeLines(ctx, text, maxWpx) };
 }
-/* El imán de pared (el colgador por defecto) ocupa un rectángulo fijo en el CENTRO del
-   dorso (~44% del ancho y del alto, siempre centrado — ver magDims()). Si la dedicatoria
-   cae ahí encima, el texto queda tapado por la pieza física. En vez de dejar que se solape,
-   se busca el hueco libre más cercano por encima o por debajo del imán; si ni así cabe, se
-   deja centrada dentro de los márgenes (mejor un poco ajustada que salirse del póster). */
-function placeAwayFromObstacle(ctx, text, px, py, maxW, lh, W, H, marginPx, active){
-  const lines = computeLines(ctx, text, maxW);
-  const blockH = lines.length * lh;
-  if(!active) return { py, lines, blockH };
-  const zx0=W*0.28, zx1=W*0.72, zy0=H*0.28, zy1=H*0.72;
-  const textW = Math.max(1, ...lines.map(l => ctx.measureText(l).width));
-  const tx0 = px - textW/2, tx1 = px + textW/2;
-  if(!(tx1>zx0 && tx0<zx1)) return { py, lines, blockH };     // ya cae a un lado, sin conflicto
-  const ty0 = py - blockH/2, ty1 = py + blockH/2;
-  if(!(ty1>zy0 && ty0<zy1)) return { py, lines, blockH };     // ya cae por encima/debajo, sin conflicto
-  const gap = marginPx*0.6;
-  const upPy = zy0 - blockH/2 - gap, downPy = zy1 + blockH/2 + gap;
-  const fitsUp = upPy - blockH/2 >= marginPx, fitsDown = downPy + blockH/2 <= H - marginPx;
-  if(fitsUp && fitsDown) return { py: Math.abs(upPy-py) <= Math.abs(downPy-py) ? upPy : downPy, lines, blockH };
-  if(fitsUp)   return { py: upPy,   lines, blockH };
-  if(fitsDown) return { py: downPy, lines, blockH };
-  return { py: Math.max(marginPx+blockH/2, Math.min(H-marginPx-blockH/2, py)), lines, blockH };  // no cabe ni arriba ni abajo: se ajusta como se pueda
+/* 30-oct · Marc: la dedicatoria ya no va donde caiga. Solo se escribe en una franja ARRIBA o
+   ABAJO del imán de pared (va en el centro del dorso: magDims = 40% × 38%, y 31-69%), nunca en
+   medio, y con margen a los lados para que no vaya de canto a canto. La franja es la misma con
+   cualquier colgador. El cliente elige el tamaño; si la frase no cabe a ese tamaño, se achica
+   sola dentro de su franja. Devuelve la caja en las unidades de W × H que se le pasen. */
+const BACK_SIDE = 0.12, BACK_EDGE = 0.07, BACK_MAG_GAP = 0.27;   // fracciones del ancho / del alto
+function backZoneBox(p, W, H, dateH){
+  const x0 = W*BACK_SIDE, x1 = W*(1-BACK_SIDE);
+  return p.backZone === 'top'
+    ? { x0, x1, y0: H*BACK_EDGE + (dateH||0), y1: H*BACK_MAG_GAP }
+    : { x0, x1, y0: H*(1-BACK_MAG_GAP), y1: H*(1-BACK_EDGE) };
 }
 /* La fecha va a la esquina superior derecha, como un sello — pero nunca se sale del póster:
    si la fecha es tan ancha que su margen a la derecha o arriba se comería, el propio ancho
@@ -1960,23 +1960,19 @@ function buildBackCanvas(p, W, H){
   const c = document.createElement('canvas'); c.width=W; c.height=H;
   const x = c.getContext('2d');
   if(hasText){
-    const px=W*(p.backX/100), py0=H*(p.backY/100);
-    const maxW=Math.max(160*scl, 2*Math.min(px, W-px) - 40*scl);
-    const maxH=Math.max(80*scl, 2*Math.min(py0, H-py0) - 40*scl);
+    // la fecha va en la esquina de arriba: con la franja de arriba, el texto empieza por debajo de ella
+    const z = backZoneBox(p, W, H, hasDate ? 40*scl : 0);
+    const maxW = z.x1 - z.x0, maxH = z.y1 - z.y0;
     x.textAlign='center'; x.textBaseline='middle';
-    // tamaño automático: el más grande que entra entero (Aitor: "que no tenga que ajustar
-    // el tamaño"), y luego se aparta del imán si hiciera falta con ese mismo tamaño.
-    const fit = fitTextSize(x, p.backText, s=>fontCss(p.backFont, s), maxW, maxH, 18*scl, 90*scl, 1.3);
+    // el tamaño que elige el cliente es el máximo; si no cabe, baja hasta que entre en la franja
+    const fit = fitTextSize(x, p.backText, s=>fontCss(p.backFont, s), maxW, maxH, 8*scl, (p.backMax||56)*scl, 1.3);
     const sz = fit.size;
     p.backSize = sz/scl;
     x.font = fontCss(p.backFont, sz);
     /* 12-oct: sin contorno blanco alrededor de las letras. La imprenta no imprime blanco, así
        que el contorno no saldría y lo que se ve aquí no sería lo que llega. Tinta sólida. */
     x.fillStyle='#262628';
-    // el imán de pared (colgador por defecto) va pegado al centro del dorso: si la
-    // dedicatoria cayera encima, se aparta sola al hueco libre más cercano.
-    const { py, lines } = placeAwayFromObstacle(x, p.backText, px, py0, maxW, sz*1.3, W, H, 30*scl, mountOf(p) === 'iman-pared');
-    drawLines(x, lines, px, py, sz*1.3, false);
+    drawLines(x, fit.lines, W/2, (z.y0+z.y1)/2, sz*1.3, false);
   }
   if(hasDate){
     drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, '#262628', null);
@@ -2745,6 +2741,24 @@ if(!FRONT_TEXT){   // sin frase delante: se esconden su rótulo, el campo y la f
   if(row) row.style.display = 'none';
 }
 [backInput,backDateInput].forEach(el=>el.addEventListener('input',bindBack));
+const backSizeRange = document.getElementById('backSizeRange');
+function syncBackZoneUI(){
+  const p = POSTERS[selected]; if(!p) return;
+  document.querySelectorAll('#backZoneTabs [data-zone]').forEach(b => {
+    const on = b.dataset.zone === (p.backZone || 'bottom');
+    b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
+  });
+  backSizeRange.value = p.backMax || 56;
+}
+document.querySelectorAll('#backZoneTabs [data-zone]').forEach(b => b.addEventListener('click', () => {
+  const p = POSTERS[selected]; if(!p) return;
+  p.backZone = b.dataset.zone; syncBackZoneUI(); setFace(true); applyBackText(selected);
+}));
+backSizeRange.addEventListener('input', () => {
+  const p = POSTERS[selected]; if(!p) return;
+  p.backMax = +backSizeRange.value; applyBackText(selected);
+});
+backSizeRange.addEventListener('focus', () => setFace(true));
 [frontInput,frontDateInput].forEach(el=>el.addEventListener('focus',()=>{ setFace(false); }));
 /* Aitor: "por detrás se tiene que ver cerca para apreciar lo que has escrito" — al escribir
    la dedicatoria la cámara se acerca sola (como el zoom manual, mismo tZ); al salir de ese
@@ -2860,6 +2874,7 @@ function syncConfigUI(){
      es imán ni se dibuja (applyBackText) ni va al carrito. */
   syncBackForProduct(p);
   backInput.value =p.backText ||''; backDateInput.value =p.backDate ||'';
+  syncBackZoneUI();
   if(!p.frontFont) p.frontFont = FONT_DEFAULT;
   if(!p.backFont)  p.backFont  = FONT_DEFAULT;
   frontFontDD.render(); backFontDD.render();
@@ -3208,6 +3223,7 @@ async function saveDesign(){
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
       frontText:p.frontText, frontX:p.frontX, frontY:p.frontY, frontSize:p.frontSize, frontFont:p.frontFont, frontDate:p.frontDate,
       backText:p.backText, backX:p.backX, backY:p.backY, backSize:p.backSize, backFont:p.backFont, backDate:p.backDate,
+      backZone:p.backZone, backMax:p.backMax,
       photo: p.file ? ('photo:' + p.uid) : null, thumb: p.thumb || null,
     }));
     if(!items.length){ if(_userEdited) await clearDesign(); return; }
@@ -3265,6 +3281,8 @@ async function restoreDesign(saved){
       Object.assign(p, {
         frontText:FRONT_TEXT ? it.frontText||'' : '', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:FRONT_TEXT ? it.frontDate||'' : '',
         backText:it.backText||'',  backX:it.backX,  backY:it.backY,  backSize:it.backSize,  backFont:it.backFont||FONT_DEFAULT,  backDate:it.backDate||'',
+        // los guardados antes del 30-oct no tienen franja: se saca de dónde estaba (encima o debajo de la mitad)
+        backZone: it.backZone || ((it.backY != null && it.backY < 50) ? 'top' : 'bottom'), backMax: it.backMax || 56,
       });
       const i = POSTERS.indexOf(p);
       if(it.photo && st){
