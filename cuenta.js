@@ -186,7 +186,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   /* ── 3D ── */
   function script(src){ return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); }); }
   let motor;
-  const cargar3d = () => motor = motor || (window.THREE ? Promise.resolve() : script('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js')).then(() => window.Pared3D || script('pared3d.js'));
+  const cargar3d = () => motor = motor || (window.THREE ? Promise.resolve() : script('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js')).then(() => window.Pared3D || script('pared3d.js?v=a2754875'));
   function traseraCanvas(w, h, texto, fec){
     const c = document.createElement('canvas'); c.width = 600; c.height = Math.round(600 * h / w); const x = c.getContext('2d'), H = c.height;
     const g = x.createLinearGradient(0, 0, 600, H); g.addColorStop(0, '#e9e8e5'); g.addColorStop(.5, '#d4d3cf'); g.addColorStop(1, '#e4e3df');
