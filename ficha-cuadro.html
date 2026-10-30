@@ -74,7 +74,8 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 
 /* ═════════ HERO / COMPRA ═════════ */
 .buy{padding:34px 0 80px}
-.buy .c{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:56px;align-items:stretch}
+.buy .c{display:grid;grid-template-columns:minmax(0,1.12fr) 190px minmax(0,1fr);gap:32px;align-items:stretch}
+@media(max-width:1180px){.buy .c{grid-template-columns:minmax(0,1.1fr) 160px minmax(0,1fr);gap:24px}}
 @media(max-width:980px){.buy .c{grid-template-columns:1fr;gap:28px}}
 .crumbs{font-size:12.5px;color:var(--mid);margin-bottom:16px}
 .crumbs a{text-decoration:none}
@@ -145,7 +146,9 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .info .rating5 .stars{font-size:18px}
 .info .rating5 a{color:inherit}
 /* 4 ventajas en rejilla */
-.bul4{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 4px}
+/* 30-oct: las 4 ventajas van en su columna, entre la galería y la info; en móvil, debajo de las fotos */
+.bul4{list-style:none;display:grid;grid-template-columns:1fr;align-content:start;gap:10px;margin:31px 0 0;position:sticky;top:84px}
+@media(max-width:980px){.bul4{grid-template-columns:1fr 1fr;margin:0;position:static}}
 .bul4 li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:var(--cream);border-radius:14px;padding:12px 12px;font-size:12.5px;line-height:1.35;color:var(--mid)}
 .bul4 li b{display:block;font-size:14px;line-height:1.25;color:var(--ink);margin-bottom:2px}
 .bul4 li i{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:17px}
@@ -435,19 +438,19 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     </div>
   </div>
 
+  <ul class="bul4" aria-label="Ventajas">
+    <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos</div></li>
+    <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros</div></li>
+    <li><i>🛋️</i><div><b>Míralo en tu casa</b>Colgado en tu pared antes de pagar</div></li>
+    <li><i>💌</i><div><b>Con dedicatoria detrás</b>Un regalo que no acaba en un cajón</div></li>
+  </ul>
+
   <div class="info">
     <div class="coupon">🏷️ −10 % en tu primer pedido <code id="cupon" title="Copiar código">HOLA10</code></div>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
     <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras, y listo. Dale vida a vuestro hogar en segundos con <b>cuadros metálicos, con colgado magnético</b> fácil de instalar, sin herramientas ni agujeros.</p>
     <div class="from"><b>desde 19,99 €</b><span>IVA incluido · imán incluido</span></div>
-
-    <ul class="bul4">
-      <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos</div></li>
-      <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros</div></li>
-      <li><i>🛋️</i><div><b>Míralo en tu casa</b>Colgado en tu pared antes de pagar</div></li>
-      <li><i>💌</i><div><b>Con dedicatoria detrás</b>Un regalo que no acaba en un cajón</div></li>
-    </ul>
 
     <div class="packs-h">Uno queda bien · varios quedan mejor</div>
     <div id="packs"></div>
