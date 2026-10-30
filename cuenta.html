@@ -148,18 +148,9 @@
   .m-hd p{font-size:12.5px;color:var(--mid);margin-top:2px}
   .m-x{width:40px;height:40px;flex:none;border-radius:50%;border:none;background:#f4f1ec;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .m-x:hover{background:#e9e3da}
-  .m-stage{position:relative;flex:1;min-height:0;background:#e9e3d9;touch-action:none;cursor:grab}
-  .m-stage:active{cursor:grabbing}
-  .m-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .m-wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mid);pointer-events:none}
-  .m-ft{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
-  .seg{display:inline-flex;background:#f1ede6;border-radius:999px;padding:3px}
-  .seg button{border:none;background:none;font:500 13px var(--font-sans);padding:8px 16px;border-radius:999px;cursor:pointer;color:var(--ink2)}
-  .seg button[aria-pressed="true"]{background:#fff;color:var(--black);box-shadow:0 1px 3px rgba(0,0,0,.1)}
-  .walls{display:flex;gap:8px;align-items:center}
-  .walls span{font-size:12.5px;color:var(--mid);margin-right:4px}
-  .walls button{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12);cursor:pointer}
-  .walls button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--black)}
+  .m-stage{position:relative;flex:1;min-height:0;background:#f5f3f0}
+  .m-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .m-wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--mid);pointer-events:none;background:#f5f3f0}
   .m-tip{font-size:12.5px;color:var(--mid)}
 
   @media(max-width:860px){
@@ -181,7 +172,6 @@
     .m{padding:0}
     .m-box{width:100%;height:100%;border-radius:0}
     .m-hd{padding:12px 12px 10px 16px}
-    .m-ft{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
     .m-tip{display:none}
   }
   @media(max-width:400px){ .c-tab{padding:9px 13px;font-size:13.5px} .c-stat b{font-size:22px} }
@@ -266,24 +256,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
-    <div class="m-stage" id="st-giro"><canvas></canvas><div class="m-wait">Preparando el 3D…</div></div>
-    <div class="m-stage" id="st-pared" hidden><canvas></canvas><div class="m-wait">Preparando la pared…</div></div>
-    <div class="m-ft" id="m-ft-giro">
-      <div class="seg" role="group" aria-label="Lado">
-        <button type="button" data-lado="0" aria-pressed="true">Delante</button>
-        <button type="button" data-lado="1" aria-pressed="false">Detrás</button>
-      </div>
-      <span class="m-tip">Arrastra para girarlo</span>
-      <div class="walls" role="group" aria-label="Color de pared"><span>Pared</span>
-        <button type="button" data-pared="beige" aria-pressed="true" aria-label="Beige" style="background:#d9cdbb"></button>
-        <button type="button" data-pared="blanca" aria-pressed="false" aria-label="Blanca" style="background:#f2f0ec"></button>
-        <button type="button" data-pared="gris" aria-pressed="false" aria-label="Gris" style="background:#a9a7a3"></button>
-        <button type="button" data-pared="oscura" aria-pressed="false" aria-label="Oscura" style="background:#3b3a38"></button>
-      </div>
-    </div>
-    <div class="m-ft" id="m-ft-pared" hidden>
-      <span class="m-tip" style="display:block">Medidas reales, colgado sobre un salón de verdad.</span>
-    </div>
+    <div class="m-stage"><iframe id="m-frame" title="Visor 3D" src="about:blank"></iframe><div class="m-wait" id="m-wait">Preparando el 3D…</div></div>
   </div>
 </div>
 

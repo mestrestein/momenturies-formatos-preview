@@ -130,7 +130,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
       Object.entries(grupos).forEach(([k, ps]) => {
         const [id, nom, med] = k.split('|'), [W, H] = (med || '').split('x').map(parseFloat);
         ps.forEach(p => { const v = (p.a._pieza || '0,0,0,0').split(',').map(parseFloat); p.pos = { x:v[0], y:v[1], w:v[2] || p.w, h:v[3] || p.h }; });
-        CONJ.push({ nombre:nom || 'Conjunto', W, H, ps, o });
+        CONJ.push({ id, nombre:nom || 'Conjunto', W, H, ps, o });
       });
       const sueltos = fotos.filter(p => p.tipo === 'cuadro' && !p.a._conjunto);
       if(!Object.keys(grupos).length && sueltos.length > 1){
@@ -183,96 +183,31 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   function tab(t){ tabs.forEach(b => { const on = b === t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; $('#' + b.getAttribute('aria-controls')).hidden = !on; }); }
   tabs.forEach((b, i) => { b.onclick = () => tab(b); b.onkeydown = e => { const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if(d){ const n = tabs[(i + d + tabs.length) % tabs.length]; tab(n); n.focus(); } }; });
 
-  /* ── 3D ── */
-  function script(src){ return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); }); }
-  let motor;
-  const cargar3d = () => motor = motor || (window.THREE ? Promise.resolve() : script('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js')).then(() => window.Pared3D || script('pared3d.js?v=a2754875'));
-  function traseraCanvas(w, h, texto, fec){
-    const c = document.createElement('canvas'); c.width = 600; c.height = Math.round(600 * h / w); const x = c.getContext('2d'), H = c.height;
-    const g = x.createLinearGradient(0, 0, 600, H); g.addColorStop(0, '#e9e8e5'); g.addColorStop(.5, '#d4d3cf'); g.addColorStop(1, '#e4e3df');
-    x.fillStyle = g; x.fillRect(0, 0, 600, H);
-    x.fillStyle = '#2b2b2b'; x.textAlign = 'center'; x.font = 'italic 30px Georgia, serif';
-    const pal = (texto || '').split(' '), lineas = []; let l = '';
-    pal.forEach(p => { if(x.measureText(l + ' ' + p).width > 470 && l){ lineas.push(l); l = p; } else l = l ? l + ' ' + p : p; }); if(l) lineas.push(l);
-    let y = H * .72; lineas.forEach(s => { x.fillText(s, 300, y); y += 40; });
-    if(fec){ x.font = '18px Georgia, serif'; x.fillStyle = '#6b6b6b'; x.fillText(fec, 300, y + 10); }
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  /* ── 3D: el MISMO visor de la página de producto (cuadro.html / sobremesa.html / iman.html) dentro de la ventana.
+     Las fotos pasan por photo-handoff (IndexedDB, mismo origen) y la página las monta como si las hubiera subido el
+     cliente: con ?formato=…&encuadre=0 entra la foto de imprenta tal cual, sin recortar; un conjunto, con ?pared=. ── */
+  const DEST = { cuadro:'cuadro.html', sobremesa:'sobremesa.html', iman:'iman.html' };
+  const formato = p => { const r = p.w && p.h ? Math.min(p.w, p.h) / Math.max(p.w, p.h) : .75; return r > .9 ? 'cuadrado' : r < .71 ? 'clasico' : 'retrato'; };
+  async function aFile(p){
+    const b = await (await fetch(DEMO ? p.foto : cld(p.foto, 'q_auto'))).blob();   // la de imprenta: ya va recortada a su formato
+    return new File([b], 'foto.' + ((b.type.split('/')[1]) || 'jpg'), { type:b.type });
   }
-  function trasera(p){
-    let map;
-    if(p.a._dedicatoria_imagen && !DEMO){ map = new THREE.TextureLoader().setCrossOrigin('anonymous').load(cld(p.a._dedicatoria_imagen, 'w_1600,q_auto')); map.colorSpace = THREE.SRGBColorSpace; }
-    else map = traseraCanvas(p.w, p.h, p.a['Dedicatoria (dorso)'], p.a['Fecha (dorso)']);
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(p.w - .3, p.h - .3), new THREE.MeshStandardMaterial({ map, metalness:.35, roughness:.45 }));
-    m.rotation.y = Math.PI; m.position.z = .37; return m;
-  }
-  const fotoTex = p => DEMO ? p.foto : cld(p.foto, 'w_2000,q_auto');
-  let G = null, P1 = null, giro = 0, objetivo = null, arr = null, ult = 0;
-  function initGiro(){
-    const stage = $('#st-giro');
-    P1 = Pared3D({ canvas:stage.querySelector('canvas'), stage, foto:'fotos/fondos/pared-beige.webp', fotoPx:[1254, 1254], pxPorCm:10,
-      foco:{ x:0, y:0, w:80, h:80 }, luz:[-60, 70, 120], blur:24, sombra:.22, fov:26 });
-    stage.addEventListener('pointerdown', e => { arr = e.clientX; objetivo = null; stage.setPointerCapture(e.pointerId); });
-    stage.addEventListener('pointermove', e => { if(arr === null) return; giro += (e.clientX - arr) * .012; arr = e.clientX; });
-    const soltar = () => { arr = null; ult = performance.now(); };
-    stage.addEventListener('pointerup', soltar); stage.addEventListener('pointercancel', soltar);
-    P1.bucle(1e6, t => {
-      if(!G) return;
-      if(objetivo !== null) giro += (objetivo - giro) * .1;
-      else if(arr === null && performance.now() - ult > 2500) giro += .35 / 60;
-      G.position.set(0, Math.sin(t * 1.2) * .4, 12); G.rotation.set(.04, giro, 0);
-    });
-  }
-  let P2 = null, G2 = null;
-  function initPared(){
-    const stage = $('#st-pared');
-    P2 = Pared3D({ canvas:stage.querySelector('canvas'), stage, foto:'fotos/entornos/salon-luz.jpg', fotoPx:[2304, 2236], pxPorCm:9.75,
-      foco:{ x:22, y:-10, w:140, h:140 }, luz:[-90, 80, 170], blur:20, sombra:.3 });
-    P2.bucle(1e6, () => {});
-  }
-  const modal = $('#modal'); let antes = null;
-  function abrir(modo, tit, sub){
+  const modal = $('#modal'), marco = $('#m-frame'); let antes = null;
+  async function abrir(tit, sub, ps, extra){
     antes = document.activeElement; modal.hidden = false; document.body.style.overflow = 'hidden';
     $('#m-tit').textContent = tit; $('#m-sub').textContent = sub;
-    $('#st-giro').hidden = $('#m-ft-giro').hidden = modo !== 'giro';
-    $('#st-pared').hidden = $('#m-ft-pared').hidden = modo !== 'pared';
+    $('#m-wait').hidden = false; marco.src = 'about:blank';
     modal.querySelector('.m-x').focus();
+    try { await MOMENTURIES_PHOTO.put(await Promise.all(ps.map(aFile))); }
+    catch(e){ $('#m-wait').textContent = 'No se ha podido cargar la foto.'; return; }
+    marco.onload = () => { $('#m-wait').hidden = true; };
+    marco.src = DEST[ps[0].tipo] + '?foto=1&encuadre=0&formato=' + formato(ps[0]) + (extra || '');
   }
-  function cerrar(){ modal.hidden = true; document.body.style.overflow = ''; if(antes) antes.focus(); }
+  function cerrar(){ modal.hidden = true; marco.src = 'about:blank'; document.body.style.overflow = ''; if(antes) antes.focus(); }
   modal.addEventListener('click', e => { if(e.target.closest('[data-cerrar]')) cerrar(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && !modal.hidden) cerrar(); });
-  async function ver(p){
-    abrir('giro', p.etiqueta, 'Pedido ' + p.o.name);
-    try { await cargar3d(); } catch(e){ $('#st-giro .m-wait').textContent = 'No se ha podido cargar el 3D.'; return; }
-    if(!P1) initGiro();
-    $('#st-giro .m-wait').hidden = true;
-    if(G) P1.scene.remove(G);
-    G = P1.cuadro(fotoTex(p), p.w || 30, p.h || 40); G.add(trasera(p));
-    giro = 0; objetivo = null; ult = performance.now(); lado(0, false);
-    const s = Math.max(p.w || 30, p.h || 40) * 1.9; P1.encuadre({ x:0, y:0, w:s, h:s });
-  }
-  async function pared(s){
-    abrir('pared', s.nombre, num(s.W) + '×' + num(s.H) + ' cm · ' + s.ps.length + ' piezas');
-    try { await cargar3d(); } catch(e){ $('#st-pared .m-wait').textContent = 'No se ha podido cargar el 3D.'; return; }
-    if(!P2) initPared();
-    $('#st-pared .m-wait').hidden = true;
-    if(G2) P2.scene.remove(G2);
-    G2 = new THREE.Group(); P2.scene.add(G2);
-    const Y0 = Math.max(-14, -36 + s.H / 2);
-    s.ps.forEach(p => { const c = P2.cuadro(fotoTex(p), p.pos.w, p.pos.h); P2.scene.remove(c); c.position.set(22 + (p.pos.x + p.pos.w / 2 - s.W / 2), Y0 - (p.pos.y + p.pos.h / 2 - s.H / 2), .5); G2.add(c); });
-    P2.encuadre({ x:22, y:Y0, w:s.W + 40, h:s.H + 40 });
-  }
-  function lado(n, anim = true){
-    modal.querySelectorAll('[data-lado]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.lado === n));
-    if(anim){ const k = Math.round((giro - n * Math.PI) / (2 * Math.PI)); objetivo = k * 2 * Math.PI + n * Math.PI; }
-  }
-  modal.querySelectorAll('[data-lado]').forEach(b => b.onclick = () => lado(+b.dataset.lado));
-  const texs = {};
-  modal.querySelectorAll('.walls [data-pared]').forEach(b => b.onclick = () => {
-    if(!P1) return;
-    const n = b.dataset.pared; modal.querySelectorAll('.walls [data-pared]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    if(!texs[n]){ texs[n] = new THREE.TextureLoader().load('fotos/fondos/pared-' + n + '.webp'); texs[n].colorSpace = THREE.SRGBColorSpace; }
-    P1.fondo.material.map = texs[n]; P1.fondo.material.needsUpdate = true;
-  });
+  const ver = p => abrir(p.etiqueta, 'Pedido ' + p.o.name, [p]);
+  const pared = s => abrir(s.nombre, num(s.W) + '×' + num(s.H) + ' cm · ' + s.ps.length + ' piezas', s.ps, s.id && !DEMO ? '&pared=' + encodeURIComponent(s.id) : '');
 
   async function otra(p){
     const dest = { cuadro:'cuadro.html', sobremesa:'sobremesa.html', iman:'iman.html' }[p.tipo];
