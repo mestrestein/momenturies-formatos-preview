@@ -5,12 +5,14 @@
    Redirect URI a dar de alta allí: https://momenturies.com/cuenta.html (y la de vista-cambios si se prueba ahí).
    Vacíos = modo ejemplo. */
 const CUENTA = { shopId:'108862079310', clientId:'', apiVersion:'2026-10' };
+/* Repetir pedido: el carrito se crea con la Storefront API, como en el editor. El token lo pone el worker de la web al servir este archivo. */
+const TIENDA = { domain:'tp6upb-7k.myshopify.com', storefrontToken:'' };
 
 /* consulta en una sola constante para poder corregir nombres de campos fácilmente */
 const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   orders(first:20, sortKey:PROCESSED_AT, reverse:true){ nodes{ id name processedAt financialStatus cancelledAt statusPageUrl
     totalPrice{amount currencyCode}
-    lineItems(first:20){nodes{ name title variantTitle quantity image{url} customAttributes{key value} }}
+    lineItems(first:20){nodes{ name title variantTitle variantId quantity image{url} customAttributes{key value} }}
     fulfillments(first:3){nodes{ status latestShipmentStatus trackingInformation{company number url} }} } } } }`;
 
 (function(){
@@ -101,11 +103,17 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
     const tit = li.name || li.title || '', colg = /colgador/i.test(tit);
     const tipo = /sobremesa/i.test(tit) ? 'sobremesa' : /im[aá]n/i.test(tit) && !colg ? 'iman' : 'cuadro';
     const foto = a._foto_frontal || (!colg && li.image && li.image.url) || '';
-    let w = 0, h = 0;
+    let w = 0, h = 0, print = null;
     const m = (a._impresion || '').match(/([\d.,]+)\s*[×x]\s*([\d.,]+)\s*cm(?:.*?con\s*([\d.,]+)\s*mm)?/i);
-    if(m){ const b = m[3] ? parseFloat(m[3].replace(',', '.')) / 10 : 0; w = parseFloat(m[1].replace(',', '.')) - 2 * b; h = parseFloat(m[2].replace(',', '.')) - 2 * b; }
+    if(m){
+      const b = m[3] ? parseFloat(m[3].replace(',', '.')) / 10 : 0, W = parseFloat(m[1].replace(',', '.')), H = parseFloat(m[2].replace(',', '.'));
+      w = W - 2 * b; h = H - 2 * b;
+      /* el archivo de imprenta entero (con sangrado), para rehacerlo con otra foto a la misma medida */
+      const d = (a._impresion.match(/(\d+)\s*ppp/i) || [])[1];
+      print = { W, H, b, dpi:d ? +d : 300 };
+    }
     const nombre = { cuadro:'Cuadro', sobremesa:'Sobremesa', iman:'Imán de nevera' }[tipo];
-    return { li, a, o, tipo, w, h, foto, img:foto ? cld(foto, 'w_600,q_auto,f_auto') : (li.image && li.image.url),
+    return { li, a, o, tipo, w, h, print, foto, img:foto ? cld(foto, 'w_600,q_auto,f_auto') : (li.image && li.image.url),
       etiqueta:foto ? nombre + (w ? ' · ' + num(w) + '×' + num(h) + ' cm' : '') : tit };
   }
   function estado(o){
@@ -121,7 +129,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   let PIEZAS = [], CONJ = [];
   function pintar(c){
     const orders = c.orders.nodes;
-    PIEZAS = []; CONJ = [];
+    PIEZAS = []; CONJ = []; PEDIDOS = orders; EMAIL = (c.emailAddress && c.emailAddress.emailAddress) || '';
     orders.forEach(o => {
       o._p = o.lineItems.nodes.map(li => pieza(li, o));
       const fotos = o._p.filter(p => p.foto); PIEZAS.push(...fotos);
@@ -152,6 +160,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
         ${e.paso < 0 ? '' : `<ol class="tl">${PASOS.map((s, i) => `<li class="${i <= e.paso ? 'on' : ''} ${i === e.paso ? 'now' : ''}">${s}</li>`).join('')}</ol>`}
         ${t ? `<div class="o-track">${esc(t.company || 'Envío')} · ${esc(t.number || '')} ${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">Seguir el envío</a>` : ''}</div>` : ''}
         <div class="o-thumbs">${o._p.filter(p => p.img).map(p => `<img src="${esc(p.img)}" alt="" loading="lazy">`).join('')}</div>
+        ${e.paso < 0 ? '' : `<div class="o-rep"><button class="chip dark" data-repetir="${oi}">Repetir pedido</button>${o._p.some(p => p.foto && p.w) ? `<button class="chip" data-rehacer="${oi}">Repetir con otras fotos</button>` : ''}</div>`}
         <details class="o-det"><summary><span class="abrir">Ver detalle</span><span class="cerrar">Ocultar detalle</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></summary>
           ${o._p.map(p => {
@@ -176,7 +185,16 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
         <h3>${esc(s.nombre)}</h3><p>${s.ps.length} piezas · ${num(s.W)}×${num(s.H)} cm · pedido ${esc(s.o.name)}</p>
         <button class="chip dark" data-pared="${i}">Ver en 3D en una pared</button></article>`).join('')}</div>`
       : vacio('Todavía no tienes conjuntos', 'Si pides dos o más cuadros juntos, aquí los verás colgados como en tu pared.');
+    $('#mas').innerHTML = MAS.map(([href, img, t, d]) => `<a class="x-card" href="${href}"><div class="x-img" style="background-image:url(${img})"></div><b>${t}</b><span>${d}</span></a>`).join('');
   }
+  /* «Añade más»: el resto de productos de la tienda */
+  const MAS = [
+    ['ficha-cuadro.html', 'fotos/producto-metalico.jpg', 'Cuadro', 'Para la pared, con imán premium y sin agujeros.'],
+    ['paredes.html', 'fotos/producto-hero-pared.jpg', 'Paredes', 'Conjuntos de varias fotos montados para tu hueco.'],
+    ['sobremesa.html', 'fotos/producto-sobremesa.jpg', 'Sobremesa', 'Con peana de bambú, para la mesita o la estantería.'],
+    ['ficha-iman.html', 'fotos/producto-iman-nevera.jpg', 'Imán', 'Pequeño, para la nevera o para sumar al pedido.'],
+    ['colgador-iman.html', 'fotos/pdp/paso-4-colgado.webp', 'Colgador de imán', 'Para colgar lo que quieras, hasta 1 kg.'],
+  ];
 
   /* ── pestañas ── */
   const tabs = [...document.querySelectorAll('.c-tab')];
@@ -219,8 +237,163 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   }
   $('#dentro').addEventListener('click', e => {
     const v = e.target.closest('[data-ver]'), o = e.target.closest('[data-otra]'), w = e.target.closest('[data-pared]');
+    const r = e.target.closest('[data-repetir]'), n = e.target.closest('[data-rehacer]');
     if(v) ver(PIEZAS[+v.dataset.ver]); else if(o) otra(PIEZAS[+o.dataset.otra]); else if(w) pared(CONJ[+w.dataset.pared]);
+    else if(r) repetir(PEDIDOS[+r.dataset.repetir], r); else if(n) rehacer(PEDIDOS[+n.dataset.rehacer]);
   });
+
+  /* ── repetir pedido: mismo carrito (mismas variantes, mismas fotos de imprenta y mismos datos) y al pago ── */
+  let PEDIDOS = [], EMAIL = '';
+  async function tienda(query, variables){
+    const r = await fetch('https://' + TIENDA.domain + '/api/2025-01/graphql.json', { method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-Shopify-Storefront-Access-Token':TIENDA.storefrontToken }, body:JSON.stringify({ query, variables }) });
+    const j = await r.json(); if(j.errors) throw new Error(j.errors.map(x => x.message).join('; ')); return j.data;
+  }
+  async function alPago(lines){
+    if(DEMO) throw new Error('Esto es un ejemplo: con tu cuenta, este botón te lleva al pago con el pedido ya hecho.');
+    if(!TIENDA.storefrontToken) throw new Error('La tienda no está conectada ahora mismo. Prueba en un rato.');
+    const input = { lines }; if(EMAIL) input.buyerIdentity = { email:EMAIL };
+    const d = await tienda(`mutation($input:CartInput!){ cartCreate(input:$input){ cart{ checkoutUrl } userErrors{ message } } }`, { input });
+    const er = d.cartCreate.userErrors; if(er && er.length) throw new Error(er.map(x => x.message).join('; '));
+    location.href = d.cartCreate.cart.checkoutUrl;
+  }
+  const linea = (li, attrs) => ({ merchandiseId:li.variantId, quantity:li.quantity || 1, attributes:attrs || li.customAttributes || [] });
+  function aviso(el, txt){
+    let n = el.parentNode.querySelector('.o-msg'); if(!n){ n = document.createElement('p'); n.className = 'o-msg'; el.parentNode.appendChild(n); }
+    n.textContent = txt; n.hidden = !txt;
+  }
+  async function repetir(o, btn){
+    const lis = o.lineItems.nodes.filter(li => li.variantId || DEMO);
+    if(!lis.length) return aviso(btn, 'Este pedido ya no se puede repetir tal cual: alguno de sus productos ha cambiado.');
+    const t = btn.textContent; btn.disabled = true; btn.textContent = 'Preparando el pago…'; aviso(btn, '');
+    try { await alPago(lis.map(li => linea(li))); }
+    catch(e){ aviso(btn, e.message); btn.disabled = false; btn.textContent = t; }
+  }
+
+  /* ── repetir con otras fotos: un personalizador sencillo, sin entorno. Cada pieza mantiene su medida exacta;
+     se elige foto, se encuadra arrastrando y con el zoom, y se rehace el archivo de imprenta a la misma resolución. ── */
+  let REH = null;
+  const CAMBIAN = ['_foto_frontal', '_foto_original', 'Frase (frontal)', 'Fecha (frontal)'];
+  function rehacer(o){
+    REH = { o, ps:o._p.map(p => ({ p, nueva:null, z:1, dx:0, dy:0 })) };
+    $('#r-tit').textContent = 'Pedido ' + o.name + ' con otras fotos';
+    pintarReh();
+    $('#dentro').hidden = true; $('#rehacer').hidden = false; scrollTo(0, 0);
+  }
+  function salirReh(){ $('#rehacer').hidden = true; $('#dentro').hidden = false; REH = null; }
+  function pintarReh(){
+    $('#r-grid').innerHTML = REH.ps.map((x, i) => {
+      const p = x.p;
+      if(!p.foto || !p.print) return `<article class="r-card r-fija"><div class="r-meta"><b>${esc(p.etiqueta)}</b><span>Se repite igual${p.li.quantity > 1 ? ' · × ' + p.li.quantity : ''}</span></div></article>`;
+      const frase = p.a['Frase (frontal)'] || p.a['Fecha (frontal)'];
+      return `<article class="r-card"><div class="r-box" data-caja="${i}" style="aspect-ratio:${p.print.W}/${p.print.H}">
+          <img src="${esc(x.nueva ? x.url : p.img)}" alt="" draggable="false" class="${x.nueva ? '' : 'vieja'}">
+          <i class="r-corte" style="inset:${p.print.b / p.print.H * 100}% ${p.print.b / p.print.W * 100}%"></i>
+          ${x.nueva ? '' : '<span class="r-tag">Foto de antes</span>'}</div>
+        <div class="r-meta"><b>${esc(p.etiqueta)}</b>${p.li.quantity > 1 ? `<span>× ${p.li.quantity}</span>` : ''}</div>
+        ${x.nueva ? `<label class="r-zoom">Zoom <input type="range" min="1" max="3" step=".01" value="${x.z}" data-zoom="${i}"></label>` : ''}
+        <label class="chip ${x.nueva ? '' : 'dark'} r-elegir">${x.nueva ? 'Cambiar foto' : 'Elegir otra foto'}<input type="file" accept="image/*" data-foto="${i}" hidden></label>
+        ${frase ? `<p class="r-nota">Este llevaba texto delante${x.nueva ? ': con la foto nueva va sin él' : ''}. Si lo quieres, hazlo desde el <a class="c-link" href="${{ cuadro:'cuadro.html', sobremesa:'sobremesa.html', iman:'iman.html' }[p.tipo]}">editor</a>.</p>` : ''}
+      </article>`;
+    }).join('');
+    REH.ps.forEach((x, i) => { if(x.nueva) colocar(i); });
+    const n = REH.ps.filter(x => x.nueva).length;
+    $('#r-resumen').textContent = n ? n + (n === 1 ? ' foto nueva' : ' fotos nuevas') + ' · lo demás se repite igual' : 'Elige al menos una foto nueva';
+    $('#r-pagar').disabled = !n;
+  }
+  /* geometría en unidades de la caja (ancho 1): la foto la cubre entera, con zoom y desplazamiento limitados */
+  function encaje(x){
+    const R = x.p.print.H / x.p.print.W, iw = x.img.naturalWidth, ih = x.img.naturalHeight;
+    const s = Math.max(1 / iw, R / ih) * x.z, w = iw * s, h = ih * s;
+    x.dx = Math.min(Math.max(x.dx, (1 - w) / 2), (w - 1) / 2); x.dy = Math.min(Math.max(x.dy, (R - h) / 2), (h - R) / 2);
+    return { R, w, h, l:(1 - w) / 2 - x.dx, t:(R - h) / 2 - x.dy };
+  }
+  function colocar(i){
+    const x = REH.ps[i], g = encaje(x), im = document.querySelector(`[data-caja="${i}"] img`);
+    if(!im) return;
+    Object.assign(im.style, { width:g.w * 100 + '%', height:g.h / g.R * 100 + '%', left:g.l * 100 + '%', top:g.t / g.R * 100 + '%' });
+  }
+  async function cargarFoto(i, f){
+    const x = REH.ps[i], url = URL.createObjectURL(f), img = new Image();
+    img.src = url;
+    try { await img.decode(); } catch(e){ URL.revokeObjectURL(url); return falloReh('No hemos podido abrir esa foto. Prueba con una JPG o PNG.'); }
+    if(x.url) URL.revokeObjectURL(x.url);
+    Object.assign(x, { nueva:f, url, img, z:1, dx:0, dy:0 });
+    /* aviso si la foto se queda corta para la medida (menos de 150 ppp en la pieza) */
+    const ppp = Math.min(img.naturalWidth / (x.p.print.W / 2.54), img.naturalHeight / (x.p.print.H / 2.54));
+    falloReh(ppp < 150 ? 'Una de las fotos tiene poca resolución para esa medida y puede salir borrosa.' : '');
+    pintarReh();
+  }
+  function falloReh(t){ const e = $('#r-err'); e.textContent = t; e.hidden = !t; }
+  $('#rehacer').addEventListener('change', e => {
+    const f = e.target.closest('[data-foto]'); if(f && f.files[0]) cargarFoto(+f.dataset.foto, f.files[0]);
+  });
+  $('#rehacer').addEventListener('input', e => {
+    const z = e.target.closest('[data-zoom]'); if(z){ REH.ps[+z.dataset.zoom].z = +z.value; colocar(+z.dataset.zoom); }
+  });
+  /* arrastrar la foto dentro de su caja */
+  $('#rehacer').addEventListener('pointerdown', e => {
+    const c = e.target.closest('[data-caja]'); if(!c) return;
+    const i = +c.dataset.caja, x = REH.ps[i]; if(!x.nueva) return;
+    e.preventDefault(); c.setPointerCapture(e.pointerId);
+    const W = c.clientWidth, x0 = e.clientX, y0 = e.clientY, dx0 = x.dx, dy0 = x.dy;
+    const mover = ev => { x.dx = dx0 - (ev.clientX - x0) / W; x.dy = dy0 - (ev.clientY - y0) / W; colocar(i); };
+    const soltar = () => { c.removeEventListener('pointermove', mover); c.removeEventListener('pointerup', soltar); c.removeEventListener('pointercancel', soltar); };
+    c.addEventListener('pointermove', mover); c.addEventListener('pointerup', soltar); c.addEventListener('pointercancel', soltar);
+  });
+  $('#r-volver').onclick = salirReh;
+
+  /* el archivo de imprenta nuevo: misma medida y resolución que el del pedido (con su sangrado) */
+  async function imprenta(x){
+    const pr = x.p.print, c = document.createElement('canvas');
+    c.width = Math.round(pr.W / 2.54 * pr.dpi); c.height = Math.round(pr.H / 2.54 * pr.dpi);
+    const g = encaje(x), k = c.width, ctx = c.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(x.img, g.l * k, g.t * k, g.w * k, g.h * k);
+    const b = await new Promise(r => c.toBlob(r, 'image/jpeg', .95));
+    return conDpi(b, pr.dpi);
+  }
+  async function conDpi(blob, dpi){
+    const u = new Uint8Array(await blob.arrayBuffer());
+    if(u[0] !== 0xFF || u[1] !== 0xD8 || u[2] !== 0xFF || u[3] !== 0xE0) return blob;
+    u[13] = 1; u[14] = dpi >> 8; u[15] = dpi & 255; u[16] = dpi >> 8; u[17] = dpi & 255;
+    return new Blob([u], { type:'image/jpeg' });
+  }
+  /* sube a Archivos de la tienda, por el mismo camino que el editor (/subidas/ del Vestuario) */
+  async function subir(blob, nombre){
+    const json = async r => { const j = await r.json().catch(() => ({})); if(!r.ok) throw new Error(j.error || 'No se pudo subir la foto'); return j; };
+    const p = await json(await fetch('/subidas/preparar', { method:'POST', headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ nombre, tipo:blob.type || 'image/jpeg', tamano:blob.size }) }));
+    const fd = new FormData(); p.parameters.forEach(x => fd.append(x.name, x.value)); fd.append('file', blob, nombre);
+    if(!(await fetch(p.url, { method:'POST', body:fd })).ok) throw new Error('No se pudo subir la foto');
+    const c = await json(await fetch('/subidas/confirmar', { method:'POST', headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify({ resourceUrl:p.resourceUrl, nombre }) }));
+    return c.url || c.id;
+  }
+  $('#r-pagar').onclick = async () => {
+    const btn = $('#r-pagar'), t = btn.textContent; btn.disabled = true; falloReh('');
+    try {
+      if(DEMO) throw new Error('Esto es un ejemplo: con tu cuenta, aquí se suben las fotos y vas al pago.');
+      const lines = [], vistos = new Set(), nuevas = REH.ps.filter(x => x.nueva).length; let hechas = 0;
+      for(const x of REH.ps){
+        const li = x.p.li; if(vistos.has(li)) continue; vistos.add(li);
+        if(!li.variantId) throw new Error('Alguno de los productos de este pedido ya no está a la venta.');
+        if(!x.nueva){ lines.push(linea(li)); continue; }
+        btn.textContent = 'Subiendo foto ' + (++hechas) + ' de ' + nuevas + '…';
+        const s = Date.now(), ext = (x.nueva.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        const [frontal, original] = await Promise.all([
+          subir(await imprenta(x), 'impresion-' + s + '.jpg'),
+          subir(x.nueva, 'original-' + s + '.' + ext).catch(() => null),
+        ]);
+        const at = (li.customAttributes || []).filter(a => !CAMBIAN.includes(a.key));
+        at.unshift({ key:'_foto_frontal', value:frontal });
+        if(original) at.push({ key:'_foto_original', value:original });
+        lines.push(linea(li, at));
+      }
+      btn.textContent = 'Preparando el pago…';
+      await alPago(lines);
+    } catch(e){ falloReh(e.message); btn.disabled = false; btn.textContent = t; }
+  };
 
   /* ── arranque ── */
   $('#entrar').onclick = () => { if(!CUENTA.shopId || !CUENTA.clientId){ location.href = '?demo=1'; return; } entrar().catch(() => fallo('No hemos podido abrir el acceso. Prueba otra vez.')); };
