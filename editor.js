@@ -2260,6 +2260,12 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     // el dorso puede llevar solo fecha: la imagen va siempre que haya algo detrás
     if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
     if(originalUrl) attributes.push({key:'_foto_original', value:originalUrl});
+    /* área de cliente (cuenta.html): con un conjunto puesto, cada cuadro guarda su sitio en la pared para rehacerla en 3D */
+    const pc = WALL && WALL.pieces && WALL.pieces[POSTERS.indexOf(p)];
+    if(pc){
+      attributes.push({key:'_conjunto', value:`${WALL.id}|${WALL.name}|${WALL.width}x${WALL.height}`});
+      attributes.push({key:'_pieza', value:[pc.x, pc.y, pc.w, pc.h].join(',')});
+    }
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');

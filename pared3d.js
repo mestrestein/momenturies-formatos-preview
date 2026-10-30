@@ -123,7 +123,7 @@
         const x = lienzo.getContext('2d'); x.filter = 'saturate(1.5) contrast(1.16) brightness(1.05)'; x.drawImage(img, 0, 0);
         const tex = new THREE.CanvasTexture(lienzo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
         cara.map = tex; cara.emissiveMap = tex; cara.needsUpdate = true;
-      }; img.src = src;
+      }; img.crossOrigin = 'anonymous'; img.src = src;   // las fotos de Cloudinary (área de cliente) no deben ensuciar el lienzo
       /* placa de aluminio con grosor de verdad; la foto solo en la cara: las tapas van juntas en el grupo 0
          (primero la de atrás, luego la de delante), así que la de atrás pasa a aluminio.
          Sin bisel: la foto llega hasta el borde, que el cuadro no lleva marco y un bisel se leía como un filo negro */
