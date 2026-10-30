@@ -179,6 +179,14 @@
 .txt-date:focus{outline:none;border-color:var(--black)}
 .txt-date::placeholder{color:var(--light)}
 .txt-hint{font-size:11px;color:var(--light);line-height:1.45;margin-top:-4px}
+/* dedicatoria: franja (arriba / abajo del imán) + tamaño máximo de la letra */
+.txt-place{align-items:center}
+.zone-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0}
+.zone-tab{padding:8px 10px;border:1.5px solid var(--gray2);border-radius:4px;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--black);font-family:var(--font-sans);transition:border-color .15s,background .15s,color .15s}
+.zone-tab:hover{border-color:#aaa}
+.zone-tab.active{border-color:var(--black);background:var(--black);color:var(--white)}
+.txt-size{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--black)}
+.txt-size input{flex:1;min-width:0;accent-color:var(--black)}
 
 /* selector de tipografía: un botón que se abre en una lista, cada opción escrita
    con SU PROPIA fuente y con el texto que el cliente ya ha escrito (o un ejemplo si
