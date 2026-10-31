@@ -313,14 +313,19 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   pinta();
 })();
 
-/* ═════ PRUÉBALO EN ESTA PARED: tocar una foto la cuelga en el siguiente hueco ═════ */
+/* ═════ PRUÉBALO EN ESTA PARED: tocar una foto la cuelga en el siguiente hueco ═════
+   31-oct · Marc: con «+ Tus fotos» el cliente elige de su galería (como mucho, tantas como huecos
+   tiene la pared) y se van colgando solas. No se sube nada: se ven en su móvil con URL locales, y
+   «Hacer la mía» se las pasa al editor tal cual (photo-handoff), sin volver a pedírselas. */
 (function(){
   const raiz = $('#pruebalo'); if(!raiz) return;
-  const huecos = $$('.h', raiz), botones = $$('.pe-tira button', raiz);
+  const tira = $('.pe-tira', raiz), mas = $('.pe-mas', raiz);
+  const huecos = $$('.h', raiz);
+  let botones = $$('.pe-tira button:not(.pe-mas)', raiz);
   botones.forEach(b => b.style.backgroundImage = `url(${b.dataset.img})`);
   const PRECIO = h => h.classList.contains('g') ? 54.99 : 29.99;     // 30×40 en el centro, 18×24 alrededor
   const orden = [2, 1, 3, 0, 4];                                        // se llena desde el centro
-  let auto = true;
+  let auto = true, vez = 0;   // vez: cambia al vaciar, y los vuelos que iban de antes ya no cuelgan nada
   const pinta = () => {
     const llenos = huecos.filter(h => h.classList.contains('lleno')), bruto = llenos.reduce((s, h) => s + PRECIO(h), 0), p = pctDe(llenos.length);
     const total = Math.round(bruto * (1 - p / 100) * 100) / 100;
@@ -328,18 +333,53 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
     $('.tot', raiz).innerHTML = (p ? '<s>' + eur(bruto) + '</s>' : '') + eur(total);
   };
   const colgar = b => {
-    const h = orden.map(i => huecos[i]).find(h => !h.classList.contains('lleno')); if(!h) return;
-    const img = b.dataset.img; b.classList.add('usada');
+    const h = orden.map(i => huecos[i]).find(h => !h.classList.contains('lleno') && !h.dataset.r); if(!h) return;
+    h.dataset.r = 1;   // reservado mientras vuela la foto: así dos seguidas no van al mismo hueco
+    const img = b.dataset.img, mia = vez; b.classList.add('usada');
     const a = b.getBoundingClientRect(), z = h.getBoundingClientRect();
     if(quieto || !a.width){ h.style.backgroundImage = 'url(' + img + ')'; h.classList.add('lleno'); h.textContent = ''; return pinta(); }
     const v = document.createElement('div'); v.className = 'pe-vuelo';
     Object.assign(v.style, { left:a.left + 'px', top:a.top + 'px', width:a.width + 'px', height:a.height + 'px', backgroundImage:'url(' + img + ')' });
     document.body.appendChild(v);
     requestAnimationFrame(() => requestAnimationFrame(() => Object.assign(v.style, { left:z.left + 'px', top:z.top + 'px', width:z.width + 'px', height:z.height + 'px' })));
-    setTimeout(() => { h.style.backgroundImage = 'url(' + img + ')'; h.classList.add('lleno'); h.textContent = ''; v.remove(); pinta(); }, 720);
+    setTimeout(() => { v.remove(); if(mia !== vez) return; h.style.backgroundImage = 'url(' + img + ')'; h.classList.add('lleno'); h.textContent = ''; pinta(); }, 720);
   };
   botones.forEach(b => b.onclick = () => { auto = false; colgar(b); });
-  $('.pe-otra', raiz).onclick = () => { auto = false; huecos.forEach(h => { h.classList.remove('lleno'); h.style.backgroundImage = ''; h.textContent = '+'; }); botones.forEach(b => b.classList.remove('usada')); pinta(); };
+  const vaciar = () => { vez++; huecos.forEach(h => { delete h.dataset.r; h.classList.remove('lleno'); h.style.backgroundImage = ''; h.textContent = '+'; }); botones.forEach(b => b.classList.remove('usada')); pinta(); };
+  $('.pe-otra', raiz).onclick = () => { auto = false; vaciar(); };
+
+  /* sus fotos: selector de la galería; las que pasen de los huecos se quedan fuera (el navegador no deja poner tope) */
+  let mias = [], urls = [];
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.multiple = true; input.hidden = true;
+  raiz.appendChild(input);
+  const elegir = () => { auto = false; input.value = ''; input.click(); };
+  if(mas) mas.onclick = elegir;
+  huecos.forEach(h => h.addEventListener('click', () => { if(!h.classList.contains('lleno')) elegir(); }));
+  input.addEventListener('change', () => {
+    const fs = [...(input.files || [])].filter(f => /^image\//.test(f.type) || /\.(heic|heif)$/i.test(f.name));
+    if(!fs.length) return;
+    auto = false;
+    urls.forEach(u => URL.revokeObjectURL(u));
+    mias = fs.slice(0, huecos.length); urls = mias.map(f => URL.createObjectURL(f));
+    botones.forEach(b => b.remove());
+    botones = urls.map(u => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mia'; b.setAttribute('aria-label', 'Tu foto');
+      b.dataset.img = u; b.style.backgroundImage = 'url(' + u + ')'; b.onclick = () => colgar(b); tira.appendChild(b); return b; });
+    let aviso = $('.pe-aviso', raiz);
+    if(fs.length > huecos.length){ if(!aviso){ aviso = document.createElement('p'); aviso.className = 'pe-aviso'; tira.after(aviso); }
+      aviso.textContent = 'En esta pared caben ' + huecos.length + ': hemos cogido las ' + huecos.length + ' primeras.'; }
+    else if(aviso) aviso.remove();
+    vaciar();
+    const g = vez; botones.forEach((b, i) => setTimeout(() => { if(g === vez) colgar(b); }, quieto ? 0 : 250 + i * 520));
+  });
+  /* «Hacer la mía» con sus fotos ya elegidas: van directas al editor (va antes que el clic de photo-handoff, que volvería a abrir la galería) */
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('#pruebalo [data-photo-pick]');
+    if(!a || !mias.length || !window.MOMENTURIES_PHOTO) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const dest = a.getAttribute('href') || 'cuadro.html'; a.classList.add('is-loading');
+    MOMENTURIES_PHOTO.put(mias).then(() => { location.href = dest + (dest.indexOf('?') < 0 ? '?' : '&') + 'foto=1'; }).catch(() => { location.href = dest; });
+  }, true);
   /* si nadie toca nada, se cuelgan dos solas para que se entienda */
   if('IntersectionObserver' in window){ const io = new IntersectionObserver(es => { if(!es[0].isIntersecting) return; io.disconnect();
     let k = 0; const t = setInterval(() => { if(!auto || k >= 2){ clearInterval(t); return; } colgar(botones[k++]); }, 1400); }, { threshold:.4 }); io.observe(raiz); }

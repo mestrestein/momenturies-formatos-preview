@@ -387,6 +387,10 @@
 .pe-tira button{flex:0 0 54px;height:54px;border-radius:8px;border:0;background:center/cover;cursor:pointer;transition:transform .2s,opacity .3s}
 .pe-tira button:hover{transform:translateY(-3px)}
 .pe-tira button.usada{opacity:.25;pointer-events:none}
+.pe-tira .pe-mas{flex:0 0 auto;min-width:54px;padding:0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--black,#151515);color:#fff;font:600 11px var(--sans);white-space:nowrap}
+.pe-tira .pe-mas b{font-size:20px;font-weight:300;line-height:1}
+.pe .h:not(.lleno){cursor:pointer}
+.pe-aviso{font-size:12px;color:var(--mid);margin-top:8px}
 .pe-pie{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}
 .pe-precio{font-size:14px;color:var(--mid)}
 .pe-precio b{display:block;font-size:24px;color:var(--black)}
