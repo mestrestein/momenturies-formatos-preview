@@ -4,7 +4,7 @@
 :root{--terra:#c2613a;--serif:var(--font-serif);--sans:var(--font-sans);--ease2:cubic-bezier(.65,0,.35,1)}
 
 /* ═════ HERO EN CARRUSEL: cinco ángulos, cada uno con su imagen, su texto y su botón ═════ */
-.hx{position:relative;padding:0;display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);height:clamp(560px,calc(100svh - 96px),820px);background:#f6f1ea;overflow:hidden}
+.hx{position:relative;padding:0;display:grid;grid-template-columns:minmax(0,.74fr) minmax(0,1.26fr);height:clamp(560px,calc(100svh - 96px),820px);background:#f6f1ea;overflow:hidden}
 .hx-copy{position:relative;display:flex;flex-direction:column;justify-content:center;padding:48px 56px 84px max(40px,calc((100vw - 1320px)/2 + 40px))}
 .hx-txt{display:grid}
 .hx-t{grid-area:1/1;display:flex;flex-direction:column;gap:20px;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .55s var(--ease),transform .55s var(--ease),visibility 0s .55s}
@@ -23,11 +23,12 @@
 .hx-media{position:relative;overflow:hidden;background:#e9e2d8}
 .hx-m{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease)}
 .hx-m.on{opacity:1}
-.hx-m img,.hx-m video{width:100%;height:100%;object-fit:cover;display:block}
+/* la foto llena todo el hueco; --p (en el HTML) es el encuadre de cada una para que no se corte lo importante */
+.hx-m img,.hx-m video{width:100%;height:100%;object-fit:cover;object-position:var(--p,50% 50%);display:block}
 .hx-m img{transform:scale(1.06);transition:transform 7.5s linear}
 .hx-m.on img{transform:scale(1)}
-.hx-m.pos-top img{object-position:50% 30%}
-.hx-m.pos-right video{object-position:88% 50%}
+.hx-prod{font-size:12px;line-height:1.5;color:#8a8279;font-weight:500;max-width:440px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08)}
+.hx-t p.sub.fuerte{font-weight:700;color:var(--black);margin-top:-8px}
 /* barra de diapositivas: cada ángulo con su nombre y una línea que se llena */
 .hx-nav{position:absolute;left:max(40px,calc((100vw - 1320px)/2 + 40px));bottom:30px;display:flex;gap:22px;z-index:3}
 .hx-nav button{background:none;border:0;padding:10px 0 0;font:600 12.5px var(--sans);color:#8d857b;cursor:pointer;position:relative;text-align:left;min-width:74px}
@@ -40,13 +41,17 @@
 @keyframes hxFill{to{width:100%}}
 .hx-arr{position:absolute;bottom:22px;right:22px;z-index:3;display:flex;gap:8px}
 .hx-arr button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.14);font-size:18px;cursor:pointer;color:var(--black)}
+/* las cinco pestañas caben en la columna del texto sin meterse en la foto */
+@media(min-width:861px){.hx-nav{right:32px;gap:14px}.hx-nav button{flex:1;min-width:0;line-height:1.25}}
 @media(max-width:1100px){.hx-nav{gap:14px}.hx-nav button{min-width:56px;font-size:11.5px}}
 @media(max-width:860px){
   /* móvil: la imagen arriba y el texto debajo; todo cabe en la pantalla sin bajar */
   .hx{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;height:calc(100svh - 96px);min-height:540px;max-height:780px}
   .hx-media{grid-row:1}
   .hx-copy{grid-row:2;padding:20px 20px 24px}
-  .hx-t{gap:12px}
+  .hx-t{gap:10px}
+  .hx-t p.sub.fuerte{margin-top:-6px}
+  .hx-prod{font-size:11.5px;padding-top:10px}
   .hx-t h1,.hx-t .h1{font-size:clamp(29px,8.2vw,38px)}
   .hx-t p.sub{font-size:14.5px;line-height:1.5}
   .hx-cta{width:100%;justify-content:center;padding:16px 22px}
@@ -54,9 +59,18 @@
   .hx-nav{position:static;margin-top:18px;gap:6px}
   .hx-nav button{flex:1;min-width:0;font-size:0;padding:8px 0 0}
   .hx-arr{display:none}
-  .hx-m.pos-right video{object-position:80% 50%}
 }
-@media(max-width:860px) and (max-height:700px){.hx-t p.sub{display:none}}
+/* móviles bajitos (iPhone SE…): un poco más compacto para que el hero entero quepa sin bajar */
+@media(max-width:860px) and (max-height:700px){
+  .hx{height:calc(100svh - 118px);min-height:0}
+  .hx-copy{padding:14px 20px 14px}
+  .hx-t{gap:7px}
+  .hx-t h1,.hx-t .h1{font-size:clamp(25px,7vw,30px)}
+  .hx-t p.sub{font-size:13.5px;line-height:1.4}
+  .hx-cta{padding:13px 22px}
+  .hx-prod{padding-top:7px;font-size:11px}
+  .hx-nav{margin-top:12px}
+}
 
 /* ═════ CÓMO FUNCIONA: el móvil hace el pedido entero, paso a paso ═════ */
 .cf{background:var(--beige);padding:110px 0;overflow:hidden}

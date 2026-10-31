@@ -20,7 +20,7 @@
 <!-- rendimiento: la tipografía no bloquea el primer render; las fotos de stock viven en fotos/stock/ (WebP a 2x, localizadas 11-sep-2026) -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="image" href="fotos/portada-nueva/hero-recuerdo.webp" fetchpriority="high"/>
+<link rel="preload" as="image" href="fotos/portada-nueva/hero-recuerdos-movil.webp" fetchpriority="high"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"/></noscript>
 
@@ -1415,7 +1415,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 })();
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'"/>
-<link rel="stylesheet" href="portada.css?v=e10e1748"/>
+<link rel="stylesheet" href="portada.css?v=hero3010"/>
 <script src="consent.js?v=7d550b68" defer></script>
 </head>
 <body>
@@ -1523,60 +1523,61 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 </div>
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-<!-- HERO EN CARRUSEL: cinco ángulos (recuerdos, míralo en tu casa, colgado e intercambio, regalo, tu pared). portada-nueva.js -->
+<!-- HERO EN CARRUSEL: cinco ángulos (recuerdos, sin clavos, en tu casa, con los tuyos, regalo). Fotos 16:9 enteras, sin recortar. portada.js -->
 <section class="hx" id="hx" aria-roledescription="carrusel" aria-label="Momenturies">
   <div class="hx-copy">
     <div class="hx-txt">
       <div class="hx-t on">
-        <p class="hx-tag">Tus fotos, en aluminio</p>
+        <p class="hx-tag">Tus recuerdos</p>
         <h1>No dejes tus recuerdos <em>en el móvil.</em></h1>
-        <p class="sub">Elige tus fotos, mira cómo quedan en tu pared y cuélgalas en segundos, sin hacer agujeros.</p>
+        <p class="sub">Disfrútalos cada día en casa.</p>
         <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#productos" class="hx-link">Ver formatos y precios</a></div>
-        <div class="hx-trust"><span>Imán incluido</span><span>Lo ves en tu casa antes de pedirlo</span><span>Envío a España y Europa</span></div>
-      </div>
-      <div class="hx-t">
-        <p class="hx-tag">Míralo antes de pedirlo</p>
-        <p class="h1">Mira cómo queda en tu casa, <em>desde el móvil.</em></p>
-        <p class="sub">Con tus fotos y a tamaño real. Cambia de habitación o de combinación con un toque hasta que te convenza.</p>
-        <div class="hx-btns"><a href="cuadro.html?pared=W27" class="hx-cta" data-photo-pick>Ver cómo queda en mi casa <span>→</span></a></div>
-        <div class="hx-trust"><span>Salón, cocina, dormitorio, escalera…</span><span>Más de 30 combinaciones</span></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
       </div>
       <div class="hx-t">
         <p class="hx-tag">Sin clavos</p>
-        <p class="h1">Se cuelga con un imán. <em>Y se cambia cuando quieras.</em></p>
-        <p class="sub">Pegas la base, acercas el cuadro y queda recto. Si mañana te apetece otro orden, lo despegas y lo cambias sin dejar marca.</p>
+        <p class="h1">Cuélgalo en segundos <em>sin daños en la pared.</em></p>
+        <p class="sub">Sin clavos, sin agujeros, sin ser un manitas. Con imán.</p>
+        <p class="sub fuerte">Intercámbialo de lugar cuando quieras.</p>
         <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#asi-se-cuelga" class="hx-link">Ver cómo se cuelga</a></div>
-        <div class="hx-trust"><span>Sin taladro</span><span>Base e imán incluidos</span></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">En tu casa</p>
+        <p class="h1">Mira cómo queda en tu casa, <em>desde el móvil.</em></p>
+        <p class="sub">Míralo antes de pedirlo: el lugar y tu combinación favorita.</p>
+        <div class="hx-btns"><a href="cuadro.html?pared=W27" class="hx-cta" data-photo-pick>Ver cómo queda en mi casa <span>→</span></a></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Con los tuyos</p>
+        <p class="h1">Decora tu hogar <em>con los que más quieres.</em></p>
+        <p class="sub">Crea tu pared de ensueño.</p>
+        <div class="hx-btns"><a href="#paredes" class="hx-cta">Crear mi pared <span>→</span></a><a href="paredes.html" class="hx-link">Ver las más de 30</a></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
       </div>
       <div class="hx-t">
         <p class="hx-tag">Para regalar</p>
-        <p class="h1">El regalo que se queda <em>en su pared.</em></p>
-        <p class="sub">Su foto favorita impresa en aluminio, con tu dedicatoria escrita detrás. Llega lista para colgar.</p>
+        <p class="h1">Un regalo que no acaba en un cajón: <em>acaba en su pared.</em></p>
+        <p class="sub">Con dedicatoria incluida.</p>
         <div class="hx-btns"><a href="cuadro.html" class="hx-cta terra" data-photo-pick>Hacer un regalo <span>→</span></a><a href="#para-quien" class="hx-link">Ideas por persona</a></div>
-        <div class="hx-trust"><span>Dedicatoria gratis</span><span>Se envía sin precio dentro</span></div>
-      </div>
-      <div class="hx-t">
-        <p class="hx-tag">Paredes de ensueño</p>
-        <p class="h1">Decora tu pared <em>con los tuyos.</em></p>
-        <p class="sub">Composiciones con los tamaños y la separación ya pensados. Cuantos más cuadros, más barato sale cada uno: hasta un 20 % menos.</p>
-        <div class="hx-btns"><a href="#paredes" class="hx-cta">Elegir mi pared <span>→</span></a><a href="paredes.html" class="hx-link">Ver las más de 30</a></div>
-        <div class="hx-trust"><span>-10 % con 2</span><span>-15 % con 3 o 4</span><span>-20 % con 5 o más</span></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
       </div>
     </div>
     <div class="hx-nav" role="tablist">
       <button type="button" class="on" role="tab">Tus recuerdos</button>
-      <button type="button" role="tab">En tu casa</button>
       <button type="button" role="tab">Sin clavos</button>
+      <button type="button" role="tab">En tu casa</button>
+      <button type="button" role="tab">Con los tuyos</button>
       <button type="button" role="tab">Para regalar</button>
-      <button type="button" role="tab">Tu pared</button>
     </div>
   </div>
   <div class="hx-media">
-    <div class="hx-m on pos-top"><img src="fotos/portada-nueva/hero-recuerdo.webp" alt="Una mano con el móvil delante de la misma foto colgada en el salón" fetchpriority="high"/></div>
-    <div class="hx-m pos-right"><video data-src="fotos/historia/DondeLimpio-web.mp4" poster="fotos/historia/DondeLimpio-poster.jpg" muted loop playsinline preload="none" aria-label="La misma pared en el salón, la cocina, el recibidor y el dormitorio, elegida desde el móvil"></video></div>
-    <div class="hx-m pos-top"><img src="fotos/portada-nueva/hero-intercambia.webp" alt="Una mujer cambia un cuadro de sitio en la pared" loading="lazy"/></div>
-    <div class="hx-m pos-top"><img src="fotos/portada-nueva/hero-regalo.webp" alt="Una abuela abre su regalo: una foto de sus nietos en aluminio" loading="lazy"/></div>
-    <div class="hx-m"><img src="fotos/hero-salon-1.jpg" alt="Una pared de salón con varias fotos en aluminio" loading="lazy"/></div>
+    <div class="hx-m on" style="--p:56% 50%"><img src="fotos/portada-nueva/hero-recuerdos-movil.webp" width="1920" height="1080" alt="Una pareja en el sofá enseña en el móvil las mismas fotos que tiene colgadas en aluminio en la pared" fetchpriority="high"/></div>
+    <div class="hx-m" style="--p:58% 50%"><img src="fotos/portada-nueva/hero-sin-clavos-iman.webp" width="1920" height="1080" alt="Él pega el imán en la pared y ella acerca el cuadro de aluminio para colgarlo" loading="lazy"/></div>
+    <div class="hx-m" style="--p:88% 50%"><video data-src="fotos/historia/DondeLimpio-web.mp4" poster="fotos/historia/DondeLimpio-poster.jpg" muted loop playsinline preload="none" aria-label="La misma pared en el salón, la cocina, el recibidor y el dormitorio, elegida desde el móvil"></video></div>
+    <div class="hx-m" style="--p:64% 40%"><img src="fotos/portada-nueva/hero-pared-familia.webp" width="1920" height="1080" alt="Una familia cuelga entre todos sus fotos en aluminio con imanes en la pared del salón" loading="lazy"/></div>
+    <div class="hx-m" style="--p:50% 50%"><img src="fotos/portada-nueva/hero-regalo-dedicatoria.webp" width="1920" height="1080" alt="Tres generaciones abren el regalo: su foto en aluminio con la dedicatoria «Siempre juntos» detrás" loading="lazy"/></div>
     <div class="hx-arr"><button type="button" data-d="-1" aria-label="Anterior">‹</button><button type="button" data-d="1" aria-label="Siguiente">›</button></div>
   </div>
 </section>
