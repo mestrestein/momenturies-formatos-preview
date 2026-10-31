@@ -61,6 +61,7 @@
     '.mc-l .t{width:64px;height:64px;border-radius:8px;background:#f2efe9 center/cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}' +
     '.mc-l b{display:block;font:700 15px Inter,Arial,sans-serif;color:#0d0d0d}' +
     '.mc-l span{font-size:13px;color:#888}' +
+    '.mc-l .fr{display:block;margin-top:3px;font-size:12.5px;font-style:italic;color:#6b5a48;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}' +
     '.mc-l em{font-style:normal;font-weight:700;font-size:15px;white-space:nowrap}' +
     '.mc-aviso{margin:14px 0;background:#fdf6e9;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.45;color:#6b4e16}' +
     '.mc-foot{border-top:1px solid #eee;padding:18px 22px 22px}' +
@@ -123,16 +124,16 @@
       '<div class="mc-envio">' + envio + '<i><u style="width:' + Math.min(100, r.total / ENVIO_GRATIS * 100) + '%"></u></i></div>' +
       (r.pared ? '<div class="mc-pared">Pared «' + esc(r.pared) + '»</div>' : '') +
       r.lineas.map(function (l) {
-        return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : (l.sinFoto ? ' style="background:#fff;outline:1.5px dashed #cfc6b8;outline-offset:-1.5px"' : '')) + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + (l.sinFoto ? ' · <i style="color:#b3412a;font-style:normal">sin foto</i>' : '') + '</span></div><em>' + eur(l.precio) + '</em></div>';
+        return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : (l.sinFoto ? ' style="background:#fff;outline:1.5px dashed #cfc6b8;outline-offset:-1.5px"' : '')) + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + (l.sinFoto ? ' · <i style="color:#b3412a;font-style:normal">sin foto</i>' : '') + '</span>' + (l.frase ? '<span class="fr">«' + esc(l.frase) + '»</span>' : '') + '</div><em>' + eur(l.precio) + '</em></div>';
       }).join('') +
       (r.faltan > 0 ? '<div class="mc-aviso">' + (r.faltan === 1 ? 'Falta 1 foto' : 'Faltan ' + r.faltan + ' fotos') + ' para completar la pared. Termínala en el editor para poder pedirla.</div>' : '') +
       '</div><div class="mc-foot">' +
       '<div class="mc-fila"><span>Subtotal</span><span>' + eur(r.bruto) + '</span></div>' +
       (r.dto > 0 ? '<div class="mc-fila dto"><span>Descuento por ' + n + ' piezas (-' + r.pct + ' %)</span><span>-' + eur(r.dto) + '</span></div>' : '') +
       '<div class="mc-fila tot"><span>Total</span><span>' + eur(r.total) + '</span></div>' +
-      (r.faltan > 0 ? '' : '<button class="mc-btn" type="button" data-ir="pagar">Ir a pagar →</button>') +
+      (r.faltan > 0 ? '' : '<button class="mc-btn" type="button" data-ir="pagar">Finalizar compra →</button>') +
       '<button class="mc-btn' + (r.faltan > 0 ? '' : ' o') + '" type="button" data-ir="editar">' + (r.faltan > 0 ? 'Terminar mi pared →' : 'Seguir editando') + '</button>' +
-      '<div class="mc-mini"><span>IVA incluido · envío en el siguiente paso</span><button type="button" data-ir="vaciar">Vaciar</button></div>' +
+      '<div class="mc-mini"><span>IVA incluido · pago seguro con Shopify</span><button type="button" data-ir="vaciar">Vaciar</button></div>' +
       '</div>';
     return html;
   }
@@ -157,7 +158,7 @@
           return;
         }
         if (vivo && vivo.hay()) { cerrar(); vivo[ir](); return; }
-        location.href = 'cuadro.html?' + (ir === 'pagar' ? 'carrito=1' : 'retomar=1');
+        location.href = 'cuadro.html?' + (ir === 'pagar' ? 'carrito=1&pagar=1' : 'retomar=1');   // pagar: directo al pago de Shopify
       });
     });
   }

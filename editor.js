@@ -242,7 +242,7 @@
   <div class="co-veil" id="coVeil"></div>
   <aside class="co-panel" role="dialog" aria-modal="true" aria-labelledby="coTitle">
     <div class="co-head">
-      <h2 class="co-title" id="coTitle"><span class="es">Tu pedido</span><span class="en">Your order</span></h2>
+      <h2 class="co-title" id="coTitle"><span class="es">Tu carrito</span><span class="en">Your cart</span></h2>
       <button class="co-x" id="coClose" aria-label="Cerrar">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -251,7 +251,9 @@
     <div class="co-scroll">
       <div class="co-sum" id="coSum"></div>
 
-      <div class="co-steps">
+      <!-- 31-oct (Marc): el panel es el CARRITO; el correo, la dirección y el envío se ponen en el pago de Shopify.
+           Los pasos se quedan escondidos (no se borran) por si se vuelve a cobrar dentro del editor. -->
+      <div class="co-steps" hidden>
 
         <section class="co-step" id="coStep-mail">
           <button type="button" class="co-row" data-step="mail">
@@ -340,8 +342,8 @@
 
     <div class="co-foot">
       <div class="co-foot-total" id="coFootTotal"></div>
-      <button class="co-pay" id="coPay"><span class="es">Pagar de forma segura</span><span class="en">Pay securely</span></button>
-      <p class="co-legal"><span class="es">El pago se hace en la página segura de la tienda, con tus datos ya rellenados.</span><span class="en">Payment happens on the store's secure page, with your details already filled in.</span></p>
+      <button class="co-pay" id="coPay"><span class="es">Finalizar compra →</span><span class="en">Checkout →</span></button>
+      <p class="co-legal"><span class="es">Pagas en la página segura de Shopify, donde pones la dirección y eliges el envío.</span><span class="en">You pay on Shopify's secure page, where you add your address and choose shipping.</span></p>
     </div>
   </aside>
 </div>
@@ -3050,6 +3052,13 @@ function coRenderShip(){
   });
 }
 
+/* 31-oct · la frase que va en la pieza (la dedicatoria del dorso, o la de delante), debajo de cada línea del carrito */
+const coEsc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function fraseDe(p){
+  const f = (p.ptype !== 'nevera' && p.backText && p.backText.trim()) || (p.frontText && p.frontText.trim()) || '';
+  return f.replace(/\s+/g, ' ');
+}
+const coFrase = p => { const f = fraseDe(p); return f ? `<em class="co-sum-frase">«${coEsc(f)}»</em>` : ''; };
 function coRenderSum(){
   const box = coEl('coSum'); if(!box) return;
   const items = POSTERS.filter(p=>p.srcImg);
@@ -3059,7 +3068,7 @@ function coRenderSum(){
     const mount = pr.mounts ? ' · ' + (MOUNTS[mountOf(p)]||{}).label : '';
     return `<div class="co-sum-line">
       ${p.thumb ? `<img class="co-sum-thumb" src="${p.thumb}" alt="">` : '<div class="co-sum-thumb"></div>'}
-      <span class="co-sum-txt"><b>${pr.name}</b><small>${dimsLabel(p)}${mount}</small></span>
+      <span class="co-sum-txt"><b>${pr.name}</b><small>${dimsLabel(p)}${mount}</small>${coFrase(p)}</span>
       <span class="co-sum-amt">${eur(p.price||0)}</span></div>`;
   }).join('');
   const dto = coDiscount();
@@ -3067,10 +3076,10 @@ function coRenderSum(){
     ${dto ? `<div class="co-sum-row"><span><span class="es">Subtotal</span><span class="en">Subtotal</span></span><span>${eur(coGross())}</span></div>
     <div class="co-sum-row co-sum-dto"><span><span class="es">Combinación de ${packPieces()} cuadros</span><span class="en">Set of ${packPieces()} prints</span> &minus;${packPct()}%</span><span>&minus;${eur(dto)}</span></div>` : ''}
     <div class="co-sum-row"><span><span class="es">${dto ? 'Subtotal con descuento' : 'Subtotal'}</span><span class="en">${dto ? 'Discounted subtotal' : 'Subtotal'}</span></span><span>${eur(coSubtotal())}</span></div>
-    <div class="co-sum-row"><span><span class="es">Envío</span><span class="en">Shipping</span></span><span>${envio===0?'Gratis':eur(envio)}</span></div>
-    <div class="co-sum-row total"><span>Total</span><span>${eur(coSubtotal()+envio)}<small><span class="es">IVA incl.</span><span class="en">VAT incl.</span></small></span></div>`;
+    <div class="co-sum-row"><span><span class="es">Envío</span><span class="en">Shipping</span></span><span><span class="es">${coSubtotal() >= 60 ? 'Gratis en España' : 'Se elige al pagar'}</span><span class="en">${coSubtotal() >= 60 ? 'Free in Spain' : 'Chosen at checkout'}</span></span></div>
+    <div class="co-sum-row total"><span>Total</span><span>${eur(coSubtotal())}<small><span class="es">IVA incl.</span><span class="en">VAT incl.</span></small></span></div>`;
   const ft = coEl('coFootTotal');
-  if(ft) ft.innerHTML = `<span><span class="es">Total</span><span class="en">Total</span> <small><span class="es">IVA e importe con envío incluidos</span><span class="en">VAT and shipping included</span></small></span><b>${eur(coSubtotal()+envio)}</b>`;
+  if(ft) ft.innerHTML = `<span><span class="es">Total</span><span class="en">Total</span> <small><span class="es">IVA incluido · envío ${coSubtotal() >= 60 ? 'gratis en España' : 'al pagar'}</span><span class="en">VAT included · shipping ${coSubtotal() >= 60 ? 'free in Spain' : 'at checkout'}</span></small></span><b>${eur(coSubtotal())}</b>`;
 }
 
 function coOpen(name){
@@ -3163,15 +3172,12 @@ function closeCheckout(){
   // al volver atrás desde la página de pago, el botón vuelve a estar listo
   window.addEventListener('pageshow', e=>{ if(e.persisted){ const b = coEl('coPay'); b.disabled = false; b.innerHTML = payHtml; } });
   coEl('coPay').addEventListener('click', async ()=>{
-    for(const s of ['mail','envio']){
-      if(!coValid(s)){ coOpen(s); toast(s==='mail' ? 'Falta tu correo electrónico' : 'Faltan datos de la dirección'); return; }
-    }
     if(SHOPIFY.domain && SHOPIFY.storefrontToken){
       const btn = coEl('coPay');
       btn.disabled = true;
       btn.innerHTML = '<span class="es">Preparando pedido…</span><span class="en">Preparing order…</span>';
       try{
-        window.location.href = await checkoutWithShopify(coBuyerIdentity(), CO.ship);
+        window.location.href = await checkoutWithShopify(null, null);   // correo, dirección y envío, en el pago de Shopify
       }catch(err){
         console.error(err);
         toast('No se ha podido crear el pedido: ' + err.message);
@@ -3180,11 +3186,11 @@ function closeCheckout(){
       return;
     }
     // sin tienda conectada: solo se enseña cómo quedaría el pedido
-    const total = eur(coSubtotal() + coShipCost());
+    const total = eur(coSubtotal());
     document.querySelector('.co-scroll').innerHTML = `<div class="co-ok">
       <div class="co-ok-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <h3><span class="es">Así quedaría el pedido</span><span class="en">This is how the order would look</span></h3>
-      <p><span class="es">Total ${total} a nombre de ${CO.envio.name}, con envío a ${CO.envio.city}. <b>No se ha cobrado nada</b>: la tienda todavía no está abierta. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> y te avisamos en cuanto lo esté.</span><span class="en">Total ${total} for ${CO.envio.name}, shipping to ${CO.envio.city}. <b>Nothing was charged</b>: the store isn't open yet. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> and we'll let you know when it is.</span></p></div>`;
+      <p><span class="es">Total ${total}. <b>No se ha cobrado nada</b>: la tienda todavía no está abierta. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> y te avisamos en cuanto lo esté.</span><span class="en">Total ${total}. <b>Nothing was charged</b>: the store isn't open yet. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> and we'll let you know when it is.</span></p></div>`;
     const ft = coEl('coFootTotal'); if(ft) ft.innerHTML = '';
     const pay = coEl('coPay');
     pay.innerHTML = '<span class="es">Cerrar</span><span class="en">Close</span>';
@@ -3240,7 +3246,7 @@ async function saveDesign(){
     const conFoto = POSTERS.filter(p => p.srcImg), piezas = WALL ? POSTERS : conFoto;
     const bruto = piezas.reduce((s, p) => s + (p.price || 0), 0), tramo = PACK_TIERS.find(t => piezas.length >= t.n), pct = tramo ? tramo.pct : 0;
     const dto = Math.round(bruto * pct) / 100;
-    const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
+    const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), frase: fraseDe(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
       bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
     await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
@@ -3328,7 +3334,7 @@ async function restoreDesign(saved){
   // desde el carrito de la cabecera: se recupera sin preguntar y, si lo pidió, se abre el pago
   if(_q.get('carrito') === '1' || _q.get('retomar') === '1'){
     await restoreDesign(saved);
-    if(_q.get('carrito') === '1' && POSTERS.some(p => p.srcImg)) openCheckout();
+    if(_q.get('carrito') === '1' && POSTERS.some(p => p.srcImg)){ openCheckout(); if(_q.get('pagar') === '1') coEl('coPay').click(); }
     history.replaceState(null, '', location.pathname);
     return;
   }
@@ -3357,7 +3363,7 @@ window.addEventListener('beforeunload', () => { if(!_restoring) saveDesign(); })
 /* para carrito.js: en una página con editor, el diseño de ahora mismo se abre sin recargar */
 window.MOMENTURIES_EDITOR_VIVO = {
   hay: () => POSTERS.some(p => p.srcImg),
-  pagar: () => { openEditor(); openCheckout(); },
+  pagar: () => { openEditor(); openCheckout(); coEl('coPay').click(); },   // 31-oct: del carrito de la cabecera, directo al pago de Shopify
   editar: () => openEditor(),
 };
 

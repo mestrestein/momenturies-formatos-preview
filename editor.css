@@ -335,6 +335,7 @@ html.ed-locked #ptypeLabel{display:none}
 .co-sum-txt{flex:1;min-width:0}
 .co-sum-txt b{display:block;font-size:13px;font-weight:600}
 .co-sum-txt small{font-size:11.5px;color:var(--mid)}
+.co-sum-txt .co-sum-frase{display:block;margin-top:3px;font-size:12px;font-style:italic;color:#6b5a48;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .co-sum-amt{font-size:13.5px;font-weight:600;white-space:nowrap}
 .co-sum-rule{height:1px;background:var(--gray2);margin:12px 0}
 .co-sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:13.5px;color:var(--mid)}
