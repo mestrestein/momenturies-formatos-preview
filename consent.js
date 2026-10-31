@@ -70,6 +70,7 @@
   var PAGINAS = {
     'ficha-cuadro.html': ['Cuadro de aluminio', 'cuadro', 'Cuadros', 19.99],
     'cuadro.html': ['Cuadro de aluminio', 'cuadro', 'Cuadros', 19.99],
+    'ficha-sobremesa.html': ['Sobremesa de aluminio', 'sobremesa', 'Sobremesa', 28.99],
     'sobremesa.html': ['Sobremesa de aluminio', 'sobremesa', 'Sobremesa', 28.99],
     'ficha-iman.html': ['Imán de nevera', 'iman', 'Imanes', 9.99],
     'iman.html': ['Imán de nevera', 'iman', 'Imanes', 9.99],

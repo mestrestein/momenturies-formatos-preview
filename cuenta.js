@@ -191,7 +191,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   const MAS = [
     ['ficha-cuadro.html', 'fotos/producto-metalico.jpg', 'Cuadro', 'Para la pared, con imán premium y sin agujeros.'],
     ['paredes.html', 'fotos/producto-hero-pared.jpg', 'Paredes', 'Conjuntos de varias fotos montados para tu hueco.'],
-    ['sobremesa.html', 'fotos/producto-sobremesa.jpg', 'Sobremesa', 'Con peana de bambú, para la mesita o la estantería.'],
+    ['ficha-sobremesa.html', 'fotos/producto-sobremesa.jpg', 'Sobremesa', 'Con peana de bambú, para la mesita o la estantería.'],
     ['ficha-iman.html', 'fotos/producto-iman-nevera.jpg', 'Imán', 'Pequeño, para la nevera o para sumar al pedido.'],
     ['colgador-iman.html', 'fotos/pdp/paso-4-colgado.webp', 'Colgador de imán', 'Para colgar lo que quieras, hasta 1 kg.'],
   ];

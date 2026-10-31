@@ -105,8 +105,8 @@
       '<a class="mc-btn" href="cuadro.html">Crear mi cuadro →</a>' +
       '<div class="mc-ideas"><small>O empieza por aquí</small>' +
       '<a href="paredes.html"><i style="background-image:url(fotos/combis/combi-galeria.webp)"></i><span><b>Paredes de ensueño</b>Composiciones listas, con hasta un -20 %</span></a>' +
-      '<a href="sobremesa.html"><i style="background-image:url(fotos/producto-sobremesa.jpg)"></i><span><b>Sobremesa</b>Con peana de bambú · desde 28,99 €</span></a>' +
-      '<a href="iman.html"><i style="background-image:url(fotos/producto-iman-nevera.jpg)"></i><span><b>Imán</b>Para la nevera · 9,99 €</span></a>' +
+      '<a href="ficha-sobremesa.html"><i style="background-image:url(fotos/producto-sobremesa.jpg)"></i><span><b>Sobremesa</b>Con peana de bambú · desde 28,99 €</span></a>' +
+      '<a href="ficha-iman.html"><i style="background-image:url(fotos/producto-iman-nevera.jpg)"></i><span><b>Imán</b>Para la nevera · 9,99 €</span></a>' +
       '</div></div></div>';
   }
 
