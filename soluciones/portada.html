@@ -850,7 +850,7 @@ a{color:inherit}
         <div><svg viewBox="0 0 48 48" fill="none" stroke="#0d0d0d" stroke-width="2"><rect x="6" y="14" width="24" height="18" rx="2"/><path d="M30 20h7l5 6v6H30z"/><circle cx="14" cy="35" r="3"/><circle cx="36" cy="35" r="3"/></svg><b>Envío gratis desde 60€</b><span>En España. También a Portugal y al resto de la UE.</span></div>
         <div><svg viewBox="0 0 48 48" fill="none" stroke="#0d0d0d" stroke-width="2"><path d="M8 24a16 16 0 1 0 5-11.6"/><path d="M8 8v6h6"/></svg><b>Si llega mal, otro</b><span>Lo reimprimimos y enviamos sin coste. No hace falta devolverlo.</span></div>
         <div><svg viewBox="0 0 48 48" fill="none" stroke="#0d0d0d" stroke-width="2"><rect x="10" y="20" width="28" height="20" rx="3"/><path d="M16 20v-6a8 8 0 0 1 16 0v6"/></svg><b>Pago seguro</b><span>A través de Shopify. Nunca vemos los datos de tu tarjeta.</span></div>
-        <div><svg viewBox="0 0 48 48" fill="none" stroke="#0d0d0d" stroke-width="2"><path d="M8 12h32v20H20l-8 6v-6H8z"/></svg><b>Personas de verdad</b><span>Te contesta el equipo en hola@momenturies.com.</span></div>
+        <div><svg viewBox="0 0 48 48" fill="none" stroke="#0d0d0d" stroke-width="2"><path d="M8 12h32v20H20l-8 6v-6H8z"/></svg><b>Personas de verdad</b><span>Te contesta el equipo en info@momenturies.com.</span></div>
       </div>
       <div class="pago"><span>VISA</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span><span>PayPal</span></div>
     </div></div>
@@ -885,7 +885,7 @@ a{color:inherit}
           <li><i>✓</i>Si llega dañado o con un fallo de impresión, lo volvemos a imprimir sin coste. No hace falta devolver el primero.</li>
           <li><i>✓</i>Si tu foto se va a ver borrosa a ese tamaño, el editor te lo dice antes de pagar.</li>
           <li><i>✓</i>Ves la pared montada antes de pedirla. Lo que ves es lo que llega.</li>
-          <li><i>✓</i>Pagas en la pasarela segura de Shopify y te contestamos en hola@momenturies.com.</li>
+          <li><i>✓</i>Pagas en la pasarela segura de Shopify y te contestamos en info@momenturies.com.</li>
         </ul>
         <p>Si eres de los primeros, nos encantará ver tu pared.</p>
         <div class="firma hand">El equipo de Momenturies</div>
@@ -927,7 +927,7 @@ a{color:inherit}
         <p class="tag">Preguntas</p>
         <h2 class="h2">Lo que nos preguntáis.</h2>
         <div class="chips" id="faqChips"><button class="on" data-c="*">Todas</button><button data-c="colgar">Colgar</button><button data-c="foto">Fotos</button><button data-c="pedido">Pedido</button></div>
-        <div class="ayuda"><b>¿No está tu pregunta?</b><p>Escríbenos y te contesta una persona.</p><a class="btn" href="mailto:hola@momenturies.com">hola@momenturies.com</a></div>
+        <div class="ayuda"><b>¿No está tu pregunta?</b><p>Escríbenos y te contesta una persona.</p><a class="btn" href="mailto:info@momenturies.com">info@momenturies.com</a></div>
       </div>
       <div id="faqLista"></div>
     </div></div>
@@ -1100,7 +1100,7 @@ const FAQ = [
   ['foto', '¿Vale cualquier foto del móvil?', 'Casi todas. Lo que importa es la resolución: una foto hecha con el móvil a tamaño completo va bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp. Si se queda corta, el editor te avisa antes de pagar.'],
   ['foto', '¿Cambian los colores al imprimirse en aluminio?', 'El brillo del aluminio realza los colores y el contraste frente al papel mate. Puede haber pequeñas diferencias con tu pantalla, que no está calibrada. Mejor una foto con buena luz natural.'],
   ['pedido', '¿Puedo enviarlo directamente como regalo?', 'Sí. Pon la dirección de quien lo recibe y añade una nota en los comentarios del pedido. El precio no aparece dentro del paquete.'],
-  ['pedido', '¿Y si llega dañado o hay un error de impresión?', 'Escríbenos a hola@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
+  ['pedido', '¿Y si llega dañado o hay un error de impresión?', 'Escríbenos a info@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
   ['pedido', '¿Puedo devolver mi pedido?', 'Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Si llega con un defecto o dañado, lo reimprimimos sin coste: escríbenos en los 14 días siguientes.'],
   ['foto', '¿Puedo añadir una dedicatoria?', 'Sí. En el editor escribes una dedicatoria para el dorso, con la letra que elijas. Es opcional y no cuesta más.'],
   ['colgar', '¿Cómo se limpia?', 'Con un paño suave, seco o un poco húmedo. Al ser aluminio no absorbe humedad ni se ondula, así que aguanta bien en cocina o baño.'],
@@ -1131,7 +1131,7 @@ const FAQ = [
     const q = quitarTildes(busca.value.trim());
     const ok = FAQ.filter(f => !q || quitarTildes(f[1] + ' ' + f[2]).includes(q));
     const marca = (t) => { if(!q) return t; const i = quitarTildes(t).indexOf(q); return i < 0 ? t : t.slice(0, i) + '<mark>' + t.slice(i, i + q.length) + '</mark>' + t.slice(i + q.length); };
-    tarj.innerHTML = ok.map(f => `<div class="q"><b>${marca(f[1])}</b><p>${marca(f[2])}</p></div>`).join('') + `<p class="nada" style="display:${ok.length ? 'none' : 'block'}">No lo encontramos. Escríbenos a hola@momenturies.com</p>`;
+    tarj.innerHTML = ok.map(f => `<div class="q"><b>${marca(f[1])}</b><p>${marca(f[2])}</p></div>`).join('') + `<p class="nada" style="display:${ok.length ? 'none' : 'block'}">No lo encontramos. Escríbenos a info@momenturies.com</p>`;
   };
   busca.addEventListener('input', pintaT); pintaT();
 })();

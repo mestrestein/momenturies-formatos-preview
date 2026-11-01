@@ -211,7 +211,7 @@ const PREG = [
   ['¿Vale cualquier foto del móvil?', 'Casi todas. Una foto hecha con el móvil a tamaño completo va bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp. Si se queda corta, el editor te avisa antes de pagar.', '../fotos/stock/1548858806-480x640.webp'],
   ['¿Cambian los colores al imprimir?', 'El brillo del aluminio realza los colores y el contraste frente al papel mate. Puede haber pequeñas diferencias con tu pantalla, que no está calibrada. Mejor una foto con buena luz natural.', '../fotos/ventajas-brillo.jpg'],
   ['¿Puedo mandarlo directamente como regalo?', 'Sí. Pon la dirección de quien lo recibe y añade una nota en los comentarios del pedido. El precio no aparece dentro del paquete.', '../fotos/combis/quien-abuelos.webp'],
-  ['¿Y si llega dañado?', 'Escríbenos a hola@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.', '../fotos/producto-metalico.jpg'],
+  ['¿Y si llega dañado?', 'Escríbenos a info@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.', '../fotos/producto-metalico.jpg'],
   ['¿Puedo añadir una dedicatoria?', 'Sí. En el editor escribes una dedicatoria para el dorso, con la letra que elijas. Es opcional y no cuesta más.', '../fotos/producto-sobremesa.jpg'],
 ];
 (function(){
@@ -234,7 +234,7 @@ const PREG = [
     ['Hace falta taladro para colgarlo.', 'm', 'Mito', 'Una base adhesiva en la pared y un imán detrás del cuadro. Ni taladro, ni clavos, ni tacos.'],
     ['Si te cansas, se cambia de sitio sin dejar marca.', 'v', 'Verdad', 'El cuadro se despega del imán en un segundo. Lo pones en otra base y queda recto.'],
     ['Cualquier foto del móvil vale.', 'a', 'Casi', 'Las fotos del móvil a tamaño completo, sí. Las capturas y las reenviadas por WhatsApp, no. El editor te avisa antes de pagar.'],
-    ['Si llega dañado, te toca pelearte.', 'm', 'Mito', 'Nos mandas una foto a hola@momenturies.com y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
+    ['Si llega dañado, te toca pelearte.', 'm', 'Mito', 'Nos mandas una foto a info@momenturies.com y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
     ['Se puede limpiar con agua.', 'v', 'Verdad', 'Con un paño suave un poco húmedo. Al ser aluminio no se ondula, así que aguanta bien en la cocina o el baño.'],
     ['El precio va dentro del paquete del regalo.', 'm', 'Mito', 'Si lo mandas a otra dirección, el precio no aparece dentro. Puedes añadir una nota en los comentarios del pedido.'],
   ];

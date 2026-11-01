@@ -256,7 +256,7 @@ $$('[data-faq="lista"]').forEach(g => { g.innerHTML = FAQ.map(f => `<div class="
   const marca = (t, q) => { if(!q) return t; const i = norm(t).indexOf(q); return i < 0 ? t : t.slice(0, i) + '<mark>' + t.slice(i, i + q.length) + '</mark>' + t.slice(i + q.length); };
   const pinta = () => {
     const q = norm(inp.value.trim()), ok = FAQ.filter(f => !q || norm(f[1] + ' ' + f[2]).includes(q));
-    res.innerHTML = ok.length ? ok.map(f => `<div><b>${marca(f[1], q)}</b><p>${marca(f[2], q)}</p></div>`).join('') : '<p style="color:#6b7280;text-align:center">No lo encontramos. Escríbenos a hola@momenturies.com</p>';
+    res.innerHTML = ok.length ? ok.map(f => `<div><b>${marca(f[1], q)}</b><p>${marca(f[2], q)}</p></div>`).join('') : '<p style="color:#6b7280;text-align:center">No lo encontramos. Escríbenos a info@momenturies.com</p>';
   };
   inp.oninput = pinta;
   $$('.sug button', r).forEach(b => b.onclick = () => { inp.value = b.textContent; pinta(); });

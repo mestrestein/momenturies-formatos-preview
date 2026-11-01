@@ -249,7 +249,7 @@ $$('.rg-cinta[data-dup]').forEach(c => { c.innerHTML += c.innerHTML; });
     ['pedido', '¿Qué tamaños hay?', 'El cuadro va en tres formatos (cuadrado, clásico y retrato), cada uno en varios tamaños, de 10×10 a 30×40 cm. Aparte están la sobremesa, de 10,2×15,2 a 20,3×25,4, y el imán de 7×10.'],
     ['pedido', '¿Cuánto tarda en llegar?', 'Lo preparamos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; al resto de Europa, algo más. Verás el plazo y el precio exactos antes de pagar.'],
     ['pedido', '¿Puedo enviarlo directamente como regalo?', 'Sí. Pon la dirección de quien lo recibe y añade una nota en los comentarios del pedido. El precio no va dentro del paquete.'],
-    ['pedido', '¿Y si llega dañado o con un fallo de impresión?', 'Escríbenos a hola@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
+    ['pedido', '¿Y si llega dañado o con un fallo de impresión?', 'Escríbenos a info@momenturies.com con una foto del problema y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
     ['pedido', '¿Puedo devolver mi pedido?', 'Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Si llega con un defecto o dañado, lo reimprimimos sin coste: escríbenos en los 14 días siguientes.'],
     ['colgar', '¿Cómo se limpia?', 'Con un paño suave, seco o un poco húmedo. Al ser aluminio no absorbe humedad ni se ondula, así que aguanta bien en la cocina o el baño.'],
   ];

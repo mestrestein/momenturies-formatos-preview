@@ -3190,7 +3190,7 @@ function closeCheckout(){
     document.querySelector('.co-scroll').innerHTML = `<div class="co-ok">
       <div class="co-ok-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <h3><span class="es">Así quedaría el pedido</span><span class="en">This is how the order would look</span></h3>
-      <p><span class="es">Total ${total}. <b>No se ha cobrado nada</b>: la tienda todavía no está abierta. Escríbenos a <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> y te avisamos en cuanto lo esté.</span><span class="en">Total ${total}. <b>Nothing was charged</b>: the store isn't open yet. Write to <a href="mailto:hola@momenturies.com">hola@momenturies.com</a> and we'll let you know when it is.</span></p></div>`;
+      <p><span class="es">Total ${total}. <b>No se ha cobrado nada</b>: la tienda todavía no está abierta. Escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a> y te avisamos en cuanto lo esté.</span><span class="en">Total ${total}. <b>Nothing was charged</b>: the store isn't open yet. Write to <a href="mailto:info@momenturies.com">info@momenturies.com</a> and we'll let you know when it is.</span></p></div>`;
     const ft = coEl('coFootTotal'); if(ft) ft.innerHTML = '';
     const pay = coEl('coPay');
     pay.innerHTML = '<span class="es">Cerrar</span><span class="en">Close</span>';
