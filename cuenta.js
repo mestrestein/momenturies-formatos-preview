@@ -4,7 +4,7 @@
    shopId = el número que sale en las URLs de autenticación; clientId = el ID de cliente público.
    Redirect URI a dar de alta allí: https://momenturies.com/cuenta.html (y la de vista-cambios si se prueba ahí).
    Vacíos = modo ejemplo. */
-const CUENTA = { shopId:'108862079310', clientId:'', apiVersion:'2026-10' };
+const CUENTA = { shopId:'108862079310', clientId:'76dc654c-bf59-4d80-80a2-e6eff2bc5e27', apiVersion:'2026-10' };
 /* Repetir pedido: el carrito se crea con la Storefront API, como en el editor. El token lo pone el worker de la web al servir este archivo. */
 const TIENDA = { domain:'tp6upb-7k.myshopify.com', storefrontToken:'' };
 
