@@ -247,8 +247,6 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
       ['Clásico', ['Rústico', 'aparador-banco', 'W66:L'], ['Minimalista', 'rincon-banco', 'W67:L']]],
     ['despacho','Despacho','En el despacho o el rincón de trabajo','Para las horas delante del ordenador: esa foto que te recuerda por qué trabajas tanto.','<b>Truco:</b> uno grande y dos pequeños encima de la mesa queda limpio y no distrae.',
       ['Nórdico', ['Clásico', 'despacho-clasico', 'W65:M'], ['Moderno', 'despacho-nogal', 'W21:L']]],
-    ['terraza','Terraza','En la terraza cubierta','Aguanta la humedad y no se ondula, así que también puede vivir fuera, en una terraza o un porche cubiertos.','<b>Truco:</b> evita el sol directo todo el día y la lluvia; bajo techo, perfecto.',
-      ['Mediterráneo', ['Urbano', 'terraza-urbana2', 'W39'], ['Parisino', 'terraza-parisina', 'W25']]],
   ];
   const nombre = e => Array.isArray(e) ? e[0] : e;
   /* pinta un estilo en una caja: la foto de Aitor tal cual, o la habitación vacía con su pared */
