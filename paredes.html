@@ -78,6 +78,7 @@
   .pw-price{font-size:14.5px}
   .pw-price s{color:var(--light);font-size:13px;margin-left:4px}
   .pw-n{font-size:12.5px;color:var(--light)}
+  .pw-badge.pw-best{background:#c2582c;color:#fff}
   .pw-card.sold-out{cursor:default}
   .pw-card.sold-out .pw-track img{filter:grayscale(.85) brightness(1.04);transform:none}
   .pw-card.sold-out .pw-info{opacity:.55}
@@ -160,8 +161,8 @@
   &copy; 2026 Momenturies · <a href="momenturies.html"><span class="es">Inicio</span><span class="en">Home</span></a> · <a href="https://www.instagram.com/momenturies.official/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/people/Momenturies/61596238460014/" target="_blank" rel="noopener">Facebook</a>
 </footer>
 
-<script src="paredes.js?v=e92cde61"></script>
-<script src="fotos/paredes/paredes-fotos.js?v=6be10c6d"></script>
+<script src="paredes.js?v=b2859464"></script>
+<script src="fotos/paredes/paredes-fotos.js?v=723a5c18"></script>
 <script>
 /* Tarjetas de las paredes de ensueño. Cada tarjeta enseña la pared colgada en 3 habitaciones
    (fotos/_build_paredes_fotos.py) y lleva a cuadro.html con la habitación que se esté viendo,
@@ -185,13 +186,15 @@
      Las fotos de las otras tallas van con la clave "<pared>-<talla>" (fotos/_build_paredes_fotos.py). */
   function card(w){
     var key = w.vk && PH[w.id + '-' + w.vk] ? w.id + '-' + w.vk : w.id;
-    var rooms = PH[key] || [], ok = !w.soldOut;
+    /* 3-nov: las fotos en terraza no se enseñan (no se vende para exterior); n = número de la foto en disco */
+    var rooms = [], nums = [], ok = !w.soldOut;
+    (PH[key] || []).forEach(function(r, i){ if(!/^terraza/.test(r)){ rooms.push(r); nums.push(i + 1); } });
     var link = function(r){ return 'cuadro.html?pared=' + w.id + (w.vk ? '&talla=' + w.vk : '') + '&entorno=' + (r || ''); };
     var a = document.createElement(ok ? 'a' : 'div');
     a.className = 'pw-card' + (ok ? '' : ' sold-out');
     if(ok) a.href = link(rooms[0]);
     var slides = rooms.map(function(r, i){
-      return '<img src="fotos/paredes/' + key + '-' + (i + 1) + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="640" height="640" loading="lazy" decoding="async" draggable="false">';
+      return '<img src="fotos/paredes/' + key + '-' + nums[i] + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="1000" height="1000" loading="lazy" decoding="async" draggable="false">';
     }).join('');
     /* tamaño del conjunto: solo si es de una sola talla y hay más de una a elegir */
     var all = versions(w), sizes = '';
@@ -202,7 +205,7 @@
     }
     var dots = rooms.length > 1 ? '<span class="pw-dots">' + rooms.map(function(_, i){ return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span>' : '';
     a.innerHTML = '<div class="pw-media"><div class="pw-track">' + slides + '</div>' + dots
-      + (ok ? '' : '<span class="pw-badge"><span class="es">Sin existencias</span><span class="en">Out of stock</span></span>')
+      + (ok ? (w.best ? '<span class="pw-badge pw-best"><span class="es">Más vendido</span><span class="en">Best seller</span></span>' : '') : '<span class="pw-badge"><span class="es">Sin existencias</span><span class="en">Out of stock</span></span>')
       + (rooms.length > 1 ? '<button type="button" class="pw-arr pw-prev" aria-label="Anterior">&#8249;</button><button type="button" class="pw-arr pw-next" aria-label="Siguiente">&#8250;</button>' : '')
       + '</div>'
       + '<div class="pw-info"><div class="pw-row"><b>' + w.name + '</b>'
@@ -243,7 +246,8 @@
   function render(h){
     grid.innerHTML = '';
     var list = WALLS.map(function(w){ return forHueco(w, h); }).filter(Boolean);
-    list.filter(function(v){ return !v.soldOut; }).concat(list.filter(function(v){ return v.soldOut; }))
+    /* 3-nov: primero los más vendidos (como Mixtiles), luego el resto con existencias y las agotadas al final */
+    list.filter(function(v){ return !v.soldOut && v.best; }).concat(list.filter(function(v){ return !v.soldOut && !v.best; }), list.filter(function(v){ return v.soldOut; }))
       .forEach(function(v){ grid.appendChild(card(v)); });
   }
   HUECOS.forEach(function(h){

@@ -254,7 +254,8 @@ function paredEn(caja, roomId, wallId, peque){
   const cx = left + W / 2, cy = top + H / 2;
   const pinta = () => {
     const bw = caja.clientWidth, bh = caja.clientHeight; if(!bw) return;
-    const s = Math.max(bw / r.w, bh / r.h);
+    /* 3-nov: la foto se acerca hasta que el conjunto ocupe ~45 % del ancho (en PC la caja es ancha y quedaba pequeño), hasta 1,7× */
+    const s0 = Math.max(bw / r.w, bh / r.h), s = Math.min(s0 * 1.7, Math.max(s0, .45 * bw / W));
     const ox = Math.min(0, Math.max(bw - r.w * s, bw / 2 - cx * s)), oy = Math.min(0, Math.max(bh - r.h * s, bh * .4 - cy * s));
     Object.assign(img.style, { left:ox + 'px', top:oy + 'px', width:r.w * s + 'px', height:r.h * s + 'px' });
     piezas.forEach((el, k) => { const p = w.pieces[k];
@@ -284,7 +285,7 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
     ['recibidor','Recibidor','El recibidor, lo primero al llegar','Lo que ve quien entra por la puerta. Unas fotos sobre el mueble de la entrada dicen mucho de una casa.','<b>Truco:</b> que el conjunto no sea más ancho que el mueble.',
       ['Clásico', ['Rústico', 'aparador-banco', 'W66:L'], ['Minimalista', 'rincon-banco', 'W67:L']]],
     ['despacho','Despacho','En el despacho o el rincón de trabajo','Para las horas delante del ordenador: esa foto que te recuerda por qué trabajas tanto.','<b>Truco:</b> uno grande y dos pequeños encima de la mesa queda limpio y no distrae.',
-      ['Nórdico', ['Clásico', 'despacho-clasico', 'W65:M'], ['Moderno', 'despacho-nogal', 'W21:L']]],
+      ['Nórdico', ['Clásico', 'despacho-clasico', 'W65:M'], ['Moderno', 'despacho-nogal', 'W21:L']]],
   ];
   const nombre = e => Array.isArray(e) ? e[0] : e;
   /* pinta un estilo en una caja: la foto de Aitor tal cual, o la habitación vacía con su pared */

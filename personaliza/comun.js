@@ -102,6 +102,51 @@
     t.textContent = m; t.style.display = 'block'; clearTimeout(P.toast.t); P.toast.t = setTimeout(function () { t.style.display = 'none'; }, 4000);
   };
 
+  /* ── 3-nov · en qué producto va el diseño: Cuadro, Sobremesa o Imán ──
+     Se elige en la página (fila de botones encima del botón final). Si se llega desde el personalizador
+     (?para=cuadro.html|sobremesa.html|iman.html&anadir=1), viene ya marcado y el diseño se AÑADE a lo que había. */
+  P.PRODUCTOS = {
+    cuadro:    { es: 'Cuadro',    sub: 'aluminio para la pared', page: 'cuadro.html',    q: 'formato=retrato&encuadre=0', cta: 'Ponerlo en mi cuadro',    ratio: 3 / 4 },
+    sobremesa: { es: 'Sobremesa', sub: 'con peana de bambú',     page: 'sobremesa.html', q: '',                           cta: 'Ponerlo en mi sobremesa', ratio: 2 / 3 },
+    iman:      { es: 'Imán',      sub: 'para la nevera',         page: 'iman.html',      q: 'talla=S',                    cta: 'Ponerlo en mi imán',      ratio: 2 / 3 }
+  };
+  var _q = new URLSearchParams(location.search);
+  P.prod = { 'cuadro.html': 'cuadro', 'sobremesa.html': 'sobremesa', 'iman.html': 'iman' }[_q.get('para')] || 'cuadro';
+  P.anadir = _q.get('anadir') === '1';
+  document.addEventListener('DOMContentLoaded', function () {
+    var cta = document.getElementById('cta'), txt = document.getElementById('ctaTxt');
+    if (!cta || !cta.parentNode) return;
+    var box = document.createElement('div');
+    box.className = 'pz-step pz-prod';
+    box.innerHTML = '<span class="pz-label">' + (P.anadir ? 'Se añade a tu diseño como…' : '¿Dónde lo quieres?') + '</span><div class="pz-prods"></div>';
+    var row = box.querySelector('.pz-prods');
+    Object.keys(P.PRODUCTOS).forEach(function (k) {
+      var o = P.PRODUCTOS[k], b = document.createElement('button');
+      b.type = 'button'; b.className = 'pz-prod-b'; b.setAttribute('aria-pressed', k === P.prod);
+      b.innerHTML = '<b>' + o.es + '</b><small>' + o.sub + '</small>';
+      b.addEventListener('click', function () {
+        P.prod = k;
+        [].forEach.call(row.children, function (x) { x.setAttribute('aria-pressed', x === b); });
+        if (txt && !cta.disabled) txt.textContent = (P.anadir ? 'Añadirlo como ' + o.es.toLowerCase() : o.cta);
+      });
+      row.appendChild(b);
+    });
+    cta.parentNode.insertBefore(box, cta);
+    if (txt) txt.textContent = P.anadir ? 'Añadirlo como ' + P.PRODUCTOS[P.prod].es.toLowerCase() : P.PRODUCTOS[P.prod].cta;
+  });
+  /* el póster es 3:4; la sobremesa y el imán son más alargados (2:3): se le añade arriba y abajo una franja
+     del color de su propio fondo, así no se recorta ni el título ni el pie */
+  P.fitRatio = function (c, ratio) {
+    if (Math.abs(c.width / c.height - ratio) < 0.01) return c;
+    var H = Math.round(c.width / ratio), o = document.createElement('canvas'); o.width = c.width; o.height = H;
+    var x = o.getContext('2d'), sx = c.getContext('2d'), dy = Math.round((H - c.height) / 2);
+    var top = sx.getImageData(4, 4, 1, 1).data, bot = sx.getImageData(4, c.height - 5, 1, 1).data;
+    x.fillStyle = 'rgb(' + top[0] + ',' + top[1] + ',' + top[2] + ')'; x.fillRect(0, 0, o.width, dy + 2);
+    x.fillStyle = 'rgb(' + bot[0] + ',' + bot[1] + ',' + bot[2] + ')'; x.fillRect(0, dy + c.height - 2, o.width, H - dy - c.height + 2);
+    x.drawImage(c, 0, dy);
+    return o;
+  };
+
   /* ── al editor: dibuja a tamaño de imprenta y entra como foto del cliente ── */
   P.toEditor = function (btn, txtEl, render, name) {
     var old = txtEl.textContent;
@@ -109,13 +154,15 @@
     return P.fontsReady().then(function () {
       var c = document.createElement('canvas'); c.width = P.PRINT_W; c.height = P.PRINT_H;
       return Promise.resolve(render(c.getContext('2d'), P.PRINT_W, P.PRINT_H)).then(function () {
-        return new Promise(function (res, rej) { c.toBlob(function (b) { b ? res(b) : rej(new Error('canvas')); }, 'image/jpeg', 0.95); });
+        var out = P.fitRatio(c, P.PRODUCTOS[P.prod].ratio);
+        return new Promise(function (res, rej) { out.toBlob(function (b) { b ? res(b) : rej(new Error('canvas')); }, 'image/jpeg', 0.95); });
       });
     }).then(function (b) {
       if (!window.MOMENTURIES_PHOTO) throw new Error('handoff');
       return window.MOMENTURIES_PHOTO.put(new File([b], name + '.jpg', { type: 'image/jpeg' }));
     }).then(function () {
-      location.href = 'cuadro.html?foto=1&formato=retrato&encuadre=0&diseno=' + encodeURIComponent(name);   // directo en Retrato, sin recorte
+      var o = P.PRODUCTOS[P.prod];   // el cuadro entra directo en Retrato y sin recorte; sobremesa e imán, en su página
+      location.href = o.page + '?foto=1' + (o.q ? '&' + o.q : '') + (P.anadir ? '&anadir=1' : '') + '&diseno=' + encodeURIComponent(name);
     }).catch(function () {
       btn.disabled = false; btn.classList.remove('loading'); txtEl.textContent = old;
       P.toast('No hemos podido preparar el póster. Inténtalo otra vez.');
