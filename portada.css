@@ -45,31 +45,25 @@
 @media(min-width:861px){.hx-nav{right:32px;gap:14px}.hx-nav button{flex:1;min-width:0;line-height:1.25}}
 @media(max-width:1100px){.hx-nav{gap:14px}.hx-nav button{min-width:56px;font-size:11.5px}}
 @media(max-width:860px){
-  /* móvil: la imagen arriba y el texto debajo; todo cabe en la pantalla sin bajar */
-  .hx{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;height:calc(100svh - 96px);min-height:540px;max-height:780px}
-  .hx-media{grid-row:1}
-  .hx-copy{grid-row:2;padding:20px 20px 24px}
-  .hx-t{gap:10px}
-  .hx-t p.sub.fuerte{margin-top:-6px}
-  .hx-prod{font-size:11.5px;padding-top:10px}
-  .hx-t h1,.hx-t .h1{font-size:clamp(29px,8.2vw,38px)}
-  .hx-t p.sub{font-size:14.5px;line-height:1.5}
-  .hx-cta{width:100%;justify-content:center;padding:16px 22px}
+  /* móvil: la imagen arriba, ENTERA (16:9 como las fotos y el vídeo, sin recortar ni zoom) y el texto debajo.
+     Mide lo que su contenido, sin huecos, y todo cabe en la pantalla sin bajar: --k encoge el texto
+     solo si no cabe (lo calcula portada.js en cada móvil) */
+  .hx{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;min-height:0;max-height:none}
+  .hx-media{grid-row:1;aspect-ratio:16/9}
+  .hx-m img,.hx-m.on img{transform:none;transition:none}
+  .hx-copy{grid-row:2;justify-content:center;padding:calc(20px * var(--k,1)) 20px calc(22px * var(--k,1))}
+  .hx-t{gap:calc(10px * var(--k,1))}
+  .hx-tag{font-size:calc(11px * var(--k,1))}
+  .hx-t p.sub.fuerte{margin-top:calc(-6px * var(--k,1))}
+  .hx-prod{font-size:calc(11.5px * var(--k,1));padding-top:calc(10px * var(--k,1))}
+  .hx-t h1,.hx-t .h1{font-size:calc(clamp(27px,8vw,38px) * var(--k,1))}
+  .hx-t p.sub{font-size:calc(14.5px * var(--k,1));line-height:1.45}
+  .hx-cta{width:100%;justify-content:center;padding:calc(16px * var(--k,1)) 22px;font-size:calc(15.5px * var(--k,1))}
   .hx-link,.hx-trust{display:none}
-  .hx-nav{position:static;margin-top:18px;gap:6px}
+  .hx-nav{position:static;margin-top:calc(18px * var(--k,1));gap:6px}
   .hx-nav button{flex:1;min-width:0;font-size:0;padding:8px 0 0}
   .hx-arr{display:none}
-}
-/* móviles bajitos (iPhone SE…): un poco más compacto para que el hero entero quepa sin bajar */
-@media(max-width:860px) and (max-height:700px){
-  .hx{height:calc(100svh - 118px);min-height:0}
-  .hx-copy{padding:14px 20px 14px}
-  .hx-t{gap:7px}
-  .hx-t h1,.hx-t .h1{font-size:clamp(25px,7vw,30px)}
-  .hx-t p.sub{font-size:13.5px;line-height:1.4}
-  .hx-cta{padding:13px 22px}
-  .hx-prod{padding-top:7px;font-size:11px}
-  .hx-nav{margin-top:12px}
+  .hx.apretado .hx-prod{display:none}
 }
 
 /* ═════ CÓMO FUNCIONA: el móvil hace el pedido entero, paso a paso ═════ */
@@ -140,7 +134,7 @@
 .cf-buy.pulsa{transform:scale(.95)}
 /* 5 · dedicatoria */
 .cf-ded{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#f4efe8;padding-bottom:70px}
-.cf-card{width:170px;aspect-ratio:3/4;perspective:900px}
+.cf-card{width:min(170px,72%);aspect-ratio:3/4;perspective:900px}
 .cf-card .gira{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 1s var(--ease2)}
 .cf-card.atras .gira{transform:rotateY(180deg)}
 .cf-card .cara{position:absolute;inset:0;backface-visibility:hidden;border-radius:3px;box-shadow:0 18px 36px rgba(0,0,0,.2)}
@@ -167,14 +161,15 @@
 .cf-tap.toca{animation:cfTap .55s var(--ease) forwards}
 @keyframes cfTap{0%{opacity:0;transform:scale(1.4)}35%{opacity:1;transform:scale(.8)}100%{opacity:0;transform:scale(1.1)}}
 @media(max-width:900px){
-  .cf{padding:64px 0 70px}
-  .cf-in{grid-template-columns:1fr;gap:26px;padding:0 16px}
-  /* móvil: solo el teléfono y el título de lo que está pasando */
+  /* móvil: solo el teléfono y el título de lo que está pasando. Sin huecos: título, teléfono y botón
+     caben a la vez en la pantalla (el teléfono se hace más pequeño en los móviles bajos) */
+  .cf{padding:26px 0 30px}
+  .cf-in{grid-template-columns:1fr;gap:12px;padding:0 16px}
   .cf-copy{text-align:center}
   .cf-lead,.cf-pasos,.cf-copy .psec-cta{display:none}
-  .cf-copy .s-h2{margin-bottom:0}
-  .cf-tit{font-size:23px}
-  .cf-movil{width:min(280px,72vw)}
+  .cf-copy .s-h2{margin-bottom:0;font-size:clamp(24px,7vw,30px)}
+  .cf-demo{gap:12px}
+  .cf-tit{font-size:20px;min-height:30px}
   .cf-demo .psec-cta{display:inline-flex}
 }
 @media(min-width:901px){.cf-demo .psec-cta{display:none!important}}
@@ -498,7 +493,17 @@
 }
 @media(min-width:901px){.cf-movil{width:clamp(245px,calc((100svh - 200px)*9/19),300px)}}
 @media(max-width:900px){
-  .cf-movil{width:max(240px,min(280px,72vw,calc((100svh - 150px)*9/19)))}
+  /* el teléfono se ajusta al alto de la pantalla (menos la barra de arriba, que se queda fija)
+     para que título, teléfono y botón se vean a la vez. Por debajo de 240px no se estrecha:
+     portada.js lo reduce entero a escala (zoom) para que lo de dentro no se monte */
+  .cf-movil{width:max(240px,min(270px,70vw,calc((100svh - 315px)*9/19)))}
   .cf-buy{font-size:12px;white-space:nowrap}
 }
 @media(max-width:380px){.cf-buy s{display:none}}
+/* móviles bajitos (iPhone SE…): menos aire para que «Así funciona» quepa entero sin bajar */
+@media(max-width:900px) and (max-height:720px){
+  .cf{padding:16px 0 18px}
+  .cf-in,.cf-demo{gap:8px}
+  .cf-copy .s-tag{display:none}
+  .cf-movil{width:max(240px,min(270px,70vw,calc((100svh - 268px)*9/19)))}
+}
