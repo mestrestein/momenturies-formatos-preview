@@ -434,7 +434,7 @@ const isFlat = () => VIEW === '2d';
    Las fuentes NO se descargan todas al abrir: la hoja de Google solo las declara, y cada una baja
    cuando se enseña en la lista o cuando se usa (ensureFont). */
 /* 12-oct · Marc: fuera la frase de delante (sobre la foto). El código se queda; con true vuelve. */
-const FRONT_TEXT = false;
+const FRONT_TEXT = true;   // 3-nov: Marc quiere frase delante y dedicatoria detrás
 const FONTS = [
   { id:'georgia',    label:'Clásica',    family:'Georgia, "Times New Roman", serif',        weight:'700', style:'italic', google:null, fav:true },
   { id:'typewriter', label:'Máquina de escribir', family:'"Special Elite", "Courier New", monospace', weight:'400', style:'normal', google:'Special+Elite', fav:true },
