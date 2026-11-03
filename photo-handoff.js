@@ -41,13 +41,30 @@
     del: function (k) { return tx('readwrite', function (s) { s.delete(k); }).catch(function () {}); }
   };
 
+  /* 3-nov · Safari en navegación privada (iPhone) no deja guardar File/Blob en IndexedDB y la foto
+     no llegaba al editor. Se guardan los bytes (ArrayBuffer, igual de buenos) y se rehace el File al recogerlo. */
+  function aBytes(f) {
+    if (!f || typeof f.arrayBuffer !== 'function') return Promise.resolve(f);
+    return f.arrayBuffer().then(function (buf) { return { mfoto: 1, name: f.name || 'foto.jpg', type: f.type || 'image/jpeg', lastModified: f.lastModified || Date.now(), buf: buf }; });
+  }
+  function aFile(o) {
+    if (!o || !o.mfoto) return o;
+    try { return new File([o.buf], o.name, { type: o.type, lastModified: o.lastModified }); }
+    catch (e) { var b = new Blob([o.buf], { type: o.type }); b.name = o.name; return b; }
+  }
   var API = {
-    put: function (file) { return tx('readwrite', function (s) { s.put(file, KEY); }); },
+    put: function (file) {
+      var lista = Array.isArray(file);
+      return Promise.all((lista ? file : [file]).map(aBytes)).then(function (v) {
+        return tx('readwrite', function (s) { s.put(lista ? v : v[0], KEY); });
+      });
+    },
     // devuelve lo guardado (un File o una lista de File) y lo borra: solo se recoge una vez
     take: function () {
       return tx('readonly', function (s) { return s.get(KEY); }).then(function (file) {
         if (file) tx('readwrite', function (s) { s.delete(KEY); }).catch(function () {});
-        return file || null;
+        if (!file) return null;
+        return Array.isArray(file) ? file.map(aFile) : aFile(file);
       }).catch(function () { return null; });
     }
   };

@@ -194,6 +194,8 @@
 .ec-tabs button.on{background:var(--black);border-color:var(--black);color:#fff}
 .ec-view{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:stretch}
 .ec-big{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:1/1;background:#eee;box-shadow:0 24px 50px rgba(0,0,0,.12)}
+/* 3-nov · en PC la foto cabe entera en la pantalla con las pestañas (antes, cuadrada, se cortaba en portátiles) */
+@media(min-width:901px){.ec{padding:80px 0}.ec-tabs{margin:22px 0 16px}.ec-big{aspect-ratio:auto;height:clamp(380px,calc(100vh - 150px),620px)}}
 .ec-side{background:#f7f2ea;border-radius:22px;padding:30px;display:flex;flex-direction:column}
 .ec-side h3{font-family:var(--serif);font-size:30px;color:#4A2E1A;line-height:1.1}
 .ec-side p{font-size:15.5px;line-height:1.6;color:#4a443d;margin-top:12px}
