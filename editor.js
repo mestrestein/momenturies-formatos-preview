@@ -2331,11 +2331,10 @@ async function checkoutWithShopify(buyerIdentity, shipId){
    Con la tienda conectada mandan los de Shopify; estos son el respaldo. */
 const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
-    sizes:[ {k:'S', d:[10,10], price:14.99, stock:false},
+    sizes:[ {k:'S', d:[10,10], price:14.99},
             {k:'M', d:[15,15], price:24.99},
-            /* 3-nov: 20×20 nuevo. Va con clave propia para no tocar los SKU de M y L. Precio provisional.
-               Nace con stock:false: se puede elegir cuando Shopify tenga los SKU CDR-CUA-ML-* */
-            {k:'ML',d:[20,20], price:29.99, stock:false},
+            /* 3-nov: 20×20 nuevo. Va con clave propia para no tocar los SKU de M y L. 29,99 €; en Shopify CDR-CUA-ML-IMAN-PARED. */
+            {k:'ML',d:[20,20], price:29.99},
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
     sizes:[ {k:'S', d:[10,15], price:19.99},
