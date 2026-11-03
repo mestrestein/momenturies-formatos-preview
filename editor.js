@@ -116,6 +116,10 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
       <span class="es">Editar</span><span class="en">Edit</span>
     </button>
+    <button class="ed-walls ed-diseno" id="btnDiseno" type="button" title="Añadir un diseño personalizado: cielo, mapa, luna…">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg>
+      <span class="es">Diseño</span><span class="en">Design</span>
+    </button>
     <button class="ed-walls" id="btnWalls" type="button">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
       <span class="es">Paredes de ensueño</span><span class="en">Dream walls</span>
@@ -418,6 +422,16 @@
   </div>
 </div>
 
+<div class="mmodal" id="disenoModal">
+  <div class="mmodal-card dz-box">
+    <div class="mmodal-head">
+      <p class="mmodal-title"><span class="es">Añadir un diseño personalizado</span><span class="en">Add a custom design</span>
+        <span class="qty"><span class="es">se suma a lo que ya tienes</span><span class="en">it is added to what you have</span></span></p>
+      <button class="edp-icon" id="disenoClose" title="Cerrar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="dz-grid" id="disenoGrid"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>`;
   document.body.insertAdjacentHTML('beforeend', HTML);
 })();
@@ -498,7 +512,7 @@ function ensureFont(id, done){
       .then(() => { dirty3D = true; if(typeof applyFrontTexture === 'function' && POSTERS[selected]){ applyFrontTexture(selected); applyBackText(selected); } });
   };
 })();
-const PHOTO_ROOMS = window.MOMENTURIES_ROOMS || [];
+const PHOTO_ROOMS = (window.MOMENTURIES_ROOMS || []).filter(r => !/^terraza/.test(r.id));   // 3-nov: sin terrazas (no se vende para exterior)
 /* Cada entorno real puede tener dos fotos (`group` las junta): una horizontal, pensada para
    verla en PC, y una vertical para el móvil (`orient`). En el selector solo aparece UNA tarjeta
    por grupo — la que toque según el ancho de pantalla — en vez de listar las dos por separado. */
@@ -544,7 +558,6 @@ const GRUPOS_ENTORNO = [
   { id:'dormitorio', es:'Habitaciones',   en:'Bedrooms',     mesa:true,  test: id => /^dormitorio/.test(id) || /^mesita-/.test(id) },
   { id:'despacho',   es:'Escritorios',    en:'Desks',        mesa:true,  test: id => /^(despacho|estudio|escritorio-)/.test(id) },
   { id:'pasillo',    es:'Pasillo',        en:'Hallway',      mesa:true,  test: id => id === 'pasillo' },
-  { id:'terraza',    es:'Terrazas',       en:'Terraces',     mesa:false, test: id => /^terraza/.test(id) },
   { id:'escalera',   es:'Escalera',       en:'Staircase',    mesa:false, test: id => /^escalera-/.test(id) },
 ];
 /* Escenas propias del Sobremesa (se apoya encima de verdad: estantería, aparador, mesita).
@@ -2055,10 +2068,13 @@ function renderThumbs(){
     t.className = 'pv-thumb' + (isLand(p)?' landscape':'') + (i===selected && panelOpen ? ' active' : '');
     if(p.thumb){ t.style.backgroundImage = `url(${p.thumb})`; }
     else { t.innerHTML = '<span class="pv-thumb-cam">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2L8 5h8l1.5 2h2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/>'+'<circle cx="12" cy="12.5" r="3.2"/></svg>'+'</span>'; }
-    if(POSTERS.length>1 && (!WALL || p.srcImg)){
+    /* 3-nov (Aitor no encontraba cómo quitar un cuadro): en un conjunto la X de un hueco vacío quita el cuadro
+       (se puede deshacer); con foto, quita solo la foto */
+    if(POSTERS.length>1 && (!WALL || p.srcImg || !WALL.fridge)){
       const del = document.createElement('span');
       del.className='pv-thumb-del'; del.textContent='✕';
-      del.onclick = ev=>{ ev.stopPropagation(); removePoster(i); };
+      del.title = WALL && p.srcImg ? 'Quitar la foto' : 'Quitar este cuadro';
+      del.onclick = ev=>{ ev.stopPropagation(); if(WALL && p.srcImg) clearPosterPhoto(i); else removePoster(i); };
       t.appendChild(del);
     }
     t.onclick = ()=>{
@@ -2176,6 +2192,29 @@ function applyToAll(p){
   dirty3D = true; scheduleSave();
   toast('Aplicado a los ' + POSTERS.length + ' cuadros · puedes deshacerlo');
 }
+
+/* ═══════════ DISEÑO PERSONALIZADO DESDE EL EDITOR (3-nov) ═══════════
+   Se guarda lo que hay, se abre la página del diseño con el producto de esta página marcado y, al terminarlo,
+   vuelve aquí con ?foto=1&anadir=1: se recupera lo guardado y el diseño entra como una pieza más. */
+const DISENOS = [
+  ['cielo','El cielo de vuestra noche'], ['luna','La Luna de vuestra noche'], ['cielo-mapa','Cielo y mapa'],
+  ['dos-cielos','Dos cielos, una historia'], ['mapa','Vuestro lugar en el mapa'], ['viaje','Cartel de viaje'],
+  ['mapa-viajes','Mapa de viajes'], ['lunas','Las lunas de un mes'], ['constelacion','Vuestra constelación'],
+  ['coordenadas','Coordenadas'], ['onda','La onda de vuestra voz'] ];
+function openDisenoModal(){
+  const g = document.getElementById('disenoGrid');
+  if(!g.children.length) g.innerHTML = DISENOS.map(d => '<button type="button" class="dz-card" data-d="' + d[0] + '"><img src="galeria/img/muestra-' + d[0] + '.jpg" alt="" loading="lazy" width="300" height="400"><b>' + d[1] + '</b></button>').join('');
+  document.getElementById('disenoModal').classList.add('open');
+}
+document.getElementById('btnDiseno').addEventListener('click', openDisenoModal);
+document.getElementById('disenoClose').addEventListener('click', () => document.getElementById('disenoModal').classList.remove('open'));
+document.getElementById('disenoGrid').addEventListener('click', async e => {
+  const b = e.target.closest('.dz-card'); if(!b) return;
+  b.classList.add('loading');
+  try{ await saveDesign(); }catch(_){}
+  const aqui = (location.pathname.split('/').pop() || 'cuadro.html');
+  location.href = b.dataset.d + '.html?para=' + encodeURIComponent(/^(cuadro|sobremesa|iman)\.html$/.test(aqui) ? aqui : 'cuadro.html') + '&anadir=1';
+});
 
 /* ═══════════ PANEL DEL PÓSTER ═══════════ */
 const panelEl = document.getElementById('edPanel');
@@ -3122,10 +3161,24 @@ let HANDOFF_FIT = null;   // formato fijado y sin recorte para la foto que llega
 (function pickUpHandoffPhoto(){
   if(!window.MOMENTURIES_PHOTO) return;
   if(new URLSearchParams(location.search).get('foto') !== '1') return;
-  window.MOMENTURIES_PHOTO.take().then(function(file){
+  window.MOMENTURIES_PHOTO.take().then(async function(file){
     const files = Array.isArray(file) ? file : (file ? [file] : []);   // una (versión vieja) o varias
     if(!files.length) return;
     openEditor();
+    /* 3-nov · diseño personalizado añadido desde el personalizador: primero vuelve lo que había y el diseño se suma */
+    const _aq = new URLSearchParams(location.search);
+    if(_aq.get('anadir') === '1'){
+      try{ const st = store(), saved = st && await st.get(SAVE_KEY); if(saved && saved.items && saved.items.length) await restoreDesign(saved); }catch(e){}
+      if(_aq.get('encuadre') === '0') HANDOFF_FIT = { format: FORMATS[_aq.get('formato')] ? _aq.get('formato') : 'retrato' };
+      history.replaceState(null, '', location.pathname);
+      ingestFiles(files, 'add');
+      const b = document.getElementById('btnSample'); if(b) b.hidden = true;
+      toast('Diseño añadido a tu pedido');
+      return;
+    }
+    /* ?talla= (p. ej. el imán en 10×15 para un diseño): la pieza vacía toma esa medida antes de recibirlo */
+    const _tk = _aq.get('talla'), _p = POSTERS[selected];
+    if(_tk && _p && !prodOf(_p).formats){ const sz = prodOf(_p).sizes.find(s => s.k === _tk); if(sz && inStock(sz)) applyProductSize(_p, sz); }
     /* 16-oct · los pósters personalizados (cielo.html, mapa.html) llegan con ?formato=retrato&encuadre=0: ya
        vienen en 3:4 con el texto colocado, así que entran directos en Retrato y sin pasar por el recorte.
        Solo para esta foto; después el cliente puede cambiar de formato como siempre. */
@@ -5227,6 +5280,7 @@ const SCENES = [
       wall1:'#efece5', wall2:'#e2ded4', fridge:'#2b2c2e', tiles:['#ecebe6', '#dddbd4'], floor:['#c7bfb0', '#b5ad9e'],
       mueble:'#b98e62', encimera:'#e9e4da' }) },
 ];
+for(let i = SCENES.length - 1; i >= 0; i--) if(/^terraza/.test(SCENES[i].id)) SCENES.splice(i, 1);   // 3-nov: sin terrazas
 /* ── MUEBLES DESCARGADOS (Poly Haven, CC0) ─────────────────────────────────
    Modelos reales CC0 de polyhaven.com (uso comercial permitido, sin atribución obligatoria),
    comprimidos a `modelos/<id>.glb` por `_build_modelos.py` (geometría cuantizada + texturas WebP:
@@ -5963,7 +6017,7 @@ function renderWallModal(){
   free.onclick = () => { clearWall(); closeWallModal(); };
   if(wallFilter === 'all') grid.appendChild(free);
   // primero las que se pueden pedir en su talla de siempre, luego las que solo quedan en otra, y las agotadas al final
-  const orden = w => (wallInStock(w) ? (w.base ? 1 : 0) : 4) + (wallPreferN && w.n !== wallPreferN ? 2 : 0);
+  const orden = w => (wallInStock(w) ? (w.base ? 1 : 0) - (w.best ? .5 : 0) : 4) + (wallPreferN && w.n !== wallPreferN ? 2 : 0);   // 3-nov: los más vendidos delante
   WALLS.map(w => wallForHueco(w, wallFilter)).filter(Boolean)
     .sort((a, b) => orden(a) - orden(b)).forEach(w => {
     const b = document.createElement('button');
@@ -5971,7 +6025,7 @@ function renderWallModal(){
     const otras = wallSizes(w).filter(v => wallKOf(v) !== wallKOf(w) && wallInStock(v)).map(v => wallPieceDims(v).replace(/ /g, ''));
     b.type = 'button'; b.className = 'wall-opt' + (WALL && WALL.id === w.id ? ' active' : '') + (ok ? '' : ' sold-out'); b.dataset.id = w.id;
     if(!ok){ b.disabled = true; b.title = 'Sin existencias'; }
-    b.innerHTML = '<div class="wall-opt-svg">' + wallSVG(w) + '</div>'
+    b.innerHTML = '<div class="wall-opt-svg">' + wallSVG(w) + (w.best && ok ? '<em class="wall-best"><span class="es">Más vendido</span><span class="en">Best seller</span></em>' : '') + '</div>'
       + '<b>' + w.name + '</b>'
       + '<small>' + w.n + ' <span class="es">cuadros' + (wallSizeKeys(w).length ? ' de ' + wallPieceDims(w) : '') + '</span><span class="en">prints' + (wallSizeKeys(w).length ? ', ' + wallPieceDims(w) : '') + '</span><br>'
       + '<span class="es">Ocupa ' + cm(w.width) + ' × ' + cm(w.height) + ' cm</span><span class="en">Takes ' + w.width + ' × ' + w.height + ' cm</span></small>'

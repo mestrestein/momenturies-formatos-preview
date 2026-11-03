@@ -85,3 +85,11 @@ body{background:#faf8f5}
 .pz-ya-it{border:0;background:none;padding:0;cursor:pointer;text-align:center;font:500 11.5px Inter,sans-serif;color:#333}
 .pz-ya-it img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:4px;display:block;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:4px;background:#eee}
 .pz-ya-it:hover img{outline:2px solid #1a1a1a}
+
+/* 3-nov · Cuadro / Sobremesa / Imán */
+.pz-prods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pz-prod-b{border:1.5px solid #d6d0c7;background:#fff;border-radius:12px;padding:10px 8px;cursor:pointer;text-align:center;font-family:Inter,sans-serif;color:#1a1a1a}
+.pz-prod-b b{display:block;font-size:14px;font-weight:700}
+.pz-prod-b small{display:block;font-size:11px;color:#777;margin-top:2px}
+.pz-prod-b[aria-pressed="true"]{border-color:#1a1a1a;background:#1a1a1a;color:#fff}
+.pz-prod-b[aria-pressed="true"] small{color:#ddd}

@@ -216,7 +216,8 @@ function paredEn(caja, roomId, wallId, peque){
   const cx = left + W / 2, cy = top + H / 2;
   const pinta = () => {
     const bw = caja.clientWidth, bh = caja.clientHeight; if(!bw) return;
-    const s = Math.max(bw / r.w, bh / r.h);
+    /* 3-nov: la foto se acerca hasta que el conjunto ocupe ~45 % del ancho (en PC la caja es ancha y quedaba pequeño), hasta 1,7× */
+    const s0 = Math.max(bw / r.w, bh / r.h), s = Math.min(s0 * 1.7, Math.max(s0, .45 * bw / W));
     const ox = Math.min(0, Math.max(bw - r.w * s, bw / 2 - cx * s)), oy = Math.min(0, Math.max(bh - r.h * s, bh * .4 - cy * s));
     Object.assign(img.style, { left:ox + 'px', top:oy + 'px', width:r.w * s + 'px', height:r.h * s + 'px' });
     piezas.forEach((el, k) => { const p = w.pieces[k];

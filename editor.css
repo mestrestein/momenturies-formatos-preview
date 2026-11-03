@@ -617,3 +617,18 @@ html.ed-locked #ptypeLabel{display:none}
 .apply-all .aa-go{flex:1;background:var(--black);color:var(--white)}
 .apply-all .aa-undo{background:#fff;color:var(--black)}
 .edp-icon[hidden],.pv-zoom #pvUndo[hidden]{display:none}
+
+/* 3-nov · marca «Más vendido» en Paredes de ensueño */
+.wall-opt-svg{position:relative}
+.wall-best{position:absolute;top:6px;left:6px;background:#c2582c;color:#fff;font:700 9.5px var(--font-sans);font-style:normal;letter-spacing:.3px;padding:3px 7px;border-radius:999px}
+
+/* 3-nov · la X de las miniaturas siempre a la vista (en el móvil no hay «hover» y no se veía) */
+.pv-thumb-del{opacity:1;width:18px;height:18px;line-height:18px;top:3px;right:3px;box-shadow:0 1px 3px rgba(0,0,0,.3);cursor:pointer}
+
+/* 3-nov · «Diseño personalizado» dentro del editor */
+.mmodal-card.dz-box{width:min(760px,94vw)}
+.dz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;max-height:70vh;overflow:auto;padding:2px}
+.dz-card{border:1.5px solid var(--gray2);border-radius:12px;background:#fff;padding:8px;cursor:pointer;text-align:left;font:600 12.5px var(--font-sans);color:var(--black)}
+.dz-card img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:6px;margin-bottom:6px;background:#f2efe9}
+.dz-card:hover{border-color:var(--black)}
+.dz-card.loading{opacity:.5;pointer-events:none}
