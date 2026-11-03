@@ -272,17 +272,30 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
 (function(){
   const r = $('#aluminio .al-foto'); if(!r) return;
   const g = $('.globo', r), pts = $$('.pt', r);
-  pts.forEach(p => p.onclick = () => {
+  const movil = matchMedia('(max-width:900px)');
+  const cerrar = () => { pts.forEach(x => x.classList.remove('on')); g.classList.remove('on'); };
+  pts.forEach(p => p.onclick = e => {
+    e.stopPropagation();
     const on = p.classList.contains('on');
-    pts.forEach(x => x.classList.remove('on'));
-    if(on){ g.classList.remove('on'); return; }
+    cerrar();
+    if(on) return;
     p.classList.add('on');
     const [t, d] = p.dataset.t.split('|');
     $('b', g).textContent = t; $('span', g).textContent = d;
     const x = parseFloat(p.style.left), y = parseFloat(p.style.top);
-    g.style.left = (x > 60 ? x - 28 : x + 3) + '%'; g.style.top = (y + 4) + '%';
+    if(movil.matches){
+      /* móvil: el globo va al lado del punto y a su misma altura, sin salirse de la foto */
+      const W = r.clientWidth, H = r.clientHeight, w = g.offsetWidth, h = g.offsetHeight;
+      const px = x / 100 * W, py = y / 100 * H, m = 8;
+      const izq = px < W / 2 ? px + 24 : px - 24 - w;
+      g.style.left = Math.max(m, Math.min(W - w - m, izq)) + 'px';
+      g.style.top = Math.max(m, Math.min(H - h - m, py - h / 2)) + 'px';
+    } else { g.style.left = (x > 60 ? x - 28 : x + 3) + '%'; g.style.top = (y + 4) + '%'; }
     g.classList.add('on');
   });
+  /* tocar en cualquier otro sitio quita el globo para ver la foto */
+  document.addEventListener('click', e => { if(g.classList.contains('on') && !e.target.closest('#aluminio .pt')) cerrar(); });
+  let ancho = innerWidth; addEventListener('resize', () => { if(innerWidth !== ancho){ ancho = innerWidth; cerrar(); } });
 })();
 
 /* ═════ PAREDES DE ENSUEÑO: las que hay en stock, cada una abre el editor con esa pared ═════ */
