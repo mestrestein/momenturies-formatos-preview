@@ -151,7 +151,7 @@
     <p class="wall-size-note" id="wallSizeNote" hidden></p>
 
     <p class="config-label"><span class="es">Colgado</span><span class="en">Mounting</span>
-      <button class="ver-montaje" id="verMontaje"><span class="es">ver cómo queda</span><span class="en">see how it looks</span></button></p>
+      <button type="button" class="ver-montaje" id="verMontaje"><span class="es">ver cómo queda</span><span class="en">see how it looks</span></button></p>
     <div class="mount-chips" id="mountChips"></div>
     <p class="mount-note" id="mountNote"></p>
 
@@ -191,7 +191,7 @@
   <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
 </div>
 
-<!-- VENTANA: ENCUADRE (como el modal de recorte de Futsides, estilo Momenturies) -->
+<!-- VENTANA: ENCUADRE  -->
 <div class="mmodal" id="cropModal">
   <div class="mmodal-card">
     <div class="mmodal-head">
@@ -221,7 +221,7 @@
   </div>
 </div>
 
-<!-- VENTANA: MONTAJE DEL COLGADOR (escena 3D de Futsides con la foto del cliente) -->
+<!-- VENTANA: MONTAJE DEL COLGADOR (escena 3D con la foto del cliente) -->
 <div class="mmodal" id="hangerModal">
   <div class="mmodal-card wide">
     <div class="mmodal-head">
@@ -560,14 +560,14 @@ const PHOTO_VIEW = {
   'salon-luz':   { x:0,   y:400, w:2304, h:1836 },
 };
 
-/* ═══════════ ESCENA (motor 3D del "Sube tu foto" de Futsides) ═══════════ */
+/* ═══════════ ESCENA ═══════════ */
 const canvas   = document.getElementById('pvCanvas');
 const stage    = document.getElementById('pvStage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
 renderer.setClearColor(0x000000, 0);            // transparente → se ve el fondo claro del editor
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NoToneMapping;     // como el sube-tu-foto de Futsides
+renderer.toneMapping = THREE.NoToneMapping;     
 
 const scene  = new THREE.Scene();
 const BASEZ  = 8, MINZ = BASEZ*0.45, MAXZ = BASEZ*1.55;
@@ -599,7 +599,7 @@ const CM = P_LONG / 15.2;
 const TEX_SHORT = 900, TEX_LONG = Math.round(900*Math.SQRT2);          // lienzo de la textura
 const MAXANI = renderer.capabilities.getMaxAnisotropy();
 
-/* entorno de estudio (idéntico a Futsides) */
+/* entorno de estudio */
 function buildEnvMap(){
   const c=document.createElement('canvas');c.width=1024;c.height=512;const ctx=c.getContext('2d');const W=c.width,H=c.height;
   const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#49505f');g.addColorStop(.23,'#2b313d');g.addColorStop(.60,'#171b22');g.addColorStop(1,'#090a0d');
@@ -614,7 +614,7 @@ const pmrem=new THREE.PMREMGenerator(renderer);pmrem.compileEquirectangularShade
 const rawEnv=buildEnvMap();scene.environment=pmrem.fromEquirectangular(rawEnv).texture;rawEnv.dispose();
 pmrem.dispose();
 
-/* luces: las MISMAS del visor de la ficha de Futsides */
+/* luces */
 scene.add(new THREE.AmbientLight(0xfff2e2,1.85));
 const PL=(c,i,d,p)=>{const l=new THREE.PointLight(c,i,d);l.position.set(p[0],p[1],p[2]);scene.add(l);};
 PL(0xffebc7,8.7,18,[0,3.6,.8]); PL(0xffdca8,4.35,13,[1.7,2.15,1.4]);
@@ -662,7 +662,7 @@ const LIGHT_U = { uLightTex:{ value:null }, uLightInv:{ value:new THREE.Matrix4(
    aluminio al girarlo) un gris medio salía un 30 % más claro y los tonos claros, blancos quemados, en todos
    los entornos. Marc: «colores muy vivos siempre, con contraste, nada de luces 3D». En 2D (uFlat = 1, lo mueve
    applyFlatGloss por cuadro) el frontal pinta el color de la foto sin luces ni mapa de luz, algo realzado, y encima
-   un reflejo diagonal muy suave, como el brillo de los mockups de Futsides (FLAT_GLOSS = 0 lo quita). */
+   un reflejo diagonal muy suave (FLAT_GLOSS = 0 lo quita). */
 const FLAT_GLOSS = 0.10;
 /* «muy vivos, con contraste»: realce suave solo en pantalla (imprenta usa el archivo original). Calibrado para
    que un blanco de 235 no pase de ~248: los claros ganan chispa sin quemarse. 1 / 0 / 1 = color exacto. */
@@ -697,7 +697,7 @@ const makeFrontMat = tex => lightPatch(new THREE.MeshPhysicalMaterial({map:tex,s
 const makeBackMat  = () => new THREE.MeshPhysicalMaterial({color:new THREE.Color('#c9c9c9'),side:THREE.FrontSide,roughness:.55,metalness:.78,reflectivity:.55,clearcoat:.22,clearcoatRoughness:.28,envMapIntensity:.7,ior:1.5});
 const makeSideMat  = () => new THREE.MeshPhysicalMaterial({color:0xd8d8d8,roughness:.018,metalness:1,reflectivity:1,clearcoat:1,clearcoatRoughness:.02,envMapIntensity:3.15,ior:2.5});
 
-/* ═══════════ COLGADORES DENTRO DEL VISOR (mismo motor que el visor 3D de Futsides) ═══════════
+/* ═══════════ COLGADORES DENTRO DEL VISOR ═══════════
    Cada póster lleva sus piezas puestas: placa de imán premium, tiras adhesivas, lámina de imán
    de nevera o peana de bambú (con el póster inclinado encima). Al cambiar de producto o de
    colgador la pieza entra/sale en el propio 3D, sin abrir ninguna escena aparte. */
@@ -726,7 +726,7 @@ function planarUV(w,h){
     }
   };
 }
-/* veta de bambú pintada a canvas (la misma de Futsides): 7 láminas + nudos */
+/* veta de bambú pintada a canvas: 7 láminas + nudos */
 function buildBambooTex(){
   const c=document.createElement('canvas'); c.width=1400; c.height=300;
   const ctx=c.getContext('2d'), W=c.width, H=c.height;
@@ -1380,7 +1380,7 @@ function syncFaceTabs(){
 }
 
 /* ═══════════ ROTACIÓN / ZOOM (modelo sube-tu-foto: objetivo + easing, 0 render en reposo) ═══════════ */
-const REST_RY = 0.15, REST_RX = -0.04;   // pose de reposo de Futsides (coge bien los reflejos)
+const REST_RY = 0.15, REST_RX = -0.04;   // pose de reposo (coge bien los reflejos)
 let tRy=REST_RY, cRy=REST_RY, tRx=REST_RX, cRx=REST_RX, tZ=BASEZ, cZ=BASEZ;
 let textDrag=null;
 const hintEl = document.getElementById('pvHint');
@@ -1467,7 +1467,7 @@ function moveTextTo(mx,my){
   }
 }
 
-/* pointer events con captura (como Futsides) + pinch-zoom */
+/* pointer events con captura + pinch-zoom */
 let drag=false, apId=null, sx=0, sy=0, sRy=0, sRx=0, moved=0, sPan=0;
 let compDrag=null;                       // arrastre de la composición sobre la foto del cliente
 let pc=0, p1=null, p2=null, lpd=0;
@@ -2309,8 +2309,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
 }
 
 /* ═══════════ 3 PRODUCTOS: metálico (M+) / sobremesa de madera (S) / imán nevera (XS) ═══════════ */
-/* Tallas y colgadores CALCADOS de futsides.com (opciones Medidas × Colgador del
-   producto real). Allí la peana de madera SOLO existe en S, el imán de nevera en
+/* Tallas y colgadores (opciones Medidas × Colgador). La peana de madera SOLO existe en S, el imán de nevera en
    XS/S y el imán premium de pared solo en M/L/XL → cada talla cae en un producto:
      XS  7 × 10      → Imán de nevera
      S   10,2 × 15,2 → Sobremesa (peana de bambú; desde el 12-oct también 12,7×17,8 y 20,3×25,4)
@@ -2328,7 +2327,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
    stock:false = sin existencias en Brildor (revisado el 1-oct-2026 en su ficha). La talla se
    sigue enseñando, tachada y con "Sin existencias", pero no se puede elegir. Cuando vuelva,
    quitar el stock:false aquí Y en OUT_OF_STOCK de paredes/_build_paredes.py (y regenerar).
-   26-oct-2026: precios de Marc y clásico con las placas de Futsides (10×15, A4, 25,5×36, 30,5×43,1).
+   26-oct-2026: precios de Marc y clásico con las placas (10×15, A4, 25,5×36, 30,5×43,1).
    Con la tienda conectada mandan los de Shopify; estos son el respaldo. */
 const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
@@ -2364,7 +2363,7 @@ const FORMAT_DEFAULT = 'retrato', SIZE_DEFAULT = 'M';
 
 const PRODUCTS = {
   metal:  { name:'Cuadro',               short:'Cuadro',   hanger:'iman-pared',
-            mounts:['iman-pared','tiras','none'], formats:FORMATS },
+            mounts:['iman-pared'], formats:FORMATS },
   madera: { name:'Sobremesa',            short:'Sobremesa',  hanger:'madera',      def:'S',
             note:'Peana de bambú incluida.',
             /* 12-oct: la lámina con peana de bambú de ahorraentinta (ref. MAD1130) viene en tres
@@ -2385,11 +2384,9 @@ const PRODUCTS = {
             sizes:[ {k:'XS',d:[7,10],price:9.99, variantId:null},
                     {k:'S', d:[10,15],price:14.99, variantId:null} ] },
 };
-/* colgado del póster de pared: las 3 opciones van incluidas en el precio */
+/* 3-nov: el cuadro se vende solo con imán. Los diseños guardados con otro colgado pasan a imán (mountOf). */
 const MOUNTS = {
   'iman-pared': { label:'Imán premium', hint:'incluido' },
-  'tiras':      { label:'Tiras adhesivas', hint:'sin agujeros' },
-  'none':       { label:'Sin colgador', hint:'lo pongo yo' },
 };
 let defaultType = ((window.MOMENTURIES_EDITOR||{}).product && PRODUCTS[(window.MOMENTURIES_EDITOR||{}).product]) ? window.MOMENTURIES_EDITOR.product : 'metal';
 const cm = n => String(n).replace('.', ',');     // 29.7 → 29,7
@@ -2467,7 +2464,14 @@ function renderMounts(){
       b.onclick=()=>setMount(id);
       box.appendChild(b);
     });
+    /* con una sola opción de colgado, el resto de la fila es el botón de verlo */
+    const ver=document.createElement('button');
+    ver.type='button'; ver.className='mount-chip mount-ver';
+    ver.innerHTML='<span class="es">Ver cómo queda</span><span class="en">See how it looks</span><small><span class="es">paso a paso, con tu foto</span><span class="en">step by step, with your photo</span></small>';
+    ver.onclick=openHangerModal;
+    box.appendChild(ver);
   }
+  const lnk=document.getElementById('verMontaje'); if(lnk) lnk.hidden=!!pr.mounts;
   if(note) note.textContent = pr.mounts ? '' : (pr.note||'');
 }
 function setMount(id){
@@ -2569,16 +2573,16 @@ function setPtype(k){
   } else if(k !== 'madera' && apoyo) clearRoom();
 }
 
-/* ═══ escena de montaje (colgador-scene de Futsides) en ventana, con la foto del cliente ═══ */
+/* ═══ escena de montaje (colgador-scene) en ventana, con la foto del cliente ═══ */
 const hangerModalEl = document.getElementById('hangerModal');
 const hangerFrame   = document.getElementById('hangerFrame');
 let sceneReady = false;
 
 window.addEventListener('message', e=>{
-  if(!e.data || e.data.type!=='futsides-scene-ready') return;
+  if(!e.data || e.data.type!=='momenturies-scene-ready') return;
   if(!hangerFrame.contentWindow || e.source!==hangerFrame.contentWindow) return;
   sceneReady = true;
-  try{ hangerFrame.contentWindow.postMessage({type:'futsides-hide-bar'},'*'); }catch(_){}
+  try{ hangerFrame.contentWindow.postMessage({type:'momenturies-hide-bar'},'*'); }catch(_){}
   pushSceneState();
 });
 
@@ -2587,19 +2591,19 @@ function pushSceneState(){
   if(!p || !sceneReady || !hangerFrame.contentWindow) return;
   const cw = hangerFrame.contentWindow;
   try{
-    cw.postMessage({type:'futsides-activate', w:hangerFrame.clientWidth, h:hangerFrame.clientHeight},'*');
-    const payload = {type:'futsides-set-poster', orientation:p.orient};
+    cw.postMessage({type:'momenturies-activate', w:hangerFrame.clientWidth, h:hangerFrame.clientHeight},'*');
+    const payload = {type:'momenturies-set-poster', orientation:p.orient};
     if(p.thumb) payload.front = p.thumb;
     const bc = buildBackCanvas(p);
     if(bc){ try{ payload.back = bc.toDataURL('image/jpeg',0.8); }catch(_){} }
     cw.postMessage(payload,'*');
-    cw.postMessage({type:'futsides-select-hanger', id:mountOf(p)},'*');
+    cw.postMessage({type:'momenturies-select-hanger', id:mountOf(p)},'*');
   }catch(_){}
 }
 function sceneSelectHanger(){
   const p = POSTERS[selected];
   if(!p || !sceneReady || !hangerFrame.contentWindow) return;
-  try{ hangerFrame.contentWindow.postMessage({type:'futsides-select-hanger', id:mountOf(p)},'*'); }catch(_){}
+  try{ hangerFrame.contentWindow.postMessage({type:'momenturies-select-hanger', id:mountOf(p)},'*'); }catch(_){}
 }
 /* dentro de la ventana: chips solo si el producto deja elegir colgado */
 function renderHangerChips(){
@@ -2607,7 +2611,7 @@ function renderHangerChips(){
   if(!box||!p) return;
   const pr=prodOf(p);
   box.innerHTML='';
-  if(!pr.mounts) return;
+  if(!pr.mounts || pr.mounts.length<2) return;
   pr.mounts.forEach(id=>{
     const m=MOUNTS[id]; if(!m) return;
     const b=document.createElement('button');
@@ -2625,7 +2629,7 @@ function openHangerModal(){
   document.getElementById('hangerTitleEn').textContent=t[1];
   renderHangerChips();
   hangerModalEl.classList.add('open');
-  if(!hangerFrame.src){ hangerFrame.src = 'colgador-scene.html'; }   // scene-ready hará el resto
+  if(!hangerFrame.src){ hangerFrame.src = 'colgador-scene.html?v=2'; }   // scene-ready hará el resto
   else pushSceneState();
 }
 function closeHangerModal(){ hangerModalEl.classList.remove('open'); }
@@ -3406,7 +3410,7 @@ window.MOMENTURIES_EDITOR_VIVO = {
 
 /* ═══════════ PAREDES DE ENSUEÑO (composiciones prediseñadas, tipo Mixtiles) ═══════════
    Las paredes viven en paredes.js (generado por paredes/_build_paredes.py) con las medidas
-   exactas de Futsides. Con una pared activa:
+   exactas. Con una pared activa:
      · hay tantos cuadros como huecos, cada uno con SU talla y orientación (no se cambian)
      · las posiciones vienen de la pared (cm → unidades 3D), no de la rejilla automática
      · "Añadir fotos" rellena los huecos vacíos en orden; la X de una miniatura vacía el hueco
