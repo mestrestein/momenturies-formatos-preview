@@ -262,17 +262,20 @@
 .rg-k .rg-que{font-size:14px;color:var(--mid);line-height:1.5}
 /* el dorso del cuadro, como llega: aluminio, el imán arriba y la dedicatoria escrita */
 .rg-k .dorsos{position:absolute;right:12px;bottom:12px;display:flex;align-items:flex-end}
-.rg-k .dorso{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:112px;aspect-ratio:3/4;padding:12px 9px 10px;text-align:center;border-radius:3px;
+.rg-k .dorso{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:124px;aspect-ratio:3/4;padding:7% 9% 6%;text-align:center;border-radius:3px;
   background:linear-gradient(135deg,#d6d7da 0%,#f3f3f4 42%,#e2e3e5 60%,#c6c7ca 100%);box-shadow:0 12px 24px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.6);transform:rotate(4deg);transition:transform .35s var(--ease)}
-.rg-k .dorso .ded{font-family:'Caveat',cursive;font-size:16.5px;line-height:1.08;color:#2b2622}
-.rg-k .dorso small{font:600 9px var(--sans);letter-spacing:.5px;text-transform:none;color:#6b6560}
+/* el imán de pared va pegado en el centro del dorso (40 % x 38 %, como en el personalizador): la frase va arriba y la firma abajo */
+.rg-k .dorso::before{content:'';position:absolute;left:30%;top:31%;width:40%;height:38%;border-radius:2px;
+  background:linear-gradient(145deg,#3a3a3c,#1d1d1f 55%,#2c2c2e);box-shadow:0 1px 2px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.08)}
+.rg-k .dorso .ded{position:absolute;left:7%;right:7%;top:4%;height:26%;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:'Caveat',cursive;font-size:13px;line-height:1.02;color:#2b2622}
+.rg-k .dorso small{position:absolute;left:7%;right:7%;bottom:5%;height:22%;display:flex;align-items:center;justify-content:center;font:600 8.5px var(--sans);letter-spacing:.4px;color:#6b6560}
 /* conjuntos de 3 o 4: cada dorso con su frase, en abanico */
-.rg-k .dorsos.n3 .dorso,.rg-k .dorsos.n4 .dorso{width:74px;padding:8px 5px 6px}
-.rg-k .dorsos.n3 .ded,.rg-k .dorsos.n4 .ded{font-size:13px}
+.rg-k .dorsos.n3 .dorso,.rg-k .dorsos.n4 .dorso{width:80px;padding:6% 6% 5%}
+.rg-k .dorsos.n3 .ded,.rg-k .dorsos.n4 .ded{font-size:11px;left:4%;right:4%;top:3%}
 .rg-k .dorsos.n3,.rg-k .dorsos.n4{left:10px;right:10px;justify-content:center;gap:6px}
 .rg-k .dorsos.n4 .dorso{width:calc(25% - 5px);max-width:70px}
 .rg-k .dorsos.n3 .dorso{width:calc(33% - 5px);max-width:84px}
-.rg-k .dorsos.n4 .ded{font-size:12.5px}
+.rg-k .dorsos.n4 .ded{font-size:10.5px}
 .rg-k .dorsos .dorso:nth-child(1){transform:rotate(-7deg) translateY(4px)}
 .rg-k .dorsos .dorso:nth-child(2){transform:rotate(-2deg)}
 .rg-k .dorsos .dorso:nth-child(3){transform:rotate(3deg) translateY(2px)}
