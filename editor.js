@@ -532,7 +532,7 @@ const GRUPOS_ENTORNO = [
   { id:'aparador',   es:'Aparadores',     en:'Sideboards',   mesa:true,  test: id => /^aparador-/.test(id) },
   { id:'estanteria', es:'Estanterías',    en:'Shelving',     mesa:true,  test: id => /^estanteria-/.test(id) },
   { id:'dormitorio', es:'Habitaciones',   en:'Bedrooms',     mesa:true,  test: id => /^dormitorio/.test(id) || /^mesita-/.test(id) },
-  { id:'despacho',   es:'Escritorios',    en:'Desks',        mesa:true,  test: id => /^(despacho|estudio)/.test(id) },
+  { id:'despacho',   es:'Escritorios',    en:'Desks',        mesa:true,  test: id => /^(despacho|estudio|escritorio-)/.test(id) },
   { id:'pasillo',    es:'Pasillo',        en:'Hallway',      mesa:true,  test: id => id === 'pasillo' },
   { id:'terraza',    es:'Terrazas',       en:'Terraces',     mesa:false, test: id => /^terraza/.test(id) },
   { id:'escalera',   es:'Escalera',       en:'Staircase',    mesa:false, test: id => /^escalera-/.test(id) },
@@ -541,7 +541,7 @@ const GRUPOS_ENTORNO = [
    Ver el bloque "SOBREMESA" al final de SCENES. Nunca se enseñan para cuadro/imán (colgar a
    la altura de una mesita quedaría raro), y son las ÚNICAS que se enseñan para el Sobremesa:
    los entornos de pared reutilizados quedaban con el sobremesa flotando en el aire. */
-const SOBREMESA_SCENES = /^(estanteria-|aparador-|mesita-)/;
+const SOBREMESA_SCENES = /^(estanteria-|aparador-|mesita-|escritorio-)/;
 /* 16-oct-2026 · Escenas de nevera: SOLO para el imán (y el imán solo ve estas: un imán no se pega en la pared). */
 const NEVERA_SCENES = /^nevera-/;
 let grupoAbierto = null;
@@ -959,6 +959,39 @@ function drawPlaceholderIman(x, W, H){
   x.beginPath(); x.moveTo(bx - 5*u, by); x.lineTo(bx + 5*u, by); x.moveTo(bx, by - 5*u); x.lineTo(bx, by + 5*u); x.stroke();
 }
 
+/* La placa: misma esquina en todas las tallas (1,5 mm, lo mínimo que se aprecia). Mismos grupos de material
+   y mismas UV que la caja de antes: 0 canto, 4 cara, 5 dorso. */
+const RADIO_ESQUINA = 0.15*CM;
+function placaGeo(w, h, d){
+  const pts = roundedRect(w, h, RADIO_ESQUINA).getPoints(3);
+  if(pts[0].distanceTo(pts[pts.length-1]) < 1e-6) pts.pop();
+  const tri = THREE.ShapeUtils.triangulateShape(pts, []), zf = d/2;
+  const pos = [], nor = [], uv = [], idx = []; let n = 0;
+  const cara = (z, nz, u) => {
+    const v0 = n;
+    pts.forEach(q => { pos.push(q.x, q.y, z); nor.push(0, 0, nz); uv.push(u(q.x), q.y/h + .5); n++; });
+    tri.forEach(t => { const [a, b, c] = t, A = pts[a], B = pts[b], C = pts[c];
+      const ccw = (B.x-A.x)*(C.y-A.y) - (B.y-A.y)*(C.x-A.x) > 0;
+      if(ccw === (nz > 0)) idx.push(v0+a, v0+b, v0+c); else idx.push(v0+a, v0+c, v0+b); });
+  };
+  const g = new THREE.BufferGeometry();
+  const i0 = idx.length;
+  pts.forEach((q, i) => {
+    const r = pts[(i+1) % pts.length], ex = r.x-q.x, ey = r.y-q.y, L = Math.hypot(ex, ey) || 1, nx = ey/L, ny = -ex/L, v0 = n;
+    [[q.x,q.y,zf],[r.x,r.y,zf],[r.x,r.y,-zf],[q.x,q.y,-zf]].forEach(a => { pos.push(...a); nor.push(nx, ny, 0); uv.push(0, 0); n++; });
+    idx.push(v0, v0+3, v0+1, v0+1, v0+3, v0+2);
+  });
+  const i1 = idx.length; cara(zf, 1, x => x/w + .5);
+  const i2 = idx.length; cara(-zf, -1, x => .5 - x/w);
+  const i3 = idx.length;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.addGroup(i0, i1-i0, 0); g.addGroup(i1, i2-i1, 4); g.addGroup(i2, i3-i2, 5);
+  return g;
+}
+
 function makePoster(){
   const pr = PRODUCTS[defaultType] || PRODUCTS.metal;
   const fmt0 = pr.formats ? ((window.MOMENTURIES_EDITOR||{}).format && pr.formats[(window.MOMENTURIES_EDITOR||{}).format] ? window.MOMENTURIES_EDITOR.format : FORMAT_DEFAULT) : null;
@@ -972,7 +1005,7 @@ function makePoster(){
   const sideMat  = makeSideMat();
   const backMat  = makeBackMat();
   const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(gw, gh, PD),
+    placaGeo(gw, gh, PD),
     [ sideMat, sideMat, sideMat, sideMat, frontMat, backMat ]
   );
   // el póster va dentro de un rig: el rig lleva sitio/giro (la talla ya está en la propia
@@ -1069,7 +1102,7 @@ function layout(){
       /* con restCm (Sobremesa: se apoya) el encuadre baja hasta el suelo de verdad, para que
          se vea el mueble entero; con furnCm (se cuelga) solo se enseña un trozo del mueble
          de debajo, no hace falta ver hasta el suelo. */
-      const reveal = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
+      const reveal = sc.restCm != null ? sc.restCm : muebleBajo(sc, COMP_U.w/CM)*0.42;
       // apoyado (Sobremesa): más aire arriba, para que no roce la barra de arriba ni la decoración de la balda
       let top = totalH/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -totalH/2 - (sc.gapCm + reveal)*CM;
       if(sc.verCm){   // nevera: se ve de verCm[0] a verCm[1] cm del suelo (la puerta entera, sin suelo de más)
@@ -1508,7 +1541,7 @@ canvas.addEventListener('pointermove', e=>{
   if(isFlat()){ tRy = 0; tRx = 0; }                                                                                          // vista 2D: de frente y quieta
   else if(ROOM_CFG.mode !== 'none'){   // sin entorno no hay tope: el cuadro gira entero, como siempre
     if(ROOM_CFG.mode === 'photo'){ tRy = Math.max(-.16, Math.min(.16, tRy)); tRx = Math.max(-.06, Math.min(.08, tRx)); }   // foto: mirar alrededor (paralaje)
-    else { tRy = Math.max(-.85, Math.min(.85, tRy)); tRx = Math.max(-.12, Math.min(.42, tRx)); }                           // habitación dibujada: orbitar
+    else { const _sc = findScene(ROOM_CFG.scene), _r = (BAKED_ROOMS[_sc.id] && BAKED_ROOMS[_sc.id].ry) || [-.85, .85]; tRy = Math.max(_r[0], Math.min(_r[1], tRy)); tRx = Math.max(-.12, Math.min(.42, tRx)); }                           // habitación dibujada: orbitar
   }
 },{passive:false});
 
@@ -2301,6 +2334,9 @@ const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
     sizes:[ {k:'S', d:[10,10], price:14.99, stock:false},
             {k:'M', d:[15,15], price:24.99},
+            /* 3-nov: 20×20 nuevo. Va con clave propia para no tocar los SKU de M y L. Precio provisional.
+               Nace con stock:false: se puede elegir cuando Shopify tenga los SKU CDR-CUA-ML-* */
+            {k:'ML',d:[20,20], price:29.99, stock:false},
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
     sizes:[ {k:'S', d:[10,15], price:19.99},
@@ -2385,7 +2421,7 @@ function defSizeOf(pr, formatId){
    rehacer la geometría del póster (no basta con escalarla, como antes con el A4 único). */
 function rebuildPosterGeometry(p){
   p.mesh.geometry.dispose();
-  p.mesh.geometry = new THREE.BoxGeometry(baseW(p), baseH(p), PD);
+  p.mesh.geometry = placaGeo(baseW(p), baseH(p), PD);
   rebuildMountParts(p);
   const i = POSTERS.indexOf(p);
   applyFrontTexture(i); applyBackText(i);
@@ -3501,7 +3537,7 @@ function layoutWall(){
      y el mueble entero por debajo): si no, con composiciones pequeñas se veía solo la pared y un mueble gigante */
   /* 20-sep-2026: menos aire (antes 16 cm arriba y 0,75 del mueble abajo). Marc quería que los cuadros
      ocupen más pared y no queden pequeños en medio de una pared enorme. */
-  const revealW = sc.restCm != null ? sc.restCm : sc.furnCm*0.42;
+  const revealW = sc.restCm != null ? sc.restCm : muebleBajo(sc, W)*0.42;
   let top = H*CM/2 + (sc.restCm != null ? 48*CM : 9*CM), bot = -H*CM/2 - (sc.gapCm + revealW)*CM;
   if(sc.verCm){
     if(WALL.fridge){
@@ -4885,7 +4921,7 @@ const SCENES = [
     } },
   /* ── COCINAS ───────────────────────────────────────────────────────────── */
   { id:'dormitorio', caja:{ w:660, h:292, d:470 }, es:'Habitación', en:'Bedroom',     des:'cama con mesitas',       den:'bed and nightstands',  furnCm:105, gapCm:18, viewCm:300, build:buildDormitorio },
-  { id:'salon-real', caja:{ w:640, h:286, d:420 },    es:'Sala de estar', en:'Sitting room',    des:'butaca y mesita',      den:'armchair and side table', furnCm:55, gapCm:22, viewCm:340, build:buildSalonReal },
+  { id:'salon-real', caja:{ w:640, h:286, d:420 },    es:'Sala de estar', en:'Sitting room',    des:'sofá, butaca y lámpara', den:'sofa, armchair and lamp', furnCm:82, gapCm:22, viewCm:340, build:buildSalonReal },
   { id:'despacho-real', caja:{ w:560, h:274, d:380 }, es:'Escritorio',   en:'Desk',             des:'mesa de roble y silla',   den:'oak desk and chair',        furnCm:74, gapCm:22, viewCm:340, build:buildDespachoReal },
   { id:'salon-sofa', caja:{ w:800, h:300, d:480 },    es:'Salón sofá',   en:'Sofa',             des:'sofá de bouclé',          den:'bouclé sofa',               furnCm:88, gapCm:20, viewCm:360, build:buildSalonSofa },
   { id:'cocina', caja:{ w:600, h:276, d:400 },        es:'Cocina',        en:'Kitchen',        des:'frentes greige y roble',  den:'greige fronts and oak',  furnCm:92, gapCm:42, viewCm:380, build:buildCocina },
@@ -5056,6 +5092,14 @@ const SCENES = [
      para que los imanes (7 × 10 cm) se vean grandes. La cara de la puerta hace de «pared»: restZCm =
      dónde queda esa cara (NEVERA_FRONT), así la escena se retrasa y los imanes quedan pegados a la puerta.
      furnCm + gapCm = altura del borde de abajo de la composición (100 cm, a la altura de la mano). */
+  /* 3-nov · Sobremesa en la esquina del escritorio: el escritorio queda a la izquierda y su esquina derecha
+     debajo del Sobremesa. */
+  { id:'escritorio-roble', flyRy:-0.3, flyRy0:-0.5, restZCm:30, caja:{ w:560, h:272, d:380 }, es:'Escritorio de roble', en:'Oak desk', des:'en la esquina de la mesa', den:'on the corner of the desk',
+    restCm:74, gapCm:0, furnCm:74, viewCm:330, build:(g,U) => buildShell(g, U, { wall1:'#ede8df', wall2:'#e0d9cc', floor1:'#c0a684', floor2:'#ad9270', side:'#e9e3d8', skirt:'#e0d9cc' }) },
+  { id:'escritorio-blanco', flyRy:-0.3, flyRy0:-0.5, restZCm:30, caja:{ w:560, h:272, d:380 }, es:'Escritorio blanco', en:'White desk', des:'en la esquina de la mesa', den:'on the corner of the desk',
+    restCm:74, gapCm:0, furnCm:74, viewCm:330, build:(g,U) => buildShell(g, U, { wall1:'#e9eaea', wall2:'#dcdddc', floor1:'#b3ada2', floor2:'#a29c90', side:'#e4e5e4', skirt:'#dcdddc' }) },
+  { id:'escritorio-nogal', flyRy:-0.3, flyRy0:-0.5, restZCm:30, caja:{ w:560, h:272, d:380 }, es:'Escritorio de nogal', en:'Walnut desk', des:'en la esquina de la mesa', den:'on the corner of the desk',
+    restCm:74, gapCm:0, furnCm:74, viewCm:330, build:(g,U) => buildShell(g, U, { wall1:'#dfe3d8', wall2:'#d1d6c9', floor1:'#a98f70', floor2:'#987f62', side:'#dbdfd3', skirt:'#d1d6c9' }) },
   { id:'nevera-menta', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera retro menta', en:'Mint retro fridge', des:'cocina con suelo de damero', den:'kitchen with checkerboard floor',
     furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
       wall1:'#f3efe6', wall2:'#e6e0d3', fridge:'#a9d8c4', tiles:['#fbfaf6', '#d9d6cc'], floor:['#f4f1ea', '#262626'],
@@ -5064,10 +5108,14 @@ const SCENES = [
     furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
       wall1:'#f1e9dc', wall2:'#e4d9c6', fridge:'#c8382f', tiles:['#2f5a46', '#23463a'], floor:['#b8613f', '#a5553a', 'barro'],
       mueble:'#2f5a46', encimera:'#e9e2d4' }) },
-  { id:'nevera-crema', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera retro crema', en:'Cream retro fridge', des:'azulejo azul y suelo de roble', den:'blue tiles and oak floor',
+  { id:'nevera-acero', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera de acero', en:'Steel fridge', des:'combi moderna, azulejo azul y roble', den:'modern fridge, blue tiles and oak',
     furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
-      wall1:'#f4efe6', wall2:'#e7e0d2', fridge:'#f0e6cc', tiles:['#2d5b8c', '#244c77'], floor:['#c9a67c', '#b8946a', 'roble'],
+      wall1:'#f4efe6', wall2:'#e7e0d2', fridge:'#c6c9cb', tiles:['#2d5b8c', '#244c77'], floor:['#c9a67c', '#b8946a', 'roble'],
       mueble:'#f6f2ea', encimera:'#2b2b2b' }) },
+  { id:'nevera-negra', restZCm:NEVERA_FRONT, caja:{ w:420, h:270, d:380 }, es:'Nevera negra', en:'Black fridge', des:'combi mate, frentes de roble', den:'matte fridge, oak fronts',
+    furnCm:92, gapCm:8, viewCm:90, verCm:[88, 158], build:(g,U) => buildCocinaNevera(g, U, {
+      wall1:'#efece5', wall2:'#e2ded4', fridge:'#2b2c2e', tiles:['#ecebe6', '#dddbd4'], floor:['#c7bfb0', '#b5ad9e'],
+      mueble:'#b98e62', encimera:'#e9e4da' }) },
 ];
 /* ── MUEBLES DESCARGADOS (Poly Haven, CC0) ─────────────────────────────────
    Modelos reales CC0 de polyhaven.com (uso comercial permitido, sin atribución obligatoria),
@@ -5171,13 +5219,163 @@ function addModel(g, url, o){
   });
 }
 
+/* ── HABITACIONES HORNEADAS (Blender, nov-2026) ────────────────────────────────────────────────
+   Cada habitación se modela y se ilumina en Blender (blender/momenturies-rooms) y aquí llega como
+   geometría + mapas de luz ya calculados (rebotes y sombras de verdad). La textura (madera, tela…) es
+   una imagen aparte que comparten todas las habitaciones, así que sigue nítida aunque se acerque el zoom.
+   Las luces del visor (pensadas para el aluminio) no les afectan: color = textura × luz horneada + reflejo.
+   La luz de la pared también va a los cuadros (rooms/<id>/light.webp), con el mismo shader de siempre.
+   Si algo no carga, se dibuja la escena antigua (sc.build). */
+const BAKED_ROOMS = {
+  'aparador-alto':{w:420,h:260,wall:'#e9e2d5',floor:'#b69c7b'},'aparador-consola':{w:400,h:255,wall:'#e6e1d8',floor:'#a58c6e'},'cocina':{w:600,h:276,wall:'#e9e4da',floor:'#c0a684'},'cocina-blanca':{w:600,h:282,wall:'#eeece7',floor:'#c0a684'},'cocina-negra':{w:600,h:280,wall:'#e7e4de',floor:'#b8b4ab'},'cocina-terracota':{w:600,h:278,wall:'#eee6da',floor:'#d0c5b4'},'cocina-verde':{w:580,h:272,wall:'#ebe7dd',floor:'#c7bfb0'},'despacho-gamer':{w:560,h:288,wall:'#d9dade',floor:'#8e8a84'},'despacho-gris':{w:560,h:278,wall:'#e9eaea',floor:'#b3ada2'},'despacho-real':{w:560,h:274,wall:'#e9e4dd',floor:'#b39a7c'},'dormitorio':{w:660,h:292,wall:'#e5ded6',floor:'#c0a684'},'dormitorio-boutique':{w:640,h:294,wall:'#e9e1d6',floor:'#a98f70'},'dormitorio-doble':{w:680,h:296,wall:'#eae3d8',floor:'#c0a684'},'dormitorio-juvenil':{w:500,h:262,wall:'#dde2d8',floor:'#c0a684'},'dormitorio-nordico':{w:600,h:280,wall:'#f0eee8',floor:'#d5c6ad'},'escalera-blanca':{w:520,h:302,wall:'#f0ede6',floor:'#b39a78'},'escalera-galeria':{w:520,h:300,wall:'#eeeae1',floor:'#c7b08a'},'escalera-moderna':{w:520,h:296,wall:'#dfdbd5',floor:'#6d6a64'},'escritorio-blanco':{w:560,h:272,wall:'#e9eaea',floor:'#b3ada2'},'escritorio-nogal':{w:560,h:272,wall:'#dfe3d8',floor:'#a98f70'},'escritorio-roble':{w:560,h:272,wall:'#ede8df',floor:'#c0a684'},'estanteria-cima':{w:560,h:270,wall:'#ede7dc',floor:'#c0a684'},'estanteria-hueco':{w:560,h:270,wall:'#ebe4d7',floor:'#ae9273'},'estudio':{w:520,h:266,wall:'#ede8df',floor:'#c0a684'},'mesita-boutique':{w:560,h:270,wall:'#e9ddd1',floor:'#a98f70'},'mesita-nordica':{w:560,h:270,wall:'#f0eee8',floor:'#d5c6ad'},'nevera-acero':{w:420,h:270,wall:'#f2ede3',floor:'#c9a67c'},'nevera-menta':{w:420,h:270,wall:'#f1ece2',floor:'#bdbab4'},'nevera-negra':{w:420,h:270,wall:'#efece5',floor:'#c7bfb0'},'nevera-roja':{w:420,h:270,wall:'#efe7da',floor:'#ad6a4a'},'pasillo':{w:372,h:314,wall:'#eeeae2',floor:'#ae9273'},'rincon':{w:540,h:288,wall:'#ebe5dc',floor:'#c0a684',ry:[-.32,.85]},'salon-butacas':{w:600,h:284,wall:'#eee6d8',floor:'#b49a78'},'salon-moderno-gris':{w:640,h:296,wall:'#e4e3e0',floor:'#ab8f70'},'salon-real':{w:640,h:286,wall:'#ebe6dd',floor:'#c0a684'},'salon-sofa':{w:800,h:300,wall:'#ebe5da',floor:'#c0a684'},'terraza-abierta':{w:480,h:268,wall:'#ece2cd',floor:'#a9673f',ry:[-.32,.85]},'terraza-cristal':{w:480,h:280,wall:'#ece4d5',floor:'#c9bda8',ry:[-.32,.85]},'terraza-jardin':{w:490,h:300,wall:'#eee8d8',floor:'#b2997a',ry:[-.32,.85]},'terraza-urbana':{w:480,h:282,wall:'#d9d7d2',floor:'#9e9b93',ry:[-.32,.85]}
+};
+const BAKED_V = 'ccab54eb';
+const _bakedTex = {};
+function bakedTexture(url){
+  if(_bakedTex[url]) return _bakedTex[url];
+  let ok, ko; const ready = new Promise((a, b) => { ok = a; ko = b; });
+  const t = new THREE.TextureLoader().load(url, () => { dirty3D = true; ok(); }, undefined, ko);
+  t.userData.ready = ready;
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = MAXANI; t.flipY = false;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return _bakedTex[url] = t;
+}
+/* Lo que refleja lo brillante (metal, cristal, barniz): una habitación clara con ventanas, pintada a mano */
+let _bakedEnv = null;
+function bakedEnv(){
+  if(_bakedEnv) return _bakedEnv;
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 128);
+  g.addColorStop(0, '#fbfaf6'); g.addColorStop(.48, '#d9d6cf'); g.addColorStop(.52, '#8f8a80'); g.addColorStop(1, '#6e675c');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 128);
+  x.fillStyle = '#ffffff';
+  [[10, 26, 38, 44], [60, 26, 38, 44], [176, 22, 56, 50]].forEach(r => x.fillRect(r[0], r[1], r[2], r[3]));
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping;
+  t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  return _bakedEnv = t;
+}
+const BAKED_VERT = `
+  varying vec2 vU0, vU1; varying vec3 vN, vP;
+  void main(){ vU0 = uv; vU1 = uv1; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz;
+    vN = mat3(modelMatrix) * normal; gl_Position = projectionMatrix * viewMatrix * w; }`;
+const BAKED_FRAG = `
+  uniform sampler2D map, lm, env; uniform vec3 color; uniform float rough, metal, spec, alpha, useMap, useLm;
+  varying vec2 vU0, vU1; varying vec3 vN, vP;
+  float rnd(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+  void main(){
+    vec3 a = color; if(useMap > .5) a *= texture2D(map, vU0).rgb * 2.0;
+    vec3 L = useLm > .5 ? texture2D(lm, vU1).rgb * 4.0 : vec3(1.0);
+    vec3 V = normalize(cameraPosition - vP), N = normalize(vN); if(dot(N, V) < 0.0) N = -N;
+    vec3 R = reflect(-V, N);
+    vec2 e = vec2(atan(R.z, R.x) / 6.28318 + .5, acos(clamp(R.y, -1., 1.)) / 3.14159);
+    vec3 E = texture2D(env, vec2(e.x, 1. - e.y), rough * 7.0).rgb;
+    float lum = dot(L, vec3(.33)), occ = clamp(lum * 1.3, 0., 1.);
+    float nv = clamp(dot(N, V), 0., 1.), gl = (1. - rough) * (1. - rough);
+    vec3 F0 = mix(vec3(.08 * spec), a, metal);
+    vec3 F = F0 + (max(vec3(gl), F0) - F0) * pow(1. - nv, 5.);
+    vec3 col = a * (1. - metal) * L + E * F * occ * (metal > .5 ? max(.45, lum) : 1.);
+    gl_FragColor = vec4(col, alpha);
+    #include <colorspace_fragment>
+    gl_FragColor.rgb += (rnd(gl_FragCoord.xy) - .5) / 255.;       /* sin bandas en los degradados de pared */
+  }`;
+function bakedMat(m, base, lmg){
+  const u = m.userData || {}, c = u.c || [1, 1, 1];
+  if(u.unlit) return new THREE.MeshBasicMaterial({ map: bakedTexture('rooms/tex/' + u.map + '.webp?v=' + BAKED_V), toneMapped:false, side:THREE.DoubleSide, fog:false });
+  const hasLm = lmg !== 'glass', a = u.alpha == null ? 1 : u.alpha;
+  return new THREE.ShaderMaterial({
+    vertexShader: BAKED_VERT, fragmentShader: BAKED_FRAG, side: (u.ds || !hasLm) ? THREE.DoubleSide : THREE.FrontSide,
+    transparent: a < 1, depthWrite: !(a < 1),
+    uniforms: {
+      map: { value: u.map ? bakedTexture('rooms/tex/' + u.map + '.webp?v=' + BAKED_V) : null }, useMap: { value: u.map ? 1 : 0 },
+      lm: { value: hasLm ? bakedTexture(base + 'lm_' + lmg + '.webp?v=' + BAKED_V) : null }, useLm: { value: hasLm ? 1 : 0 },
+      env: { value: bakedEnv() }, color: { value: new THREE.Color(c[0], c[1], c[2]) },
+      rough: { value: u.rough == null ? .6 : u.rough }, metal: { value: u.metal || 0 }, spec: { value: u.spec == null ? .5 : u.spec }, alpha: { value: a }
+    }
+  });
+}
+/* Alto real de los muebles según x (franjas de 5 cm, de -400 a 400), para que los cuadros nunca queden
+   detrás. Las plantas, las lámparas de techo y lo que no es mueble no cuentan. */
+const NO_TAPA = /^(hoja|tallo|rama|flor|espiga|suculenta|cuerda|opal|difusor)/;
+function medirMuebles(root, meshes, U){
+  const t = new Float32Array(160), v = new THREE.Vector3();
+  root.updateMatrixWorld(true);
+  meshes.forEach(o => {
+    const u = o.material.userData || {};
+    if(u.lmg !== 'furn' || NO_TAPA.test(o.material.name || '')) return;
+    const p = o.geometry.attributes.position;
+    for(let i = 0; i < p.count; i++){
+      v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+      const k = Math.floor((v.x/U + 400)/5);
+      if(k >= 0 && k < 160 && v.y/U > t[k]) t[k] = v.y/U;
+    }
+  });
+  return t;
+}
+/* Altura del mueble que queda debajo de la composición (de anchoCm + 15 cm a cada lado).
+   Con habitación aún sin cargar, o sin medir, vale lo declarado en la escena. */
+function muebleBajo(sc, anchoCm){
+  const g = sceneGroups[sc.id], t = g && g.userData.alturas;
+  if(!t || sc.restCm != null || sc.verCm) return sc.furnCm;
+  const m = anchoCm/2 + 15; let top = 0;
+  for(let k = Math.max(0, Math.floor((400-m)/5)); k <= Math.min(159, Math.floor((400+m)/5)); k++) top = Math.max(top, t[k]);
+  return Math.max(sc.furnCm, Math.ceil(top));
+}
+/* Cuántos cm hay del suelo al borde de abajo: encima del mueble, sin pasar de 165 cm (salvo que el
+   mueble declarado ya pida más) y sin chocar con el techo. */
+function alturaCuadros(sc, compHcm, anchoCm){
+  const base = sc.furnCm + sc.gapCm, techo = (BAKED_ROOMS[sc.id] ? BAKED_ROOMS[sc.id].h : 280) - compHcm - 10;
+  return Math.max(Math.min(base, techo), Math.min(muebleBajo(sc, anchoCm) + sc.gapCm, Math.max(base, 165), techo));
+}
+function buildBakedRoom(g, sc, U){
+  const info = BAKED_ROOMS[sc.id];
+  /* mientras llega: pared y suelo con su color, para que no se vea un hueco */
+  buildShell(g, U, { wall1:info.wall, wall2:info.wall, floor1:info.floor, floor2:info.floor, side:info.wall, skirt:info.wall });
+  const base = 'rooms/' + sc.id + '/';
+  const fail = () => {
+    while(g.children.length) g.remove(g.children[0]);
+    Object.assign(ROOM_BOX, ROOM_BOX_DEF, sc.caja || {}); sc.build(g, U); Object.assign(ROOM_BOX, ROOM_BOX_DEF);
+    dirty3D = true; if(g.visible) layout();
+  };
+  const go = () => {
+    _gltfLoader = _gltfLoader || new window.GLTFLoader();
+    _gltfLoader.load(base + 'room.glb?v=' + BAKED_V, gltf => {
+      const root = gltf.scene, meshes = [];
+      root.traverse(o => { if(o.isMesh) meshes.push(o); });
+      root.scale.setScalar(100*U);                         // el glb viene en metros
+      g.userData.alturas = medirMuebles(root, meshes, U);
+      meshes.forEach(o => {
+        const u = o.material.userData || {};
+        o.userData.noApoyo = !u.rest;                      // solo la tapa del mueble cuenta para apoyar el Sobremesa
+        o.material = bakedMat(o.material, base, u.lmg);
+        o.frustumCulled = false;
+      });
+      const tex = [];
+      meshes.forEach(o => { const m = o.material, un = m.uniforms;
+        (un ? [un.map.value, un.lm.value] : [m.map]).forEach(t => { if(t && t.userData.ready) tex.push(t.userData.ready); }); });
+      Promise.all(tex).then(() => {
+      while(g.children.length) g.remove(g.children[0]);
+      g.add(root);
+      const ref = new THREE.Object3D();                    // la pared, para situar el mapa de luz de los cuadros
+      ref.position.set(0, info.h/2*U, 0); ref.scale.set(info.w*U, info.h*U, 1); g.add(ref);
+      g.userData.wall = ref;
+      const lt = new THREE.TextureLoader().load(base + 'light.webp?v=' + BAKED_V, () => { dirty3D = true; });
+      lt.colorSpace = THREE.NoColorSpace; lt.generateMipmaps = false; lt.minFilter = THREE.LinearFilter;
+      g.userData.lightTex = lt;
+      if(g.visible){ LIGHT_U.uLightTex.value = lt; lightRef = ref; layout(); }
+      dirty3D = true;
+      }, fail);
+    }, undefined, fail);
+  };
+  if(window.GLTFLoader) go(); else ensureGltfLoader(go);
+}
+
 const findScene = id => SCENES.find(s => s.id === id) || SCENES[0];
 function getScene(id){
   const sc = findScene(id);
   if(!sceneGroups[sc.id]){
     const g = new THREE.Group();
     Object.assign(ROOM_BOX, ROOM_BOX_DEF, sc.caja || {});   // la caja de ESTA escena
-    sc.build(g, CM);
+    if(BAKED_ROOMS[sc.id]) buildBakedRoom(g, sc, CM); else sc.build(g, CM);
     Object.assign(ROOM_BOX, ROOM_BOX_DEF);
     g.visible = false;
     group.add(g);
@@ -5194,9 +5392,11 @@ function placeRoom(compH){
     Object.values(sceneGroups).forEach(g => g.visible = false);
     if(photoMesh){ photoMesh.visible = false; fgMesh.visible = false; photoMesh.userData.key = null; }
     LIGHT_U.uLightOn.value = 0; lightRef = null;
+    POSTERS.forEach(p => { if(p.shadow) p.shadow.visible = false; });
     return;
   }
   if(R.mode === 'photo' && ROOM){
+    if(!WALL) POSTERS.forEach(p => { if(p.shadow) p.shadow.visible = false; });
     Object.values(sceneGroups).forEach(g => g.visible = false);
     placePhotoRoom(compH);
     return;
@@ -5214,8 +5414,9 @@ function placeRoom(compH){
   /* Sobremesa: lo que hay entre el borde de abajo del póster y la superficie es SOLO la peana de
      bambú (lo que asoma por debajo del póster: BASE_H - BAMBU_SINK), sin gapCm; con gapCm la peana
      quedaba 1-4 cm en el aire. Los cuadros colgados siguen con su gapCm. */
-  const below = sc.restCm != null ? (BASE_H - BAMBU_SINK) + sc.restCm*CM : (sc.gapCm + sc.furnCm)*CM;
-  g.position.set(0, -compH/2 - below, -0.22 - (sc.restZCm || 0)*CM);
+  const below = sc.restCm != null ? (BASE_H - BAMBU_SINK) + sc.restCm*CM : alturaCuadros(sc, compH/CM, (COMP_U ? COMP_U.w : 0)/CM)*CM;
+  const colgado = sc.restCm == null && !sc.verCm;       // cuadro en la pared: 1 cm entre su dorso y la pared (ahí van los imanes)
+  g.position.set(0, -compH/2 - below, colgado ? -(PD/2 + 1*CM) : -0.22 - (sc.restZCm || 0)*CM);
   if(sc.verCm) g.position.y = -neveraCentro(sc, compH/CM)*CM;   // nevera: el centro de los imanes, a su altura
   if(sc.restCm != null){
     /* la primera vez el póster aún no está colocado en este punto de layout(): se repite en el
@@ -5225,8 +5426,9 @@ function placeRoom(compH){
     requestAnimationFrame(otraVez); setTimeout(otraVez, 700);
   }
   g.visible = true;
+  POSTERS.forEach(syncShadow);
   // los cuadros reciben la luz de ventana de la pared dibujada (mismo shader que con foto)
-  LIGHT_U.uLightTex.value = wallLight(); LIGHT_U.uLightOn.value = 1;
+  LIGHT_U.uLightTex.value = g.userData.lightTex || wallLight(); LIGHT_U.uLightOn.value = 1;
   lightRef = g.userData.wall || null;
 }
 
@@ -5254,7 +5456,7 @@ function apoyarSobremesa(g){
   const s = 1, tol = 4*CM;
   let top = -Infinity;
   g.traverse(o => {
-    if(!o.isMesh) return;
+    if(!o.isMesh || o.userData.noApoyo) return;
     const m = Array.isArray(o.material) ? o.material[0] : o.material;
     if(m && m.transparent && m.depthWrite === false) return;          // sombras de contacto
     const b = cajaEnGrupo(o);
@@ -5285,8 +5487,10 @@ function syncShadow(p){
     p.rig.add(p.shadow);
   }
   p.shadow.scale.set(baseW(p)*1.3, baseH(p)*1.3, 1);
-  p.shadow.position.set(0.04, -0.06, -0.12);
-  p.shadow.visible = !!WALL && ROOM_CFG.mode !== 'none';   // sin entorno no hay pared: la sombra sobraba
+  const sc_ = ROOM_CFG.mode === 'geo' ? findScene(ROOM_CFG.scene) : null, colgado = !!sc_ && sc_.restCm == null && !sc_.verCm;
+  /* colgado: la sombra cae SOBRE la pared, 1 cm por detrás y corrida: es lo que hace ver que no está pegado */
+  if(colgado) p.shadow.position.set(.45*CM, -.8*CM, -(PD/2 + 1*CM) + .004); else p.shadow.position.set(0.04, -0.06, -0.12);
+  p.shadow.visible = colgado || (!!WALL && ROOM_CFG.mode !== 'none');   // sin entorno no hay pared: la sombra sobraba
 }
 
 /* la talla de una pieza de conjunto: de FORMATS (cuadros) o, en los conjuntos de nevera (format 'iman'), del Imán */
