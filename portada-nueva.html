@@ -2230,7 +2230,7 @@ function combiSlide(dir){
   function js(src, ok){ var s = document.createElement('script'); s.src = src; s.onload = ok; document.body.appendChild(s); }
   var io = new IntersectionObserver(function(es){
     if(!es[0].isIntersecting) return; io.disconnect();
-    var luego = function(){ js('colgado-scroll.js?v=767e44b3', function(){}); };
+    var luego = function(){ js('colgado-scroll.js?v=e9262fcd', function(){}); };
     if(window.Pared3D) return luego();
     var p3 = function(){ js('pared3d.js?v=a2754875', luego); };
     if(window.THREE) p3(); else js('https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js', p3);
