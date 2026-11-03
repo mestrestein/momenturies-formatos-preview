@@ -55,9 +55,47 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
     if(visible) ir(i); else clearTimeout(timer);
   }, { threshold:.3 }).observe(hx);
   ir(0);
+  /* móvil: el hero entero (foto, texto y botón) cabe en la pantalla sin bajar.
+     La foto va entera; si el texto no cabe debajo, se encoge un poco (--k) hasta que quepa */
+  const movil = matchMedia('(max-width:860px)');
+  let ancho = 0, alto = 0;
+  function encajar(){
+    if(!movil.matches){ hx.style.removeProperty('--k'); return; }
+    if(innerWidth === ancho && Math.abs(innerHeight - alto) < 80) return;   // no recalcular al esconderse la barra del navegador
+    ancho = innerWidth; alto = innerHeight;
+    const arriba = Math.round(hx.getBoundingClientRect().top + scrollY);
+    const cabe = (window.visualViewport ? visualViewport.height : innerHeight) - arriba;
+    let k = 1;
+    hx.classList.remove('apretado'); hx.style.setProperty('--k', k);
+    while(hx.offsetHeight > cabe + 1 && k > .7){ k = Math.round((k - .03) * 100) / 100; hx.style.setProperty('--k', k); }
+    if(hx.offsetHeight > cabe + 1) hx.classList.add('apretado');     // pantallas muy bajas: fuera la línea pequeña de abajo
+  }
+  encajar();
+  addEventListener('resize', encajar);
+  if(document.fonts) document.fonts.ready.then(() => { ancho = 0; encajar(); });
 })();
 
 /* ═════ CÓMO FUNCIONA: el móvil hace el pedido entero ═════ */
+/* en móviles bajos el teléfono de la demo se reduce entero a escala para que título, teléfono y botón
+   quepan a la vez sin que lo de dentro se monte (su interfaz necesita 240px de ancho) */
+(function(){
+  const tel = $('.cf-movil'); if(!tel) return;
+  const svh = document.createElement('div');
+  svh.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none';
+  document.body.appendChild(svh);
+  let ancho = 0;
+  function ajustar(){
+    if(innerWidth === ancho) return; ancho = innerWidth;
+    tel.style.zoom = '';
+    if(!matchMedia('(max-width:900px)').matches) return;
+    const resto = matchMedia('(max-height:720px)').matches ? 268 : 315;   // lo mismo que en portada.css
+    const quiero = Math.min(270, innerWidth * .7, ((svh.offsetHeight || innerHeight) - resto) * 9 / 19);
+    if(quiero < tel.offsetWidth - 1) tel.style.zoom = (quiero / tel.offsetWidth).toFixed(3);
+  }
+  ajustar();
+  addEventListener('resize', ajustar);
+})();
+
 (function(){
   const demo = $('#cfDemo'); if(!demo) return;
   const pant = $('.cf-pant', demo), tit = $('.cf-tit', demo), pasos = $$('#cfPasos li'), dotsEl = $('.cf-dots', demo);
