@@ -8,7 +8,9 @@ const eur = n => n.toFixed(2).replace('.', ',') + ' €';
 const TRAMOS = [[5, 20], [3, 15], [2, 10]];
 const pctDe = n => { const t = TRAMOS.find(t => n >= t[0]); return t ? t[1] : 0; };
 const WALLS = window.MOMENTURIES_WALLS || [];
-const pared = id => WALLS.find(w => w.id === id);
+/* «W66:L» = la pared W66 en otra talla (MOMENTURIES_wallAt de paredes.js) */
+const pared = id => { const [b, k] = String(id).split(':'), w = WALLS.find(x => x.id === b);
+  return w && k && window.MOMENTURIES_wallAt ? window.MOMENTURIES_wallAt(w, k) : w; };
 const neto = w => Math.round(w.price * (1 - pctDe(w.n) / 100) * 100) / 100;
 const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -230,23 +232,23 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   const tabs = $('#ecTabs'), big = $('#ecBig'), est = $('#ecEstilos'); if(!tabs) return;
   const ROOMS = [
     ['salon','Salón','El salón, encima del sofá','Es la pared que más se mira de la casa. Una fila de cuadros grandes encima del sofá llena el hueco sin recargar.','<b>Truco:</b> deja unos 20-25 cm entre el respaldo del sofá y el borde de abajo de los cuadros.',
-      ['Rústico', ['Minimalista', 'sofa-lino', 'W27'], ['Moderno', 'sofa-esquinero', 'W28']]],
+      ['Rústico', ['Minimalista', 'sofa-lino', 'W70:L'], ['Moderno', 'sofa-esquinero', 'W28']]],
     ['dormitorio','Dormitorio','Encima del cabecero','Lo primero que ves al despertarte. Tres fotos en fila, con colores suaves, quedan de maravilla.','<b>Truco:</b> que el conjunto no sea más ancho que el cabecero; queda más ordenado.',
-      ['Minimalista', ['Rústico', 'dormitorio-mediterraneo', 'W63'], ['Moderno', 'dormitorio-oscuro', 'W22']]],
+      ['Minimalista', ['Rústico', 'dormitorio-mediterraneo', 'W43'], ['Moderno', 'dormitorio-oscuro', 'W32']]],
     ['comedor','Comedor','En la pared del comedor','Donde se juntan las comidas largas y las sobremesas. Fotos de familia y de viajes para que salgan solas las historias.','<b>Truco:</b> centra el conjunto con el aparador o la mesa, no con la pared.',
-      ['Rústico', ['Minimalista', 'comedor-moderno', 'W45'], ['Nórdico', 'comedor-midcentury', 'W31']]],
+      ['Rústico', ['Minimalista', 'comedor-moderno', 'W45'], ['Nórdico', 'comedor-midcentury', 'W47']]],
     ['cocina','Cocina','En la cocina, sin miedo al vapor','El aluminio no se ondula con la humedad, así que la cocina deja de ser zona prohibida para las fotos.','<b>Truco:</b> lejos del fuego directo, y se limpia con un paño húmedo.',
-      ['Rústico', ['Minimalista', 'cocina-roble-claro', 'W62'], ['Moderno', 'cocina-marmol-negro', 'W56']]],
+      ['Rústico', ['Minimalista', 'cocina-roble-claro', 'W46'], ['Moderno', 'cocina-marmol-negro', 'W50']]],
     ['pasillo','Pasillo','Un pasillo que deja de ser de paso','Una fila de cuadros convierte el pasillo en una pequeña galería. Ideal para contar un viaje en orden.','<b>Truco:</b> cuadros a la altura de los ojos (unos 150 cm al centro) y del mismo tamaño.',
-      ['Minimalista', ['Rústico', 'aparador-cestas', 'W46'], ['Moderno', 'aparador-lujo', 'W20']]],
+      ['Minimalista', ['Rústico', 'aparador-cestas', 'W46'], ['Moderno', 'aparador-lujo', 'W49']]],
     ['escalera','Escalera','Junto a la escalera','La pared de la escalera es enorme y casi siempre está vacía. Una cuadrícula de seis la llena con estilo.','<b>Truco:</b> con imán, recolocarlos hasta que queden perfectos es cuestión de segundos.',
-      ['Nórdico', ['Clásico', 'escalera-clasica-elegante', 'W53'], ['Moderno', 'escalera-moderna-negra', 'W42']]],
+      ['Nórdico', ['Clásico', 'escalera-clasica-elegante', 'W44:M'], ['Moderno', 'escalera-moderna-negra', 'W42']]],
     ['recibidor','Recibidor','El recibidor, lo primero al llegar','Lo que ve quien entra por la puerta. Unas fotos sobre el mueble de la entrada dicen mucho de una casa.','<b>Truco:</b> que el conjunto no sea más ancho que el mueble.',
-      ['Clásico', ['Rústico', 'aparador-banco', 'W58'], ['Minimalista', 'rincon-banco', 'W21']]],
+      ['Clásico', ['Rústico', 'aparador-banco', 'W66:L'], ['Minimalista', 'rincon-banco', 'W67:L']]],
     ['despacho','Despacho','En el despacho o el rincón de trabajo','Para las horas delante del ordenador: esa foto que te recuerda por qué trabajas tanto.','<b>Truco:</b> uno grande y dos pequeños encima de la mesa queda limpio y no distrae.',
-      ['Nórdico', ['Clásico', 'despacho-clasico', 'W57'], ['Moderno', 'despacho-nogal', 'W51']]],
+      ['Nórdico', ['Clásico', 'despacho-clasico', 'W65:M'], ['Moderno', 'despacho-nogal', 'W21:L']]],
     ['terraza','Terraza','En la terraza cubierta','Aguanta la humedad y no se ondula, así que también puede vivir fuera, en una terraza o un porche cubiertos.','<b>Truco:</b> evita el sol directo todo el día y la lluvia; bajo techo, perfecto.',
-      ['Mediterráneo', ['Urbano', 'terraza-urbana2', 'W63'], ['Parisino', 'terraza-parisina', 'W18']]],
+      ['Mediterráneo', ['Urbano', 'terraza-urbana2', 'W39'], ['Parisino', 'terraza-parisina', 'W25']]],
   ];
   const nombre = e => Array.isArray(e) ? e[0] : e;
   /* pinta un estilo en una caja: la foto de Aitor tal cual, o la habitación vacía con su pared */

@@ -159,6 +159,9 @@
 .mount-chip:hover{border-color:#aaa}
 .mount-chip.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .mount-chip small{display:block;font-size:9px;font-weight:400;opacity:.65;margin-top:1px}
+.mount-ver{grid-column:span 2;background:#fff;border-color:var(--black)}
+.mount-ver:hover{background:var(--black);color:var(--white);border-color:var(--black)}
+.ver-montaje[hidden]{display:none}
 .mount-note{font-size:12px;color:var(--mid);margin:-4px 0 16px}
 .mount-note:empty{display:none}
 
@@ -254,7 +257,7 @@
 .crop-reset{padding:9px;border:1.5px solid var(--gray2);border-radius:4px;background:none;color:var(--mid);font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s;font-family:var(--font-sans)}
 .crop-reset:hover{border-color:var(--black);color:var(--black)}
 
-/* montaje del colgador (escena Futsides en iframe) */
+/* montaje del colgador (escena en iframe) */
 #hangerFrame{width:100%;height:min(420px,58vh);border:0;border-radius:12px;background:#0B0B0F;display:block}
 #hangerChips{margin-bottom:12px}
 

@@ -1,5 +1,5 @@
-/* «Así se cuelga» (#asi-se-cuelga): la escena de colgado de Futsides, pasada a scroll y sobre una habitación real.
-   Las tres piezas empiezan sueltas delante de la pared (como en el visor de Futsides), se montan una a una
+/* «Así se cuelga» (#asi-se-cuelga): la escena de colgado, pasada a scroll y sobre una habitación real.
+   Las tres piezas empiezan sueltas delante de la pared, se montan una a una
    mientras bajas, el cuadro se engancha con su clic, se endereza, llegan cuatro más y la cámara se aleja hasta
    ver el salón entero. Todo depende de cuánto has bajado: si subes, se desmonta.
    Necesita three.js y pared3d.js cargados. Habitación: salon-luz (9,75 px/cm), origen = centro de la foto. */
