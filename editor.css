@@ -609,3 +609,11 @@ html.ed-locked #ptypeLabel{display:none}
 .wall-opt-fridge svg{width:100%;height:100%;max-width:none;max-height:none}
 #pvStage.panel-open .fridge-map,#pvStage.panel-open .fridge-add{display:none}
 @media(max-width:600px){.fridge-map{left:10px;top:118px;transform:none;width:38px;height:90px}.fridge-add{font-size:12px;padding:6px 12px 6px 7px}}
+
+/* 3-nov · «Aplicar a todas» + deshacer */
+.apply-all{display:flex;gap:6px;margin:-6px 0 16px}
+.apply-all[hidden]{display:none}
+.apply-all button{border:1.5px solid var(--black);border-radius:4px;padding:9px 10px;font:600 12px var(--font-sans);cursor:pointer}
+.apply-all .aa-go{flex:1;background:var(--black);color:var(--white)}
+.apply-all .aa-undo{background:#fff;color:var(--black)}
+.edp-icon[hidden],.pv-zoom #pvUndo[hidden]{display:none}

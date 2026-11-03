@@ -27,6 +27,9 @@
     <button type="button" class="fridge-add" id="fridgeAddBtn" hidden><span class="fridge-add-plus">+</span><span class="es">Añadir otro conjunto</span><span class="en">Add another set</span></button>
     <div class="pv-hint" id="pvHint"><span class="es">Arrastra para girar · rueda o pellizco para zoom · toca un cuadro para editarlo</span><span class="en">Drag to rotate · scroll or pinch to zoom · tap a print to edit it</span></div>
     <div class="pv-zoom" id="pvZoom">
+      <button type="button" id="pvUndo" title="Deshacer" aria-label="Deshacer" hidden>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      </button>
       <button type="button" id="pvZoomIn" title="Acercar" aria-label="Acercar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
@@ -126,7 +129,10 @@
     <div class="edp-head">
       <p class="edp-title"><b id="edpNum">1</b><span id="edpDims">Cuadro · 21×29,7 cm</span></p>
       <div class="edp-actions">
-        <button class="edp-icon" id="edpDelete" title="Eliminar cuadro">
+        <button class="edp-icon" id="edpUndo" title="Deshacer" aria-label="Deshacer" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        </button>
+        <button class="edp-icon" id="edpDelete" title="Quitar este cuadro" aria-label="Quitar este cuadro">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
         <button class="edp-icon" id="edpClose" title="Cerrar">
@@ -149,6 +155,10 @@
     <p class="config-label" id="sizeLabel"><span class="es">Tamaño</span><span class="en">Size</span></p>
     <div class="size-grid" id="sizeGrid"></div>
     <p class="wall-size-note" id="wallSizeNote" hidden></p>
+    <div class="apply-all" id="applyAll" hidden>
+      <button type="button" class="aa-go" id="applyAllGo"></button>
+      <button type="button" class="aa-undo" id="applyAllUndo"><span class="es">Deshacer</span><span class="en">Undo</span></button>
+    </div>
 
     <p class="config-label"><span class="es">Colgado</span><span class="en">Mounting</span>
       <button type="button" class="ver-montaje" id="verMontaje"><span class="es">ver cómo queda</span><span class="en">see how it looks</span></button></p>
@@ -2067,8 +2077,10 @@ function renderThumbs(){
 
 function removePoster(i){
   _userEdited = true;
-  if(WALL){ clearPosterPhoto(i); return; }       // en una pared el hueco se queda, se va la foto
-  if(POSTERS.length<=1) return;
+  if(WALL && WALL.fridge){ clearPosterPhoto(i); return; }   // conjuntos de nevera: el hueco se queda, se va la foto
+  if(POSTERS.length<=1){ if(POSTERS[i] && POSTERS[i].srcImg) clearPosterPhoto(i); return; }
+  pushUndo();
+  if(WALL){ removeWallPiece(i); toast('Cuadro quitado del conjunto · puedes deshacerlo'); return; }
   group.remove(POSTERS[i].rig);
   POSTERS.splice(i,1);
   if(selected>=POSTERS.length) selected=POSTERS.length-1;
@@ -2077,13 +2089,101 @@ function removePoster(i){
   dirty3D = true;
 }
 
+/* ═══════════ DESHACER + APLICAR A TODAS (3-nov, Aitor) ═══════════
+   Cada cambio de formato/talla de una pieza y cada pieza quitada guarda el estado (conjunto, piezas y su
+   formato/talla/orientación). Deshacer lo recupera: las piezas quitadas no se destruyen, solo salen de la
+   escena, así vuelven con su foto. */
+const UNDO = [];
+function snapState(){
+  return { wall: WALL, posters: POSTERS.slice(), selected,
+           st: POSTERS.map(p => ({ ptype:p.ptype, format:p.format, sizeKey:p.sizeKey, orient:p.orient })) };
+}
+function pushUndo(){ UNDO.push(snapState()); if(UNDO.length > 30) UNDO.shift(); syncUndo(); }
+function syncUndo(){
+  ['edpUndo','pvUndo'].forEach(id => { const b = document.getElementById(id); if(b) b.hidden = !UNDO.length; });
+}
+function undo(){
+  const s = UNDO.pop(); if(!s){ syncUndo(); return; }
+  POSTERS.forEach(p => { if(!s.posters.includes(p)) group.remove(p.rig); });
+  s.posters.forEach(p => { if(!POSTERS.includes(p)) group.add(p.rig); });
+  POSTERS.splice(0, POSTERS.length, ...s.posters);
+  WALL = s.wall;
+  editorRootEl.classList.toggle('ed-wall', !!WALL);
+  s.posters.forEach((p, i) => {
+    const t = s.st[i], f = FORMATS[t.format];
+    if(t.ptype === 'metal' && f && (p.format !== t.format || p.sizeKey !== t.sizeKey)){
+      const sz = f.sizes.find(x => x.k === t.sizeKey); if(sz) applyProductSize(p, sz, t.format);
+    }
+    if(p.orient !== t.orient) setOrientation(p, t.orient);
+  });
+  selected = Math.max(0, Math.min(s.selected, POSTERS.length - 1));
+  hideApplyAll();
+  layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar(); applySelection();
+  dirty3D = true; _userEdited = true; scheduleSave();
+  syncUndo();
+  toast('Deshecho');
+}
+/* conjunto «a medida»: copia del que había con estas piezas, recolocadas desde 0,0 */
+function customWall(pieces){
+  const x0 = Math.min(...pieces.map(p => p.x)), y0 = Math.min(...pieces.map(p => p.y));
+  pieces.forEach(p => { p.x = Math.round((p.x - x0)*100)/100; p.y = Math.round((p.y - y0)*100)/100; });
+  const w = Object.assign({}, WALL, { pieces, n: pieces.length, custom: true,
+    width: Math.round(Math.max(...pieces.map(p => p.x + p.w))*10)/10, height: Math.round(Math.max(...pieces.map(p => p.y + p.h))*10)/10 });
+  delete w.base; delete w.vk;
+  return w;
+}
+function removeWallPiece(i){
+  const pcs = WALL.pieces.filter((_, k) => k !== i).map(pc => Object.assign({}, pc));
+  group.remove(POSTERS[i].rig);
+  POSTERS.splice(i, 1);
+  WALL = customWall(pcs);
+  if(selected >= POSTERS.length) selected = POSTERS.length - 1;
+  closePanel(); layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();
+  dirty3D = true; scheduleSave();
+}
+/* tras cambiar formato o talla de UNA pieza (habiendo más): «Aplicar a los N» + «Deshacer» */
+function offerApplyAll(p){
+  const box = document.getElementById('applyAll'), go = document.getElementById('applyAllGo');
+  if(!box || !go) return;
+  const otras = POSTERS.filter(q => q !== p && q.ptype === 'metal');
+  if(!otras.length || p.ptype !== 'metal' || (WALL && WALL.fridge)){ hideApplyAll(); return; }
+  const f = FORMATS[p.format], d = sizeOf(p).d;
+  go.innerHTML = '<span class="es">Aplicar ' + f.es.toLowerCase() + ' ' + cm(d[0]) + '×' + cm(d[1]) + ' a los ' + POSTERS.length + '</span>'
+               + '<span class="en">Apply to all ' + POSTERS.length + '</span>';
+  go.onclick = () => applyToAll(p);
+  box.hidden = false;
+}
+function hideApplyAll(){ const b = document.getElementById('applyAll'); if(b) b.hidden = true; }
+function applyToAll(p){
+  pushUndo();
+  const f = FORMATS[p.format], k = p.sizeKey, sz = f.sizes.find(x => x.k === k);
+  if(WALL && !WALL.fridge){
+    /* todas las piezas a la misma forma y medida; los centros se separan lo que crece la pieza más
+       ampliada, así nunca se montan (como paredes.js al cambiar de talla) */
+    const g = WALL.gap || 3;
+    const dims = pc => pc.orient === 'h' ? [sz.d[1], sz.d[0]] : [sz.d[0], sz.d[1]];
+    let rx = 0, ry = 0;
+    WALL.pieces.forEach(pc => { const d = dims(pc); rx = Math.max(rx, (d[0] + g)/(pc.w + g)); ry = Math.max(ry, (d[1] + g)/(pc.h + g)); });
+    const pcs = WALL.pieces.map(pc => { const d = dims(pc);
+      return { format: p.format, size: k, orient: pc.orient, x: (pc.x + pc.w/2)*rx - d[0]/2, y: (pc.y + pc.h/2)*ry - d[1]/2, w: d[0], h: d[1] }; });
+    POSTERS.forEach((q, i) => { if(pcs[i]) applyPieceTo(q, pcs[i]); });
+    WALL = customWall(pcs);
+  } else {
+    POSTERS.forEach(q => { if(q !== p && q.ptype === 'metal') applyProductSize(q, pickSize(f.sizes, k), p.format); });
+  }
+  hideApplyAll();
+  layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar(); applySelection();
+  dirty3D = true; scheduleSave();
+  toast('Aplicado a los ' + POSTERS.length + ' cuadros · puedes deshacerlo');
+}
+
 /* ═══════════ PANEL DEL PÓSTER ═══════════ */
 const panelEl = document.getElementById('edPanel');
-function openPanel(){
+function openPanel(){ hideApplyAll();
   panelOpen = true; panelEl.classList.add('open'); stage.classList.add('panel-open');
   syncConfigUI(); renderThumbs(); applySelection(); layout();
 }
-function closePanel(){
+function closePanel(){ hideApplyAll();
   if(!panelOpen) return;
   panelOpen = false; panelEl.classList.remove('open'); stage.classList.remove('panel-open');
   FACE_BACK = false; syncFaceTabs(); zoomForBack(false);
@@ -2092,6 +2192,9 @@ function closePanel(){
 }
 document.getElementById('edpClose').addEventListener('click', closePanel);
 document.getElementById('edpDelete').addEventListener('click', ()=>removePoster(selected));
+document.getElementById('edpUndo').addEventListener('click', undo);
+document.getElementById('pvUndo').addEventListener('click', undo);
+document.getElementById('applyAllUndo').addEventListener('click', undo);
 
 /* ═══════════ CHECKOUT REAL: Shopify (Storefront API) + Cloudinary (subida de la foto final) ═══════════
    "Añadir al carrito" abre siempre el panel lateral (resumen, correo y dirección). Mientras
@@ -2525,8 +2628,12 @@ function renderFormats(){
     b.innerHTML = `<span class="format-chip-shape" style="width:${boxW}px;height:${boxH}px"></span>`
       + `<span class="es">${f.es}</span><span class="en">${f.en}</span>`;
     b.onclick=()=>{
+      if(p.format===fid) return;
+      pushUndo();
       applyProductSize(p, pickSize(f.sizes, SIZE_DEFAULT), fid);
       renderFormats(); renderSizes(); syncPanelHead(); updateTotal(); applyMountVisual(p);
+      if(WALL) layout();
+      offerApplyAll(p);
     };
     box.appendChild(b);
   });
@@ -2542,7 +2649,7 @@ function renderSizes(){
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
     b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small><small class="size-price">${precioTxt(s.price||0)}</small>`+sizeStockTag(s);
     if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
-    b.onclick=()=>{ if(!inStock(s)) return; applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); };
+    b.onclick=()=>{ if(!inStock(s) || p.sizeKey===s.k) return; pushUndo(); applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); offerApplyAll(p); };
     box.appendChild(b);
   });
 }
