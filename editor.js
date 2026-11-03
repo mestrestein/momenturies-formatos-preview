@@ -2334,6 +2334,9 @@ const FORMATS = {
   cuadrado: { id:'cuadrado', es:'Cuadrado', en:'Square', ratio:1,
     sizes:[ {k:'S', d:[10,10], price:14.99, stock:false},
             {k:'M', d:[15,15], price:24.99},
+            /* 3-nov: 20×20 nuevo. Va con clave propia para no tocar los SKU de M y L. Precio provisional.
+               Nace con stock:false: se puede elegir cuando Shopify tenga los SKU CDR-CUA-ML-* */
+            {k:'ML',d:[20,20], price:29.99, stock:false},
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
     sizes:[ {k:'S', d:[10,15], price:19.99},
@@ -5226,7 +5229,7 @@ function addModel(g, url, o){
 const BAKED_ROOMS = {
   'aparador-alto':{w:420,h:260,wall:'#e9e2d5',floor:'#b69c7b'},'aparador-consola':{w:400,h:255,wall:'#e6e1d8',floor:'#a58c6e'},'cocina':{w:600,h:276,wall:'#e9e4da',floor:'#c0a684'},'cocina-blanca':{w:600,h:282,wall:'#eeece7',floor:'#c0a684'},'cocina-negra':{w:600,h:280,wall:'#e7e4de',floor:'#b8b4ab'},'cocina-terracota':{w:600,h:278,wall:'#eee6da',floor:'#d0c5b4'},'cocina-verde':{w:580,h:272,wall:'#ebe7dd',floor:'#c7bfb0'},'despacho-gamer':{w:560,h:288,wall:'#d9dade',floor:'#8e8a84'},'despacho-gris':{w:560,h:278,wall:'#e9eaea',floor:'#b3ada2'},'despacho-real':{w:560,h:274,wall:'#e9e4dd',floor:'#b39a7c'},'dormitorio':{w:660,h:292,wall:'#e5ded6',floor:'#c0a684'},'dormitorio-boutique':{w:640,h:294,wall:'#e9e1d6',floor:'#a98f70'},'dormitorio-doble':{w:680,h:296,wall:'#eae3d8',floor:'#c0a684'},'dormitorio-juvenil':{w:500,h:262,wall:'#dde2d8',floor:'#c0a684'},'dormitorio-nordico':{w:600,h:280,wall:'#f0eee8',floor:'#d5c6ad'},'escalera-blanca':{w:520,h:302,wall:'#f0ede6',floor:'#b39a78'},'escalera-galeria':{w:520,h:300,wall:'#eeeae1',floor:'#c7b08a'},'escalera-moderna':{w:520,h:296,wall:'#dfdbd5',floor:'#6d6a64'},'escritorio-blanco':{w:560,h:272,wall:'#e9eaea',floor:'#b3ada2'},'escritorio-nogal':{w:560,h:272,wall:'#dfe3d8',floor:'#a98f70'},'escritorio-roble':{w:560,h:272,wall:'#ede8df',floor:'#c0a684'},'estanteria-cima':{w:560,h:270,wall:'#ede7dc',floor:'#c0a684'},'estanteria-hueco':{w:560,h:270,wall:'#ebe4d7',floor:'#ae9273'},'estudio':{w:520,h:266,wall:'#ede8df',floor:'#c0a684'},'mesita-boutique':{w:560,h:270,wall:'#e9ddd1',floor:'#a98f70'},'mesita-nordica':{w:560,h:270,wall:'#f0eee8',floor:'#d5c6ad'},'nevera-acero':{w:420,h:270,wall:'#f2ede3',floor:'#c9a67c'},'nevera-menta':{w:420,h:270,wall:'#f1ece2',floor:'#bdbab4'},'nevera-negra':{w:420,h:270,wall:'#efece5',floor:'#c7bfb0'},'nevera-roja':{w:420,h:270,wall:'#efe7da',floor:'#ad6a4a'},'pasillo':{w:372,h:314,wall:'#eeeae2',floor:'#ae9273'},'rincon':{w:540,h:288,wall:'#ebe5dc',floor:'#c0a684',ry:[-.32,.85]},'salon-butacas':{w:600,h:284,wall:'#eee6d8',floor:'#b49a78'},'salon-moderno-gris':{w:640,h:296,wall:'#e4e3e0',floor:'#ab8f70'},'salon-real':{w:640,h:286,wall:'#ebe6dd',floor:'#c0a684'},'salon-sofa':{w:800,h:300,wall:'#ebe5da',floor:'#c0a684'},'terraza-abierta':{w:480,h:268,wall:'#ece2cd',floor:'#a9673f',ry:[-.32,.85]},'terraza-cristal':{w:480,h:280,wall:'#ece4d5',floor:'#c9bda8',ry:[-.32,.85]},'terraza-jardin':{w:490,h:300,wall:'#eee8d8',floor:'#b2997a',ry:[-.32,.85]},'terraza-urbana':{w:480,h:282,wall:'#d9d7d2',floor:'#9e9b93',ry:[-.32,.85]}
 };
-const BAKED_V = '05be901a';
+const BAKED_V = 'ccab54eb';
 const _bakedTex = {};
 function bakedTexture(url){
   if(_bakedTex[url]) return _bakedTex[url];
