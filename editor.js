@@ -1803,9 +1803,11 @@ function animate(){
 const fileInput = document.getElementById('fileInput');
 let pickMode = 'replace';
 
+const mmEv = (t, d) => { if(window.mmEvento) window.mmEvento(t, d); };   // 4-nov · pasos del editor para el Vestuario (nunca textos ni fotos)
 function ingestFiles(files, mode){
   const imgs = Array.from(files||[]).filter(f=>f.type && f.type.indexOf('image/')===0);
   if(!imgs.length) return;
+  mmEv('foto', imgs.length + (mode === 'replace' ? ' (cambia)' : ''));
   _userEdited = true;
   // píxel de Meta (consent.js): la primera foto que sube es la señal de que va en serio
   if(window.mmTrack && !ingestFiles.medida){ ingestFiles.medida = true; mmTrack('CustomizeProduct', {content_name:(PRODUCTS[defaultType]||PRODUCTS.metal).name, content_ids:[defaultType], content_type:'product'}); }
@@ -2173,7 +2175,7 @@ function renderInk(side){
     + '<label class="ink ink-any' + (lista.includes(cur) ? '' : ' on') + '" title="Otro color"><input type="color" value="' + cur + '" aria-label="Otro color"></label>';
   const poner = c => {
     if(side === 'back' && inkLuma(c) > .72){ toast('Por detrás el fondo es plateado: elige un color más oscuro'); renderInk(side); return; }
-    p[side + 'Color'] = c; renderInk(side); renderDeco(side); txtRepaint(side);
+    p[side + 'Color'] = c; mmEv('color', side + ' ' + c); renderInk(side); renderDeco(side); txtRepaint(side);
   };
   box.querySelectorAll('button.ink').forEach(b => b.onclick = () => poner(b.dataset.c));
   box.querySelector('input').addEventListener('change', e => poner(e.target.value));
@@ -2195,7 +2197,7 @@ function renderDeco(side){
   }
   box.innerHTML = h;
   box.querySelector('.deco-toggle').onclick = () => { decoOpen[side] = !decoOpen[side]; renderDeco(side); };
-  box.querySelectorAll('.deco-b').forEach(b => b.onclick = () => { p[k] = b.dataset.d; decoOpen[side] = false; renderDeco(side); txtRepaint(side); });
+  box.querySelectorAll('.deco-b').forEach(b => b.onclick = () => { p[k] = b.dataset.d; mmEv('dibujo', side + ' ' + b.dataset.d); decoOpen[side] = false; renderDeco(side); txtRepaint(side); });
   box.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { p.frontDecoPos = b.dataset.pos; renderDeco(side); txtRepaint(side); });
   const r = box.querySelector('input[type=range]');
   if(r) r.addEventListener('input', () => { p[k + 'Size'] = +r.value; txtRepaint(side); });
@@ -2263,6 +2265,7 @@ function syncUndo(){
   ['edpUndo','pvUndo'].forEach(id => { const b = document.getElementById(id); if(b) b.hidden = !UNDO.length; });
 }
 function undo(){
+  mmEv('deshacer');
   const s = UNDO.pop(); if(!s){ syncUndo(); return; }
   POSTERS.forEach(p => { if(!s.posters.includes(p)) group.remove(p.rig); });
   s.posters.forEach(p => { if(!POSTERS.includes(p)) group.add(p.rig); });
@@ -2293,6 +2296,7 @@ function customWall(pieces){
   return w;
 }
 function removeWallPiece(i){
+  mmEv('quitar_cuadro');
   const pcs = WALL.pieces.filter((_, k) => k !== i).map(pc => Object.assign({}, pc));
   group.remove(POSTERS[i].rig);
   POSTERS.splice(i, 1);
@@ -2315,6 +2319,7 @@ function offerApplyAll(p){
 }
 function hideApplyAll(){ const b = document.getElementById('applyAll'); if(b) b.hidden = true; }
 function applyToAll(p){
+  mmEv('aplicar_todas', p.format + ' ' + p.sizeKey);
   pushUndo();
   const f = FORMATS[p.format], k = p.sizeKey, sz = f.sizes.find(x => x.k === k);
   if(WALL && !WALL.fridge){
@@ -2354,6 +2359,7 @@ document.getElementById('btnDiseno').addEventListener('click', openDisenoModal);
 document.getElementById('disenoClose').addEventListener('click', () => document.getElementById('disenoModal').classList.remove('open'));
 document.getElementById('disenoGrid').addEventListener('click', async e => {
   const b = e.target.closest('.dz-card'); if(!b) return;
+  mmEv('diseno', b.dataset.d);
   b.classList.add('loading');
   try{ await saveDesign(); }catch(_){}
   const aqui = (location.pathname.split('/').pop() || 'cuadro.html');
@@ -2574,6 +2580,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       {key:'_impresion', value: medida},
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
+    if(window.mmVisitante && mmVisitante()) attributes.push({key:'_mm_v', value:mmVisitante()});   // para saber quién compró: nadie recibe un recordatorio tras pagar
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
     if(p.frontText2 && p.frontText2.trim()) attributes.push({key:'Frase 2 (frontal)', value:p.frontText2.trim()});
     if(p.backText2 && p.backText2.trim() && p.ptype !== 'nevera') attributes.push({key:'Frase 2 (dorso)', value:p.backText2.trim()});
@@ -2765,6 +2772,7 @@ function renderMounts(){
   if(note) note.textContent = pr.mounts ? '' : (pr.note||'');
 }
 function setMount(id){
+  mmEv('colgado', id);
   const p=POSTERS[selected]; if(!p||!MOUNTS[id]) return;
   p.mount=id;
   renderMounts(); renderHangerChips(); sceneSelectHanger();
@@ -2819,6 +2827,7 @@ function renderFormats(){
       if(p.format===fid) return;
       pushUndo();
       applyProductSize(p, pickSize(f.sizes, SIZE_DEFAULT), fid);
+      mmEv('formato', fid);
       renderFormats(); renderSizes(); syncPanelHead(); updateTotal(); applyMountVisual(p);
       if(WALL) layout();
       offerApplyAll(p);
@@ -2837,7 +2846,7 @@ function renderSizes(){
     const d=isLand(p)?[s.d[1],s.d[0]]:s.d;
     b.innerHTML=s.k+`<small>${cm(d[0])}×${cm(d[1])}</small><small class="size-price">${precioTxt(s.price||0)}</small>`+sizeStockTag(s);
     if(!inStock(s)){ b.disabled=true; b.classList.add('sold-out'); b.title='Sin existencias'; }
-    b.onclick=()=>{ if(!inStock(s) || p.sizeKey===s.k) return; pushUndo(); applyProductSize(p,s); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); offerApplyAll(p); };
+    b.onclick=()=>{ if(!inStock(s) || p.sizeKey===s.k) return; pushUndo(); applyProductSize(p,s); mmEv('talla', p.format + ' ' + s.k); renderSizes(); syncPanelHead(); layout(); applySelection(); updateTotal(); applyMountVisual(p); offerApplyAll(p); };
     box.appendChild(b);
   });
 }
@@ -3499,6 +3508,8 @@ function coBuyerIdentity(){
 }
 
 function openCheckout(){
+  mmEv('carrito', POSTERS.filter(q => q.srcImg).length + ' piezas');
+  if(window.mmEstado) mmEstado('carrito', POSTERS.filter(q => q.srcImg).length + ' piezas');
   const items = POSTERS.filter(p=>p.srcImg);
   if(!items.length){ toast('Sube al menos una foto primero'); return; }
   coRenderShip(); coRenderSum();
@@ -3538,6 +3549,7 @@ function closeCheckout(){
       btn.disabled = true;
       btn.innerHTML = '<span class="es">Preparando pedido…</span><span class="en">Preparing order…</span>';
       try{
+        mmEv('checkout'); if(window.mmEstado) mmEstado('checkout', POSTERS.filter(q => q.srcImg).length + ' piezas');
         window.location.href = await checkoutWithShopify(null, null);   // correo, dirección y envío, en el pago de Shopify
       }catch(err){
         console.error(err);
@@ -3613,6 +3625,7 @@ async function saveDesign(){
     const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), frase: fraseDe(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
       bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
+    if(window.mmEstado && conFoto.length) mmEstado('editor', conFoto.length + ' piezas');
     await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
@@ -5948,6 +5961,7 @@ function applyWall(w, opts){
   WALL_PREV_N = WALL && WALL.fridge ? POSTERS.length : 0;
   WALL = w;
   _userEdited = true;
+  mmEv('conjunto', w.id + ' ' + w.name + (w.vk ? ' ' + w.vk : ''));
   const n = w.pieces.length;
   // sobran cuadros: se van primero los vacíos, y si no queda otra, los últimos
   while(POSTERS.length > n){

@@ -9,7 +9,7 @@
    - GA4: hueco preparado (vacío = sin Google Analytics). Al rellenarlo sale la casilla «Analítica» y va con Consent Mode v2.
    Sustituye al consent.js del commit b4e96b7 (mismo nombre, estaba apagado sin ID). */
 (function () {
-  var PIXEL = '1917299959243159', GA4 = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
+  var PIXEL = '1917299959243159', GA4 = '', CLARITY = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
   var path = location.pathname;
 
   var prueba = /[?&]fbtest=1(&|$)/.test(location.search);
@@ -41,6 +41,20 @@
     gtag('consent', 'update', { analytics_storage: 'granted' });
     var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4; document.head.appendChild(s);
     gtag('js', new Date()); gtag('config', GA4);
+  }
+
+  /* Clarity (grabaciones y mapas de calor): solo con la analítica aceptada; se enciende poniendo el id arriba */
+  var clarityCargado = false;
+  function cargarClarity() {
+    if (clarityCargado || !CLARITY || !activo) return;
+    clarityCargado = true;
+    (function (c, l, a, r, i, t, y) { c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); }; t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i; y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y); })(window, document, 'clarity', 'script', CLARITY);
+  }
+  /* analítica propia (seguimiento.js): se carga siempre; sin permiso solo cuenta la página, de forma anónima */
+  function seguimiento(ana) {
+    var run = function () { if (!window.mmSeguimiento) return; if (ana) mmSeguimiento.activar(); else mmSeguimiento.anonimo(); };
+    if (window.mmSeguimiento) return run();
+    var s = document.createElement('script'); s.src = 'seguimiento.js?v=1'; s.async = true; s.onload = run; document.head.appendChild(s);
   }
 
   /* ═════ PÍXEL ═════ */
@@ -122,13 +136,13 @@
     t: 'Cookies, in short', mas: 'More information', cfg: 'Settings', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
     p: 'We use the necessary ones so the site and the editor work. If you let us, also Meta’s, to know which ads bring you here and show you things you’ll like. Your call.',
     nec: ['Necessary', 'Your design, the cart and the language. The site doesn’t work without them.'],
-    ana: ['Analytics', 'Count visits to see what works on the site.'],
+    ana: ['Analytics', 'See how the site is used (pages, buttons, steps in the editor) to improve it. Never what you write or your photos.'],
     ads: ['Advertising (Meta)', 'Measure which ads work and show you ours on Facebook and Instagram.'], link: 'Cookie settings'
   } : {
     t: 'Las cookies, en corto', mas: 'Más información', cfg: 'Configurar', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
     p: 'Usamos las necesarias para que la web y el editor funcionen. Si nos dejas, también las de Meta, para saber qué anuncios te traen hasta aquí y enseñarte cosas que te interesen. Tú decides.',
     nec: ['Necesarias', 'Tu diseño, el carrito y el idioma. Sin ellas la web no funciona.'],
-    ana: ['Analítica', 'Contar las visitas para ver qué funciona en la web.'],
+    ana: ['Analítica', 'Ver cómo se usa la web (páginas, botones, pasos del editor) para mejorarla. Nunca lo que escribes ni tus fotos.'],
     ads: ['Publicidad (Meta)', 'Medir qué anuncios funcionan y enseñarte los nuestros en Facebook e Instagram.'], link: 'Configurar cookies'
   };
   function fila(d, id) {
@@ -176,7 +190,7 @@
     guardar(ads, ana);
     if (caja) caja.style.display = 'none';
     if (ads) cargarPixel();
-    if (ana) cargarGA();
+    if (ana) { cargarGA(); cargarClarity(); seguimiento(true); }
     // si retira un permiso con su script ya cargado, se recarga la página para quitarlo
     if ((!ads && cargado) || (!ana && gaCargado)) location.reload();
   }
@@ -203,9 +217,10 @@
   function inicio() {
     enlaces();
     var c = leer();
+    seguimiento(!!(c && c.ana));
     if (!c) return abrir(false);
     if (c.ads) cargarPixel();
-    if (c.ana) cargarGA();
+    if (c.ana) { cargarGA(); cargarClarity(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inicio); else inicio();
 })();
