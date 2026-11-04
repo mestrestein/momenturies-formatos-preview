@@ -26,7 +26,7 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
 (function(){
   const hx = $('#hx'); if(!hx) return;
   const txt = $$('.hx-t', hx), med = $$('.hx-m', hx), nav = $$('.hx-nav button', hx);
-  const T = 6500, TV = 11000;                   // la diapositiva del vídeo dura más: se ven varias habitaciones
+  const T = 9000, TV = 13000;                   // la diapositiva del vídeo dura más: se ven varias habitaciones
   let i = 0, timer = 0, visible = true;
   const dur = k => med[k].querySelector('video') ? TV : T;
   function ir(k){
