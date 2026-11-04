@@ -47,6 +47,37 @@
     for (var k = 7; k >= 1; k--) { var t2 = k / 7, y2 = base - h + h * t2, an2 = w * t2 * (.8 + R() * .3); ctx.lineTo(x - an2 * .55, y2 - h * .01); ctx.lineTo(x - an2, y2); }
     ctx.closePath(); ctx.fill();
   }
+  /* línea quebrada de A a B: lista de puntos con el trazo desplazado a un lado y a otro */
+  function quiebro(A, B, veces, amp, R) {
+    var a = [A, B];
+    for (var i = 0; i < veces; i++) {
+      var b = [a[0]];
+      for (var j = 0; j < a.length - 1; j++) {
+        var P = a[j], Q = a[j + 1], dx = Q[0] - P[0], dy = Q[1] - P[1], d = (R() - .5) * amp;
+        b.push([(P[0] + Q[0]) / 2 - dy * d, (P[1] + Q[1]) / 2 + dx * d], Q);
+      }
+      a = b;
+    }
+    return a;
+  }
+  /* un pico: roca, casquete de nieve de borde dentado y la cara derecha en sombra (la luz viene de la izquierda) */
+  function pico(ctx, W, H, base, cx, alto, ancho, R, c0, c1, nieve) {
+    var S = [W * cx, base - H * alto], w = W * ancho, pie = base + H * .03, L = [S[0] - w, pie], D = [S[0] + w * 1.1, pie], h = pie - S[1], i;
+    var izq = quiebro(L, S, 5, .36, R), der = quiebro(S, D, 5, .36, R), silueta = izq.concat(der.slice(1));
+    var traza = function (l) { ctx.beginPath(); ctx.moveTo(l[0][0], l[0][1]); for (var k = 1; k < l.length; k++) ctx.lineTo(l[k][0], l[k][1]); ctx.closePath(); };
+    traza(silueta); var g = ctx.createLinearGradient(0, S[1], 0, pie); g.addColorStop(0, c0); g.addColorStop(1, c1); ctx.fillStyle = g; ctx.fill();
+    ctx.save(); traza(silueta); ctx.clip();
+    /* nieve: de la cima a una línea en dientes, más larga por las canales */
+    var dientes = [], n = 11, cota = S[1] + h * .5;
+    for (i = 0; i <= n; i++) dientes.push([S[0] + w * 1.2 - 2 * w * 1.2 * i / n, cota + (i % 2 ? -1 : 1) * h * (.05 + R() * .11)]);
+    traza([[S[0] - w * 1.3, S[1] - H * .01], [S[0] + w * 1.3, S[1] - H * .01]].concat(dientes));
+    g = ctx.createLinearGradient(0, S[1], 0, cota + h * .15); g.addColorStop(0, 'rgba(246,248,255,' + nieve + ')'); g.addColorStop(1, 'rgba(196,204,232,' + nieve * .85 + ')'); ctx.fillStyle = g; ctx.fill();
+    /* sombra: todo lo que queda a la derecha de la arista */
+    var arista = quiebro(S, [S[0] + w * .22, pie], 5, .5, R);
+    traza(arista.concat([[S[0] + w * 1.4, pie], [S[0] + w * 1.4, S[1] - H * .01]]));
+    ctx.fillStyle = 'rgba(30,37,72,.6)'; ctx.fill();
+    ctx.restore();
+  }
   function paisaje(ctx, W, H, tipo) {
     var R = azar(7), base = H * .8, i, g;
     if (tipo === 'bosque') {
@@ -57,20 +88,23 @@
         ctx.fillRect(0, y + H * .029, W, H);
       });
     } else if (tipo === 'montana') {
-      g = ctx.createLinearGradient(0, H * .58, 0, base); g.addColorStop(0, 'rgba(150,160,200,0)'); g.addColorStop(1, 'rgba(170,180,215,.2)'); ctx.fillStyle = g; ctx.fillRect(0, H * .58, W, base - H * .58);
-      var c = cresta(8, 1.05, R), mn = Math.min.apply(null, c), mx = Math.max.apply(null, c), yDe = function (i) { return base - H * (.03 + .135 * (c[i] - mn) / (mx - mn)); };
-      ctx.beginPath(); ctx.moveTo(0, base + H * .02); for (i = 0; i < c.length; i++) ctx.lineTo(W * i / (c.length - 1), yDe(i)); ctx.lineTo(W, base + H * .02); ctx.closePath();
-      g = ctx.createLinearGradient(0, base - H * .17, 0, base); g.addColorStop(0, '#39405c'); g.addColorStop(1, '#10131d'); ctx.fillStyle = g; ctx.fill();
-      /* nieve: por debajo de cada cima, con lenguas irregulares */
-      ctx.save(); ctx.clip();
-      for (i = 0; i < c.length - 1; i++) {
-        var y0 = yDe(i), al = Math.max(0, (base - H * .06 - y0)) * (.5 + R() * .45), x0 = W * i / (c.length - 1), w0 = W / (c.length - 1) + 1;
-        var ng = ctx.createLinearGradient(x0, y0, x0 + w0 * (R() - .5) * 18, y0 + al); ng.addColorStop(0, 'rgba(244,246,255,.96)'); ng.addColorStop(.6, 'rgba(200,208,235,.72)'); ng.addColorStop(1, 'rgba(120,130,170,0)');
-        ctx.fillStyle = ng; ctx.fillRect(x0, y0, w0, al);
-      }
-      ctx.restore();
+      g = ctx.createLinearGradient(0, H * .56, 0, base); g.addColorStop(0, 'rgba(150,160,200,0)'); g.addColorStop(1, 'rgba(170,180,215,.22)'); ctx.fillStyle = g; ctx.fillRect(0, H * .56, W, base - H * .56);
+      var Rm = azar(41);
+      [[.08, .115, .17], [.3, .15, .2], [.56, .125, .17], [.8, .16, .21], [1.0, .11, .15]].forEach(function (m) { pico(ctx, W, H, base, m[0], m[1], m[2], Rm, '#4a5478', '#262c47', .62); });
+      [[.17, .13, .22], [.47, .2, .27], [.72, .115, .19], [.93, .14, .2]].forEach(function (m) { pico(ctx, W, H, base, m[0], m[1], m[2], Rm, '#39415f', '#12151f', .96); });
+      var fr = cresta(7, .8, Rm); ctx.fillStyle = '#06080e'; ctx.beginPath(); ctx.moveTo(0, H * .87); for (i = 0; i < fr.length; i++) ctx.lineTo(W * i / (fr.length - 1), base - H * (.002 + fr[i] * .022)); ctx.lineTo(W, H * .87); ctx.closePath(); ctx.fill();
     } else if (tipo === 'ciudad') {
       g = ctx.createLinearGradient(0, H * .6, 0, base); g.addColorStop(0, 'rgba(90,150,190,0)'); g.addColorStop(.62, 'rgba(255,190,110,.5)'); g.addColorStop(1, 'rgba(255,120,40,.95)'); ctx.fillStyle = g; ctx.fillRect(0, H * .6, W, base - H * .6);
+      [['#12263f', .088, .2], ['#0a1626', .062, .3], ['#050b14', .036, .42]].forEach(function (f) {
+        for (var x = -W * .02; x < W * 1.02;) {
+          var bw = W * (.016 + R() * .034), cen = 1 - Math.abs(x / W - .5) * 1.1, bh = H * f[1] * (.3 + R() * .7) * (.55 + cen * .6), top = base - bh;
+          ctx.fillStyle = f[0]; ctx.fillRect(x, top, bw, bh + H * .02);
+          if (R() > .78) ctx.fillRect(x + bw * .47, top - H * .012, Math.max(1, W * .0012), H * .012);
+          var ve = Math.max(1.5, W * .0034), vw = ve * .5;
+          for (var vy = top + ve; vy < base; vy += ve * 1.5) for (var vx = x + ve * .7; vx < x + bw - ve * .7; vx += ve) if (R() < f[2]) { ctx.fillStyle = R() > .25 ? 'rgba(255,200,125,.85)' : 'rgba(255,240,215,.9)'; ctx.fillRect(vx, vy, vw, ve * .7); }
+          x += bw * (.82 + R() * .3);
+        }
+      });
       ctx.fillStyle = '#04060a'; ctx.fillRect(0, base, W, H);
       for (i = 0; i < 2600; i++) {
         var pr = Math.pow(R(), 2.4), yy = base + H * .001 + pr * H * .07, xx = W / 2 + (R() - .5) * W * (1.1 + pr * .6), sz = W * (.0006 + pr * .0016) * (.6 + R());
