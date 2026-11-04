@@ -2636,7 +2636,7 @@ const FORMATS = {
             {k:'L', d:[30,30], price:54.99} ] },
   clasico: { id:'clasico', es:'Clásico', en:'Classic', ratio:2/3,
     sizes:[ {k:'S', d:[10,15], price:19.99},
-            {k:'M', d:[21,29.7], price:34.99},
+            {k:'M', d:[21,29.7], price:29.99},
             {k:'L', d:[25.5,36], price:44.99},
             {k:'XL',d:[30.5,43.1], price:59.99} ] },
   retrato: { id:'retrato', es:'Retrato', en:'Portrait', ratio:3/4,

@@ -10,7 +10,7 @@
 <meta property="og:site_name" content="Momenturies"/>
 <meta property="og:title" content="Cuadro metálico premium · Momenturies"/>
 <meta property="og:description" content="Tu foto impresa en aluminio HD y colgada con imán, sin agujeros. Desde 19,99 €."/>
-<meta property="og:image" content="https://momenturies.com/fotos/pdp/pack-W20-casa.jpg"/>
+<meta property="og:image" content="https://momenturies.com/fotos/pdp/pack-W85-casa.jpg"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -145,8 +145,15 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .info .rating5 a{color:inherit}
 /* 4 ventajas en rejilla */
 /* 30-oct: las 4 ventajas van en su columna, entre la galería y la info; en móvil, debajo de las fotos */
-.bul4{list-style:none;display:grid;grid-template-columns:1fr;align-content:start;gap:10px;margin:31px 0 0;position:sticky;top:84px}
-@media(max-width:980px){.bul4{grid-template-columns:1fr 1fr;margin:0;position:static}}
+.bulw{min-width:0;margin:31px 0 0;position:sticky;top:84px;align-self:start}
+.bul4{list-style:none;display:grid;grid-auto-flow:column;grid-template-rows:repeat(4,auto);grid-auto-columns:100%;column-gap:0;row-gap:10px;margin:0;padding:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.bul4::-webkit-scrollbar{display:none}
+.bul4 li:nth-child(4n+1){scroll-snap-align:start}
+.bul-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+.bul-nav button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:15px;line-height:1;cursor:pointer}
+.bul-nav button:disabled{opacity:.35;cursor:default}
+.bul-nav span{font-size:12px;color:var(--mid);min-width:30px;text-align:center}
+@media(max-width:980px){.bulw{margin:0;position:static}.bul4{grid-template-rows:repeat(2,auto);grid-auto-columns:calc(50% - 5px);column-gap:10px}}
 .bul4 li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:var(--cream);border-radius:14px;padding:12px 12px;font-size:12.5px;line-height:1.35;color:var(--mid)}
 .bul4 li b{display:block;font-size:14px;line-height:1.25;color:var(--ink);margin-bottom:2px}
 .solo-movil{display:none}
@@ -172,6 +179,8 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .pay li{height:28px;min-width:42px;padding:0 6px;border-radius:6px;background:#fff;border:1px solid #ddd5c9;display:grid;place-items:center;font:900 11px/1 var(--sans);letter-spacing:-.2px}
 .pay li svg{display:block;height:18px;width:auto}
 /* packs (estilo bundle) */
+.packs-ref{margin:-8px 0 12px;text-align:center;font-size:12.5px;color:var(--mid)}
+.opt .ahorra{color:#2f7d4f;font-weight:700}
 .packs-h{display:flex;align-items:center;gap:12px;margin:30px 0 14px;font-size:14px;font-weight:900;letter-spacing:.3px;color:var(--brown)}
 .packs-h::before,.packs-h::after{content:'';flex:1;height:1px;background:var(--line)}
 .opt{position:relative;border:1.5px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
@@ -492,16 +501,19 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     </div>
   </div>
 
-  <ul class="bul4" aria-label="Ventajas">
+  <div class="bulw">
+  <ul class="bul4" id="bul4" aria-label="Ventajas">
     <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos, dura más</div></li>
     <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros, con imán</div></li>
     <li><i>🛋️</i><div><b>Míralo en tu casa</b><span class="solo-pc">Mira cómo queda desde el móvil, antes de comprar</span><span class="solo-movil">Mira cómo queda antes de comprar</span></div></li>
     <li><i>💌</i><div><b>Ponle tu dedicatoria</b>Un regalo que no acaba en un cajón</div></li>
-    <li class="solo-pc"><i>🧩</i><div><b>Elige tu combinación ideal</b>Crea en tiempo real tu pared favorita</div></li>
-    <li class="solo-pc"><i>📱</i><div><b>De tu galería a la pared</b>Dale vida a vuestros recuerdos del móvil</div></li>
-    <li class="solo-pc"><i>🎁</i><div><b>Un regalo original</b>No le regales lo típico, que lo vea todos los días</div></li>
-    <li class="solo-pc"><i>🏡</i><div><b>Crea vuestra pared juntos</b>Decora vuestro hogar junto a los tuyos</div></li>
+    <li><i>🧩</i><div><b>Elige tu combinación ideal</b>Crea en tiempo real tu pared favorita</div></li>
+    <li><i>📱</i><div><b>De tu galería a la pared</b>Dale vida a vuestros recuerdos del móvil</div></li>
+    <li><i>🎁</i><div><b>Un regalo original</b>No le regales lo típico, que lo vea todos los días</div></li>
+    <li><i>🏡</i><div><b>Crea vuestra pared juntos</b>Decora vuestro hogar junto a los tuyos</div></li>
   </ul>
+  <div class="bul-nav"><button type="button" data-d="-1" aria-label="Anteriores">‹</button><span id="bulPag">1 / 2</span><button type="button" data-d="1" aria-label="Siguientes">›</button></div>
+  </div>
 
   <div class="info">
     <div class="coupon">🏷️ −10 % en tu primer pedido <code id="cupon" title="Copiar código">HOLA10</code></div>
@@ -511,6 +523,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <div class="from"><b>desde 19,99 €</b><span>IVA incluido · imán incluido</span></div>
 
     <div class="packs-h">Uno queda bien · varios quedan mejor</div>
+    <p class="packs-ref">Precios basados en el tamaño clásico M (21×29,7 cm)</p>
     <div id="packs"></div>
 
     <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
@@ -776,25 +789,33 @@ markSlide.last = 0; markSlide();
 /* cupón de prueba: copiar al tocar */
 $('#cupon').onclick = e => { navigator.clipboard && navigator.clipboard.writeText('HOLA10'); e.target.textContent = '¡Copiado!'; e.target.classList.add('ok'); setTimeout(() => { e.target.textContent = 'HOLA10'; e.target.classList.remove('ok'); }, 1500); };
 
+/* ═════ VENTAJAS: de 4 en 4 ═════ */
+(function(){
+  const u = $('#bul4'), pag = $('#bulPag'), bs = [...document.querySelectorAll('.bul-nav button')]; if(!u) return;
+  const pinta = () => { const p = Math.round(u.scrollLeft / u.clientWidth); pag.textContent = `${p + 1} / 2`; bs[0].disabled = p === 0; bs[1].disabled = p === 1; };
+  bs.forEach(b => b.onclick = () => u.scrollBy({ left:+b.dataset.d * u.clientWidth, behavior:'smooth' }));
+  u.addEventListener('scroll', pinta, { passive:true }); pinta();
+})();
+
 /* ═════ PACKS ═════
    Precios = suma de las tallas del conjunto × descuento por cantidad (PACK_TIERS de editor.js:
    2 → -10 %, 3 o 4 → -15 %, 5 o más → -20 %). Composiciones de paredes.js con existencias.
    Para el pack de 10: hoy todas las paredes de 10 están agotadas en Brildor (sale el de 9). */
 const TIERS = [{n:5,pct:20},{n:3,pct:15},{n:2,pct:10}];
 const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
-const RM = 29.99; // Retrato 18×24
+const KM = 29.99; // 4-nov: la referencia de precios y fotos es el clásico M, 21×29,7
 const PACKS = [
-  {id:'1', n:1, sub:'Tu foto favorita, sola', from:19.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
-  {id:'W51', n:2, name:'Dúo', gross:2*RM, href:'cuadro.html?pared=W51', img:'fotos/pdp/pack-W51-cerca.jpg', alt:'fotos/pdp/pack-W51-casa.jpg', meta:['2 × 18×24 cm','39 × 24 cm en total','Mesita, rincón o recibidor']},
-  {id:'W55', n:3, name:'Tres apaisados', gross:3*RM, href:'cuadro.html?pared=W55', img:'fotos/pdp/pack-W55-cerca.jpg', alt:'fotos/pdp/pack-W55-casa.jpg', meta:['3 × 24×18 cm','24 × 60 cm en total','En columna: rincón o pasillo']},
-  {id:'W20', n:4, name:'Melodía suave', gross:4*RM, href:'cuadro.html?pared=W20', img:'fotos/pdp/pack-W20-cerca.jpg', alt:'fotos/pdp/pack-W20-casa.jpg', meta:['4 × 18×24 cm','81 × 24 cm en total','Sobre el sofá o la cómoda'], badge:'Más elegido'},
-  {id:'W21', n:6, name:'Líneas limpias', gross:6*RM, href:'cuadro.html?pared=W21', img:'fotos/pdp/pack-W21-cerca.jpg', alt:'fotos/pdp/pack-W21-casa.jpg', meta:['6 × 18×24 cm','60 × 52 cm en total','Salón o comedor']},
-  {id:'W53', n:9, name:'Nueve momentos', gross:9*RM, href:'cuadro.html?pared=W53', img:'fotos/pdp/pack-W53-cerca.jpg', alt:'fotos/pdp/pack-W53-casa.jpg', meta:['9 × 18×24 cm','60 × 78 cm en total','Una pared entera'], badge:'Mejor precio', terra:true},
+  {id:'1', n:1, sub:'Tu foto favorita, sola', price:KM, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
+  {id:'W83', n:2, name:'Dos clásicos', gross:2*KM, href:'cuadro.html?pared=W83', img:'fotos/pdp/pack-W83-cerca.jpg', alt:'fotos/pdp/pack-W83-casa.jpg'},
+  {id:'W84', n:3, name:'Tres clásicos', gross:3*KM, href:'cuadro.html?pared=W84', img:'fotos/pdp/pack-W84-cerca.jpg', alt:'fotos/pdp/pack-W84-casa.jpg'},
+  {id:'W85', n:4, name:'Cuatro en fila', gross:4*KM, href:'cuadro.html?pared=W85', img:'fotos/pdp/pack-W85-cerca.jpg', alt:'fotos/pdp/pack-W85-casa.jpg', badge:'Más elegido'},
+  {id:'W86', n:6, name:'Seis en dos filas', gross:6*KM, href:'cuadro.html?pared=W86', img:'fotos/pdp/pack-W86-cerca.jpg', alt:'fotos/pdp/pack-W86-casa.jpg'},
+  {id:'W87', n:9, name:'Nueve clásicos', gross:9*KM, href:'cuadro.html?pared=W87', img:'fotos/pdp/pack-W87-cerca.jpg', alt:'fotos/pdp/pack-W87-casa.jpg', badge:'Mejor precio', terra:true},
 ];
 PACKS.forEach(p => p.tit = p.n + (p.n > 1 ? ' cuadros' : ' cuadro'));
 PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; p.note = 'Se abre el editor con esta composición. Subes tus fotos y la ves colgada.'; } });
 const packsEl = $('#packs');
-let sel = 'W20';
+let sel = 'W85';
 function renderPacks(){
   /* 3-nov: cada opción en una línea (n.º de cuadros + «colgado magnético incluido» en pequeño);
      al elegirla se despliega con su composición en una casa y de cerca */
@@ -803,13 +824,12 @@ function renderPacks(){
       ${p.badge ? `<span class="badge ${p.terra ? 'terra' : ''}">${p.badge}</span>` : ''}
       <div class="row">
         <span class="rad"></span>
-        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}<small>+ colgado magnético incluido</small></div>
-        <div class="pr">${p.price ? `<b>${eur(p.price)}</b><s>${eur(p.gross)}</s>` : `<b>desde ${eur(p.from)}</b>`}</div>
+        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}${p.save ? `<small class="ahorra">Ahorras ${eur(p.save)}</small>` : ''}</div>
+        <div class="pr"><b>${eur(p.price)}</b>${p.gross ? `<s>${eur(p.gross)}</s>` : ''}</div>
       </div>
       <div class="more">
         <div class="prev">
           <div class="pic" style="background-image:url(${p.alt})"><div class="sw"><button type="button" class="on" data-img="${p.alt}">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div></div>
-          <div class="meta">${p.name ? `<span>«${p.name}»</span>` : `<span>${p.sub}</span>`}${p.meta.map(m => `<span>${m}</span>`).join('')}${p.price ? `<span><b>${eur(p.price / p.n)}</b> por cuadro</span><span class="ok">Ahorras ${eur(p.save)}</span>` : ''}</div>
         </div>
       </div>
     </div>`).join('');
@@ -820,7 +840,7 @@ function choose(id){
   $('#ctaMain').href = p.href; $('#ctaMain').textContent = p.cta;
   $('#ctaNote').textContent = p.note;
   $('#stTit').textContent = p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro';
-  $('#stPr').textContent = p.price ? eur(p.price) : 'desde ' + eur(p.from);
+  $('#stPr').textContent = eur(p.price);
   $('#stCta').href = p.href; $('#stCta').textContent = p.n > 1 ? 'Diseña tu pared →' : 'Sube tu foto →';
 }
 packsEl.addEventListener('click', e => {
@@ -994,6 +1014,6 @@ const FAQ = [
     document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
 })();
 </script>
-<script src="carrito.js?v=a4a47876"></script>
+<script src="carrito.js?v=b923aa51"></script>
 </body>
 </html>

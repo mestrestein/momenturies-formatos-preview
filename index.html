@@ -142,7 +142,7 @@ img{display:block;max-width:100%}
 /* Hamburger */
 .hbg{
   display:flex;flex-direction:column;justify-content:center;gap:5px;
-  width:40px;height:40px;background:none;border:none;cursor:pointer;
+  width:40px;height:40px;background:none;border:none;cursor:pointer;color:var(--black);-webkit-appearance:none;appearance:none;
   padding:9px;border-radius:3px;transition:background .15s;
 }
 .hbg:hover{background:var(--gray)}
@@ -1417,7 +1417,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 })();
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'"/>
-<link rel="stylesheet" href="portada.css?v=c4ac027a"/>
+<link rel="stylesheet" href="portada.css?v=982f4ece"/>
 <script src="consent.js?v=bafba393" defer></script>
 </head>
 <body>
@@ -1433,7 +1433,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 <nav class="nav" id="nav">
   <div class="nav-left">
     <button class="hbg" id="hbgBtn" onclick="openMenu()" aria-label="Abrir menú" aria-expanded="false">
-      <span></span><span></span><span></span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
   </div>
 
@@ -1777,21 +1777,23 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 </section>
 
 <!-- OPINIONES: lista para cuando lleguen las de verdad. Solo se publican opiniones de compras reales (de soluciones/portada.html, 8-C).
-     Para meterlas: RESENAS en portada.js (vacío = se ven los dos huecos de ejemplo, marcados como ejemplo) -->
+     Para meterlas: RESENAS en portada.js (vacío = se ven los huecos de ejemplo, marcados como ejemplo) -->
 <section class="op" id="opiniones"><div class="c">
   <div class="op-resumen">
     <p class="s-tag">Opiniones</p>
     <div class="n" id="opNota">—</div>
     <div class="est" id="opEst">☆☆☆☆☆</div>
     <div class="bar3"><span>5★</span><i><b></b></i></div><div class="bar3"><span>4★</span><i><b></b></i></div><div class="bar3"><span>3★</span><i><b></b></i></div><div class="bar3"><span>2★</span><i><b></b></i></div><div class="bar3"><span>1★</span><i><b></b></i></div>
-    <p id="opTxt">Somos una marca nueva y aún no hay opiniones. Solo publicamos las de compras reales, con foto si nos la mandas.</p>
+    <p id="opTxt">Somos una marca nueva y aún no hay opiniones. Solo publicamos las de compras reales.</p>
     <a class="hx-cta terra" href="cuadro.html" data-photo-pick>Haz uno de los primeros pedidos <span>→</span></a>
   </div>
   <div>
     <div class="op-lista" id="opLista">
-      <div class="r molde"><div class="img" style="background-image:url(fotos/paredes/W27-1.webp)"></div><div><div class="est">★★★★★</div><b>Aquí irá la primera opinión</b><p>Con la foto de cómo ha quedado en su casa, el producto que compró y la fecha.</p><small>✓ Compra verificada</small></div></div>
-      <div class="r molde"><div class="img" style="background-image:url(fotos/combis/mom-cumple.webp)"></div><div><div class="est">★★★★★</div><b>Y aquí la segunda</b><p>Cada opinión va ligada a su pedido: nadie puede opinar sin haber comprado.</p><small>✓ Compra verificada</small></div></div>
+      <div class="r molde"><div class="est">★★★★★</div><b>Aquí irá la primera opinión</b><p>El texto del cliente, su nombre y el producto que compró.</p></div>
+      <div class="r molde"><div class="est">★★★★★</div><b>Y aquí la segunda</b><p>Cada opinión va ligada a su pedido: nadie puede opinar sin haber comprado.</p></div>
+      <div class="r molde"><div class="est">★★★★★</div><b>Y así todas las que lleguen</b><p>Pasan en carrusel, sin fotos.</p></div>
     </div>
+    <div class="op-flechas" id="opFlechas"><button type="button" data-d="-1" aria-label="Anterior">‹</button><button type="button" data-d="1" aria-label="Siguiente">›</button></div>
     <p class="op-aviso" id="opAviso">Ejemplo de cómo se verán. No son opiniones reales.</p>
   </div>
 </div></section>
@@ -2280,9 +2282,9 @@ function combiSlide(dir){
 })();
 </script>
 <script src="photo-handoff.js?v=9639e829"></script>
-<script src="carrito.js?v=a4a47876"></script>
-<script src="paredes.js?v=5d910fc5"></script>
+<script src="carrito.js?v=b923aa51"></script>
+<script src="paredes.js?v=8e15e594"></script>
 <script src="fotos/entornos/entornos.js?v=23c2a392"></script>
-<script src="portada.js?v=5bf80a7e"></script>
+<script src="portada.js?v=b11b3892"></script>
 </body>
 </html>

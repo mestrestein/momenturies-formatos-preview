@@ -45,8 +45,8 @@
   var css = '' +
     '.mc-veil{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9998;opacity:0;pointer-events:none;transition:opacity .3s}' +
     '.mc-veil.open{opacity:1;pointer-events:auto}' +
-    '.mc{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:9999;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);font-family:Inter,"Helvetica Neue",Arial,sans-serif;color:#0d0d0d;box-shadow:-20px 0 60px rgba(0,0,0,.15)}' +
-    '.mc.open{transform:none}' +
+    '.mc{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:9999;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);font-family:Inter,"Helvetica Neue",Arial,sans-serif;color:#0d0d0d}' +
+    '.mc.open{transform:none;box-shadow:-20px 0 60px rgba(0,0,0,.15)}' +
     '.mc-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid #eee}' +
     '.mc-head b{font-family:Georgia,serif;font-size:22px}' +
     '.mc-head b small{font-family:Inter,Arial,sans-serif;font-size:13px;color:#888;font-weight:500;margin-left:6px}' +

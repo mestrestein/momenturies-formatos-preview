@@ -242,24 +242,29 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
 /* ═════ PARED SOBRE UNA HABITACIÓN: la foto vacía de entornos.js y la pared de paredes.js a escala real ═════
    La foto llena la caja (como cover) pero se encuadra en la pared; los cuadros se centran en el hueco libre de pared. */
 const ENTORNOS = window.MOMENTURIES_ROOMS || [];
-const STOCK = ['1752652011858', '1586498024141', '1557495235', '1758686254601', '1548858806', '1770831208268', '1606983340126'].map(f => `fotos/stock/${f}-480x640.webp`);
-function paredEn(caja, roomId, wallId, peque){
+const STOCK = ['1752652011858', '1586498024141', '1557495235', '1758686254601', '1548858806', '1770831208268', '1606983340126', '1472719674214', '1603367563698', '1624272864537', '1655141011386', '1738956952892', '1750076912832'].map(f => `fotos/stock/${f}-480x640.webp`);
+/* op: { espejo: da la vuelta a la figura, cx/cy: centro del conjunto en píxeles de la foto (si no, sobre el mueble) } */
+function paredEn(caja, roomId, wallId, peque, op = {}){
   const r = ENTORNOS.find(x => x.id === roomId), w = pared(wallId); if(!r || !w) return;
-  caja.innerHTML = `<div class="sala"><img alt="" src="fotos/entornos/${r.id}${peque ? '_thumb' : ''}.jpg"/>${w.pieces.map((p, k) => `<i class="mw" style="background-image:url(${STOCK[k % STOCK.length]})"></i>`).join('')}</div>`;
+  const inicio = String(wallId).split('').reduce((a, c) => a + c.charCodeAt(0), 0);   // cada pared empieza por una foto distinta
+  const fotoDe = k => STOCK[(inicio + k) % STOCK.length];
+  caja.innerHTML = `<div class="sala"><img alt="" src="fotos/entornos/${r.id}${peque ? '_thumb' : ''}.jpg"/>${w.pieces.map((p, k) => `<i class="mw" style="background-image:url(${fotoDe(k)})"></i>`).join('')}</div>`;
   const img = $('img', caja), piezas = $$('.mw', caja), ppc = r.pxPerCm;
   const W = w.width * ppc, H = w.height * ppc, techo = Math.max(r.free ? r.free[1] : 0, r.h * .04);
   /* a lo ancho, centrada en el mueble (anchorX); a lo alto, en el hueco entre lo alto y el mueble, algo por debajo de la mitad */
-  const left = r.anchorX - W / 2;
-  const top = H <= r.anchorBottomY - techo ? techo + (r.anchorBottomY - techo - H) * .6 : r.anchorBottomY - H;
-  const cx = left + W / 2, cy = top + H / 2;
+  const left = op.cx != null ? op.cx - W / 2 : r.anchorX - W / 2;
+  const top = op.cy != null ? op.cy - H / 2 : H <= r.anchorBottomY - techo ? techo + (r.anchorBottomY - techo - H) * .6 : r.anchorBottomY - H;
+  const cx = left + W / 2;
+  const suelo = Math.min(r.h, Math.max(r.mueble || r.anchorBottomY, top + H) + r.h * .2);   // hasta dónde hay que ver: el mueble entero
+  const cielo = Math.max(0, top - r.h * .1);
   const pinta = () => {
     const bw = caja.clientWidth, bh = caja.clientHeight; if(!bw) return;
-    /* 3-nov: la foto se acerca hasta que el conjunto ocupe ~45 % del ancho (en PC la caja es ancha y quedaba pequeño), hasta 1,7× */
-    const s0 = Math.max(bw / r.w, bh / r.h), s = Math.min(s0 * 1.7, Math.max(s0, .45 * bw / W));
-    const ox = Math.min(0, Math.max(bw - r.w * s, bw / 2 - cx * s)), oy = Math.min(0, Math.max(bh - r.h * s, bh * .4 - cy * s));
+    /* 4-nov: se acerca hasta que el conjunto ocupe ~52 % del ancho, pero sin perder de vista el mueble */
+    const s0 = Math.max(bw / r.w, bh / r.h), s = Math.max(s0, Math.min(s0 * 1.7, .52 * bw / W, bh / (suelo - cielo)));
+    const ox = Math.min(0, Math.max(bw - r.w * s, bw / 2 - cx * s)), oy = Math.min(0, Math.max(bh - r.h * s, (suelo - cielo) * s > bh ? -cielo * s : bh / 2 - (cielo + suelo) / 2 * s));
     Object.assign(img.style, { left:ox + 'px', top:oy + 'px', width:r.w * s + 'px', height:r.h * s + 'px' });
-    piezas.forEach((el, k) => { const p = w.pieces[k];
-      Object.assign(el.style, { left:ox + (left + p.x * ppc) * s + 'px', top:oy + (top + p.y * ppc) * s + 'px', width:p.w * ppc * s + 'px', height:p.h * ppc * s + 'px' }); });
+    piezas.forEach((el, k) => { const p = w.pieces[k], x = op.espejo ? w.width - p.x - p.w : p.x;
+      Object.assign(el.style, { left:ox + (left + x * ppc) * s + 'px', top:oy + (top + p.y * ppc) * s + 'px', width:p.w * ppc * s + 'px', height:p.h * ppc * s + 'px' }); });
   };
   pinta(); caja._pinta = pinta;
 }
@@ -271,25 +276,25 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   const tabs = $('#ecTabs'), big = $('#ecBig'), est = $('#ecEstilos'); if(!tabs) return;
   const ROOMS = [
     ['salon','Salón','El salón, encima del sofá','Es la pared que más se mira de la casa. Una fila de cuadros grandes encima del sofá llena el hueco sin recargar.','<b>Truco:</b> deja unos 20-25 cm entre el respaldo del sofá y el borde de abajo de los cuadros.',
-      ['Rústico', ['Minimalista', 'sofa-lino', 'W70:L'], ['Moderno', 'sofa-esquinero', 'W28']]],
+      ['Rústico', ['Minimalista', 'sofa-lino', 'W27'], ['Moderno', 'sofa-esquinero', 'W28']]],
     ['dormitorio','Dormitorio','Encima del cabecero','Lo primero que ves al despertarte. Tres fotos en fila, con colores suaves, quedan de maravilla.','<b>Truco:</b> que el conjunto no sea más ancho que el cabecero; queda más ordenado.',
-      ['Minimalista', ['Rústico', 'dormitorio-mediterraneo', 'W43'], ['Moderno', 'dormitorio-oscuro', 'W32']]],
+      ['Minimalista', ['Rústico', 'dormitorio-mediterraneo', 'W22'], ['Moderno', 'dormitorio-oscuro', 'W32']]],
     ['comedor','Comedor','En la pared del comedor','Donde se juntan las comidas largas y las sobremesas. Fotos de familia y de viajes para que salgan solas las historias.','<b>Truco:</b> centra el conjunto con el aparador o la mesa, no con la pared.',
-      ['Rústico', ['Minimalista', 'comedor-moderno', 'W45'], ['Nórdico', 'comedor-midcentury', 'W47']]],
+      ['Rústico', ['Minimalista', 'comedor-moderno', 'W45'], ['Nórdico', 'comedor-midcentury', 'W31']]],
     ['cocina','Cocina','En la cocina, sin miedo al vapor','El aluminio no se ondula con la humedad, así que la cocina deja de ser zona prohibida para las fotos.','<b>Truco:</b> lejos del fuego directo, y se limpia con un paño húmedo.',
-      ['Rústico', ['Minimalista', 'cocina-roble-claro', 'W46'], ['Moderno', 'cocina-marmol-negro', 'W50']]],
-    ['pasillo','Pasillo','Un pasillo que deja de ser de paso','Una fila de cuadros convierte el pasillo en una pequeña galería. Ideal para contar un viaje en orden.','<b>Truco:</b> cuadros a la altura de los ojos (unos 150 cm al centro) y del mismo tamaño.',
-      ['Minimalista', ['Rústico', 'aparador-cestas', 'W46'], ['Moderno', 'aparador-lujo', 'W49']]],
-    ['escalera','Escalera','Junto a la escalera','La pared de la escalera es enorme y casi siempre está vacía. Una cuadrícula de seis la llena con estilo.','<b>Truco:</b> con imán, recolocarlos hasta que queden perfectos es cuestión de segundos.',
-      ['Nórdico', ['Clásico', 'escalera-clasica-elegante', 'W44:M'], ['Moderno', 'escalera-moderna-negra', 'W42']]],
-    ['recibidor','Recibidor','El recibidor, lo primero al llegar','Lo que ve quien entra por la puerta. Unas fotos sobre el mueble de la entrada dicen mucho de una casa.','<b>Truco:</b> que el conjunto no sea más ancho que el mueble.',
-      ['Clásico', ['Rústico', 'aparador-banco', 'W66:L'], ['Minimalista', 'rincon-banco', 'W67:L']]],
+      ['Rústico', ['Minimalista', 'cocina-roble-claro', 'W46'], ['Moderno', 'cocina-marmol-negro', 'W42']]],
+    ['pasillo','Aparador','Sobre el aparador','Lo que ve quien entra por la puerta. Unas fotos sobre el mueble dicen mucho de una casa.','<b>Truco:</b> que el conjunto no sea más ancho que el mueble.',
+      ['Minimalista', ['Rústico', 'aparador-cestas', 'W46'], ['Moderno', 'aparador-lujo', 'W42']]],
+    ['escalera','Escalera','Junto a la escalera','La pared de la escalera es enorme y casi siempre está vacía. Los cuadros acompañan la subida.','<b>Truco:</b> con imán, recolocarlos hasta que queden perfectos es cuestión de segundos.',
+      ['Nórdico', ['Clásico', 'escalera-clasica-elegante', 'W44:M', { espejo:true, cx:720, cy:350 }], ['Moderno', 'escalera-moderna-negra', 'W42']]],
+    ['pasillo-real','Pasillo','Un pasillo que deja de ser de paso','Una fila de cuadros convierte el pasillo en una pequeña galería. Ideal para contar un viaje en orden.','<b>Truco:</b> cuadros a la altura de los ojos (unos 150 cm al centro) y del mismo tamaño.',
+      [['Rústico', 'aparador-banco', 'W85'], ['Minimalista', 'rincon-banco', 'W84'], ['Clásico', 'movil-consola', 'W83']]],
     ['despacho','Despacho','En el despacho o el rincón de trabajo','Para las horas delante del ordenador: esa foto que te recuerda por qué trabajas tanto.','<b>Truco:</b> uno grande y dos pequeños encima de la mesa queda limpio y no distrae.',
       ['Nórdico', ['Clásico', 'despacho-clasico', 'W65:M'], ['Moderno', 'despacho-nogal', 'W21:L']]],
   ];
   const nombre = e => Array.isArray(e) ? e[0] : e;
   /* pinta un estilo en una caja: la foto de Aitor tal cual, o la habitación vacía con su pared */
-  const pintaEn = (caja, r, e, peque) => { if(Array.isArray(e)) paredEn(caja, e[1], e[2], peque);
+  const pintaEn = (caja, r, e, peque) => { if(Array.isArray(e)) paredEn(caja, e[1], e[2], peque, e[3]);
     else { caja._pinta = null; caja.innerHTML = `<div class="sala"><div class="foto" style="background-image:url(fotos/pdp/lugar-${r[0]}.jpg)"></div></div>`; } };
   tabs.innerHTML = ROOMS.map((r, i) => `<button type="button" data-i="${i}">${r[1]}</button>`).join('');
   let room = 0;
@@ -456,18 +461,20 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
 /* ═════ PARA QUIÉN: las cintas se duplican para dar la vuelta sin salto ═════ */
 $$('.rg-cinta[data-dup]').forEach(c => { c.innerHTML += c.innerHTML; });
 
-/* ═════ OPINIONES: SOLO de compras reales. Vacío = se ven los dos huecos de ejemplo, marcados como ejemplo.
-   Cada una: { nombre, ciudad, estrellas, texto, producto, fecha, foto } (foto = la de su casa, opcional) ═════ */
+/* ═════ OPINIONES: SOLO de compras reales, en carrusel y sin fotos. Vacío = se ven los huecos marcados como ejemplo.
+   Cada una: { nombre, ciudad, estrellas, texto, producto, fecha } ═════ */
 const RESENAS = [];
 (function(){
-  const lista = $('#opLista'); if(!lista || !RESENAS.length) return;
+  const lista = $('#opLista'); if(!lista) return;
+  $$('#opFlechas button').forEach(b => b.onclick = () => { const r = $('.r', lista); lista.scrollBy({ left:+b.dataset.d * (r.offsetWidth + 14), behavior:'smooth' }); });
+  if(!RESENAS.length) return;
   const n = RESENAS.length, media = RESENAS.reduce((s, r) => s + r.estrellas, 0) / n;
   $('#opNota').textContent = media.toFixed(1).replace('.', ',');
   $('#opEst').textContent = '★★★★★☆☆☆☆☆'.slice(5 - Math.round(media), 10 - Math.round(media));
   $$('#opiniones .bar3 b').forEach((b, i) => { b.style.width = RESENAS.filter(r => r.estrellas === 5 - i).length / n * 100 + '%'; });
   $('#opTxt').textContent = `${n} ${n > 1 ? 'opiniones' : 'opinión'} de compras reales.`;
   const e = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
-  lista.innerHTML = RESENAS.map(r => `<div class="r"><div class="img" style="background-image:url(${e(r.foto || 'fotos/paredes/W27-1.webp')})"></div><div><div class="est">${'★'.repeat(r.estrellas)}${'☆'.repeat(5 - r.estrellas)}</div><b>${e(r.nombre)}${r.ciudad ? ', ' + e(r.ciudad) : ''}</b><p>${e(r.texto)}</p><small>✓ Compra verificada<i>${e(r.producto)} · ${e(r.fecha)}</i></small></div></div>`).join('');
+  lista.innerHTML = RESENAS.map(r => `<div class="r"><div class="est">${'★'.repeat(r.estrellas)}${'☆'.repeat(5 - r.estrellas)}</div><b>${e(r.nombre)}${r.ciudad ? ' · ' + e(r.ciudad) : ''}</b><p>${e(r.texto)}</p><small>Compra verificada${r.producto ? `<i>${e(r.producto)}</i>` : ''}</small></div>`).join('');
   $('#opAviso').hidden = true;
 })();
 
