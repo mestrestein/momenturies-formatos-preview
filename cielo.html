@@ -143,13 +143,14 @@
     b.addEventListener('click', function () { st.font = k; [].forEach.call($('fonts').children, function (x) { x.setAttribute('aria-pressed', x === b); }); render(); });
     $('fonts').appendChild(b);
   });
-  Object.keys(MOM_CIELO.themes).forEach(function (k) {
-    var T = MOM_CIELO.themes[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === st.theme);
+  var TODOS = Object.assign({}, MOM_CIELO.escenas, MOM_CIELO.themes);
+  Object.keys(TODOS).forEach(function (k) {
+    var T = TODOS[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === st.theme);
     b.innerHTML = '<span style="background:linear-gradient(135deg,' + T.bg + ' 0 50%,' + T.disk + ' 50% 100%)"></span>';
     b.addEventListener('click', function () { st.theme = k; [].forEach.call($('themes').children, function (x) { x.setAttribute('aria-pressed', x === b); }); $('themeName').textContent = T.name; render(); });
     $('themes').appendChild(b);
   });
-  $('themeName').textContent = MOM_CIELO.themes[st.theme].name;
+  $('themeName').textContent = TODOS[st.theme].name;
 
   $('cta').addEventListener('click', function () {
     MOM_P.toEditor($('cta'), $('ctaTxt'), function (ctx, W, H) { return MOM_CIELO.ready.then(function () { MOM_CIELO.draw(ctx, W, H, opts()); }); }, 'cielo-' + ($('date').value || 'noche'));

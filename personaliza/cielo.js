@@ -10,8 +10,99 @@
     oro:        { name: 'Oro y negro', bg: '#0c0c0d', disk: '#0c0c0d', ring: '#d8bd7f', star: '#f7e9c6', line: 'rgba(216,189,127,.55)', grid: 'rgba(216,189,127,.16)', text: '#e3cb93', soft: 'rgba(227,203,147,.7)', moonDark: '#242018' },
     papel:      { name: 'Papel',       bg: '#f5f0e6', disk: '#15243b', ring: '#15243b', star: '#ffffff', line: 'rgba(255,255,255,.38)', grid: 'rgba(255,255,255,.12)', text: '#15243b', soft: 'rgba(21,36,59,.65)', moonDark: '#2a3a55' },
     rosa:       { name: 'Rosa',        bg: '#f5e6e1', disk: '#3c2940', ring: '#3c2940', star: '#fff3ec', line: 'rgba(255,236,226,.4)', grid: 'rgba(255,236,226,.12)', text: '#3c2940', soft: 'rgba(60,41,64,.65)', moonDark: '#55405a' },
-    azul:       { name: 'Azul noche',  bg: '#e8edf2', disk: '#1b2f4f', ring: '#1b2f4f', star: '#ffffff', line: 'rgba(255,255,255,.4)', grid: 'rgba(255,255,255,.12)', text: '#1b2f4f', soft: 'rgba(27,47,79,.65)', moonDark: '#30466b' }
+    azul:       { name: 'Azul noche',  bg: '#e8edf2', disk: '#1b2f4f', ring: '#1b2f4f', star: '#ffffff', line: 'rgba(255,255,255,.4)', grid: 'rgba(255,255,255,.12)', text: '#1b2f4f', soft: 'rgba(27,47,79,.65)', moonDark: '#30466b' },
+    /* 4-nov: discos de color planos */
+    blanco:     { name: 'Blanco',      bg: '#ffffff', disk: '#ffffff', ring: '#1a1a1a', star: '#1a1a1a', line: 'rgba(0,0,0,.5)', grid: 'rgba(0,0,0,.1)', text: '#1a1a1a', soft: 'rgba(26,26,26,.6)', moonDark: '#d8d8d8' },
+    pizarra:    { name: 'Pizarra',     bg: '#1c2a38', disk: '#1c2a38', ring: '#b9c7d4', star: '#ffffff', line: 'rgba(185,199,212,.45)', grid: 'rgba(185,199,212,.13)', text: '#e6edf3', soft: 'rgba(230,237,243,.65)', moonDark: '#2c3d4f' },
+    menta:      { name: 'Menta',       bg: '#f7f3ec', disk: '#a3d8c6', ring: '#a3d8c6', star: '#1f3a35', line: 'rgba(31,58,53,.42)', grid: 'rgba(31,58,53,.1)', text: '#1f3a35', soft: 'rgba(31,58,53,.65)', moonDark: '#7fb9a6' },
+    arena:      { name: 'Arena y agua', bg: '#94c3c4', disk: '#fdf1df', ring: '#fdf1df', star: '#5a4632', line: 'rgba(90,70,50,.38)', grid: 'rgba(90,70,50,.1)', text: '#fdf6ea', soft: 'rgba(253,246,234,.8)', moonDark: '#e5d3bb' },
+    carbon:     { name: 'Carbón',      bg: '#2a2a2b', disk: '#2a2a2b', ring: '#8d8d8d', star: '#f4f4f4', line: 'rgba(255,255,255,.34)', grid: 'rgba(255,255,255,.08)', text: '#f0f0f0', soft: 'rgba(240,240,240,.65)', moonDark: '#3a3a3b' },
+    grafito:    { name: 'Grafito',     bg: '#f4f4f2', disk: '#2f3336', ring: '#2f3336', star: '#ffffff', line: 'rgba(255,255,255,.36)', grid: 'rgba(255,255,255,.09)', text: '#2f3336', soft: 'rgba(47,51,54,.65)', moonDark: '#43484c' },
+    carmin:     { name: 'Carmín',      bg: '#fbfaf8', disk: '#bf0a30', ring: '#bf0a30', star: '#fff4f4', line: 'rgba(255,240,240,.42)', grid: 'rgba(255,240,240,.1)', text: '#7f0720', soft: 'rgba(127,7,32,.65)', moonDark: '#8f0824' },
+    ocre:       { name: 'Ocre',        bg: '#f2ead8', disk: '#b4661d', ring: '#b4661d', star: '#fff6e7', line: 'rgba(255,246,231,.42)', grid: 'rgba(255,246,231,.1)', text: '#6f3e10', soft: 'rgba(111,62,16,.68)', moonDark: '#8f5016' }
   };
+
+  /* 4-nov: el cielo a sangre, con un paisaje abajo. Todo dibujado aquí, sin fotos: sirve a cualquier tamaño de impresión */
+  var ESCENAS = {
+    bosque:  { name: 'Bosque',  sky: ['#05201f', '#0d3a40', '#1f5a66'] },
+    montana: { name: 'Montaña', sky: ['#11131f', '#1b1f33', '#2a2f4a'] },
+    ciudad:  { name: 'Ciudad',  sky: ['#04182f', '#0a2a4a', '#123a5c'] },
+    mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] }
+  };
+  var CLARO = 'rgba(255,255,255,';
+  Object.keys(ESCENAS).forEach(function (k) {
+    var E = ESCENAS[k]; E.escena = k; E.bg = E.sky[0]; E.disk = E.sky[2]; E.ring = 'rgba(0,0,0,0)'; E.star = '#ffffff'; E.line = CLARO + '.3)'; E.grid = CLARO + '.05)';
+    E.text = '#ffffff'; E.soft = CLARO + '.72)'; E.moonDark = E.sky[1];
+  });
+  function azar(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  /* cresta irregular por subdivisión: lista de alturas de 0 a 1 */
+  function cresta(n, rugoso, R) {
+    var a = [R(), R()], amp = rugoso;
+    for (var i = 0; i < n; i++) { var b = []; for (var j = 0; j < a.length - 1; j++) { b.push(a[j], (a[j] + a[j + 1]) / 2 + (R() - .5) * amp); } b.push(a[a.length - 1]); a = b; amp *= .55; }
+    return a;
+  }
+  function pino(ctx, x, base, h, R) {
+    var w = h * .34; ctx.beginPath(); ctx.moveTo(x, base - h);
+    for (var i = 1; i <= 7; i++) { var t = i / 7, y = base - h + h * t, an = w * t * (.8 + R() * .3); ctx.lineTo(x + an, y); ctx.lineTo(x + an * .55, y - h * .01); }
+    for (var k = 7; k >= 1; k--) { var t2 = k / 7, y2 = base - h + h * t2, an2 = w * t2 * (.8 + R() * .3); ctx.lineTo(x - an2 * .55, y2 - h * .01); ctx.lineTo(x - an2, y2); }
+    ctx.closePath(); ctx.fill();
+  }
+  function paisaje(ctx, W, H, tipo) {
+    var R = azar(7), base = H * .8, i, g;
+    if (tipo === 'bosque') {
+      g = ctx.createLinearGradient(0, H * .55, 0, base); g.addColorStop(0, 'rgba(120,190,190,0)'); g.addColorStop(1, 'rgba(150,215,205,.34)'); ctx.fillStyle = g; ctx.fillRect(0, H * .55, W, base - H * .55);
+      [['#0c2d30', .1, .062], ['#071a1c', .055, .09], ['#010505', .018, .125]].forEach(function (c) {
+        ctx.fillStyle = c[0]; var y = base - H * c[1] * .1 + H * (c[1] < .05 ? .012 : -.012 * (c[1] * 20));
+        for (var x = -W * .02; x < W * 1.02; x += W * (.012 + R() * .017)) pino(ctx, x, y + H * .03, H * c[2] * (.6 + R() * .75), R);
+        ctx.fillRect(0, y + H * .029, W, H);
+      });
+    } else if (tipo === 'montana') {
+      g = ctx.createLinearGradient(0, H * .58, 0, base); g.addColorStop(0, 'rgba(150,160,200,0)'); g.addColorStop(1, 'rgba(170,180,215,.2)'); ctx.fillStyle = g; ctx.fillRect(0, H * .58, W, base - H * .58);
+      var c = cresta(8, 1.05, R), mn = Math.min.apply(null, c), mx = Math.max.apply(null, c), yDe = function (i) { return base - H * (.03 + .135 * (c[i] - mn) / (mx - mn)); };
+      ctx.beginPath(); ctx.moveTo(0, base + H * .02); for (i = 0; i < c.length; i++) ctx.lineTo(W * i / (c.length - 1), yDe(i)); ctx.lineTo(W, base + H * .02); ctx.closePath();
+      g = ctx.createLinearGradient(0, base - H * .17, 0, base); g.addColorStop(0, '#39405c'); g.addColorStop(1, '#10131d'); ctx.fillStyle = g; ctx.fill();
+      /* nieve: por debajo de cada cima, con lenguas irregulares */
+      ctx.save(); ctx.clip();
+      for (i = 0; i < c.length - 1; i++) {
+        var y0 = yDe(i), al = Math.max(0, (base - H * .06 - y0)) * (.5 + R() * .45), x0 = W * i / (c.length - 1), w0 = W / (c.length - 1) + 1;
+        var ng = ctx.createLinearGradient(x0, y0, x0 + w0 * (R() - .5) * 18, y0 + al); ng.addColorStop(0, 'rgba(244,246,255,.96)'); ng.addColorStop(.6, 'rgba(200,208,235,.72)'); ng.addColorStop(1, 'rgba(120,130,170,0)');
+        ctx.fillStyle = ng; ctx.fillRect(x0, y0, w0, al);
+      }
+      ctx.restore();
+    } else if (tipo === 'ciudad') {
+      g = ctx.createLinearGradient(0, H * .6, 0, base); g.addColorStop(0, 'rgba(90,150,190,0)'); g.addColorStop(.62, 'rgba(255,190,110,.5)'); g.addColorStop(1, 'rgba(255,120,40,.95)'); ctx.fillStyle = g; ctx.fillRect(0, H * .6, W, base - H * .6);
+      ctx.fillStyle = '#04060a'; ctx.fillRect(0, base, W, H);
+      for (i = 0; i < 2600; i++) {
+        var pr = Math.pow(R(), 2.4), yy = base + H * .001 + pr * H * .07, xx = W / 2 + (R() - .5) * W * (1.1 + pr * .6), sz = W * (.0006 + pr * .0016) * (.6 + R());
+        ctx.fillStyle = R() > .3 ? 'rgba(255,190,110,' + (.55 + R() * .45) + ')' : 'rgba(255,235,205,.9)';
+        ctx.beginPath(); ctx.arc(xx, yy, sz, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      g = ctx.createRadialGradient(W * .62, base, 0, W * .62, base, H * .42); g.addColorStop(0, 'rgba(215,190,235,.5)'); g.addColorStop(1, 'rgba(215,190,235,0)'); ctx.fillStyle = g; ctx.fillRect(0, H * .3, W, base);
+      g = ctx.createLinearGradient(0, base, 0, H * .86); g.addColorStop(0, '#3d3a6e'); g.addColorStop(1, '#060612'); ctx.fillStyle = g; ctx.fillRect(0, base, W, H);
+      for (i = 0; i < 260; i++) { var yr = base + R() * H * .055, lr = W * (.01 + R() * .06); ctx.fillStyle = 'rgba(205,195,240,' + (.04 + R() * .16) + ')'; ctx.fillRect(R() * W, yr, lr, H * .0008 + R() * H * .0007); }
+      /* roca y faro */
+      var fx = W * .22, ry = base + H * .006; ctx.fillStyle = '#05050d';
+      ctx.beginPath(); ctx.moveTo(-W * .02, ry + H * .02); ctx.lineTo(-W * .02, ry - H * .018); ctx.lineTo(W * .1, ry - H * .022); ctx.lineTo(W * .2, ry - H * .03); ctx.lineTo(W * .3, ry - H * .022); ctx.lineTo(W * .39, ry - H * .004); ctx.lineTo(W * .45, ry + H * .008); ctx.closePath(); ctx.fill();
+      var th = H * .1, tw = W * .03;
+      ctx.beginPath(); ctx.moveTo(fx - tw, ry - H * .028); ctx.lineTo(fx - tw * .6, ry - th); ctx.lineTo(fx + tw * .6, ry - th); ctx.lineTo(fx + tw, ry - H * .028); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#d8d3e6'; for (var b = 0; b < 2; b++) { var by = ry - H * (.05 + b * .03); ctx.fillRect(fx - tw * (.78 - b * .1), by, tw * 2 * (.78 - b * .1), H * .009); }
+      ctx.fillStyle = '#05050d'; ctx.fillRect(fx - tw * .72, ry - th - H * .005, tw * 1.44, H * .005); ctx.fillRect(fx - tw * .42, ry - th - H * .017, tw * .84, H * .012);
+      ctx.beginPath(); ctx.moveTo(fx - tw * .55, ry - th - H * .017); ctx.lineTo(fx, ry - th - H * .03); ctx.lineTo(fx + tw * .55, ry - th - H * .017); ctx.fill();
+      var lx = fx, ly = ry - th - H * .011; g = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * .05); g.addColorStop(0, 'rgba(255,240,190,1)'); g.addColorStop(.12, 'rgba(255,225,160,.7)'); g.addColorStop(1, 'rgba(255,225,160,0)'); ctx.fillStyle = g; ctx.fillRect(lx - W * .05, ly - W * .05, W * .1, W * .1);
+    }
+    /* la franja de abajo, para el texto */
+    g = ctx.createLinearGradient(0, H * .79, 0, H * .86); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, '#000'); ctx.fillStyle = g; ctx.fillRect(0, H * .79, W, H * .071);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, H * .86, W, H * .14);
+  }
+  function drawEscena(ctx, W, H, o, T) {
+    var g = ctx.createLinearGradient(0, 0, 0, H * .8); g.addColorStop(0, T.sky[0]); g.addColorStop(.55, T.sky[1]); g.addColorStop(1, T.sky[2]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    var b = Object.assign({}, o, { grid: false }), C = Object.assign({}, T, { disk: 'rgba(0,0,0,0)' });
+    sky(ctx, W, W / 2, H * .36, W * .86, b, C);
+    paisaje(ctx, W, H, T.escena);
+    MOM_P.textBlock(ctx, W, H, { title: o.title, line2: o.line2, line3: o.line3, font: o.font, y: H * .885, color: T.text, soft: T.soft });
+  }
 
   function jd(ms) { return ms / 86400000 + 2440587.5; }
   function lst(J, lon) { var d = J - 2451545.0; return (((280.46061837 + 360.98564736629 * d + lon) % 360) + 360) % 360; }
@@ -152,8 +243,9 @@
     ctx.restore();
   }
   function draw(ctx, W, H, o) {
-    var T = THEMES[o.theme] || THEMES.medianoche;
+    var T = ESCENAS[o.theme] || THEMES[o.theme] || THEMES.medianoche;
     ctx.save();
+    if (T.escena) { drawEscena(ctx, W, H, o, T); ctx.restore(); return; }
     ctx.fillStyle = T.bg; ctx.fillRect(0, 0, W, H);
     sky(ctx, W, W / 2, H * 0.385, W * 0.38, o, T);
     MOM_P.textBlock(ctx, W, H, { title: o.title, line2: o.line2, line3: o.line3, font: o.font, y: H * 0.815, color: T.text, soft: T.soft });
@@ -181,5 +273,5 @@
     try { var u = guess - tzOffsetMs(guess, tz); return guess - tzOffsetMs(u, tz); } catch (e) { return guess; }
   }
 
-  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, sky: sky, faseNombre: faseNombre, draw: draw, themes: THEMES, localToUtc: localToUtc, moon: moon, jd: jd };
+  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, sky: sky, faseNombre: faseNombre, draw: draw, themes: THEMES, escenas: ESCENAS, localToUtc: localToUtc, moon: moon, jd: jd };
 })();
