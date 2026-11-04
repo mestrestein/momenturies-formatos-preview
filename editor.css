@@ -632,3 +632,28 @@ html.ed-locked #ptypeLabel{display:none}
 .dz-card img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:6px;margin-bottom:6px;background:#f2efe9}
 .dz-card:hover{border-color:var(--black)}
 .dz-card.loading{opacity:.5;pointer-events:none}
+
+/* 4-nov · color del texto y dibujos */
+.ink-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.ink-lbl{font-size:12px;font-weight:600;margin-right:2px}
+.ink{width:26px;height:26px;border-radius:50%;border:1.5px solid #d8d3ca;padding:0;cursor:pointer;position:relative;overflow:hidden;flex:none;display:block}
+.ink.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--black)}
+.ink-any{background:conic-gradient(#e24a4a,#e8c13f,#4fb36b,#3f8fd6,#9a5ad0,#e24a4a)}
+.ink-any input{position:absolute;inset:-6px;width:40px;height:40px;opacity:0;cursor:pointer;padding:0;border:0}
+.deco-box{margin-bottom:10px}
+.deco-box[hidden]{display:none}
+.deco-toggle{width:100%;display:flex;align-items:center;gap:8px;background:#fff;border:1.5px dashed var(--gray2);border-radius:6px;padding:9px 11px;font:600 12.5px var(--font-sans);color:var(--black);cursor:pointer;text-align:left}
+.deco-toggle i{margin-left:auto;font-style:normal;font-size:16px;line-height:1}
+.deco-ic svg{display:block;width:20px;height:20px}
+.deco-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;max-height:230px;overflow:auto;padding:1px}
+.deco-b{aspect-ratio:1;border:1.5px solid var(--gray2);border-radius:6px;background:#fff;color:var(--black);padding:6px;cursor:pointer}
+.deco-b svg{display:block;width:100%;height:100%}
+.deco-b.on,.deco-b:hover{border-color:var(--black)}
+.deco-none{grid-column:span 2;aspect-ratio:auto;font:600 11px var(--font-sans);padding:4px}
+.deco-ctrl{display:flex;align-items:center;gap:10px;margin-top:8px}
+.deco-ctrl .txt-size{flex:1}
+.deco-ctrl{flex-wrap:wrap}
+.deco-ctrl .zone-tabs{display:flex;flex-wrap:nowrap;width:100%;gap:6px}
+.deco-ctrl .zone-tab{flex:1}
+.deco-ctrl .txt-size{flex:1 1 100%}
+.deco-box .txt-hint{margin-top:5px}

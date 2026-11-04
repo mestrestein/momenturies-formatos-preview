@@ -183,6 +183,8 @@
         <div class="font-dd" id="frontFontDD" data-for="frontText"></div>
         <input class="txt-date" id="frontDate" maxlength="12" placeholder="Fecha">
       </div>
+      <div class="ink-row" id="frontInk"></div>
+      <div class="deco-box" id="frontDecoBox"></div>
 
       <p class="config-label txt-sub txt-back"><span class="es">Dedicatoria detrás</span><span class="en">Back dedication</span></p>
       <textarea class="txt-area txt-back" id="backText" rows="2" maxlength="140" placeholder="Para mamá, con todo nuestro amor"></textarea>
@@ -190,6 +192,8 @@
         <div class="font-dd" id="backFontDD" data-for="backText"></div>
         <input class="txt-date" id="backDate" maxlength="12" placeholder="Fecha">
       </div>
+      <div class="ink-row txt-back" id="backInk"></div>
+      <div class="deco-box txt-back" id="backDecoBox"></div>
       <div class="txt-row txt-back txt-place">
         <div class="zone-tabs" id="backZoneTabs" role="group" aria-label="Sitio de la dedicatoria">
           <button type="button" class="zone-tab" data-zone="top"><span class="es">Arriba</span><span class="en">Top</span></button>
@@ -1979,13 +1983,19 @@ function buildFrontCanvas(p, W, H){
     const sz = fit.size;
     p.frontSize = sz/scl;   // a talla "sin escalar", igual que antes lo dejaba el slider
     x.font = fontCss(p.frontFont, sz);
-    x.lineJoin='round'; x.lineWidth=Math.max(3, sz*0.14); x.strokeStyle='rgba(0,0,0,.6)';
-    x.fillStyle='#fff'; x.shadowColor='rgba(0,0,0,.45)'; x.shadowBlur=sz*0.28;
-    drawLines(x, fit.lines, px, py, sz*1.18, true);
-    x.shadowBlur=0;
+    /* 4-nov (Marc): sin contorno ni sombra; el color lo elige el cliente */
+    x.fillStyle = frontInk(p);
+    drawLines(x, fit.lines, px, py, sz*1.18, false);
   }
   if(FRONT_TEXT && p.frontDate && p.frontDate.trim()){
-    drawDateCorner(x, p.frontDate.trim(), fontCss(p.frontFont, 30*scl), W, 26*scl, '#fff', 'rgba(0,0,0,.55)');
+    drawDateCorner(x, p.frontDate.trim(), fontCss(p.frontFont, 30*scl), W, 26*scl, frontInk(p), null);
+  }
+  if(p.frontDeco){
+    const im = decoImg(p.frontDeco, frontInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyFrontTexture(i); });
+    if(im){
+      const t = Math.min(W, H) * (p.frontDecoSize || 16) / 100, cy = H * ({ top:.16, mid:.5, bottom:.84 }[p.frontDecoPos || 'bottom']);
+      x.drawImage(im, W/2 - t/2, cy - t/2, t, t);
+    }
   }
   return c;
 }
@@ -1999,7 +2009,7 @@ function applyFrontTexture(idx){
   p.frontMat.map = tex; p.frontMat.needsUpdate = true;
   if(old && old!==tex) old.dispose();
   // miniatura solo con foto (o texto): un hueco vacío enseña el icono de cámara
-  if(p.srcImg || (p.frontText && p.frontText.trim()) || (p.frontDate && p.frontDate.trim())){ try{ p.thumb = c.toDataURL('image/jpeg', 0.82); }catch(e){ p.thumb = null; } } else p.thumb = null;
+  if(p.srcImg || p.frontDeco || (p.frontText && p.frontText.trim()) || (p.frontDate && p.frontDate.trim())){ try{ p.thumb = c.toDataURL('image/jpeg', 0.82); }catch(e){ p.thumb = null; } } else p.thumb = null;
   renderThumbs(); dirty3D = true;
 }
 
@@ -2012,7 +2022,8 @@ function applyPhoto(idx, img, silent){
 function buildBackCanvas(p, W, H){
   const hasText = p.ptype !== 'nevera' && p.backText && p.backText.trim();
   const hasDate = p.backDate && p.backDate.trim();
-  if(!hasText && !hasDate) return null;
+  const hasDeco = p.ptype !== 'nevera' && p.backDeco;
+  if(!hasText && !hasDate && !hasDeco) return null;
   W = W || texW(p); H = H || texH(p);
   const scl=W/texW(p);
   const c = document.createElement('canvas'); c.width=W; c.height=H;
@@ -2029,11 +2040,21 @@ function buildBackCanvas(p, W, H){
     x.font = fontCss(p.backFont, sz);
     /* 12-oct: sin contorno blanco alrededor de las letras. La imprenta no imprime blanco, así
        que el contorno no saldría y lo que se ve aquí no sería lo que llega. Tinta sólida. */
-    x.fillStyle='#262628';
+    x.fillStyle = backInk(p);
     drawLines(x, fit.lines, W/2, (z.y0+z.y1)/2, sz*1.3, false);
   }
   if(hasDate){
-    drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, '#262628', null);
+    drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, backInk(p), null);
+  }
+  if(hasDeco){
+    /* el imán va en el centro: el dibujo va en la franja libre (con frase, la contraria a la frase) */
+    const im = decoImg(p.backDeco, backInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
+    if(im){
+      const zona = hasText ? ((p.backZone || 'bottom') === 'top' ? 'bottom' : 'top') : (p.backZone || 'bottom');
+      const z = backZoneBox(Object.assign({}, p, { backZone: zona }), W, H, hasDate ? 40*scl : 0);
+      const t = Math.min(z.x1 - z.x0, z.y1 - z.y0) * (p.backDecoSize || 90) / 100;
+      x.drawImage(im, W/2 - t/2, (z.y0 + z.y1)/2 - t/2, t, t);
+    }
   }
   return c;
 }
@@ -2057,6 +2078,81 @@ function applyBackText(idx){
   plane.position.z = backPlaneZ(p); plane.rotation.y = Math.PI; plane.renderOrder = 20;
   p.mesh.add(plane); p.backPlane = plane;
 }
+
+/* ═══════════ COLOR Y DIBUJOS DEL TEXTO (4-nov) ═══════════
+   Delante vale cualquier color, también blanco. Detrás el dorso es plateado: el blanco y los colores muy
+   claros no se leerían, así que no se dejan elegir. Los dibujos (dibujos.js) van del color del texto. */
+const INK_FRONT = '#1a1a1a', INK_BACK = '#262628';
+const frontInk = p => p.frontColor || INK_FRONT;
+const backInk  = p => p.backColor  || INK_BACK;
+const INKS = { front: ['#1a1a1a', '#ffffff', '#c2582c', '#b8893b', '#8e2f3c', '#1f3a5f', '#3f6b4f'],
+               back:  ['#262628', '#c2582c', '#8a6a2a', '#8e2f3c', '#1f3a5f', '#3f6b4f'] };
+function inkLuma(h){ const n = parseInt(h.slice(1), 16); return (0.299*(n>>16 & 255) + 0.587*(n>>8 & 255) + 0.114*(n & 255)) / 255; }
+const DIBUJOS = window.MOMENTURIES_DIBUJOS || [];
+const DECO_CACHE = {};
+function decoEntry(id, color){
+  const d = DIBUJOS.find(x => x.id === id); if(!d) return null;
+  const k = id + '|' + color; let e = DECO_CACHE[k];
+  if(!e){
+    e = DECO_CACHE[k] = { img:new Image(), ok:false, cbs:[] };
+    e.ready = new Promise(res => {
+      e.img.onload = () => { e.ok = true; res(); e.cbs.splice(0).forEach(f => f()); };
+      e.img.onerror = () => res();
+    });
+    const svg = d.svg.replace('<svg ', '<svg width="1024" height="1024" ').replace(/currentColor/g, color);
+    e.img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  return e;
+}
+function decoImg(id, color, cb){
+  const e = decoEntry(id, color); if(!e) return null;
+  if(e.ok) return e.img;
+  if(cb) e.cbs.push(cb);
+  return null;
+}
+/* antes de generar el archivo de imprenta: que los dibujos ya estén cargados */
+async function decoReady(p){
+  const a = p.frontDeco && decoEntry(p.frontDeco, frontInk(p)), b = p.backDeco && decoEntry(p.backDeco, backInk(p));
+  await Promise.all([a && a.ready, b && b.ready]);
+}
+const decoOpen = { front:false, back:false };
+function txtRepaint(side){ const i = selected; if(side === 'front') applyFrontTexture(i); else applyBackText(i); }
+function renderInk(side){
+  const box = document.getElementById(side + 'Ink'), p = POSTERS[selected]; if(!box || !p) return;
+  const cur = side === 'front' ? frontInk(p) : backInk(p), lista = INKS[side];
+  box.innerHTML = '<span class="ink-lbl"><span class="es">Color</span><span class="en">Colour</span></span>'
+    + lista.map(c => '<button type="button" class="ink' + (c === cur ? ' on' : '') + '" data-c="' + c + '" style="background:' + c + '" aria-label="Color ' + c + '"></button>').join('')
+    + '<label class="ink ink-any' + (lista.includes(cur) ? '' : ' on') + '" title="Otro color"><input type="color" value="' + cur + '" aria-label="Otro color"></label>';
+  const poner = c => {
+    if(side === 'back' && inkLuma(c) > .72){ toast('Por detrás el fondo es plateado: elige un color más oscuro'); renderInk(side); return; }
+    p[side + 'Color'] = c; renderInk(side); renderDeco(side); txtRepaint(side);
+  };
+  box.querySelectorAll('button.ink').forEach(b => b.onclick = () => poner(b.dataset.c));
+  box.querySelector('input').addEventListener('change', e => poner(e.target.value));
+}
+function renderDeco(side){
+  const box = document.getElementById(side + 'DecoBox'), p = POSTERS[selected]; if(!box || !p) return;
+  if(!DIBUJOS.length){ box.hidden = true; return; }
+  const k = side + 'Deco', cur = p[k] || '', d = DIBUJOS.find(x => x.id === cur);
+  const ink = side === 'front' ? frontInk(p) : backInk(p);
+  let h = '<button type="button" class="deco-toggle">' + (d ? '<span class="deco-ic" style="color:' + (inkLuma(ink) > .9 ? '#999' : ink) + '">' + d.svg + '</span>' + d.es : '<span class="es">Añadir un dibujo</span><span class="en">Add a drawing</span>') + '<i>' + (decoOpen[side] ? '−' : '+') + '</i></button>';
+  if(decoOpen[side]) h += '<div class="deco-grid"><button type="button" class="deco-b deco-none' + (cur ? '' : ' on') + '" data-d=""><span class="es">Sin dibujo</span><span class="en">None</span></button>'
+    + DIBUJOS.map(x => '<button type="button" class="deco-b' + (x.id === cur ? ' on' : '') + '" data-d="' + x.id + '" title="' + x.es + '">' + x.svg + '</button>').join('') + '</div>';
+  if(cur){
+    h += '<div class="deco-ctrl">';
+    if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + ((p.frontDecoPos || 'bottom') === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
+    const lim = side === 'front' ? [8, 45, p.frontDecoSize || 16] : [50, 100, p.backDecoSize || 90];
+    h += '<label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span><input type="range" min="' + lim[0] + '" max="' + lim[1] + '" step="1" value="' + lim[2] + '"></label></div>';
+    if(side === 'back') h += '<p class="txt-hint"><span class="es">Va en la franja libre, porque en el centro está el imán.</span><span class="en">It goes in the free strip: the magnet sits in the middle.</span></p>';
+  }
+  box.innerHTML = h;
+  box.querySelector('.deco-toggle').onclick = () => { decoOpen[side] = !decoOpen[side]; renderDeco(side); };
+  box.querySelectorAll('.deco-b').forEach(b => b.onclick = () => { p[k] = b.dataset.d; decoOpen[side] = false; renderDeco(side); txtRepaint(side); });
+  box.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { p.frontDecoPos = b.dataset.pos; renderDeco(side); txtRepaint(side); });
+  const r = box.querySelector('input[type=range]');
+  if(r) r.addEventListener('input', () => { p[k + 'Size'] = +r.value; txtRepaint(side); });
+}
+function renderTxtExtras(){ ['front','back'].forEach(s => { renderInk(s); renderDeco(s); }); }
 
 /* ═══════════ THUMBS ═══════════ */
 const thumbsEl = document.getElementById('pvThumbs');
@@ -2348,6 +2444,7 @@ async function originalBlob(p){
 /* imágenes finales de impresión (a PRINT_DPI, no al tamaño reducido del visor 3D), la original
    y la dedicatoria, subidas a la vez */
 async function uploadPosterArt(p){
+  await decoReady(p);
   const t = Date.now();
   const print = buildPrintCanvas(p);
   const frontBlob = await jpgConDpi(await canvasToBlob(print.canvas, 0.95), print.dpi);
@@ -2430,6 +2527,8 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
+    if(p.frontDeco) attributes.push({key:'Dibujo (frontal)', value:p.frontDeco});
+    if(p.backDeco && p.ptype !== 'nevera') attributes.push({key:'Dibujo (dorso)', value:p.backDeco});
     if(p.frontDate && p.frontDate.trim()) attributes.push({key:'Fecha (frontal)', value:p.frontDate.trim()});
     if(p.ptype !== 'nevera' && p.backText && p.backText.trim()) attributes.push({key:'Dedicatoria (dorso)', value:p.backText.trim()});
     if(p.backDate && p.backDate.trim()) attributes.push({key:'Fecha (dorso)', value:p.backDate.trim()});
@@ -3064,7 +3163,7 @@ function syncConfigUI(){
   syncBackZoneUI();
   if(!p.frontFont) p.frontFont = FONT_DEFAULT;
   if(!p.backFont)  p.backFont  = FONT_DEFAULT;
-  frontFontDD.render(); backFontDD.render();
+  frontFontDD.render(); backFontDD.render(); renderTxtExtras();
   document.getElementById('edpCrop').style.display = p.srcImg ? 'block' : 'none';
   renderPtypes(); renderFormats(); renderSizes(); renderMounts(); syncPanelHead();
   if(hangerModalEl && hangerModalEl.classList.contains('open')) renderHangerChips();
@@ -3423,9 +3522,11 @@ function scheduleSave(){
 async function saveDesign(){
   const st = store(); if(!st) return;
   try{
-    const items = POSTERS.filter(p => p.srcImg || p.frontText || p.backText || p.frontDate || p.backDate).map(p => ({
+    const items = POSTERS.filter(p => p.srcImg || p.frontText || p.backText || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
+      frontColor:p.frontColor, frontDeco:p.frontDeco, frontDecoPos:p.frontDecoPos, frontDecoSize:p.frontDecoSize,
+      backColor:p.backColor, backDeco:p.backDeco, backDecoSize:p.backDecoSize,
       frontText:p.frontText, frontX:p.frontX, frontY:p.frontY, frontSize:p.frontSize, frontFont:p.frontFont, frontDate:p.frontDate,
       backText:p.backText, backX:p.backX, backY:p.backY, backSize:p.backSize, backFont:p.backFont, backDate:p.backDate,
       backZone:p.backZone, backMax:p.backMax,
@@ -3484,6 +3585,8 @@ async function restoreDesign(saved){
         applyProductSize(p, pickSize(list, list.some(s => s.k === it.sizeKey) ? it.sizeKey : (pr.formats ? SIZE_DEFAULT : pr.def)), fmt);
       } else if(PRODUCTS.metal.mounts.includes(it.mount)) p.mount = it.mount;
       Object.assign(p, {
+        frontColor:it.frontColor, frontDeco:it.frontDeco||'', frontDecoPos:it.frontDecoPos, frontDecoSize:it.frontDecoSize,
+        backColor:it.backColor, backDeco:it.backDeco||'', backDecoSize:it.backDecoSize,
         frontText:FRONT_TEXT ? it.frontText||'' : '', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:FRONT_TEXT ? it.frontDate||'' : '',
         backText:it.backText||'',  backX:it.backX,  backY:it.backY,  backSize:it.backSize,  backFont:it.backFont||FONT_DEFAULT,  backDate:it.backDate||'',
         // los guardados antes del 30-oct no tienen franja: se saca de dónde estaba (encima o debajo de la mitad)
