@@ -667,3 +667,15 @@ html.ed-locked #ptypeLabel{display:none}
 .two-row .txt-input{flex:1;margin:0}
 .two-x{flex:none;width:30px;height:30px;border:1.5px solid var(--gray2);border-radius:50%;background:#fff;cursor:pointer;font-size:11px}
 .zone-tab:disabled{opacity:.35;cursor:not-allowed}
+
+/* 4-nov · escribiendo en el móvil: solo el cuadro y la barra encima del teclado */
+.type-ok{flex:none;height:44px;padding:0 18px;border:0;border-radius:10px;background:var(--black);color:#fff;font:700 15px var(--font-sans);cursor:pointer}
+@media(max-width:720px){
+  .txt-input,.txt-area,.txt-date{font-size:16px}   /* con menos, el iPhone hace zoom a la página y se pierde el cuadro */
+  .editor.ed-typing .ed-top,.editor.ed-typing .ed-tools,.editor.ed-typing .ed-bottom{display:none!important}
+  .editor.ed-typing .ed-panel{position:fixed;left:0;right:0;bottom:auto;max-height:none;overflow:visible;border-radius:14px 14px 0 0;padding:10px 12px;box-shadow:0 -6px 24px rgba(0,0,0,.14)}
+  .editor.ed-typing .ed-panel>:not(.typing-path),
+  .editor.ed-typing .ed-panel .typing-path>:not(.typing-path):not(.type-ok){display:none!important}
+  .editor.ed-typing .ed-panel .typing-path:has(>.type-ok){display:flex;gap:8px;align-items:center}
+  .editor.ed-typing .ed-panel .typing-path:has(>.type-ok)>input,.editor.ed-typing .ed-panel .typing-path:has(>.type-ok)>textarea{flex:1;min-width:0;margin:0}
+}

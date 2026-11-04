@@ -672,6 +672,7 @@ let selected = 0, panelOpen = false, dirty3D = true;
    Con entorno no gira la escena: el cuadro se despega de la pared, se acerca y se da la vuelta
    él solo (showcasePose). FIT = el último encuadre de layout(), para saber dónde acercarlo. */
 let FACE_BACK = false, FIT = null;
+let TYPING = false, TYPING_BAR = false;   // 4-nov: escribiendo una frase; _BAR = en móvil, solo la barra sobre el teclado
 
 /* Momenturies Diferentes Formatos: cada póster tiene su PROPIA proporción real (cuadrado,
    clásico 2:3 o retrato 3:4 — ver FORMATS más abajo, junto a PRODUCTS), no una única forma
@@ -1379,27 +1380,57 @@ function applySelection(){
     /* dorso con entorno: primero se despega y se acerca, luego gira; al volver, al revés
        (gira de cara y después vuelve a su sitio en la pared). Así nunca atraviesa la pared. */
     const flip = !!(on && FACE_BACK && ROOM_CFG.mode !== 'none' && FIT);
-    if(flip){ t = showcasePose(p, sc); z = t.z; }
+    const show = !!(on && FIT && (flip || TYPING));
+    p.showing = show;
+    if(show){ t = showcasePose(p, sc); z = t.z; }
     if(p.flipA == null){ p.flipA = 0; p.shadowK = 1; }   // gsap solo anima propiedades que ya existen
     const turned = p.flipA > 0.01;
     gsap.to(p.rig.position, { x:t.x, y:t.y, z, duration:.45, delay: !flip && turned ? .55 : 0, ease:'power2.inOut', overwrite:'auto', onUpdate:()=>{dirty3D=true;} });
     gsap.to(p.rig.scale,    { x:sc, y:sc, z:1, duration:.4, ease:'power2.out', onUpdate:()=>{dirty3D=true;} });
     gsap.killTweensOf(p, 'flipA,shadowK');
     gsap.to(p, { flipA: flip ? Math.PI : 0, duration:.75, delay: flip ? .3 : 0, ease:'power2.inOut', onUpdate:()=>{dirty3D=true;} });
-    gsap.to(p, { shadowK: flip ? 0 : 1, duration:.25, delay: flip ? 0 : (turned ? .9 : 0), onUpdate:()=>{dirty3D=true;} });
+    gsap.to(p, { shadowK: show ? 0 : 1, duration:.25, delay: show ? 0 : (turned ? .9 : 0), onUpdate:()=>{dirty3D=true;} });
+    if(p.faceK == null) p.faceK = 0;
+    gsap.killTweensOf(p, 'faceK');
+    gsap.to(p, { faceK: show ? 1 : 0, duration:.45, delay: !show && turned ? .55 : 0, ease:'power2.inOut', onUpdate:()=>{dirty3D=true;} });
   });
 }
 
 /* dónde se pone el cuadro para enseñar el dorso con entorno: en el centro del hueco libre del
    visor, a ~3/4 de su alto, y siempre lo bastante separado de la pared para girar sin tocarla */
-function showcasePose(p, sc){
-  const Z = tZ, zr = Z / BASEZ, s = FIT.s;
+const _showE = new THREE.Euler(), _showV = new THREE.Vector3(), _showQ = new THREE.Quaternion(), _showF = new THREE.Quaternion(), _showY = new THREE.Vector3(0, 1, 0);
+/* 4-nov: el hueco que deja libre el teclado en el móvil, en unidades del visor */
+function showFrame(){
+  if(!TYPING_BAR) return { cx:FIT.cx, cy:FIT.cy, W:FIT.usableW, H:FIT.usableH };
+  const hpx = stage.clientHeight || 1, top = stage.getBoundingClientRect().top, vv = window.visualViewport;
+  const y0 = (vv ? vv.offsetTop : 0) - top + 8, y1 = (vv ? vv.offsetTop + vv.height : innerHeight) - top - panelEl.offsetHeight - 8;
+  return { cx:0, cy:FIT.visH*(.5 - (y0 + y1)/2/hpx), W:FIT.visW*.96, H:FIT.visH*Math.max(.15, (y1 - y0)/hpx) };
+}
+/* ahora = la cámara de este momento (cada fotograma); si no, a la que va */
+function showcasePose(p, sc, ahora){
+  const Z = ahora ? cZ : tZ, zr = Z / BASEZ, s = FIT.s, F = showFrame();
   const W0 = baseW(p)*sc*s, H0 = baseH(p)*sc*s;
-  const want = Math.min(FIT.usableH*0.74, FIT.usableW*0.80 * H0/W0);     // alto en pantalla (unidades a BASEZ)
+  const want = Math.min(F.H*(TYPING ? .92 : .74), F.W*(TYPING ? .92 : .80) * H0/W0);     // alto en pantalla (unidades a BASEZ)
   let zW = Z - H0*BASEZ/want;
   zW = Math.min(Math.max(zW, s*(baseW(p)*sc/2 + 0.12)), Z*0.8);
-  const xW = FIT.cx/BASEZ*(Z - zW), yW = FIT.cy/BASEZ*(Z - zW);
-  return { x:(xW - FIT.px*zr)/s, y:(yW - FIT.py*zr)/s, z:zW/s };
+  const xW = F.cx/BASEZ*(Z - zW), yW = F.cy/BASEZ*(Z - zW);
+  const gx = FIT.px*zr, gy = FIT.py*zr;
+  if(ROOM_CFG.mode === 'none') return { x:(xW - gx)/s, y:(yW - gy)/s, z:zW/s };
+  /* con entorno gira la habitación, así que el punto delante de la cámara se pasa a lo que ve la habitación: el
+     cuadro va a donde esté la cámara, no al frente con el que se empezó */
+  const gz = group.position.z;
+  _showE.set(ahora ? cRx : tRx, ahora ? cRy : tRy, 0, 'XYZ');
+  _showQ.setFromEuler(_showE).invert();
+  _showV.set(xW, yW, zW + gz).applyQuaternion(_showQ);
+  return { x:(_showV.x - gx)/s, y:(_showV.y - gy)/s, z:(_showV.z - gz)/s };
+}
+/* el cuadro que se enseña mira a la cámara aunque la habitación esté girada */
+function faceCamera(p){
+  const k = p.faceK || 0;
+  _showE.set(-cRx*k, -cRy*k, 0, 'YXZ');
+  _showQ.setFromEuler(_showE);
+  _showF.setFromAxisAngle(_showY, p.flipA || 0);
+  p.rig.quaternion.copy(_showQ).multiply(_showF);
 }
 
 /* Delante / Detrás del cuadro que se edita. Sin entorno gira todo, como siempre (y se acerca
@@ -1776,7 +1807,11 @@ function animate(){
   if(orbit){ orbitPivot.rotation.y=cRy; orbitPivot.rotation.x=cRx; }
   else     { orbitPivot.rotation.y=0;   orbitPivot.rotation.x=0;   }
   POSTERS.forEach(p=>{
-    p.rig.rotation.y=(orbit?0:cRy)+(p.flipA||0); p.rig.rotation.x=orbit?0:cRx; updateMountAnim(p);
+    if(orbit && p.faceK > 0){
+      faceCamera(p);
+      if(p.showing && p.faceK >= 1 && FIT){ const b = p.sizeScale || 1, t = showcasePose(p, b*1.05, true); p.rig.position.set(t.x, t.y, t.z); }
+    } else { p.rig.rotation.y=(orbit?0:cRy)+(p.flipA||0); p.rig.rotation.x=orbit?0:cRx; }
+    updateMountAnim(p);
     if(p.shadow) p.shadow.material.opacity = .5*(p.shadowK ?? 1);   // despegado de la pared, sin sombra
     applyFlatGloss(p);
   });
@@ -2812,7 +2847,7 @@ function renderFormats(){
     return;
   }
   if(lbl) lbl.innerHTML='<span class="es">Formato</span><span class="en">Format</span>';
-  if(!pr.formats){ box.innerHTML=''; box.hidden=true; if(lbl) lbl.hidden=true; return; }
+  if(!pr.formats || wallMixed(WALL)){ box.innerHTML=''; box.hidden=true; if(lbl) lbl.hidden=true; return; }
   if(lbl) lbl.hidden=false; box.hidden=false;
   box.innerHTML='';
   FORMAT_ORDER.forEach(fid=>{
@@ -2987,7 +3022,7 @@ function renderCropFormats(){
     sizeAsFormatChips(box, p, ()=>{ renderCropFormats(); drawCropPreview(); syncPanelHead(); updateTotal(); applyMountVisual(p); });
     return;
   }
-  if(!pr.formats){ box.innerHTML=''; box.hidden=true; sbox.innerHTML=''; sbox.hidden=true; return; }
+  if(!pr.formats || wallMixed(WALL)){ box.innerHTML=''; box.hidden=true; sbox.innerHTML=''; sbox.hidden=true; return; }
   box.hidden=false; sbox.hidden=false;
   box.innerHTML='';
   FORMAT_ORDER.forEach(fid=>{
@@ -3125,6 +3160,44 @@ backSizeRange.addEventListener('focus', () => setFace(true));
 [backInput,backDateInput].forEach(el=>el.addEventListener('blur',()=>{ zoomForBack(false); }));
 document.querySelectorAll('#faceTabs [data-face]').forEach(b => b.addEventListener('click', () => setFace(b.dataset.face === 'back')));
 
+/* 4-nov · Al escribir, el cuadro se acerca y se ve entero. En el móvil se quita todo: solo el cuadro y, justo encima
+   del teclado, la barra donde se escribe con su OK (visualViewport dice cuánto queda libre). */
+const TXT_CAMPOS = '.txt-input,.txt-area,.txt-date';
+const typeOk = document.createElement('button');
+typeOk.type = 'button'; typeOk.className = 'type-ok'; typeOk.textContent = 'OK';
+typeOk.addEventListener('pointerdown', e => e.preventDefault());   // que no se pierda el foco antes del clic
+typeOk.addEventListener('click', () => { const a = document.activeElement; if(a && a.blur) a.blur(); });
+function colocaBarra(){
+  if(!TYPING_BAR) return;
+  const vv = window.visualViewport, abajo = vv ? vv.offsetTop + vv.height : innerHeight;
+  panelEl.style.top = Math.max(0, abajo - panelEl.offsetHeight) + 'px';
+  applySelection(); dirty3D = true;
+}
+function typingOn(el){
+  TYPING = true;
+  TYPING_BAR = isMobileView();
+  if(TYPING_BAR){
+    panelEl.querySelectorAll('.typing-path').forEach(n => n.classList.remove('typing-path'));
+    for(let n = el; n && n !== panelEl; n = n.parentElement) n.classList.add('typing-path');
+    el.after(typeOk);
+    editorRootEl.classList.add('ed-typing');
+    colocaBarra();
+    setTimeout(colocaBarra, 350);   // el teclado tarda en salir
+  }
+  applySelection(); dirty3D = true;
+}
+function typingOff(){
+  if(!TYPING) return;
+  TYPING = false; TYPING_BAR = false;
+  editorRootEl.classList.remove('ed-typing'); panelEl.style.top = '';
+  typeOk.remove();
+  panelEl.querySelectorAll('.typing-path').forEach(n => n.classList.remove('typing-path'));
+  applySelection(); dirty3D = true;
+}
+panelEl.addEventListener('focusin', e => { if(e.target.matches(TXT_CAMPOS)) typingOn(e.target); });
+panelEl.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if(!a || !a.matches || !a.matches(TXT_CAMPOS)) typingOff(); }, 60));
+if(window.visualViewport){ visualViewport.addEventListener('resize', colocaBarra); visualViewport.addEventListener('scroll', colocaBarra); }
+
 /* Selector de tipografía: un botón + lista, sin <select> nativo porque no deja pintar
    cada opción con su propia fuente de forma fiable en todos los navegadores. Cada opción
    se escribe con LO QUE EL CLIENTE YA HA PUESTO en ese campo (o un ejemplo si aún no ha
@@ -3219,6 +3292,10 @@ function syncPanelHead(){
     wn.hidden = !WALL;
     if(WALL) wn.innerHTML = WALL.fridge
       ? '<span class="es">Imán <b>' + p.sizeKey + '</b> fijado por el conjunto «' + WALL.name + '». Para otra medida, cambia de conjunto.</span><span class="en">Magnet size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” set. Pick another set for a different size.</span>'
+      : wallMixed(WALL)
+      ? (wallScales(WALL).length > 1
+        ? '<span class="es">Este conjunto mezcla tamaños: no se cambia el formato. Súbelo o bájalo entero arriba, en <b>Tamaño</b>.</span><span class="en">This set mixes sizes, so the format stays. Scale the whole set up top, under <b>Size</b>.</span>'
+        : '<span class="es">Este conjunto mezcla tamaños y ya va de la talla más pequeña a la más grande: solo existe en esta medida.</span><span class="en">This set already runs from the smallest size to the largest, so it only comes in this size.</span>')
       : wallSizes(WALL).length > 1
       ? '<span class="es">En un conjunto todos los cuadros van a la misma medida. Cámbiala arriba, en <b>Tamaño</b>.</span><span class="en">In a set every print is the same size. Change it up top, under <b>Size</b>.</span>'
       : '<span class="es">Talla <b>' + p.sizeKey + '</b> fijada por la pared «' + WALL.name + '». Para otra medida, cambia de pared.</span><span class="en">Size <b>' + p.sizeKey + '</b> is set by the “' + WALL.name + '” wall. Pick another wall for a different size.</span>';
@@ -5861,6 +5938,10 @@ const wallSizeKeys = window.MOMENTURIES_wallSizeKeys || (() => []);
 const HUECOS = window.MOMENTURIES_HUECOS || [];
 const huecoOf = window.MOMENTURIES_huecoOf || (() => '');
 function wallKOf(w){ return w.vk || w.pieces[0].size; }
+/* 4-nov: conjunto que mezcla tallas: no se cambia el formato, todos suben o bajan a la vez y la figura se mantiene */
+function wallMixed(w){ return !!w && !w.fridge && !wallSizeKeys(w).length; }
+function wallScales(w){ return (window.MOMENTURIES_wallSteps ? window.MOMENTURIES_wallSteps(w) : []).map(d => d ? wallAt(w, (d > 0 ? '+' : '') + d) : (w.base || w)); }
+const wallCm = w => cm(w.width) + '×' + cm(w.height);
 function wallSizes(w){ return w.fridge ? [] : wallSizeKeys(w).map(k => wallAt(w, k)); }     // [] si mezcla tallas (o es de nevera)
 function wallPieceDims(w){ const d = FORMATS[w.pieces[0].format].sizes.find(s => s.k === wallKOf(w)).d; return cm(d[0]) + ' × ' + cm(d[1]); }
 /* la talla pedida (o la suya) si hay existencias, y si no la más cercana que tenga · qué versión
@@ -5872,7 +5953,7 @@ function setWallSize(k){
   const v = wallAt(WALL, k);
   if(!wallInStock(v)) return;
   applyWall(v, {quiet:true, keepRoom:true, sizeChange:true});
-  toast('Cuadros de ' + wallPieceDims(v) + ' cm. El conjunto ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm');
+  toast((wallMixed(v) ? 'Todos los cuadros cambian a la vez. ' : 'Cuadros de ' + wallPieceDims(v) + ' cm. ') + 'El conjunto ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm');
 }
 const wallSoldOutTag = '<em class="wall-soldout"><span class="es">Sin existencias</span><span class="en">Out of stock</span></em>';
 
@@ -6153,7 +6234,7 @@ function syncTools(){
   const rx = document.getElementById('btnRoomFree'); if(rx) rx.hidden = ROOM_CFG.mode === 'none';
   const ts = document.getElementById('toolSize');
   if(ts){
-    const vs = WALL ? wallSizes(WALL) : [];
+    const mixto = wallMixed(WALL), vs = !WALL ? [] : mixto ? wallScales(WALL) : wallSizes(WALL);
     ts.hidden = vs.length < 2;
     editorRootEl.classList.toggle('ed-sized', vs.length > 1);
     if(vs.length > 1){
@@ -6161,7 +6242,7 @@ function syncTools(){
       const seg = document.getElementById('edSizeSeg'); seg.innerHTML = '';
       vs.forEach(v => {
         const b = document.createElement('button'), ok = wallInStock(v);
-        b.type = 'button'; b.textContent = wallPieceDims(v).replace(/ /g, '');
+        b.type = 'button'; b.textContent = mixto ? wallCm(v) : wallPieceDims(v).replace(/ /g, '');
         if(wallKOf(v) === wallKOf(WALL)) b.className = 'active';
         if(!ok){ b.disabled = true; b.title = 'Sin existencias'; }
         else b.title = 'Ocupa ' + cm(v.width) + ' × ' + cm(v.height) + ' cm · ' + wallPrice(v).toFixed(2).replace('.', ',') + ' €';

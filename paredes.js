@@ -35,10 +35,63 @@ window.MOMENTURIES_wallSizeKeys = function(w){
   for(var i = 1; i < w.pieces.length; i++) if(w.pieces[i].format !== f || w.pieces[i].size !== s) return [];
   return Object.keys(window.MOMENTURIES_FORMAT_SIZES[f]);
 };
+/* 4-nov: los conjuntos que mezclan tallas no cambian de formato: suben o bajan todos a la vez un
+   escalón de su talla (+1, -1…) y la figura se mantiene. Pasos posibles, de menor a mayor. */
+window.MOMENTURIES_wallSteps = function(w){
+  var base = w.base || w, FS = window.MOMENTURIES_FORMAT_SIZES;
+  if(window.MOMENTURIES_wallSizeKeys(base).length) return [];
+  var lo = -9, hi = 9;   // -0 no molesta: se trata como 0
+  base.pieces.forEach(function(pc){
+    var ks = Object.keys(FS[pc.format]), i = ks.indexOf(pc.size);
+    lo = Math.max(lo, -i); hi = Math.min(hi, ks.length - 1 - i);
+  });
+  var out = []; for(var d = lo; d <= hi; d++) out.push(d);
+  return out;
+};
+function wallStepAt(base, k){
+  var FS = window.MOMENTURIES_FORMAT_SIZES, SI = window.MOMENTURIES_SIZE_INFO, d = parseInt(k, 10), g = base.gap || 3;
+  if(window.MOMENTURIES_wallSteps(base).indexOf(d) < 0) return base;
+  var dims = function(f, s, o){ return o === 'h' ? [FS[f][s][1], FS[f][s][0]] : FS[f][s]; }, rx = 0, ry = 0;
+  var ps = base.pieces.map(function(pc){
+    var ks = Object.keys(FS[pc.format]), s = ks[ks.indexOf(pc.size) + d], a = dims(pc.format, s, pc.orient);
+    rx = Math.max(rx, (a[0] + g) / (pc.w + g)); ry = Math.max(ry, (a[1] + g) / (pc.h + g));
+    return { pc:pc, size:s, w:a[0], h:a[1] };
+  });
+  /* separación mínima que ya tenía el conjunto: se aprieta hasta ahí para que la figura no se abra */
+  var hueco = function(a, b, ax, ay, bx, by){ return Math.max(Math.max(bx - b.w/2 - (ax + a.w/2), ax - a.w/2 - (bx + b.w/2)), Math.max(by - b.h/2 - (ay + a.h/2), ay - a.h/2 - (by + b.h/2))); };
+  var G = g, i, j, A, B;
+  for(i = 0; i < ps.length; i++) for(j = i + 1; j < ps.length; j++){ A = ps[i].pc; B = ps[j].pc;
+    G = Math.min(G, hueco(A, B, A.x + A.w/2, A.y + A.h/2, B.x + B.w/2, B.y + B.h/2)); }
+  var cabe = function(sx, sy){
+    for(var i = 0; i < ps.length; i++) for(var j = i + 1; j < ps.length; j++){
+      var a = ps[i], b = ps[j];
+      if(hueco(a, b, (a.pc.x + a.pc.w/2)*sx, (a.pc.y + a.pc.h/2)*sy, (b.pc.x + b.pc.w/2)*sx, (b.pc.y + b.pc.h/2)*sy) < G - .01) return false;
+    }
+    return true;
+  };
+  var ajusta = function(tope, prueba){ for(var r = .3; r < tope; r += .01) if(prueba(r)) return r; return tope; };
+  ry = ajusta(ry, function(r){ return cabe(rx, r); });
+  rx = ajusta(rx, function(r){ return cabe(r, ry); });
+  var out = {}; for(var key in base) out[key] = base[key];
+  out.base = base; out.vk = k; out.price = 0; out.soldOut = false; out.counts = {};
+  var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  out.pieces = ps.map(function(q){
+    var pc = q.pc, n = { format:pc.format, size:q.size, orient:pc.orient, x:(pc.x + pc.w/2)*rx - q.w/2, y:(pc.y + pc.h/2)*ry - q.h/2, w:q.w, h:q.h };
+    var info = SI[pc.format][q.size], c = { cuadrado:'C', clasico:'K', retrato:'R' }[pc.format] + q.size;
+    out.counts[c] = (out.counts[c] || 0) + 1; out.price += info.price; if(!info.stock) out.soldOut = true;
+    x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x + n.w); y1 = Math.max(y1, n.y + n.h);
+    return n;
+  });
+  out.pieces.forEach(function(pc){ pc.x = Math.round((pc.x - x0)*100)/100; pc.y = Math.round((pc.y - y0)*100)/100; });
+  out.width = Math.round((x1 - x0)*10)/10; out.height = Math.round((y1 - y0)*10)/10;
+  out.price = Math.round(out.price*100)/100;
+  return out;
+}
 /* el conjunto w en la talla k: mismo id y nombre, piezas y medidas recalculadas.
    Lleva .base (el original) y .vk (la talla). Si k no vale, devuelve el original. */
 window.MOMENTURIES_wallAt = function(w, k){
   var base = w.base || w, f = base.pieces[0].format, s = base.pieces[0].size;
+  if(/^[+-]\d+$/.test(k)) return wallStepAt(base, k);
   if(!k || k === s || window.MOMENTURIES_wallSizeKeys(base).indexOf(k) < 0) return base;
   var FS = window.MOMENTURIES_FORMAT_SIZES[f], INFO = window.MOMENTURIES_SIZE_INFO[f][k];
   /* los centros se mueven en cada eje lo que crece un cuadro + su separación, así el hueco entre
