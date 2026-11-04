@@ -58,7 +58,7 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
   }, { threshold:.3 }).observe(hx);
   ir(0);
   /* móvil: el hero entero (foto, texto y botón) cabe en la pantalla sin bajar.
-     La foto va entera; si el texto no cabe debajo, se encoge un poco (--k) hasta que quepa */
+     Si el texto no cabe debajo de la foto, se encoge un poco (--k) hasta que quepa */
   const movil = matchMedia('(max-width:860px)');
   let ancho = 0, alto = 0;
   function encajar(){

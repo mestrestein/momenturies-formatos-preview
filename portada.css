@@ -4,13 +4,13 @@
 :root{--terra:#c2613a;--serif:var(--font-serif);--sans:var(--font-sans);--ease2:cubic-bezier(.65,0,.35,1)}
 
 /* ═════ HERO EN CARRUSEL: cinco ángulos, cada uno con su imagen, su texto y su botón ═════ */
-.hx{position:relative;padding:0;display:grid;grid-template-columns:minmax(0,.56fr) minmax(0,1.44fr);height:clamp(600px,calc(100svh - 96px),880px);background:#f6f1ea;overflow:hidden}
-.hx-copy{position:relative;display:flex;flex-direction:column;justify-content:center;padding:44px 36px 84px max(32px,calc((100vw - 1560px)/2 + 32px))}
+.hx{position:relative;padding:0;display:grid;grid-template-columns:minmax(0,.74fr) minmax(0,1.26fr);height:clamp(560px,calc(100svh - 96px),820px);background:#f6f1ea;overflow:hidden}
+.hx-copy{position:relative;display:flex;flex-direction:column;justify-content:center;padding:48px 56px 84px max(40px,calc((100vw - 1320px)/2 + 40px))}
 .hx-txt{display:grid}
 .hx-t{grid-area:1/1;display:flex;flex-direction:column;gap:20px;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .55s var(--ease),transform .55s var(--ease),visibility 0s .55s}
 .hx-t.on{opacity:1;visibility:visible;transform:none;transition-delay:.12s,.12s,0s}
 .hx-tag{font-size:11.5px;letter-spacing:3px;text-transform:uppercase;font-weight:700;color:var(--terra)}
-.hx-t h1,.hx-t .h1{font-family:var(--serif);font-size:clamp(32px,3.2vw,52px);line-height:1.06;letter-spacing:-.02em;font-weight:700;color:var(--black)}
+.hx-t h1,.hx-t .h1{font-family:var(--serif);font-size:clamp(36px,4.1vw,62px);line-height:1.04;letter-spacing:-.02em;font-weight:700;color:var(--black)}
 .hx-t h1 em,.hx-t .h1 em{font-style:italic;color:var(--terra)}
 .hx-t p.sub{font-size:16.5px;line-height:1.6;color:#5b5650;max-width:440px}
 .hx-btns{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px}
@@ -30,7 +30,7 @@
 .hx-prod{font-size:12px;line-height:1.5;color:#8a8279;font-weight:500;max-width:440px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08)}
 .hx-t p.sub.fuerte{font-weight:700;color:var(--black);margin-top:-8px}
 /* barra de diapositivas: cada ángulo con su nombre y una línea que se llena */
-.hx-nav{position:absolute;left:max(32px,calc((100vw - 1560px)/2 + 32px));bottom:30px;display:flex;gap:22px;z-index:3}
+.hx-nav{position:absolute;left:max(40px,calc((100vw - 1320px)/2 + 40px));bottom:30px;display:flex;gap:22px;z-index:3}
 .hx-nav button{background:none;border:0;padding:10px 0 0;font:600 12.5px var(--sans);color:#8d857b;cursor:pointer;position:relative;text-align:left;min-width:74px}
 .hx-nav button::before,.hx-nav button::after{content:'';position:absolute;left:0;top:0;height:2px;border-radius:2px}
 .hx-nav button::before{right:0;background:rgba(0,0,0,.12)}
@@ -42,14 +42,15 @@
 .hx-arr{position:absolute;bottom:22px;right:22px;z-index:3;display:flex;gap:8px}
 .hx-arr button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.14);font-size:18px;cursor:pointer;color:var(--black)}
 /* las cinco pestañas caben en la columna del texto sin meterse en la foto */
-@media(min-width:861px){.hx-nav{right:20px;gap:8px}.hx-nav button{font-size:11px}.hx-nav button{flex:1;min-width:0;line-height:1.25}}
+@media(min-width:861px){.hx-nav{right:32px;gap:14px}.hx-nav button{flex:1;min-width:0;line-height:1.25}}
 @media(max-width:1100px){.hx-nav{gap:14px}.hx-nav button{min-width:56px;font-size:11.5px}}
 @media(max-width:860px){
-  /* móvil: la imagen arriba, ENTERA (16:9 como las fotos y el vídeo, sin recortar ni zoom) y el texto debajo.
+  /* móvil: la imagen arriba, grande (de 4:3 a cuadrada según el alto de la pantalla; --p es su encuadre) y el texto debajo.
      Mide lo que su contenido, sin huecos, y todo cabe en la pantalla sin bajar: --k encoge el texto
      solo si no cabe (lo calcula portada.js en cada móvil) */
   .hx{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;min-height:0;max-height:none}
-  .hx-media{grid-row:1;aspect-ratio:16/9}
+  .hx-media{grid-row:1;min-width:0;aspect-ratio:4/3}
+  @supports(height:1svh){.hx-media{aspect-ratio:auto;height:clamp(75vw,calc(100svh - 400px),100vw)}}
   .hx-m img,.hx-m.on img{transform:none;transition:none}
   .hx-copy{grid-row:2;justify-content:center;padding:calc(20px * var(--k,1)) 20px calc(22px * var(--k,1))}
   .hx-t{gap:calc(10px * var(--k,1))}
