@@ -177,17 +177,27 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
           <span class="es">Ver detrás</span><span class="en">See the back</span></button>
       </div>
-      <p class="config-label txt-sub"><span class="es">Frase delante</span><span class="en">Front caption</span></p>
-      <input class="txt-input" id="frontText" maxlength="42" placeholder="Para siempre juntos">
-      <div class="txt-row">
+      <p class="config-label txt-sub txt-front"><span class="es">Frase delante</span><span class="en">Front caption</span></p>
+      <input class="txt-input txt-front" id="frontText" maxlength="42" placeholder="Para siempre juntos">
+      <div class="txt-two txt-front" id="frontTwo"></div>
+      <div class="txt-row txt-front">
         <div class="font-dd" id="frontFontDD" data-for="frontText"></div>
         <input class="txt-date" id="frontDate" maxlength="12" placeholder="Fecha">
       </div>
-      <div class="ink-row" id="frontInk"></div>
-      <div class="deco-box" id="frontDecoBox"></div>
+      <div class="ink-row txt-front" id="frontInk"></div>
+      <div class="txt-row txt-front txt-place">
+        <div class="zone-tabs" id="frontZoneTabs" role="group" aria-label="Sitio de la frase">
+          <button type="button" class="zone-tab" data-zone="top"><span class="es">Arriba</span><span class="en">Top</span></button>
+          <button type="button" class="zone-tab" data-zone="bottom"><span class="es">Abajo</span><span class="en">Bottom</span></button>
+        </div>
+        <label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span>
+          <input type="range" id="frontSizeRange" min="40" max="260" step="4" value="260"></label>
+      </div>
+      <div class="deco-box txt-front" id="frontDecoBox"></div>
 
-      <p class="config-label txt-sub txt-back"><span class="es">Dedicatoria detrás</span><span class="en">Back dedication</span></p>
+      <p class="config-label txt-sub txt-back"><span class="es">Frase detrás</span><span class="en">Back message</span></p>
       <textarea class="txt-area txt-back" id="backText" rows="2" maxlength="140" placeholder="Para mamá, con todo nuestro amor"></textarea>
+      <div class="txt-two txt-back" id="backTwo"></div>
       <div class="txt-row txt-back">
         <div class="font-dd" id="backFontDD" data-for="backText"></div>
         <input class="txt-date" id="backDate" maxlength="12" placeholder="Fecha">
@@ -200,9 +210,9 @@
           <button type="button" class="zone-tab" data-zone="bottom"><span class="es">Abajo</span><span class="en">Bottom</span></button>
         </div>
         <label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span>
-          <input type="range" id="backSizeRange" min="24" max="90" step="2" value="56"></label>
+          <input type="range" id="backSizeRange" min="24" max="200" step="4" value="200"></label>
       </div>
-      <p class="txt-hint txt-back"><span class="es">Se imprime detrás del cuadro, arriba o abajo del imán. Si escribes mucho, la letra se hace más pequeña para que quepa.</span><span class="en">Printed on the back, above or below the magnet. Long text gets smaller so it fits.</span></p>
+      <p class="txt-hint txt-back"><span class="es">Se imprime detrás, arriba o abajo del imán. La letra empieza grande y se adapta para que quepa.</span><span class="en">Printed on the back, above or below the magnet. Long text gets smaller so it fits.</span></p>
     </div>
   </aside>
 
@@ -1046,7 +1056,7 @@ function makePoster(){
            ptype:defaultType, mount:pr.hanger, format:fmt0, sizeKey:s0.k, sizeScale:1, price:s0.price,
            frontText:'', frontX:50, frontY:14, frontSize:62, frontFont:FONT_DEFAULT, frontDate:'',
            backText:'',  backX:50,  backY:50,  backSize:46,  backFont:FONT_DEFAULT,  backDate:'',
-           backZone:'bottom', backMax:56 };
+           backZone:'bottom', backMax:200, frontMax:260, frontText2:'', backText2:'' };
 }
 
 function createPoster(){
@@ -1400,6 +1410,7 @@ function setFace(back){
   applySelection(); syncFaceTabs();
 }
 function syncFaceTabs(){
+  const tb = document.getElementById('txtBlock'); if(tb) tb.dataset.face = FACE_BACK ? 'back' : 'front';   // 4-nov: cada pestaña enseña solo su cara
   document.querySelectorAll('#faceTabs [data-face]').forEach(b => {
     const on = (b.dataset.face === 'back') === FACE_BACK;
     b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -1900,7 +1911,8 @@ function drawLines(ctx, lines, cx, cy, lh, stroke){
    salto de línea) entra en la caja; con una frase corta sale grande, con una larga se achica
    sola en vez de desbordar el dorso. */
 function fitTextSize(ctx, text, fontOfSize, maxWpx, maxHpx, minPx, maxPx, lhFactor){
-  for(let px = maxPx; px >= minPx; px -= 2){
+  const paso = Math.max(2, Math.round(maxPx / 90));
+  for(let px = maxPx; px >= minPx; px -= paso){
     ctx.font = fontOfSize(px);
     const lines = computeLines(ctx, text, maxWpx);
     const blockH = lines.length * px * lhFactor;
@@ -1974,26 +1986,27 @@ function buildFrontCanvas(p, W, H){
     drawPlaceholder(x, W, H, p.ptype === 'nevera');
   }
   const scl=W/texW(p);
-  if(FRONT_TEXT && p.frontText && p.frontText.trim()){
-    const px=W*(p.frontX/100), py=H*(p.frontY/100);
-    const maxW=Math.max(160*scl, 2*Math.min(px, W-px) - 40*scl);
-    const maxH=Math.max(90*scl, 2*Math.min(py, H-py) - 40*scl);
+  /* 4-nov: una o dos frases; si una va arriba la otra va abajo. La letra arranca muy grande y baja hasta caber */
+  const frontLine = (txt, px, py) => {
+    const maxW = Math.max(160*scl, 2*Math.min(px, W-px) - 40*scl);
+    const maxH = Math.max(90*scl, 2*Math.min(py, H-py) - 40*scl);
     x.textAlign='center'; x.textBaseline='middle';
-    const fit = fitTextSize(x, p.frontText, s=>fontCss(p.frontFont, s), maxW, maxH, 22*scl, 120*scl, 1.18);
+    const fit = fitTextSize(x, txt, s=>fontCss(p.frontFont, s), maxW, maxH, 22*scl, (p.frontMax||260)*scl, 1.18);
     const sz = fit.size;
     p.frontSize = sz/scl;   // a talla "sin escalar", igual que antes lo dejaba el slider
     x.font = fontCss(p.frontFont, sz);
-    /* 4-nov (Marc): sin contorno ni sombra; el color lo elige el cliente */
     x.fillStyle = frontInk(p);
     drawLines(x, fit.lines, px, py, sz*1.18, false);
-  }
+  };
+  if(FRONT_TEXT && p.frontText && p.frontText.trim()) frontLine(p.frontText, W*(p.frontX/100), H*(p.frontY/100));
+  if(FRONT_TEXT && p.frontText2 && p.frontText2.trim()) frontLine(p.frontText2, W/2, H*(p.frontY < 50 ? .86 : .14));
   if(FRONT_TEXT && p.frontDate && p.frontDate.trim()){
     drawDateCorner(x, p.frontDate.trim(), fontCss(p.frontFont, 30*scl), W, 26*scl, frontInk(p), null);
   }
   if(p.frontDeco){
     const im = decoImg(p.frontDeco, frontInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyFrontTexture(i); });
     if(im){
-      const t = Math.min(W, H) * (p.frontDecoSize || 16) / 100, cy = H * ({ top:.16, mid:.5, bottom:.84 }[p.frontDecoPos || 'bottom']);
+      const t = Math.min(W, H) * (p.frontDecoSize || 16) / 100, cy = H * ({ top:.16, mid:.5, bottom:.84 }[frontDecoPosOf(p)]);
       x.drawImage(im, W/2 - t/2, cy - t/2, t, t);
     }
   }
@@ -2009,7 +2022,7 @@ function applyFrontTexture(idx){
   p.frontMat.map = tex; p.frontMat.needsUpdate = true;
   if(old && old!==tex) old.dispose();
   // miniatura solo con foto (o texto): un hueco vacío enseña el icono de cámara
-  if(p.srcImg || p.frontDeco || (p.frontText && p.frontText.trim()) || (p.frontDate && p.frontDate.trim())){ try{ p.thumb = c.toDataURL('image/jpeg', 0.82); }catch(e){ p.thumb = null; } } else p.thumb = null;
+  if(p.srcImg || p.frontDeco || (p.frontText2 && p.frontText2.trim()) || (p.frontText && p.frontText.trim()) || (p.frontDate && p.frontDate.trim())){ try{ p.thumb = c.toDataURL('image/jpeg', 0.82); }catch(e){ p.thumb = null; } } else p.thumb = null;
   renderThumbs(); dirty3D = true;
 }
 
@@ -2020,29 +2033,33 @@ function applyPhoto(idx, img, silent){
 }
 
 function buildBackCanvas(p, W, H){
-  const hasText = p.ptype !== 'nevera' && p.backText && p.backText.trim();
+  const noNev = p.ptype !== 'nevera';
+  const hasText = noNev && p.backText && p.backText.trim(), hasText2 = noNev && p.backText2 && p.backText2.trim();
   const hasDate = p.backDate && p.backDate.trim();
-  const hasDeco = p.ptype !== 'nevera' && p.backDeco;
-  if(!hasText && !hasDate && !hasDeco) return null;
+  const hasDeco = noNev && p.backDeco;
+  if(!hasText && !hasText2 && !hasDate && !hasDeco) return null;
   W = W || texW(p); H = H || texH(p);
   const scl=W/texW(p);
   const c = document.createElement('canvas'); c.width=W; c.height=H;
   const x = c.getContext('2d');
-  if(hasText){
-    // la fecha va en la esquina de arriba: con la franja de arriba, el texto empieza por debajo de ella
-    const z = backZoneBox(p, W, H, hasDate ? 40*scl : 0);
+  const z1 = p.backZone === 'top' ? 'top' : 'bottom', z2 = z1 === 'top' ? 'bottom' : 'top';
+  const banda = zona => backZoneBox(Object.assign({}, p, { backZone: zona }), W, H, hasDate ? 40*scl : 0);
+  const backLine = (txt, z) => {
     const maxW = z.x1 - z.x0, maxH = z.y1 - z.y0;
     x.textAlign='center'; x.textBaseline='middle';
     // el tamaño que elige el cliente es el máximo; si no cabe, baja hasta que entre en la franja
-    const fit = fitTextSize(x, p.backText, s=>fontCss(p.backFont, s), maxW, maxH, 8*scl, (p.backMax||56)*scl, 1.3);
-    const sz = fit.size;
-    p.backSize = sz/scl;
-    x.font = fontCss(p.backFont, sz);
-    /* 12-oct: sin contorno blanco alrededor de las letras. La imprenta no imprime blanco, así
-       que el contorno no saldría y lo que se ve aquí no sería lo que llega. Tinta sólida. */
+    const fit = fitTextSize(x, txt, s=>fontCss(p.backFont, s), maxW, maxH, 8*scl, (p.backMax||200)*scl, 1.3);
+    p.backSize = fit.size/scl;
+    x.font = fontCss(p.backFont, fit.size);
+    /* 12-oct: sin contorno. Tinta sólida del color elegido. */
     x.fillStyle = backInk(p);
-    drawLines(x, fit.lines, W/2, (z.y0+z.y1)/2, sz*1.3, false);
-  }
+    drawLines(x, fit.lines, W/2, (z.y0+z.y1)/2, fit.size*1.3, false);
+  };
+  /* con dos frases y un dibujo, las franjas están cogidas: el dibujo comparte la de la segunda frase */
+  const zt2 = banda(z2), comparte = hasDeco && hasText && hasText2;
+  const alto2 = zt2.y1 - zt2.y0;
+  if(hasText) backLine(p.backText, banda(z1));
+  if(hasText2) backLine(p.backText2, comparte ? Object.assign({}, zt2, { y0: zt2.y0 + alto2*.45 }) : (hasText ? zt2 : banda(z1)));
   if(hasDate){
     drawDateCorner(x, p.backDate.trim(), fontCss(p.backFont, 26*scl), W, 26*scl, backInk(p), null);
   }
@@ -2050,8 +2067,9 @@ function buildBackCanvas(p, W, H){
     /* el imán va en el centro: el dibujo va en la franja libre (con frase, la contraria a la frase) */
     const im = decoImg(p.backDeco, backInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
     if(im){
-      const zona = hasText ? ((p.backZone || 'bottom') === 'top' ? 'bottom' : 'top') : (p.backZone || 'bottom');
-      const z = backZoneBox(Object.assign({}, p, { backZone: zona }), W, H, hasDate ? 40*scl : 0);
+      const unaFrase = (hasText || hasText2) && !(hasText && hasText2);
+      const zb = unaFrase ? zt2 : banda(z1);
+      const z = comparte ? Object.assign({}, zt2, { y1: zt2.y0 + alto2*.42 }) : zb;
       const t = Math.min(z.x1 - z.x0, z.y1 - z.y0) * (p.backDecoSize || 90) / 100;
       x.drawImage(im, W/2 - t/2, (z.y0 + z.y1)/2 - t/2, t, t);
     }
@@ -2062,7 +2080,7 @@ function buildBackCanvas(p, W, H){
 function applyBackText(idx){
   scheduleSave();
   const p = POSTERS[idx];
-  if(p && p.backText) ensureFont(p.backFont, () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
+  if(p && (p.backText || p.backText2)) ensureFont(p.backFont, () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
   if(p.backPlane){
     p.mesh.remove(p.backPlane);
     if(p.backPlane.material.map) p.backPlane.material.map.dispose();
@@ -2115,6 +2133,36 @@ async function decoReady(p){
   const a = p.frontDeco && decoEntry(p.frontDeco, frontInk(p)), b = p.backDeco && decoEntry(p.backDeco, backInk(p));
   await Promise.all([a && a.ready, b && b.ready]);
 }
+/* sitios de delante cogidos por las frases: el dibujo va a uno libre */
+function frontUsados(p){
+  const u = [], a = p.frontY < 50 ? 'top' : 'bottom', b = a === 'top' ? 'bottom' : 'top';
+  if(p.frontText && p.frontText.trim()) u.push(a);
+  if(p.frontText2 && p.frontText2.trim()) u.push(b);
+  return u;
+}
+function frontDecoPosOf(p){
+  const u = frontUsados(p), pos = p.frontDecoPos || 'bottom';
+  return !u.includes(pos) ? pos : (u.includes('bottom') ? (u.includes('top') ? 'mid' : 'top') : 'bottom');
+}
+const twoOpen = { front:false, back:false };
+function renderTwo(side){
+  const box = document.getElementById(side + 'Two'), p = POSTERS[selected]; if(!box || !p) return;
+  const k = side + 'Text2', val = p[k] || '';
+  const abierto = twoOpen[side] || !!val;
+  const donde = side === 'front' ? (p.frontY < 50 ? 'abajo' : 'arriba') : ((p.backZone === 'top') ? 'abajo' : 'arriba');
+  box.innerHTML = abierto
+    ? '<div class="two-row"><input class="txt-input" maxlength="' + (side === 'front' ? 42 : 90) + '" placeholder="Segunda frase, va ' + donde + '"><button type="button" class="two-x" aria-label="Quitar la segunda frase">✕</button></div>'
+    : '<button type="button" class="two-add"><span class="es">+ Añadir otra frase</span><span class="en">+ Add another line</span></button>';
+  const repinta = () => { txtRepaint(side); if(side === 'front') renderDeco('front'); };
+  const add = box.querySelector('.two-add');
+  if(add) add.onclick = () => { twoOpen[side] = true; renderTwo(side); box.querySelector('input').focus(); };
+  const i = box.querySelector('input');
+  if(i){
+    i.value = val;
+    i.addEventListener('input', () => { p[k] = i.value; repinta(); });
+    box.querySelector('.two-x').onclick = () => { p[k] = ''; twoOpen[side] = false; renderTwo(side); repinta(); };
+  }
+}
 const decoOpen = { front:false, back:false };
 function txtRepaint(side){ const i = selected; if(side === 'front') applyFrontTexture(i); else applyBackText(i); }
 function renderInk(side){
@@ -2140,7 +2188,7 @@ function renderDeco(side){
     + DIBUJOS.map(x => '<button type="button" class="deco-b' + (x.id === cur ? ' on' : '') + '" data-d="' + x.id + '" title="' + x.es + '">' + x.svg + '</button>').join('') + '</div>';
   if(cur){
     h += '<div class="deco-ctrl">';
-    if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + ((p.frontDecoPos || 'bottom') === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
+    if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + (frontDecoPosOf(p) === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"' + (frontUsados(p).includes(z[0]) ? ' disabled' : '') + '><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
     const lim = side === 'front' ? [8, 45, p.frontDecoSize || 16] : [50, 100, p.backDecoSize || 90];
     h += '<label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span><input type="range" min="' + lim[0] + '" max="' + lim[1] + '" step="1" value="' + lim[2] + '"></label></div>';
     if(side === 'back') h += '<p class="txt-hint"><span class="es">Va en la franja libre, porque en el centro está el imán.</span><span class="en">It goes in the free strip: the magnet sits in the middle.</span></p>';
@@ -2152,7 +2200,7 @@ function renderDeco(side){
   const r = box.querySelector('input[type=range]');
   if(r) r.addEventListener('input', () => { p[k + 'Size'] = +r.value; txtRepaint(side); });
 }
-function renderTxtExtras(){ ['front','back'].forEach(s => { renderInk(s); renderDeco(s); }); }
+function renderTxtExtras(){ ['front','back'].forEach(s => { renderInk(s); renderDeco(s); renderTwo(s); }); syncFrontZoneUI(); }
 
 /* ═══════════ THUMBS ═══════════ */
 const thumbsEl = document.getElementById('pvThumbs');
@@ -2527,6 +2575,8 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
+    if(p.frontText2 && p.frontText2.trim()) attributes.push({key:'Frase 2 (frontal)', value:p.frontText2.trim()});
+    if(p.backText2 && p.backText2.trim() && p.ptype !== 'nevera') attributes.push({key:'Frase 2 (dorso)', value:p.backText2.trim()});
     if(p.frontDeco) attributes.push({key:'Dibujo (frontal)', value:p.frontDeco});
     if(p.backDeco && p.ptype !== 'nevera') attributes.push({key:'Dibujo (dorso)', value:p.backDeco});
     if(p.frontDate && p.frontDate.trim()) attributes.push({key:'Fecha (frontal)', value:p.frontDate.trim()});
@@ -3027,6 +3077,19 @@ if(!FRONT_TEXT){   // sin frase delante: se esconden su rótulo, el campo y la f
   if(row) row.style.display = 'none';
 }
 [backInput,backDateInput].forEach(el=>el.addEventListener('input',bindBack));
+const frontSizeRange = document.getElementById('frontSizeRange');
+function syncFrontZoneUI(){
+  const p = POSTERS[selected]; if(!p) return;
+  const zona = p.frontY < 50 ? 'top' : 'bottom';
+  document.querySelectorAll('#frontZoneTabs [data-zone]').forEach(b => { const on = b.dataset.zone === zona; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
+  frontSizeRange.value = p.frontMax || 260;
+}
+document.querySelectorAll('#frontZoneTabs [data-zone]').forEach(b => b.addEventListener('click', () => {
+  const p = POSTERS[selected]; if(!p) return;
+  p.frontX = 50; p.frontY = b.dataset.zone === 'top' ? 14 : 86;
+  syncFrontZoneUI(); renderTwo('front'); renderDeco('front'); applyFrontTexture(selected);
+}));
+frontSizeRange.addEventListener('input', () => { const p = POSTERS[selected]; if(!p) return; p.frontMax = +frontSizeRange.value; applyFrontTexture(selected); });
 const backSizeRange = document.getElementById('backSizeRange');
 function syncBackZoneUI(){
   const p = POSTERS[selected]; if(!p) return;
@@ -3034,7 +3097,7 @@ function syncBackZoneUI(){
     const on = b.dataset.zone === (p.backZone || 'bottom');
     b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
   });
-  backSizeRange.value = p.backMax || 56;
+  backSizeRange.value = p.backMax || 200;
 }
 document.querySelectorAll('#backZoneTabs [data-zone]').forEach(b => b.addEventListener('click', () => {
   const p = POSTERS[selected]; if(!p) return;
@@ -3522,9 +3585,10 @@ function scheduleSave(){
 async function saveDesign(){
   const st = store(); if(!st) return;
   try{
-    const items = POSTERS.filter(p => p.srcImg || p.frontText || p.backText || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
+    const items = POSTERS.filter(p => p.srcImg || p.frontText || p.frontText2 || p.backText || p.backText2 || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
+      frontText2:p.frontText2, backText2:p.backText2, frontMax:p.frontMax,
       frontColor:p.frontColor, frontDeco:p.frontDeco, frontDecoPos:p.frontDecoPos, frontDecoSize:p.frontDecoSize,
       backColor:p.backColor, backDeco:p.backDeco, backDecoSize:p.backDecoSize,
       frontText:p.frontText, frontX:p.frontX, frontY:p.frontY, frontSize:p.frontSize, frontFont:p.frontFont, frontDate:p.frontDate,
@@ -3585,12 +3649,13 @@ async function restoreDesign(saved){
         applyProductSize(p, pickSize(list, list.some(s => s.k === it.sizeKey) ? it.sizeKey : (pr.formats ? SIZE_DEFAULT : pr.def)), fmt);
       } else if(PRODUCTS.metal.mounts.includes(it.mount)) p.mount = it.mount;
       Object.assign(p, {
+        frontText2:it.frontText2||'', backText2:it.backText2||'', frontMax:it.frontMax||260,
         frontColor:it.frontColor, frontDeco:it.frontDeco||'', frontDecoPos:it.frontDecoPos, frontDecoSize:it.frontDecoSize,
         backColor:it.backColor, backDeco:it.backDeco||'', backDecoSize:it.backDecoSize,
         frontText:FRONT_TEXT ? it.frontText||'' : '', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:FRONT_TEXT ? it.frontDate||'' : '',
         backText:it.backText||'',  backX:it.backX,  backY:it.backY,  backSize:it.backSize,  backFont:it.backFont||FONT_DEFAULT,  backDate:it.backDate||'',
         // los guardados antes del 30-oct no tienen franja: se saca de dónde estaba (encima o debajo de la mitad)
-        backZone: it.backZone || ((it.backY != null && it.backY < 50) ? 'top' : 'bottom'), backMax: it.backMax || 56,
+        backZone: it.backZone || ((it.backY != null && it.backY < 50) ? 'top' : 'bottom'), backMax: it.backMax || 200,
       });
       const i = POSTERS.indexOf(p);
       if(it.photo && st){

@@ -554,20 +554,6 @@ scene.add(posterMesh);
       polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
   }
 
-  /* marca del dorso: la palabra Momenturies, dibujada aquí (sin imágenes ni QR) */
-  var cv = document.createElement('canvas'); cv.width = 1024; cv.height = 160;
-  var cx = cv.getContext('2d');
-  cx.fillStyle = '#1a1a1a'; cx.font = '700 104px Georgia, "Times New Roman", serif';
-  cx.textAlign = 'center'; cx.textBaseline = 'middle';
-  try { cx.letterSpacing = '10px'; } catch (ex) {}
-  cx.fillText('MOMENTURIES', 512, 84);
-  var tex = new THREE.CanvasTexture(cv);
-  var mat = _pMat(tex), lW = _PW * 0.46, lH = lW * cv.height / cv.width;
-  [_PH * 0.40, -_PH * 0.40].forEach(function(y) {
-    var m = new THREE.Mesh(new THREE.PlaneGeometry(lW, lH), mat);
-    m.position.set(0, y, _BZ); m.rotation.y = Math.PI; m.renderOrder = 20;
-    posterMesh.add(m);
-  });
 })();
 
 // ─── BACK-OF-POSTER MAGNET ───────────────────────────────────────────────────
