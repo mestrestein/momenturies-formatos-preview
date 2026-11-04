@@ -815,15 +815,17 @@ const makeMagnetMat = () => new THREE.MeshPhysicalMaterial({color:0x121212,rough
    que escalar con el póster o se vería minúsculo en el XL y gigante en el S. */
 const magDims  = p => [baseW(p)*0.40, baseH(p)*0.38];
 const cardGeo  = p => { const g=new THREE.ExtrudeGeometry(roundedRect(baseW(p)*0.80, baseH(p)*0.86, 0.12), {depth:CARD_D,bevelEnabled:false,curveSegments:14}); g.translate(0,0,-CARD_D); return g; };
+/* 5-nov · fondo de la peana: crece un poco hacia atrás con el tamaño (la S, 10,2 cm de lado corto, se queda igual) */
+const bambooD = p => BASE_D * (1 + .5 * (Math.min(baseW(p), baseH(p)) / (10.2*CM) - 1));
 const bambooGeo = p => {
-  const bw = Math.min(baseW(p), baseH(p));   // la peana mide siempre el lado corto
+  const bw = Math.min(baseW(p), baseH(p)), D = bambooD(p);   // la peana mide siempre el lado corto
   const g = new THREE.ExtrudeGeometry(roundedRect(bw, BASE_H, BASE_R),
-    {depth:BASE_D,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:3,curveSegments:16,UVGenerator:planarUV(bw,BASE_H)});
-  g.translate(0,0,-BASE_D/2);
+    {depth:D,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:3,curveSegments:16,UVGenerator:planarUV(bw,BASE_H)});
+  g.translate(0,0,-D/2);
   return g;
 };
 function placeBamboo(p){
-  p.bamboo.position.set(0, (-baseH(p)/2 + BAMBU_SINK) - BASE_H/2, -BASE_D/2 + 0.08);
+  p.bamboo.position.set(0, (-baseH(p)/2 + BAMBU_SINK) - BASE_H/2, -bambooD(p)/2 + 0.08);
 }
 
 function buildMountParts(p){
@@ -2408,13 +2410,13 @@ function applyToAll(p){
    Se guarda lo que hay, se abre la página del diseño con el producto de esta página marcado y, al terminarlo,
    vuelve aquí con ?foto=1&anadir=1: se recupera lo guardado y el diseño entra como una pieza más. */
 const DISENOS = [
-  ['cielo','El cielo de vuestra noche'], ['luna','La Luna de vuestra noche'], ['cielo-mapa','Cielo y mapa'],
+  ['cielo','Cielo con paisaje','cielo-paisaje','tema=bosque&'], ['cielo','El cielo de vuestra noche'], ['luna','La Luna de vuestra noche'], ['cielo-mapa','Cielo y mapa'],
   ['dos-cielos','Dos cielos, una historia'], ['mapa','Vuestro lugar en el mapa'], ['viaje','Cartel de viaje'],
   ['mapa-viajes','Mapa de viajes'], ['lunas','Las lunas de un mes'], ['constelacion','Vuestra constelación'],
   ['coordenadas','Coordenadas'], ['onda','La onda de vuestra voz'] ];
 function openDisenoModal(){
   const g = document.getElementById('disenoGrid');
-  if(!g.children.length) g.innerHTML = DISENOS.map(d => '<button type="button" class="dz-card" data-d="' + d[0] + '"><img src="galeria/img/muestra-' + d[0] + '.jpg" alt="" loading="lazy" width="300" height="400"><b>' + d[1] + '</b></button>').join('');
+  if(!g.children.length) g.innerHTML = DISENOS.map(d => '<button type="button" class="dz-card" data-d="' + d[0] + '" data-q="' + (d[3] || '') + '"><img src="galeria/img/muestra-' + (d[2] || d[0]) + '.jpg" alt="" loading="lazy" width="300" height="400"><b>' + d[1] + '</b></button>').join('');
   document.getElementById('disenoModal').classList.add('open');
 }
 document.getElementById('btnDiseno').addEventListener('click', openDisenoModal);
@@ -2425,7 +2427,7 @@ document.getElementById('disenoGrid').addEventListener('click', async e => {
   b.classList.add('loading');
   try{ await saveDesign(); }catch(_){}
   const aqui = (location.pathname.split('/').pop() || 'cuadro.html');
-  location.href = b.dataset.d + '.html?para=' + encodeURIComponent(/^(cuadro|sobremesa|iman)\.html$/.test(aqui) ? aqui : 'cuadro.html') + '&anadir=1';
+  location.href = b.dataset.d + '.html?' + b.dataset.q + 'para=' + encodeURIComponent(/^(cuadro|sobremesa|iman)\.html$/.test(aqui) ? aqui : 'cuadro.html') + '&anadir=1';
 });
 
 /* ═══════════ PANEL DEL PÓSTER ═══════════ */
@@ -3881,10 +3883,10 @@ function dropMagnets(from){
 var NEVERA_PAN = 0, _panNow = false, FRIDGE_VIEW = null;   // FRIDGE_VIEW: qué trozo de nevera se ve (cm), para el mapa
 function enNevera(){ return ROOM_CFG.mode === 'geo' && /^nevera-/.test(ROOM_CFG.scene || ''); }
 function neveraCentro(sc, Hcm){
-  if(WALL && WALL.fridge) return 80;
-  /* sueltos: el de abajo a 100 cm, a mano; si son muchos, bajan lo que haga falta para no salirse por arriba */
-  const c = sc.furnCm + sc.gapCm + Hcm/2;
-  return Math.max(Math.min(c, 146 - Hcm/2), Math.min(80, 14 + Hcm/2));
+  if(WALL && WALL.fridge) return Math.max(80, Math.min(100, 150 - Hcm/2));   // 5-nov: más arriba si cabe; lo que llena la puerta sigue centrado
+  /* sueltos: el de abajo a 112 cm, a mano; si son muchos, bajan lo que haga falta para no salirse por arriba */
+  const c = sc.furnCm + sc.gapCm + 12 + Hcm/2;
+  return Math.max(Math.min(c, 154 - Hcm/2), Math.min(80, 14 + Hcm/2));
 }
 function neveraPan(sc, Hcm, topCm, botCm){
   const C = neveraCentro(sc, Hcm), mid = C + (topCm + botCm)/2, half = (topCm - botCm)/2;

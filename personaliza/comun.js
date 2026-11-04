@@ -104,7 +104,7 @@
 
   /* ── 3-nov · en qué producto va el diseño: Cuadro, Sobremesa o Imán ──
      Se elige en la página (fila de botones encima del botón final). Si se llega desde el personalizador
-     (?para=cuadro.html|sobremesa.html|iman.html&anadir=1), viene ya marcado y el diseño se AÑADE a lo que había. */
+     (?para=cuadro.html|sobremesa.html|iman.html&anadir=1), el producto es el de esa página, no se pregunta, y el diseño se AÑADE a lo que había. */
   P.PRODUCTOS = {
     cuadro:    { es: 'Cuadro',    sub: 'aluminio para la pared', page: 'cuadro.html',    q: 'formato=retrato&encuadre=0', cta: 'Ponerlo en mi cuadro',    ratio: 3 / 4 },
     sobremesa: { es: 'Sobremesa', sub: 'con peana de bambú',     page: 'sobremesa.html', q: '',                           cta: 'Ponerlo en mi sobremesa', ratio: 2 / 3 },
@@ -116,9 +116,10 @@
   document.addEventListener('DOMContentLoaded', function () {
     var cta = document.getElementById('cta'), txt = document.getElementById('ctaTxt');
     if (!cta || !cta.parentNode) return;
+    if (P.anadir) { if (txt) txt.textContent = 'Añadirlo a mi diseño'; return; }
     var box = document.createElement('div');
     box.className = 'pz-step pz-prod';
-    box.innerHTML = '<span class="pz-label">' + (P.anadir ? 'Se añade a tu diseño como…' : '¿Dónde lo quieres?') + '</span><div class="pz-prods"></div>';
+    box.innerHTML = '<span class="pz-label">¿Dónde lo quieres?</span><div class="pz-prods"></div>';
     var row = box.querySelector('.pz-prods');
     Object.keys(P.PRODUCTOS).forEach(function (k) {
       var o = P.PRODUCTOS[k], b = document.createElement('button');
@@ -127,12 +128,12 @@
       b.addEventListener('click', function () {
         P.prod = k;
         [].forEach.call(row.children, function (x) { x.setAttribute('aria-pressed', x === b); });
-        if (txt && !cta.disabled) txt.textContent = (P.anadir ? 'Añadirlo como ' + o.es.toLowerCase() : o.cta);
+        if (txt && !cta.disabled) txt.textContent = o.cta;
       });
       row.appendChild(b);
     });
     cta.parentNode.insertBefore(box, cta);
-    if (txt) txt.textContent = P.anadir ? 'Añadirlo como ' + P.PRODUCTOS[P.prod].es.toLowerCase() : P.PRODUCTOS[P.prod].cta;
+    if (txt) txt.textContent = P.PRODUCTOS[P.prod].cta;
   });
   /* el póster es 3:4; la sobremesa y el imán son más alargados (2:3): se le añade arriba y abajo una franja
      del color de su propio fondo, así no se recorta ni el título ni el pie */

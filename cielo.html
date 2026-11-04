@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@1,500&family=Great+Vibes&display=swap"/>
 <link rel="stylesheet" href="pdp.css?v=9ccc2287">
-<link rel="stylesheet" href="personaliza/personaliza.css?v=053e8f51">
+<link rel="stylesheet" href="personaliza/personaliza.css?v=544827b0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#1c1c1c"/>
 <script src="consent.js?v=bafba393" defer></script>
@@ -109,13 +109,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tz-lookup@6.1.25/tz.js"></script>
 <script src="photo-handoff.js?v=9639e829"></script>
-<script src="personaliza/comun.js?v=61596746"></script>
-<script src="personaliza/cielo-datos.js"></script>
-<script src="personaliza/cielo.js"></script>
+<script src="personaliza/comun.js?v=0f8082d2"></script>
+<script src="personaliza/cielo-datos.js?v=1a0d033a"></script>
+<script src="personaliza/cielo.js?v=ddfc3ad8"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var st = { lat: 38.8408, lon: 0.1057, city: 'Dénia', theme: 'medianoche', font: 'elegante', line2Touched: false };
+  var TODOS = Object.assign({}, MOM_CIELO.escenas, MOM_CIELO.themes), TEMA = new URLSearchParams(location.search).get('tema');
+  var st = { lat: 38.8408, lon: 0.1057, city: 'Dénia', theme: TODOS[TEMA] ? TEMA : 'medianoche', font: 'elegante', line2Touched: false };
   var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var today = new Date(); $('date').value = today.toISOString().slice(0, 10);
 
@@ -143,10 +144,9 @@
     b.addEventListener('click', function () { st.font = k; [].forEach.call($('fonts').children, function (x) { x.setAttribute('aria-pressed', x === b); }); render(); });
     $('fonts').appendChild(b);
   });
-  var TODOS = Object.assign({}, MOM_CIELO.escenas, MOM_CIELO.themes);
   Object.keys(TODOS).forEach(function (k) {
-    var T = TODOS[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw'; b.title = T.name; b.setAttribute('aria-pressed', k === st.theme);
-    b.innerHTML = '<span style="background:linear-gradient(135deg,' + T.bg + ' 0 50%,' + T.disk + ' 50% 100%)"></span>';
+    var T = TODOS[k], b = document.createElement('button'); b.type = 'button'; b.className = 'pz-sw pz-mini'; b.title = T.name; b.dataset.tema = k; b.setAttribute('aria-pressed', k === st.theme);
+    b.innerHTML = '<canvas width="132" height="176"></canvas><small>' + T.name + '</small>';
     b.addEventListener('click', function () { st.theme = k; [].forEach.call($('themes').children, function (x) { x.setAttribute('aria-pressed', x === b); }); $('themeName').textContent = T.name; render(); });
     $('themes').appendChild(b);
   });
@@ -157,7 +157,12 @@
   });
   window.addEventListener('resize', render);
   autoLine2(); pickedTxt();
-  Promise.all([MOM_P.fontsReady(), MOM_CIELO.ready]).then(render); render();
+  /* una miniatura de verdad por estilo, de una en una para no parar la página */
+  function miniaturas() {
+    var l = [].slice.call($('themes').children), base = opts(); base.title = base.line2 = base.line3 = ''; base.grid = false;
+    (function sig() { var b = l.shift(); if (!b) return; var c = b.querySelector('canvas'); MOM_CIELO.draw(c.getContext('2d'), c.width, c.height, Object.assign({}, base, { theme: b.dataset.tema })); setTimeout(sig, 0); })();
+  }
+  Promise.all([MOM_P.fontsReady(), MOM_CIELO.ready]).then(function () { render(); miniaturas(); }); render();
 })();
 </script>
 </body>
