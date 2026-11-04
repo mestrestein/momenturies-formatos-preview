@@ -514,3 +514,4 @@
   .cf-copy .s-tag{display:none}
   .cf-movil{width:max(240px,min(270px,70vw,calc((100svh - 268px)*9/19)))}
 }
+button{color:inherit}

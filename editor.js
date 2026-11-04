@@ -1194,7 +1194,7 @@ function layout(){
   if(!WALL && ROOM_CFG.mode === 'none' && POSTERS.some(q => q.ptype === 'madera')) botPx += 56;
   if(panelOpen){
     if(wpx > 720) rightPx = 410;
-    else          botPx  = Math.max(botPx, hpx*0.62);
+    else          botPx  = Math.max(botPx, hpx*0.62, panelEl.offsetHeight + 12);   // en iPhone el panel mide más que el 62 % de lo visible
   }
   const usableW = visW * (1 - rightPx/wpx);
   const usableH = visH * (1 - (topPx+botPx)/hpx);
@@ -1524,6 +1524,13 @@ function syncViewerHint(){
 
 function moveTextTo(mx,my){
   const p = POSTERS[selected]; if(!p) return;
+  if(textDrag==='decoFront' || textDrag==='decoBack'){
+    const f = textDrag==='decoFront', h = pickHit(mx,my,[f ? p.mesh : p.backPlane]); if(!h||!h.uv) return;
+    const X = clampPct(h.uv.x*100), Y = clampPct((1-h.uv.y)*100);
+    if(f){ p.frontDecoX = X; p.frontDecoY = Y; applyFrontTexture(selected); document.querySelectorAll('#frontDecoBox [data-pos].active').forEach(b => b.classList.remove('active')); }
+    else { p.backDecoX = X; p.backDecoY = Y; applyBackText(selected); }
+    return;
+  }
   if(textDrag==='back'){
     const h = pickHit(mx,my,[p.backPlane]); if(!h||!h.uv) return;
     // solo arriba o abajo del imán: el arrastre elige la franja, no un punto libre
@@ -1553,7 +1560,10 @@ canvas.addEventListener('pointerdown', e=>{
       if(h){
         const cx=h.uv?h.uv.x*100:0, cy=h.uv?(1-h.uv.y)*100:0;
         const bz = backZoneBox(p, 100, 100);
-        if(p.backPlane && h.object===p.backPlane && p.backText && p.backText.trim()
+        const enDeco = (q, r) => Math.abs(cx-q.x) < r + 4 && Math.abs(cy-q.y) < r + 4;
+        if(p.frontDeco && h.object===p.mesh && h.face && h.face.normal.z>0.5 && enDeco(decoXY(p, 'front'), (p.frontDecoSize || 16)/2)) textDrag='decoFront';
+        else if(p.backDeco && p.backPlane && h.object===p.backPlane && p._backDecoBox && enDeco(p._backDecoBox, p._backDecoBox.r)) textDrag='decoBack';
+        else if(p.backPlane && h.object===p.backPlane && p.backText && p.backText.trim()
            && cy>=bz.y0-4 && cy<=bz.y1+4){ textDrag='back'; }
         else if(h.object===p.mesh && h.face && h.face.normal.z>0.5 && p.frontText && p.frontText.trim()
            && Math.abs(cx-p.frontX)<32 && Math.abs(cy-p.frontY)<18){ textDrag='front'; }
@@ -2041,10 +2051,10 @@ function buildFrontCanvas(p, W, H){
     drawDateCorner(x, p.frontDate.trim(), fontCss(p.frontFont, 30*scl), W, 26*scl, frontInk(p), null);
   }
   if(p.frontDeco){
-    const im = decoImg(p.frontDeco, frontInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyFrontTexture(i); });
+    const im = decoImg(p.frontDeco, decoInk(p, 'front'), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyFrontTexture(i); });
     if(im){
-      const t = Math.min(W, H) * (p.frontDecoSize || 16) / 100, cy = H * ({ top:.16, mid:.5, bottom:.84 }[frontDecoPosOf(p)]);
-      x.drawImage(im, W/2 - t/2, cy - t/2, t, t);
+      const t = Math.min(W, H) * (p.frontDecoSize || 16) / 100, q = decoXY(p, 'front');
+      x.drawImage(im, W*q.x/100 - t/2, H*q.y/100 - t/2, t, t);
     }
   }
   return c;
@@ -2102,13 +2112,15 @@ function buildBackCanvas(p, W, H){
   }
   if(hasDeco){
     /* el imán va en el centro: el dibujo va en la franja libre (con frase, la contraria a la frase) */
-    const im = decoImg(p.backDeco, backInk(p), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
+    const im = decoImg(p.backDeco, decoInk(p, 'back'), () => { const i = POSTERS.indexOf(p); if(i >= 0) applyBackText(i); });
     if(im){
       const unaFrase = (hasText || hasText2) && !(hasText && hasText2);
       const zb = unaFrase ? zt2 : banda(z1);
       const z = comparte ? Object.assign({}, zt2, { y1: zt2.y0 + alto2*.42 }) : zb;
       const t = Math.min(z.x1 - z.x0, z.y1 - z.y0) * (p.backDecoSize || 90) / 100;
-      x.drawImage(im, W/2 - t/2, (z.y0 + z.y1)/2 - t/2, t, t);
+      const dx = p.backDecoX == null ? W/2 : W*p.backDecoX/100, dy = p.backDecoY == null ? (z.y0 + z.y1)/2 : H*p.backDecoY/100;
+      p._backDecoBox = { x:dx/W*100, y:dy/H*100, r:t/Math.min(W, H)*50 };
+      x.drawImage(im, dx - t/2, dy - t/2, t, t);
     }
   }
   return c;
@@ -2166,8 +2178,14 @@ function decoImg(id, color, cb){
   return null;
 }
 /* antes de generar el archivo de imprenta: que los dibujos ya estén cargados */
+/* 4-nov: el dibujo tiene color propio (si no se elige, el de la frase) y se puede dejar en cualquier punto */
+const decoInk = (p, side) => p[side + 'DecoColor'] || (side === 'front' ? frontInk(p) : backInk(p));
+function decoXY(p, side){
+  if(side === 'front' && p.frontDecoX != null) return { x:p.frontDecoX, y:p.frontDecoY };
+  return { x:50, y:100 * ({ top:.16, mid:.5, bottom:.84 }[frontDecoPosOf(p)]) };
+}
 async function decoReady(p){
-  const a = p.frontDeco && decoEntry(p.frontDeco, frontInk(p)), b = p.backDeco && decoEntry(p.backDeco, backInk(p));
+  const a = p.frontDeco && decoEntry(p.frontDeco, decoInk(p, 'front')), b = p.backDeco && decoEntry(p.backDeco, decoInk(p, 'back'));
   await Promise.all([a && a.ready, b && b.ready]);
 }
 /* sitios de delante cogidos por las frases: el dibujo va a uno libre */
@@ -2219,22 +2237,31 @@ function renderDeco(side){
   const box = document.getElementById(side + 'DecoBox'), p = POSTERS[selected]; if(!box || !p) return;
   if(!DIBUJOS.length){ box.hidden = true; return; }
   const k = side + 'Deco', cur = p[k] || '', d = DIBUJOS.find(x => x.id === cur);
-  const ink = side === 'front' ? frontInk(p) : backInk(p);
+  const ink = decoInk(p, side);
   let h = '<button type="button" class="deco-toggle">' + (d ? '<span class="deco-ic" style="color:' + (inkLuma(ink) > .9 ? '#999' : ink) + '">' + d.svg + '</span>' + d.es : '<span class="es">Añadir un dibujo</span><span class="en">Add a drawing</span>') + '<i>' + (decoOpen[side] ? '−' : '+') + '</i></button>';
   if(decoOpen[side]) h += '<div class="deco-grid"><button type="button" class="deco-b deco-none' + (cur ? '' : ' on') + '" data-d=""><span class="es">Sin dibujo</span><span class="en">None</span></button>'
     + DIBUJOS.map(x => '<button type="button" class="deco-b' + (x.id === cur ? ' on' : '') + '" data-d="' + x.id + '" title="' + x.es + '">' + x.svg + '</button>').join('') + '</div>';
   if(cur){
+    h += '<div class="ink-row deco-ink"><span class="ink-lbl"><span class="es">Color del dibujo</span><span class="en">Drawing colour</span></span>'
+      + INKS[side].map(c => '<button type="button" class="ink' + (c === ink ? ' on' : '') + '" data-c="' + c + '" style="background:' + c + '" aria-label="Color ' + c + '"></button>').join('')
+      + '<label class="ink ink-any' + (INKS[side].includes(ink) ? '' : ' on') + '" title="Otro color"><input type="color" value="' + ink + '" aria-label="Otro color"></label></div>';
     h += '<div class="deco-ctrl">';
-    if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + (frontDecoPosOf(p) === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"' + (frontUsados(p).includes(z[0]) ? ' disabled' : '') + '><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
+    if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + (p.frontDecoX == null && frontDecoPosOf(p) === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"' + (frontUsados(p).includes(z[0]) ? ' disabled' : '') + '><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
     const lim = side === 'front' ? [8, 45, p.frontDecoSize || 16] : [50, 100, p.backDecoSize || 90];
     h += '<label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span><input type="range" min="' + lim[0] + '" max="' + lim[1] + '" step="1" value="' + lim[2] + '"></label></div>';
-    if(side === 'back') h += '<p class="txt-hint"><span class="es">Va en la franja libre, porque en el centro está el imán.</span><span class="en">It goes in the free strip: the magnet sits in the middle.</span></p>';
+    h += '<p class="txt-hint"><span class="es">Arrástralo sobre el cuadro para ponerlo donde quieras.' + (side === 'back' ? ' Evita el centro: ahí va el imán.' : '') + '</span><span class="en">Drag it on the print to place it anywhere.' + (side === 'back' ? ' Avoid the middle: the magnet goes there.' : '') + '</span></p>';
   }
   box.innerHTML = h;
   box.querySelector('.deco-toggle').onclick = () => { decoOpen[side] = !decoOpen[side]; renderDeco(side); };
   box.querySelectorAll('.deco-b').forEach(b => b.onclick = () => { p[k] = b.dataset.d; mmEv('dibujo', side + ' ' + b.dataset.d); decoOpen[side] = false; renderDeco(side); txtRepaint(side); });
-  box.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { p.frontDecoPos = b.dataset.pos; renderDeco(side); txtRepaint(side); });
-  const r = box.querySelector('input[type=range]');
+  box.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { p.frontDecoPos = b.dataset.pos; p.frontDecoX = p.frontDecoY = null; renderDeco(side); txtRepaint(side); });
+  const color = c => {
+    if(side === 'back' && inkLuma(c) > .72){ toast('Por detrás el fondo es plateado: elige un color más oscuro'); renderDeco(side); return; }
+    p[side + 'DecoColor'] = c; renderDeco(side); txtRepaint(side);
+  };
+  box.querySelectorAll('.deco-ink button.ink').forEach(b => b.onclick = () => color(b.dataset.c));
+  const ci = box.querySelector('.deco-ink input'); if(ci) ci.addEventListener('change', e => color(e.target.value));
+  const r = box.querySelector('.deco-ctrl input[type=range]');
   if(r) r.addEventListener('input', () => { p[k + 'Size'] = +r.value; txtRepaint(side); });
 }
 function renderTxtExtras(){ ['front','back'].forEach(s => { renderInk(s); renderDeco(s); renderTwo(s); }); syncFrontZoneUI(); }
@@ -3679,7 +3706,9 @@ async function saveDesign(){
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
       frontText2:p.frontText2, backText2:p.backText2, frontMax:p.frontMax,
       frontColor:p.frontColor, frontDeco:p.frontDeco, frontDecoPos:p.frontDecoPos, frontDecoSize:p.frontDecoSize,
+      frontDecoX:p.frontDecoX, frontDecoY:p.frontDecoY, frontDecoColor:p.frontDecoColor,
       backColor:p.backColor, backDeco:p.backDeco, backDecoSize:p.backDecoSize,
+      backDecoX:p.backDecoX, backDecoY:p.backDecoY, backDecoColor:p.backDecoColor,
       frontText:p.frontText, frontX:p.frontX, frontY:p.frontY, frontSize:p.frontSize, frontFont:p.frontFont, frontDate:p.frontDate,
       backText:p.backText, backX:p.backX, backY:p.backY, backSize:p.backSize, backFont:p.backFont, backDate:p.backDate,
       backZone:p.backZone, backMax:p.backMax,
@@ -3741,7 +3770,9 @@ async function restoreDesign(saved){
       Object.assign(p, {
         frontText2:it.frontText2||'', backText2:it.backText2||'', frontMax:it.frontMax||260,
         frontColor:it.frontColor, frontDeco:it.frontDeco||'', frontDecoPos:it.frontDecoPos, frontDecoSize:it.frontDecoSize,
+        frontDecoX:it.frontDecoX, frontDecoY:it.frontDecoY, frontDecoColor:it.frontDecoColor,
         backColor:it.backColor, backDeco:it.backDeco||'', backDecoSize:it.backDecoSize,
+        backDecoX:it.backDecoX, backDecoY:it.backDecoY, backDecoColor:it.backDecoColor,
         frontText:FRONT_TEXT ? it.frontText||'' : '', frontX:it.frontX, frontY:it.frontY, frontSize:it.frontSize, frontFont:it.frontFont||FONT_DEFAULT, frontDate:FRONT_TEXT ? it.frontDate||'' : '',
         backText:it.backText||'',  backX:it.backX,  backY:it.backY,  backSize:it.backSize,  backFont:it.backFont||FONT_DEFAULT,  backDate:it.backDate||'',
         // los guardados antes del 30-oct no tienen franja: se saca de dónde estaba (encima o debajo de la mitad)
@@ -5406,7 +5437,7 @@ const SCENES = [
   { id:'rincon', caja:{ w:540, h:288, d:400 },        es:'Rincón',       en:'Corner',           des:'la esquina, con planta',  den:'the corner, with a plant',  furnCm:55, gapCm:26, viewCm:340, build:buildRincon },
 
   /* ── ESCALERA ──────────────────────────────────────────────────────────── */
-  { id:'escalera-galeria', caja:{ w:520, h:300, d:420 }, es:'Escalera rústica', en:'Rustic staircase', des:'la pared del rellano, con la escalera al fondo', den:'landing wall, staircase behind',
+  { id:'escalera-galeria', caja:{ w:520, h:300, d:420 }, es:'Escalera rústica', en:'Rustic staircase', des:'la pared del rellano, con la subida al lado', den:'landing wall, stairs alongside',
     furnCm:70, gapCm:24, viewCm:380, build:(g,U) => {
       buildShell(g, U, { wall1:'#eeeae2', wall2:'#e0dbd0', floor1:'#c7bfaf', floor2:'#b3aa99', side:'#ebe7df', skirt:'#e0dbd0' });
       addEscalones(g, U, { xCm:164, zCm:26, sg:-1, wCm:96, n:10, color:'#c7ad84', zanca:'#f1ede4' });
@@ -5416,8 +5447,8 @@ const SCENES = [
       addModel(g, 'modelos/potted_plant_02.glb', { xCm:-196, zCm:60 });
       addContactShadow(g, U, 76, 72, -196*U, 60*U, 0.6);
     } },
-  { id:'escalera-blanca', caja:{ w:520, h:302, d:420 }, es:'Escalera clásica', en:'Classic staircase', des:'balaustres blancos y pasamanos oscuro', den:'white balusters, dark handrail',
-    furnCm:70, gapCm:24, viewCm:380, build:(g,U) => {
+  { id:'escalera-blanca', caja:{ w:840, h:302, d:420 }, es:'Escalera clásica', en:'Classic staircase', des:'los cuadros, por encima de la barandilla', den:'prints above the banister',
+    furnCm:146, gapCm:26, viewCm:380, build:(g,U) => {
       buildShell(g, U, { wall1:'#f1eee6', wall2:'#e4e0d6', floor1:'#c9b797', floor2:'#b5a37f', side:'#eeece4', skirt:'#e4e0d6' });
       addEscalones(g, U, { xCm:164, zCm:26, sg:-1, wCm:96, n:10, color:'#a9744a', zanca:'#faf8f4', metalColor:'#f5f3ee', pasamanos:'#5a4028' });
       addRunner(g, U, { wCm:96, dCm:260, zCm:8, hex:'#c9b6a1' });
@@ -5426,8 +5457,8 @@ const SCENES = [
       addModel(g, 'modelos/potted_plant_04.glb', { xCm:-196, zCm:58 });
       addContactShadow(g, U, 60, 56, -196*U, 58*U, 0.55);
     } },
-  { id:'escalera-moderna', caja:{ w:520, h:296, d:420 }, es:'Escalera moderna', en:'Modern staircase', des:'peldaños flotantes de acero y madera', den:'floating steel-and-wood steps',
-    furnCm:70, gapCm:24, viewCm:380, build:(g,U) => {
+  { id:'escalera-moderna', caja:{ w:640, h:296, d:420 }, es:'Escalera moderna', en:'Modern staircase', des:'los cuadros, en la pared bajo la subida', den:'prints on the wall under the stairs',
+    furnCm:74, gapCm:30, viewCm:380, build:(g,U) => {
       buildShell(g, U, { wall1:'#e2ded9', wall2:'#d2cdc6', floor1:'#3a342e', floor2:'#2a2621', side:'#ded9d3', skirt:'#d2cdc6' });
       addEscalonesFlotantes(g, U, { xCm:170, zCm:22, sg:-1, wCm:100, n:10, color:'#3f2c1d', luz:'#ffcf94' });
       const bancoMat = new THREE.MeshStandardMaterial({ color:0x232323, roughness:0.5, metalness:0.2 });
@@ -5649,9 +5680,9 @@ function addModel(g, url, o){
    La luz de la pared también va a los cuadros (rooms/<id>/light.webp), con el mismo shader de siempre.
    Si algo no carga, se dibuja la escena antigua (sc.build). */
 const BAKED_ROOMS = {
-  'aparador-alto':{w:420,h:260,wall:'#e9e2d5',floor:'#b69c7b'},'aparador-consola':{w:400,h:255,wall:'#e6e1d8',floor:'#a58c6e'},'cocina':{w:600,h:276,wall:'#e9e4da',floor:'#c0a684'},'cocina-blanca':{w:600,h:282,wall:'#eeece7',floor:'#c0a684'},'cocina-negra':{w:600,h:280,wall:'#e7e4de',floor:'#b8b4ab'},'cocina-terracota':{w:600,h:278,wall:'#eee6da',floor:'#d0c5b4'},'cocina-verde':{w:580,h:272,wall:'#ebe7dd',floor:'#c7bfb0'},'despacho-gamer':{w:560,h:288,wall:'#d9dade',floor:'#8e8a84'},'despacho-gris':{w:560,h:278,wall:'#e9eaea',floor:'#b3ada2'},'despacho-real':{w:560,h:274,wall:'#e9e4dd',floor:'#b39a7c'},'dormitorio':{w:660,h:292,wall:'#e5ded6',floor:'#c0a684'},'dormitorio-boutique':{w:640,h:294,wall:'#e9e1d6',floor:'#a98f70'},'dormitorio-doble':{w:680,h:296,wall:'#eae3d8',floor:'#c0a684'},'dormitorio-juvenil':{w:500,h:262,wall:'#dde2d8',floor:'#c0a684'},'dormitorio-nordico':{w:600,h:280,wall:'#f0eee8',floor:'#d5c6ad'},'escalera-blanca':{w:520,h:302,wall:'#f0ede6',floor:'#b39a78'},'escalera-galeria':{w:520,h:300,wall:'#eeeae1',floor:'#c7b08a'},'escalera-moderna':{w:520,h:296,wall:'#dfdbd5',floor:'#6d6a64'},'escritorio-blanco':{w:560,h:272,wall:'#e9eaea',floor:'#b3ada2'},'escritorio-nogal':{w:560,h:272,wall:'#dfe3d8',floor:'#a98f70'},'escritorio-roble':{w:560,h:272,wall:'#ede8df',floor:'#c0a684'},'estanteria-cima':{w:560,h:270,wall:'#ede7dc',floor:'#c0a684'},'estanteria-hueco':{w:560,h:270,wall:'#ebe4d7',floor:'#ae9273'},'estudio':{w:520,h:266,wall:'#ede8df',floor:'#c0a684'},'mesita-boutique':{w:560,h:270,wall:'#e9ddd1',floor:'#a98f70'},'mesita-nordica':{w:560,h:270,wall:'#f0eee8',floor:'#d5c6ad'},'nevera-acero':{w:420,h:270,wall:'#f2ede3',floor:'#c9a67c'},'nevera-menta':{w:420,h:270,wall:'#f1ece2',floor:'#bdbab4'},'nevera-negra':{w:420,h:270,wall:'#efece5',floor:'#c7bfb0'},'nevera-roja':{w:420,h:270,wall:'#efe7da',floor:'#ad6a4a'},'pasillo':{w:372,h:314,wall:'#eeeae2',floor:'#ae9273'},'rincon':{w:540,h:288,wall:'#ebe5dc',floor:'#c0a684',ry:[-.32,.85]},'salon-butacas':{w:600,h:284,wall:'#eee6d8',floor:'#b49a78'},'salon-moderno-gris':{w:640,h:296,wall:'#e4e3e0',floor:'#ab8f70'},'salon-real':{w:640,h:286,wall:'#ebe6dd',floor:'#c0a684'},'salon-sofa':{w:800,h:300,wall:'#ebe5da',floor:'#c0a684'},'terraza-abierta':{w:480,h:268,wall:'#ece2cd',floor:'#a9673f',ry:[-.32,.85]},'terraza-cristal':{w:480,h:280,wall:'#ece4d5',floor:'#c9bda8',ry:[-.32,.85]},'terraza-jardin':{w:490,h:300,wall:'#eee8d8',floor:'#b2997a',ry:[-.32,.85]},'terraza-urbana':{w:480,h:282,wall:'#d9d7d2',floor:'#9e9b93',ry:[-.32,.85]}
+  'aparador-alto':{w:420,h:260,wall:'#e9e2d5',floor:'#b69c7b'},'aparador-consola':{w:400,h:255,wall:'#e6e1d8',floor:'#a58c6e'},'cocina':{w:600,h:276,wall:'#e9e4da',floor:'#c0a684'},'cocina-blanca':{w:600,h:282,wall:'#eeece7',floor:'#c0a684'},'cocina-negra':{w:600,h:280,wall:'#e7e4de',floor:'#b8b4ab'},'cocina-terracota':{w:600,h:278,wall:'#eee6da',floor:'#d0c5b4'},'cocina-verde':{w:580,h:272,wall:'#ebe7dd',floor:'#c7bfb0'},'despacho-gamer':{w:560,h:288,wall:'#d9dade',floor:'#8e8a84'},'despacho-gris':{w:560,h:278,wall:'#e9eaea',floor:'#b3ada2'},'despacho-real':{w:560,h:274,wall:'#e9e4dd',floor:'#b39a7c'},'dormitorio':{w:660,h:292,wall:'#e5ded6',floor:'#c0a684'},'dormitorio-boutique':{w:640,h:294,wall:'#e9e1d6',floor:'#a98f70'},'dormitorio-doble':{w:680,h:296,wall:'#eae3d8',floor:'#c0a684'},'dormitorio-juvenil':{w:500,h:262,wall:'#dde2d8',floor:'#c0a684'},'dormitorio-nordico':{w:600,h:280,wall:'#f0eee8',floor:'#d5c6ad'},'escalera-blanca':{w:840,h:302,wall:'#f0ede6',floor:'#b39a78'},'escalera-galeria':{w:520,h:300,wall:'#eeeae1',floor:'#c7b08a'},'escalera-moderna':{w:640,h:296,wall:'#dfdbd5',floor:'#6d6a64'},'escritorio-blanco':{w:560,h:272,wall:'#e9eaea',floor:'#b3ada2'},'escritorio-nogal':{w:560,h:272,wall:'#dfe3d8',floor:'#a98f70'},'escritorio-roble':{w:560,h:272,wall:'#ede8df',floor:'#c0a684'},'estanteria-cima':{w:560,h:270,wall:'#ede7dc',floor:'#c0a684'},'estanteria-hueco':{w:560,h:270,wall:'#ebe4d7',floor:'#ae9273'},'estudio':{w:520,h:266,wall:'#ede8df',floor:'#c0a684'},'mesita-boutique':{w:560,h:270,wall:'#e9ddd1',floor:'#a98f70'},'mesita-nordica':{w:560,h:270,wall:'#f0eee8',floor:'#d5c6ad'},'nevera-acero':{w:420,h:270,wall:'#f2ede3',floor:'#c9a67c'},'nevera-menta':{w:420,h:270,wall:'#f1ece2',floor:'#bdbab4'},'nevera-negra':{w:420,h:270,wall:'#efece5',floor:'#c7bfb0'},'nevera-roja':{w:420,h:270,wall:'#efe7da',floor:'#ad6a4a'},'pasillo':{w:372,h:314,wall:'#eeeae2',floor:'#ae9273'},'rincon':{w:540,h:288,wall:'#ebe5dc',floor:'#c0a684',ry:[-.32,.85]},'salon-butacas':{w:600,h:284,wall:'#eee6d8',floor:'#b49a78'},'salon-moderno-gris':{w:640,h:296,wall:'#e4e3e0',floor:'#ab8f70'},'salon-real':{w:640,h:286,wall:'#ebe6dd',floor:'#c0a684'},'salon-sofa':{w:800,h:300,wall:'#ebe5da',floor:'#c0a684'},'terraza-abierta':{w:480,h:268,wall:'#ece2cd',floor:'#a9673f',ry:[-.32,.85]},'terraza-cristal':{w:480,h:280,wall:'#ece4d5',floor:'#c9bda8',ry:[-.32,.85]},'terraza-jardin':{w:490,h:300,wall:'#eee8d8',floor:'#b2997a',ry:[-.32,.85]},'terraza-urbana':{w:480,h:282,wall:'#d9d7d2',floor:'#9e9b93',ry:[-.32,.85]}
 };
-const BAKED_V = 'ccab54eb';
+const BAKED_V = '947e58e8';
 const _bakedTex = {};
 function bakedTexture(url){
   if(_bakedTex[url]) return _bakedTex[url];
@@ -6200,12 +6231,18 @@ function clearWall(){
     const p0 = POSTERS[0];
     if(!p0.srcImg){ applyProductSize(p0, defSizeOf(PRODUCTS.nevera)); setOrientation(p0, 'portrait'); }   // el de partida: XS
     selected = 0; NEVERA_PAN = 0;
+  } else {
+    /* 4-nov: al quitar el conjunto se vuelve a un solo cuadro: el primero con foto, o el primero */
+    const keep = POSTERS.find(p => p.srcImg || p.pendingImg) || POSTERS[0];
+    for(let i = POSTERS.length - 1; i >= 0; i--) if(POSTERS[i] !== keep) disposePoster(i);
+    selected = 0;
   }
   WALL = null;
   editorRootEl.classList.remove('ed-wall');
   if(roomGroup) roomGroup.visible = false;
   if(photoMesh){ photoMesh.visible = false; fgMesh.visible = false; }
   POSTERS.forEach(p => { if(p.shadow) p.shadow.visible = false; });
+  if(ROOM_CFG.mode !== 'none' && !enNevera()) clearRoom();   // 4-nov: sin conjunto, el cuadro solo; el entorno se elige de nuevo si se quiere
   flipToFace(REST_RY); tRx = REST_RX;
   closePanel();
   layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar();

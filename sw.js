@@ -1,4 +1,27 @@
-/* sw.js: solo para las notificaciones (carrito o diseño a medias). No toca la caché ni las peticiones de la web. */
+/* sw.js: notificaciones (carrito o diseño a medias) y, desde el 4-nov, la app: las páginas siempre de la red si hay
+   cobertura (si no, la última guardada) y fotos, scripts y estilos desde la caché mientras se actualizan por detrás. */
+const CACHE = 'mm-app-1';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil((async () => {
+  for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+  await self.clients.claim();
+})()));
+self.addEventListener('fetch', e => {
+  const r = e.request, u = new URL(r.url);
+  if (r.method !== 'GET' || u.origin !== location.origin || u.pathname.startsWith('/vista-cambios') || r.headers.has('range')) return;
+  if (r.mode === 'navigate') {
+    e.respondWith(fetch(r).then(res => { if (res.ok) { const c = res.clone(); caches.open(CACHE).then(h => h.put(r, c)); } return res; })
+      .catch(async () => (await caches.match(r)) || (await caches.match('/')) || Response.error()));
+    return;
+  }
+  if (!/\.(js|css|webp|jpg|jpeg|png|svg|woff2|glb)$/i.test(u.pathname)) return;
+  e.respondWith((async () => {
+    const h = await caches.open(CACHE), v = await h.match(r);
+    const red = fetch(r).then(res => { if (res.ok) h.put(r, res.clone()); return res; });
+    if (v) { e.waitUntil(red.catch(() => {})); return v; }
+    return red;
+  })());
+});
 const API = 'https://staff.momenturies.com/t/push/msg';
 self.addEventListener('push', e => {
   e.waitUntil((async () => {

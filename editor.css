@@ -420,7 +420,7 @@ html.ed-locked #ptypeLabel{display:none}
 .wall-opt:hover{border-color:var(--black);transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.10)}
 .wall-opt.active{border-color:var(--black);box-shadow:inset 0 0 0 1.5px var(--black)}
 .wall-opt-svg{background:#ece8e1;border-radius:8px;height:118px;display:flex;align-items:center;justify-content:center;padding:8px}
-.wall-opt-svg svg{max-width:100%;max-height:100%;width:auto;height:auto}
+.wall-opt-svg svg{display:block;width:100%;height:100%}
 .wall-opt b{font-size:13px;margin-top:2px}
 .wall-opt small{display:block;font-size:11px;color:var(--mid);line-height:1.4}
 .wall-opt-price{font-size:12.5px;font-weight:700}
@@ -472,7 +472,7 @@ html.ed-locked #ptypeLabel{display:none}
 .room-opt.active{border-color:var(--black);box-shadow:inset 0 0 0 1.5px var(--black)}
 .room-opt b{font-size:13px;line-height:1.25;order:1}
 .room-opt small{display:block;font-size:11px;color:var(--mid);order:2;margin-bottom:7px}
-.room-opt-img{display:block;order:3;aspect-ratio:4/3;border-radius:8px;background:#e9e4dc center/cover no-repeat;margin-top:auto}
+.room-opt-img{display:block;order:3;flex:none;width:100%;height:0;padding-top:75%;border-radius:8px;background:#e9e4dc center/cover no-repeat;margin-top:auto}
 .room-opt-img[data-ico]{display:flex;align-items:center;justify-content:center;color:var(--mid);border:1.5px dashed #c9c3ba;background:var(--gray)}
 .room-opt-ico{display:flex;align-items:center;justify-content:center;color:var(--mid);border:1.5px dashed #c9c3ba;background:var(--gray)}
 .mmodal-card.mywall-card{width:min(820px,94vw)}
@@ -679,3 +679,13 @@ html.ed-locked #ptypeLabel{display:none}
   .editor.ed-typing .ed-panel .typing-path:has(>.type-ok){display:flex;gap:8px;align-items:center}
   .editor.ed-typing .ed-panel .typing-path:has(>.type-ok)>input,.editor.ed-typing .ed-panel .typing-path:has(>.type-ok)>textarea{flex:1;min-width:0;margin:0}
 }
+
+/* 4-nov · iPhone: sin esto el texto de los botones sale azul (color del sistema) */
+button{color:inherit}
+.size-btn{color:var(--black)}
+.size-btn.active{color:#fff}
+.room-opt-img[data-ico],.room-opt-ico{height:auto;padding-top:0;min-height:52px}
+.mmodal{height:100dvh;bottom:auto}
+.mmodal-card{max-height:calc(100dvh - 24px)}
+@media(max-width:720px){.ed-panel{max-height:60dvh}}
+.deco-ink{margin:10px 0 8px;flex-wrap:wrap}
