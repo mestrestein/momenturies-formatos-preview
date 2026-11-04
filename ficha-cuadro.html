@@ -95,8 +95,6 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .slides::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;height:100%;scroll-snap-align:start;position:relative;background:#eee center/cover no-repeat}
 .slide .cap{position:absolute;left:16px;bottom:16px;background:rgba(255,253,249,.94);backdrop-filter:blur(6px);border-radius:999px;padding:9px 15px;font-size:13px;font-weight:700;color:var(--brown);box-shadow:0 6px 20px rgba(0,0,0,.12)}
-.slide .vs-l,.slide .vs-r{position:absolute;top:16px;font:900 12px/1 var(--sans);letter-spacing:1px;text-transform:uppercase;border-radius:999px;padding:8px 12px}
-.slide .vs-l{left:16px;background:#c9a24a;color:#1a120a}.slide .vs-r{right:16px;background:rgba(20,18,16,.75);color:#fff}
 .stage .arr{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer;font-size:20px;z-index:3}
 .stage .arr.l{left:12px}.stage .arr.r{right:12px}
 .stage .count{position:absolute;right:14px;top:14px;background:rgba(20,18,16,.7);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;z-index:3}
@@ -151,29 +149,48 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 @media(max-width:980px){.bul4{grid-template-columns:1fr 1fr;margin:0;position:static}}
 .bul4 li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;background:var(--cream);border-radius:14px;padding:12px 12px;font-size:12.5px;line-height:1.35;color:var(--mid)}
 .bul4 li b{display:block;font-size:14px;line-height:1.25;color:var(--ink);margin-bottom:2px}
+.solo-movil{display:none}
+@media(max-width:980px){.solo-pc{display:none}.solo-movil{display:inline}}
 .bul4 li i{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:17px}
 @media(max-width:420px){.bul4 li{grid-template-columns:1fr;gap:6px;align-items:start}}
 
+/* 3-nov: 3 preguntas rápidas bajo el botón */
+.qfaq{margin-top:18px;border-top:1px solid var(--line)}
+.qfaq details{border-bottom:1px solid var(--line)}
+.qfaq summary{list-style:none;cursor:pointer;padding:14px 30px 14px 0;font-size:15px;font-weight:800;position:relative}
+.qfaq summary::-webkit-details-marker{display:none}
+.qfaq summary::after{content:'+';position:absolute;right:2px;top:50%;transform:translateY(-50%);font-size:22px;font-weight:400;color:var(--terra);transition:transform .2s}
+.qfaq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+.qfaq .a{font-size:14px;line-height:1.55;color:var(--ink2);padding:0 6px 16px 0}
+.qfaq .a ul,.qfaq .a ol{margin:8px 0 0 18px;display:grid;gap:5px}
+.qfaq .a b{color:var(--ink)}
+/* 3-nov: pago seguro y formas de pago, al final de la compra */
+.pay{margin-top:20px;padding:16px;border-radius:14px;background:var(--cream);text-align:center}
+.pay p{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:800;color:var(--ink)}
+.pay p small{font-weight:600;color:var(--mid)}
+.pay ul{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:12px}
+.pay li{height:28px;min-width:42px;padding:0 6px;border-radius:6px;background:#fff;border:1px solid #ddd5c9;display:grid;place-items:center;font:900 11px/1 var(--sans);letter-spacing:-.2px}
+.pay li svg{display:block;height:18px;width:auto}
 /* packs (estilo bundle) */
 .packs-h{display:flex;align-items:center;gap:12px;margin:30px 0 14px;font-size:14px;font-weight:900;letter-spacing:.3px;color:var(--brown)}
 .packs-h::before,.packs-h::after{content:'';flex:1;height:1px;background:var(--line)}
-.opt{position:relative;border:1.5px solid var(--line);border-radius:16px;background:#fff;margin-bottom:12px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
+.opt{position:relative;border:1.5px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;cursor:pointer;transition:border-color .2s,box-shadow .2s,background .2s}
 .opt:hover{border-color:#cbbfae}
 .opt.on{border-color:var(--brown);box-shadow:0 0 0 1px var(--brown),0 12px 30px rgba(74,46,26,.12);background:#fffaf4}
-.opt .row{display:grid;grid-template-columns:24px 1fr auto;gap:14px;align-items:center;padding:16px 18px}
+.opt .row{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:center;padding:11px 16px}
 .opt .rad{width:22px;height:22px;border-radius:50%;border:2px solid #c9bdae;display:grid;place-items:center}
 .opt.on .rad{border-color:var(--brown)}
 .opt.on .rad::after{content:'';width:11px;height:11px;border-radius:50%;background:var(--brown)}
-.opt .tit{font-size:17px;font-weight:900;font-style:italic;letter-spacing:-.01em}
-.opt .tit small{display:block;font-style:normal;font-size:12.5px;font-weight:600;color:var(--mid);margin-top:3px;letter-spacing:0}
-.opt .pill{display:inline-block;font-style:italic;font-size:12px;font-weight:800;color:var(--terra);background:var(--terra-s);border-radius:999px;padding:4px 10px;margin-left:8px;vertical-align:2px}
+.opt .tit{font-size:16px;font-weight:900;font-style:italic;letter-spacing:-.01em}
+.opt .tit small{display:block;font-style:normal;font-size:11.5px;font-weight:600;color:var(--green);margin-top:1px;letter-spacing:0}
+.opt .pill{display:inline-block;font-style:italic;font-size:11px;font-weight:800;color:var(--terra);background:var(--terra-s);border-radius:999px;padding:3px 8px;margin-left:8px;vertical-align:2px}
 .opt .pr{text-align:right;white-space:nowrap}
-.opt .pr b{display:block;font-size:19px;font-weight:900;font-style:italic;color:var(--brown)}
-.opt .pr s{font-size:13.5px;color:var(--mid);font-weight:600}
+.opt .pr b{display:block;font-size:17px;font-weight:900;font-style:italic;color:var(--brown)}
+.opt .pr s{font-size:12.5px;color:var(--mid);font-weight:600}
 .opt .pr em{display:block;font-style:normal;font-size:11.5px;font-weight:700;color:var(--green);margin-top:2px}
-.opt .badge{position:absolute;right:16px;top:-12px;background:var(--brown);color:#fff;font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:6px;padding:5px 9px}
+.opt .badge{position:absolute;right:14px;top:-9px;background:var(--brown);color:#fff;font-size:9.5px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:6px;padding:3px 7px}
 .opt .badge.terra{background:var(--terra)}
-.opt .more{display:none;padding:0 18px 16px}
+.opt .more{display:none;padding:0 16px 14px}
 .opt.on .more{display:block;animation:entra .35s var(--ease)}
 @keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .prev{display:grid;grid-template-columns:1fr;gap:10px}
@@ -181,13 +198,9 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .prev .sw{position:absolute;left:10px;top:10px;display:flex;gap:6px}
 .prev .sw button{border:0;border-radius:999px;font-size:12px;font-weight:700;padding:6px 11px;background:rgba(255,255,255,.88);cursor:pointer}
 .prev .sw button.on{background:var(--ink);color:#fff}
-.prev .meta{display:flex;flex-wrap:wrap;gap:6px}
-.prev .meta span{font-size:12px;font-weight:600;color:var(--ink2);background:var(--cream);border-radius:8px;padding:6px 9px}
-.gift{display:flex;align-items:center;gap:12px;border-radius:0 0 14px 14px;background:var(--brown);color:#fff;padding:11px 18px;font-size:14.5px;font-weight:800}
-.gift .ico{width:34px;height:34px;border-radius:8px;background:#fff;display:grid;place-items:center;flex:0 0 auto}
-.gift .ico i{width:14px;height:14px;background:#1d1d1d;border-radius:3px;display:block}
-.gift s,.gift span.inc{margin-left:auto;font-size:13px;font-weight:700;opacity:.8}
-.opt:not(.on) .gift{background:var(--cream2);color:var(--brown);border-radius:0 0 14px 14px}
+.prev .meta{display:block;font-size:12px;line-height:1.5;color:var(--ink2);text-align:center}
+.prev .meta span+span::before{content:' · ';color:var(--mid);font-weight:400}
+.prev .meta span.ok{color:var(--green);font-weight:800}
 .cta-main{width:100%;margin-top:8px;font-size:18px;padding:21px 24px;background:var(--brown)}
 .cta-main:hover{background:#3a2314}
 .cta-note{text-align:center;font-size:13px;color:var(--mid);margin-top:10px}
@@ -224,7 +237,21 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .step .n{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#ffc79c;color:var(--brown);font-weight:900;margin-bottom:12px}
 .step h3{font-family:var(--serif);font-size:28px;line-height:1.1;color:#fff}
 .step p{font-size:15px;line-height:1.5;color:rgba(255,255,255,.82);margin-top:8px}
-.prog{display:flex;gap:8px;justify-content:center;margin-top:26px}
+.prog{display:flex;gap:8px;justify-content:center;margin-top:16px}
+/* 4-nov: toda la sección cabe en pantalla. El alto de la tarjeta sale de lo que queda libre:
+   pantalla − barra de arriba (65) − barra fija de abajo (70) − --resto (título, puntos y márgenes) */
+.story{--resto:236px;padding:28px 0 24px}
+.story .h2{font-size:clamp(28px,3vw,40px)}.story .h2 br{display:none}
+.story .tag{margin-bottom:6px}
+.story .lead{font-size:15px;line-height:1.45;margin-top:6px;max-width:680px}
+.story .steps{padding-top:18px}
+.story .step{flex-basis:max(216px,min(400px,82vw,calc((100svh - 135px - var(--resto))*.8)))}
+.story .step .img::after{background:linear-gradient(180deg,transparent 35%,rgba(25,14,6,.94) 72%)}
+.story .step .txt{padding:16px 18px}
+.story .step .n{width:28px;height:28px;font-size:14px;margin-bottom:6px}
+.story .step h3{font-size:clamp(20px,2vw,24px)}
+.story .step p{font-size:13.5px;line-height:1.4;margin-top:5px}
+@media(max-width:700px){.story{--resto:206px;padding:20px 0 16px}.story .h2{font-size:26px}.story .lead{font-size:14px;line-height:1.4}.story-nav{display:none}.story .steps{padding-top:12px}.prog{margin-top:12px}}
 .prog i{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden;position:relative;cursor:pointer}
 .prog i.on::after{content:'';position:absolute;inset:0;background:#ffc79c;animation:fill 5s linear forwards}
 .prog i.done{background:#ffc79c}
@@ -304,7 +331,45 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .combo-grid .tx span{font-size:13px;font-weight:800;color:var(--terra);white-space:nowrap}
 
 /* ═════════ 5 · ALUMINIO VS TRADICIONAL ═════════ */
-.vs-img{border-radius:22px;overflow:hidden;margin-top:40px}
+/* 3-nov: «La diferencia», la misma de la portada (foto con 4 puntos + comparativa desplegable) */
+#vs{background:var(--cream)}
+.al-foto{position:relative;margin-top:40px;border-radius:20px;overflow:hidden;box-shadow:0 30px 60px rgba(60,40,20,.14)}
+.al-foto img{display:block;width:100%}
+.al-foto .pt{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#fff;border:0;cursor:pointer;box-shadow:0 0 0 6px rgba(255,255,255,.35);font:800 14px var(--sans);color:var(--ink);animation:alLat 2s infinite}
+@keyframes alLat{50%{box-shadow:0 0 0 12px rgba(255,255,255,.15)}}
+.al-foto .pt.on{background:var(--ink);color:#fff;animation:none}
+.al-foto .globo{position:absolute;max-width:260px;background:#fff;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;box-shadow:0 20px 40px rgba(0,0,0,.2);opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s;pointer-events:none}
+.al-foto .globo.on{opacity:1;transform:none}
+.al-foto .globo b{display:block;margin-bottom:4px}
+.al-vs{margin-top:22px;background:#fff;border-radius:20px;box-shadow:0 14px 34px rgba(60,40,20,.07)}
+.al-vs summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 26px;font-weight:700;font-size:16px}
+.al-vs summary::-webkit-details-marker{display:none}
+.al-vs summary em{font-style:normal;font-size:13.5px;color:var(--terra);white-space:nowrap;display:flex;align-items:center;gap:8px}
+.al-vs summary em::after{content:'+';font-size:22px;font-weight:300;line-height:1;transition:transform .25s}
+.al-vs[open] summary em::after{transform:rotate(45deg)}
+.al-tabla{padding:0 26px 24px}
+.al-fila{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;border-top:1px solid var(--line)}
+.al-fila span{position:relative;display:block;padding:13px 0 13px 34px;font-size:15px;line-height:1.45;color:#4a443d}
+.al-fila span em{font-style:normal;font-weight:700;color:var(--ink)}
+.al-fila .si::before,.al-fila .no::before{position:absolute;left:0;top:13px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
+.al-fila .si::before{content:'✓';background:#2f6f4f;color:#fff}
+.al-fila .no::before{content:'✕';background:#ece6dd;color:#9a8f82}
+.al-fila .no{color:#8b847a}
+.al-fila .no em{color:#6e665c;font-weight:600}
+.al-cab{border-top:0}
+.al-cab span{font:700 12px var(--sans);letter-spacing:1.5px;text-transform:uppercase;color:var(--ink);padding:6px 0 12px 34px}
+.al-cab span:last-child{color:#9a8f82}
+@media(max-width:900px){
+  .al-foto{margin-top:26px;border-radius:14px}
+  .al-foto .globo{width:min(58%,300px);max-width:none;padding:10px 12px;font-size:12.5px;line-height:1.4}
+  .al-vs summary{padding:16px;font-size:14.5px}
+  .al-vs summary span{flex:1;min-width:0}
+  .al-tabla{padding:0 12px 14px}
+  .al-fila{gap:0 12px}
+  .al-fila span{padding:38px 0 12px;font-size:13px;line-height:1.38}
+  .al-fila .si::before,.al-fila .no::before{top:11px;width:20px;height:20px;font-size:11px}
+  .al-cab span{font-size:10.5px;letter-spacing:1px;padding:4px 0 10px}
+}
 .vs-table{margin-top:34px;border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#fff}
 .vs-table .r{display:grid;grid-template-columns:1.1fr 1.3fr 1.3fr;border-top:1px solid var(--line)}
 .vs-table .r:first-child{border-top:0}
@@ -319,17 +384,6 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .vs-table .r:not(.h)>div:nth-child(3)::before{content:'✕ ';color:#c0392b;font-weight:900}
 @media(max-width:700px){.vs-table .r{grid-template-columns:1fr 1fr}.vs-table .r>div:nth-child(1){grid-column:1/-1;padding-bottom:4px;background:var(--cream)}.vs-table .h>div:nth-child(1){display:none}.vs-table .r>div{padding:12px 14px;font-size:14px}}
 
-.vs2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
-@media(max-width:760px){.vs2{grid-template-columns:1fr}}
-.vs2>div{background:#0c0a08;border-radius:22px;padding:34px 34px 30px;color:#fff}
-.vs2 .win{box-shadow:0 0 0 2px #c9a24a inset,0 24px 50px rgba(0,0,0,.25)}
-.vs2 h3{font:italic 900 clamp(22px,2.6vw,30px)/1.1 var(--sans);text-transform:uppercase;color:#d8b25e;letter-spacing:.5px;margin-bottom:20px;text-align:center}
-.vs2 ul{list-style:none;display:grid;gap:12px}
-.vs2 li{position:relative;padding-left:30px;font-size:15px;font-weight:700;line-height:1.45;text-transform:uppercase;letter-spacing:.3px}
-.vs2 li em{font-style:normal;color:#d8b25e}
-.vs2 .win li::before{content:'✓';position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:#c9a24a;color:#0c0a08;font-size:12px;font-weight:900;display:grid;place-items:center}
-.vs2 .lose li::before{content:'✕';position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:#3a2f26;color:#e8b8a8;font-size:11px;font-weight:900;display:grid;place-items:center}
-.vs2 .lose{opacity:.92}
 /* ═════════ 6 · VENTAJAS (3D flotando) ═════════ */
 .adv{background:radial-gradient(80% 70% at 50% 50%,#3a2516 0%,#1d120a 100%);color:#f6efe6;overflow:hidden}
 .adv .h2{color:#fff}.adv .h2 em{color:#ffc79c}.adv .tag{color:#ffc79c}.adv .lead{color:rgba(246,239,230,.75)}
@@ -439,10 +493,14 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   </div>
 
   <ul class="bul4" aria-label="Ventajas">
-    <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos</div></li>
-    <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros</div></li>
-    <li><i>🛋️</i><div><b>Míralo en tu casa</b>Colgado en tu pared antes de pagar</div></li>
-    <li><i>💌</i><div><b>Con dedicatoria detrás</b>Un regalo que no acaba en un cajón</div></li>
+    <li><i>✨</i><div><b>Metal, no papel</b>Alta definición, colores más vivos, dura más</div></li>
+    <li><i>🧲</i><div><b>Colgado magnético</b>Sin taladro ni agujeros, con imán</div></li>
+    <li><i>🛋️</i><div><b>Míralo en tu casa</b><span class="solo-pc">Mira cómo queda desde el móvil, antes de comprar</span><span class="solo-movil">Mira cómo queda antes de comprar</span></div></li>
+    <li><i>💌</i><div><b>Ponle tu dedicatoria</b>Un regalo que no acaba en un cajón</div></li>
+    <li class="solo-pc"><i>🧩</i><div><b>Elige tu combinación ideal</b>Crea en tiempo real tu pared favorita</div></li>
+    <li class="solo-pc"><i>📱</i><div><b>De tu galería a la pared</b>Dale vida a vuestros recuerdos del móvil</div></li>
+    <li class="solo-pc"><i>🎁</i><div><b>Un regalo original</b>No le regales lo típico, que lo vea todos los días</div></li>
+    <li class="solo-pc"><i>🏡</i><div><b>Crea vuestra pared juntos</b>Decora vuestro hogar junto a los tuyos</div></li>
   </ul>
 
   <div class="info">
@@ -458,7 +516,34 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
     <p class="cta-note" id="ctaNote">Subes tus fotos y lo ves colgado antes de pagar.</p>
 
-    <div class="trust"><span>Envío gratis en España desde 60 €</span><span>Impreso en 1-2 días laborables</span><span>Si llega mal, lo reimprimimos</span><span>Pago seguro con Shopify</span></div>
+    <div class="qfaq">
+      <details><summary>¿Qué es un cuadro metálico con colgado magnético?</summary><div class="a">Tu foto impresa en alta definición directamente sobre aluminio, lista para colgar sin herramientas.
+        <ul><li><b>Cuadro metálico:</b> no se dobla, no se arruga, rígido y mucho más duradero.</li>
+        <li><b>Impresión HD:</b> acabado brillante con colores más vivos, nítido y con efecto reflejo. Sin sobrecoste por el marco ni cristal.</li>
+        <li><b>Imán premium:</b> olvídate de herramientas ni agujeros. Coloca el imán y cuelga tu cuadro sin esfuerzo ni daños.</li>
+        <li><b>Base adhesiva:</b> se pega sobre la pared y la protege. Se coloca el imán sobre esta en el centro, listo para colgar el cuadro.</li>
+        <li><b>Dedicatoria:</b> si quieres, puedes añadir unas palabras dedicadas a quien más te importa, gratis.</li></ul></div></details>
+      <details><summary>¿Por qué colgado magnético?</summary><div class="a">Porque no necesitas taladro, clavos ni nivel, y la pared queda intacta: perfecto si vives de alquiler. Además, lo mueves o lo cambias por otro cuando quieras. Así se cuelga:
+        <ol><li>Quita el protector de la base adhesiva.</li><li>Pega la base en la pared y aprieta unos segundos.</li><li>Acerca el cuadro: el imán se engancha solo.</li><li>Endérézalo con la mano y listo.</li></ol>
+        Para cambiarlo de sitio, lo separas del imán y lo pones en otra base. Sin agujeros ni marcas.</div></details>
+      <details><summary>¿Puedo ver cómo queda desde el móvil?</summary><div class="a">Sí. Desde el móvil subes tus fotos, eliges la composición y la ves colgada a escala en una estancia (salón, dormitorio, pasillo…) o en una foto de tu propia casa. Cambias fotos, orden y tamaño las veces que quieras, y solo pagas cuando te guste.</div></details>
+    </div>
+
+    <div class="trust"><span>Envío gratis en España desde 60 €</span><span>Impreso en 1-2 días laborables</span><span>Si llega mal, lo reimprimimos</span><span>Dedicatoria gratis en el dorso</span></div>
+
+    <!-- 3-nov: formas de pago. OJO Marc: dejar solo las que estén activas en Shopify al abrir la tienda -->
+    <div class="pay">
+      <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Pago 100 % seguro <small>· cifrado SSL con Shopify</small></p>
+      <ul aria-label="Formas de pago">
+        <li aria-label="Visa"><span style="color:#1a1f71;font-style:italic;font-size:13px">VISA</span></li>
+        <li aria-label="Mastercard"><svg viewBox="0 0 38 24"><circle cx="14" cy="12" r="9" fill="#eb001b"/><circle cx="24" cy="12" r="9" fill="#f79e1b"/><path d="M19 4.6a9 9 0 0 1 0 14.8 9 9 0 0 1 0-14.8z" fill="#ff5f00"/></svg></li>
+        <li aria-label="American Express" style="background:#2e77bc;border-color:#2e77bc;color:#fff;font-size:11px">AMEX</li>
+        <li aria-label="Apple Pay" style="background:#000;border-color:#000;color:#fff">Apple Pay</li>
+        <li aria-label="Google Pay"><span><b style="color:#4285f4">G</b> <span style="color:#5f6368">Pay</span></span></li>
+        <li aria-label="PayPal"><span style="font-style:italic"><span style="color:#003087">Pay</span><span style="color:#009cde">Pal</span></span></li>
+        <li aria-label="Shop Pay" style="background:#5a31f4;border-color:#5a31f4;color:#fff">shop Pay</li>
+      </ul>
+    </div>
 
     <div class="mini-rev">
       <div class="av" style="background-image:url(fotos/stock/1544005313-160x160.webp)"></div>
@@ -470,7 +555,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 <!-- ═════════════════ 1 · DEL RECUERDO A TU PARED ═════════════════ -->
 <section class="sec story" id="recuerdo">
   <div class="c story-top">
-    <div><p class="tag">Así funciona</p><h2 class="h2">Del recuerdo<br>a tu <em>pared</em>.</h2><p class="lead">Tus mejores momentos no deberían vivir solo en el móvil. Así llegan a casa, sin herramientas y sin complicarte.</p></div>
+    <div><p class="tag">Así funciona</p><h2 class="h2">Del recuerdo <br>a tu <em>pared</em>.</h2><p class="lead">Tus mejores momentos no deberían vivir solo en el móvil. Así llegan a casa, sin herramientas y sin complicarte.</p></div>
     <div class="story-nav"><button type="button" data-st="-1" aria-label="Anterior">←</button><button type="button" data-st="1" aria-label="Siguiente">→</button></div>
   </div>
   <div class="steps" id="steps">
@@ -478,7 +563,8 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <article class="step"><div class="phone-wrap"><div class="phone"><div class="scr"><div class="bar1"></div><div class="gh">Recientes<small>2.418 fotos</small></div><div class="grid" id="phoneGrid"></div><div class="use">Usar en Momenturies</div></div></div></div><div class="txt"><span class="n">2</span><h3>Está en tu galería</h3><p>Junto a otras dos mil. Eliges esa que siempre enseñas cuando alguien te pregunta por el viaje.</p></div></article>
     <article class="step"><div class="img" style="background-image:url(fotos/pdp/lugar-salon.jpg)"></div><div class="txt"><span class="n">3</span><h3>La ves en tu casa antes de comprar</h3><p>En el salón, encima de la cama o en el pasillo. Sola o con otras. Pruebas hasta que te convence.</p></div></article>
     <article class="step"><div class="img" style="background-image:url(fotos/pdp/paso-4-colgado.webp)"></div><div class="txt"><span class="n">4</span><h3>A tu pared, sin herramientas</h3><p>Pegas la base, acercas el cuadro y el imán hace el resto. Sin taladro, sin polvo y sin pedirle nada a nadie.</p></div></article>
-    <article class="step"><div class="img" style="background-image:url(fotos/pdp/gen-intercambia.jpg)"></div><div class="txt"><span class="n">5</span><h3>Y con el tiempo, cámbialo</h3><p>Llega otra foto favorita, cambias el sofá o te mudas. Lo despegas, lo mueves y vuelves a empezar.</p></div></article>
+    <article class="step"><div class="img" style="background-image:url(fotos/pdp/paso-5-cambia-familia.webp)"></div><div class="txt"><span class="n">5</span><h3>Y con el tiempo, cámbialo</h3><p>Llega otra foto favorita, cambias el sofá o te mudas. Lo despegas, lo mueves y vuelves a empezar.</p></div></article>
+    <article class="step"><div class="img" style="background-image:url(fotos/pdp/paso-6-retira.webp)"></div><div class="txt"><span class="n">6</span><h3>O retíralo, sin dejar rastro</h3><p>Separas el cuadro del imán, retiras la base despacio y la pared queda como estaba. Ni agujeros ni marcas.</p></div></article>
   </div>
   <div class="prog" id="prog"></div>
 </section>
@@ -533,12 +619,28 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 
 <!-- ═════════════════ 5 · ALUMINIO VS TRADICIONAL ═════════════════ -->
 <section class="sec" id="vs"><div class="c">
-  <div class="center"><p class="tag">Cuadro metálico HD vs póster tradicional</p><h2 class="h2">No es un póster con marco.<br><em>Es otra cosa.</em></h2><p class="lead">La tinta va directa sobre el aluminio: más color, más resistencia y sin marco ni cristal.</p></div>
-  <div class="vs-img"><img src="fotos/metal-vs-marco.jpg" alt="Cuadro de aluminio frente a una foto enmarcada" loading="lazy"/></div>
-  <div class="vs2">
-    <div class="win"><h3>Cuadro metálico HD</h3><ul><li>Aluminio rígido, <em>premium y resistente</em></li><li>Acabado de <em>alta definición HD</em>, brillo, nitidez y <em>efecto reflejo</em></li><li>Ultra resistente, enfocado en <em>la durabilidad</em></li><li><em>100 % impermeable</em>: resiste la humedad</li><li><em>Fácil de limpiar</em> y conservar</li><li><em>No necesita enmarcado</em> para lucir premium</li><li>Montaje magnético <em>sin daños en la pared</em></li><li><em>Intercambiable</em> entre tus cuadros</li><li><em>Regalo original</em>, exclusivo, moderno y <em>memorable</em> para quien lo recibe</li></ul></div>
-    <div class="lose"><h3>Póster tradicional</h3><ul><li>Material <em>frágil y menos duradero</em></li><li><em>Peor calidad visual</em> y muy variable</li><li><em>Se arruga, dobla y estropea</em> con facilidad</li><li><em>Mala resistencia</em> a golpes y <em>humedad</em></li><li><em>Mantenimiento</em> más delicado y constante</li><li><em>Necesita enmarcado</em> para lucir bien, con su coste añadido</li><li>Acabado estándar, <em>básico y común</em></li><li>Regalo muy visto y <em>poca originalidad</em></li></ul></div>
+  <div class="center"><p class="tag">La diferencia</p><h2 class="h2">No es un póster con marco.<br><em>Es aluminio HD.</em></h2><p class="lead">La tinta va directa sobre el metal: más color, más brillo y sin marco ni cristal. Toca los puntos.</p></div>
+  <div class="al-foto"><img src="fotos/metal-vs-marco.jpg" alt="Cuadro de aluminio frente a una foto enmarcada" loading="lazy"/>
+    <button type="button" class="pt" style="left:22%;top:42%" data-t="Un cuadro que dura mucho más|Aluminio rígido, resistente y duradero.">1</button>
+    <button type="button" class="pt" style="left:30%;top:66%" data-t="Acabado en alta definición HD|Colores más vivos, nítido y con efecto reflejo.">2</button>
+    <button type="button" class="pt" style="left:75%;top:40%" data-t="Pared destrozada|Tu pared llena de agujeros. Cuélgalo sin daños.">3</button>
+    <button type="button" class="pt" style="left:84%;top:66%" data-t="Sobrecoste del marco|Pagas de más y encima el papel se estropea con facilidad.">4</button>
+    <div class="globo"><b></b><span></span></div>
   </div>
+  <details class="al-vs">
+    <summary><span>Cuadro metálico HD frente a póster tradicional</span><em>Ver la comparativa</em></summary>
+    <div class="al-tabla" role="table" aria-label="Cuadro metálico HD frente a póster tradicional">
+      <div class="al-fila al-cab" role="row"><span role="columnheader">Cuadro metálico HD</span><span role="columnheader">Póster tradicional</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Aluminio rígido, <em>premium y resistente</em></span><span class="no" role="cell">Material <em>frágil y menos duradero</em></span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>Alta definición HD</em>: brillo, nitidez y efecto reflejo</span><span class="no" role="cell"><em>Peor calidad visual</em> y muy variable</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Ultra resistente, pensado para <em>durar</em></span><span class="no" role="cell"><em>Se arruga, dobla y estropea</em> con facilidad</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>100 % impermeable</em>: resiste la humedad</span><span class="no" role="cell"><em>Mala resistencia</em> a golpes y humedad</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>Fácil de limpiar</em> y conservar</span><span class="no" role="cell"><em>Mantenimiento</em> delicado y constante</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell"><em>No necesita marco</em> para lucir</span><span class="no" role="cell"><em>Necesita marco</em>, con su coste añadido</span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Imán <em>sin daños en la pared</em> e intercambiable</span><span class="no" role="cell">Acabado <em>básico y común</em></span></div>
+      <div class="al-fila" role="row"><span class="si" role="cell">Regalo <em>original y memorable</em></span><span class="no" role="cell">Regalo muy visto, <em>poco original</em></span></div>
+    </div>
+  </details>
 </div></section>
 
 <!-- ═════════════════ 6 · VENTAJAS ═════════════════ -->
@@ -609,16 +711,18 @@ const eur = n => n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFracti
 const $ = s => document.querySelector(s);
 
 /* ═════ GALERÍA ═════ */
+/* 4-nov: orden de Aitor (producto → móvil → calidad → colgado → regalo → pared).
+   txt:true = la imagen ya lleva su texto, sin etiqueta encima */
 const GAL = [
   {t:'3d', cap:'Gíralo: así es por delante y por detrás', thumb:'fotos/stock/1474552226712-300x420.webp'},
-  {img:'fotos/pdp/lugar-salon.jpg', cap:'Míralo en tu salón antes de comprar'},
-  {img:'fotos/pdp/combo-W31.jpg', cap:'Elige la combinación y mírala en tu pared'},
-  {img:'fotos/pdp/paso-4-colgado.webp', cap:'Colgado magnético en 10 segundos'},
-  {img:'fotos/pdp/gen-intercambia.jpg', cap:'Cámbialo y muévelo cuando quieras, sin marcas'},
+  {img:'fotos/pdp/gen-momento-movil-pared.webp', cap:'Del momento al móvil, del móvil a tu pared', txt:true},
+  {img:'fotos/pdp/gen-metal-vs-tradicional.webp', cap:'Cuadro metálico HD frente a póster tradicional', txt:true},
+  {img:'fotos/pdp/gen-colgado-segundos.webp', cap:'Colgado magnético en segundos'},
+  {img:'fotos/pdp/gen-mueve-intercambia.webp', cap:'Muévelo e intercámbialo cuando quieras'},
   {img:'fotos/pdp/comparativa.webp', cap:'Sin taladro, sin clavos, sin agujeros'},
-  {img:'fotos/pdp/gen-metal-vs.jpg', cap:'Cuadro metálico HD frente a póster tradicional', vs:true},
-  {img:'fotos/pdp/gen-recuerdo.jpg', cap:'Del recuerdo de tu móvil a tu pared'},
-  {img:'fotos/pdp/gen-regalo.jpg', cap:'El regalo que de verdad se cuelga'},
+  {img:'fotos/pdp/gen-quita-sin-danos.webp', cap:'Retíralo sin daños'},
+  {img:'fotos/pdp/gen-regalo-cajon.webp', cap:'El regalo que no acaba en un cajón'},
+  {img:'fotos/pdp/gen-pared-con-los-tuyos.webp', cap:'Crea tu pared con los tuyos'},
 ];
 const slides = $('#slides'), thumbs = $('#thumbs');
 GAL.forEach((g,i) => {
@@ -628,7 +732,8 @@ GAL.forEach((g,i) => {
     s.innerHTML = `<span class="hint">↔ Arrastra para girarlo</span><div class="scene"><div class="print" id="p3d"><div class="face" style="background-image:url(fotos/stock/1474552226712-620x877.webp)"></div><div class="back"><div class="mag"></div><div class="ded">Para que nunca se nos olvide este verano. Os quiero.</div></div><i class="edge r"></i><i class="edge l"></i></div></div><div class="shadow"></div><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
   } else {
     s.className = 'slide'; s.style.backgroundImage = `url(${g.img})`;
-    s.innerHTML = (g.vs ? '<span class="vs-l">Cuadro metálico HD</span><span class="vs-r">Póster tradicional</span>' : '') + `<span class="cap">${g.cap}</span>`;
+    s.setAttribute('role','img'); s.setAttribute('aria-label', g.cap);
+    if(!g.txt) s.innerHTML = `<span class="cap">${g.cap}</span>`;
   }
   slides.appendChild(s);
   const b = document.createElement('button'); b.type = 'button';
@@ -679,31 +784,34 @@ const TIERS = [{n:5,pct:20},{n:3,pct:15},{n:2,pct:10}];
 const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
 const RM = 29.99; // Retrato 18×24
 const PACKS = [
-  {id:'1', n:1, tit:'1 cuadro', sub:'Tu foto favorita, sola', from:19.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
-  {id:'W55', n:3, tit:'Trío', name:'Tres apaisados', sub:'3 cuadros de 24×18 cm', gross:3*RM, href:'cuadro.html?pared=W55', img:'fotos/pdp/pack-W55-cerca.jpg', alt:'fotos/pdp/pack-W55-casa.jpg', meta:['3 × 24×18 cm','24 × 60 cm en total','En columna: rincón o pasillo']},
-  {id:'W20', n:4, tit:'Cuarteto', name:'Melodía suave', sub:'4 cuadros de 18×24 cm', gross:4*RM, href:'cuadro.html?pared=W20', img:'fotos/pdp/pack-W20-cerca.jpg', alt:'fotos/pdp/pack-W20-casa.jpg', meta:['4 × 18×24 cm','81 × 24 cm en total','Sobre el sofá o la cómoda'], badge:'Más elegido'},
-  {id:'W21', n:6, tit:'Galería de 6', name:'Líneas limpias', sub:'6 cuadros de 18×24 cm', gross:6*RM, href:'cuadro.html?pared=W21', img:'fotos/pdp/pack-W21-cerca.jpg', alt:'fotos/pdp/pack-W21-casa.jpg', meta:['6 × 18×24 cm','60 × 52 cm en total','Salón o comedor']},
-  {id:'W53', n:9, tit:'Pared de recuerdos', name:'Nueve momentos', sub:'9 cuadros de 18×24 cm', gross:9*RM, href:'cuadro.html?pared=W53', img:'fotos/pdp/pack-W53-cerca.jpg', alt:'fotos/pdp/pack-W53-casa.jpg', meta:['9 × 18×24 cm','60 × 78 cm en total','Una pared entera'], badge:'Mejor precio', terra:true},
+  {id:'1', n:1, sub:'Tu foto favorita, sola', from:19.99, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', meta:['Desde 10×15 cm','En la foto: 30×40 cm','Dedicatoria gratis'], cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
+  {id:'W51', n:2, name:'Dúo', gross:2*RM, href:'cuadro.html?pared=W51', img:'fotos/pdp/pack-W51-cerca.jpg', alt:'fotos/pdp/pack-W51-casa.jpg', meta:['2 × 18×24 cm','39 × 24 cm en total','Mesita, rincón o recibidor']},
+  {id:'W55', n:3, name:'Tres apaisados', gross:3*RM, href:'cuadro.html?pared=W55', img:'fotos/pdp/pack-W55-cerca.jpg', alt:'fotos/pdp/pack-W55-casa.jpg', meta:['3 × 24×18 cm','24 × 60 cm en total','En columna: rincón o pasillo']},
+  {id:'W20', n:4, name:'Melodía suave', gross:4*RM, href:'cuadro.html?pared=W20', img:'fotos/pdp/pack-W20-cerca.jpg', alt:'fotos/pdp/pack-W20-casa.jpg', meta:['4 × 18×24 cm','81 × 24 cm en total','Sobre el sofá o la cómoda'], badge:'Más elegido'},
+  {id:'W21', n:6, name:'Líneas limpias', gross:6*RM, href:'cuadro.html?pared=W21', img:'fotos/pdp/pack-W21-cerca.jpg', alt:'fotos/pdp/pack-W21-casa.jpg', meta:['6 × 18×24 cm','60 × 52 cm en total','Salón o comedor']},
+  {id:'W53', n:9, name:'Nueve momentos', gross:9*RM, href:'cuadro.html?pared=W53', img:'fotos/pdp/pack-W53-cerca.jpg', alt:'fotos/pdp/pack-W53-casa.jpg', meta:['9 × 18×24 cm','60 × 78 cm en total','Una pared entera'], badge:'Mejor precio', terra:true},
 ];
+PACKS.forEach(p => p.tit = p.n + (p.n > 1 ? ' cuadros' : ' cuadro'));
 PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; p.note = 'Se abre el editor con esta composición. Subes tus fotos y la ves colgada.'; } });
 const packsEl = $('#packs');
 let sel = 'W20';
 function renderPacks(){
+  /* 3-nov: cada opción en una línea (n.º de cuadros + «colgado magnético incluido» en pequeño);
+     al elegirla se despliega con su composición en una casa y de cerca */
   packsEl.innerHTML = PACKS.map(p => `
     <div class="opt ${p.id === sel ? 'on' : ''}" data-id="${p.id}" role="radio" aria-checked="${p.id === sel}" tabindex="0">
       ${p.badge ? `<span class="badge ${p.terra ? 'terra' : ''}">${p.badge}</span>` : ''}
       <div class="row">
         <span class="rad"></span>
-        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}<small>${p.sub}${p.name ? ' · «' + p.name + '»' : ''}</small></div>
-        <div class="pr">${p.price ? `<b>${eur(p.price)}</b><s>${eur(p.gross)}</s><em>Ahorras ${eur(p.save)}</em>` : `<b>desde ${eur(p.from)}</b>`}</div>
+        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}<small>+ colgado magnético incluido</small></div>
+        <div class="pr">${p.price ? `<b>${eur(p.price)}</b><s>${eur(p.gross)}</s>` : `<b>desde ${eur(p.from)}</b>`}</div>
       </div>
       <div class="more">
         <div class="prev">
           <div class="pic" style="background-image:url(${p.alt})"><div class="sw"><button type="button" class="on" data-img="${p.alt}">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div></div>
-          <div class="meta">${p.meta.map(m => `<span>${m}</span>`).join('')}${p.price ? `<span><b>${eur(p.price / p.n)}</b> por cuadro</span>` : ''}</div>
+          <div class="meta">${p.name ? `<span>«${p.name}»</span>` : `<span>${p.sub}</span>`}${p.meta.map(m => `<span>${m}</span>`).join('')}${p.price ? `<span><b>${eur(p.price / p.n)}</b> por cuadro</span><span class="ok">Ahorras ${eur(p.save)}</span>` : ''}</div>
         </div>
       </div>
-      <div class="gift"><span class="ico"><i></i></span>+ Colgado magnético GRATIS${p.n > 1 ? ' para los ' + p.n : ''}<span class="inc">incluido</span></div>
     </div>`).join('');
 }
 function choose(id){
@@ -826,6 +934,36 @@ const WHY = [
   const row = $('#whyRow');
   row.innerHTML = WHY.map(w => `<article class="why-card"><div class="im" style="background-image:url(fotos/combis/mom-${w[0]}.webp)"><span>${w[1]}</span></div><div class="bd"><span class="stars">★★★★★</span><p class="q">«${w[2]}»</p><div class="who2">${w[3]}<small>${w[4]} · <span class="demo-tag">Ejemplo</span></small></div></div></article>`).join('');
   document.querySelectorAll('[data-why]').forEach(b => b.onclick = () => row.scrollBy({left: +b.dataset.why * (row.children[0].offsetWidth + 18)}));
+})();
+
+/* ═════ LA DIFERENCIA: los puntos de la foto abren su globo (igual que la portada) ═════ */
+(function(){
+  const r = document.querySelector('#vs .al-foto'); if(!r) return;
+  const g = r.querySelector('.globo'), pts = [...r.querySelectorAll('.pt')];
+  const movil = matchMedia('(max-width:900px)');
+  const cerrar = () => { pts.forEach(x => x.classList.remove('on')); g.classList.remove('on'); };
+  pts.forEach(p => p.onclick = e => {
+    e.stopPropagation();
+    const on = p.classList.contains('on');
+    cerrar();
+    if(on) return;
+    p.classList.add('on');
+    const [t, d] = p.dataset.t.split('|');
+    g.querySelector('b').textContent = t; g.querySelector('span').textContent = d;
+    const x = parseFloat(p.style.left), y = parseFloat(p.style.top);
+    if(movil.matches){
+      /* móvil: el globo va al lado del punto y a su misma altura, sin salirse de la foto */
+      const W = r.clientWidth, H = r.clientHeight, w = g.offsetWidth, h = g.offsetHeight;
+      const px = x / 100 * W, py = y / 100 * H, m = 8;
+      const izq = px < W / 2 ? px + 24 : px - 24 - w;
+      g.style.left = Math.max(m, Math.min(W - w - m, izq)) + 'px';
+      g.style.top = Math.max(m, Math.min(H - h - m, py - h / 2)) + 'px';
+    } else { g.style.left = (x > 60 ? x - 28 : x + 3) + '%'; g.style.top = (y + 4) + '%'; }
+    g.classList.add('on');
+  });
+  /* tocar en cualquier otro sitio quita el globo para ver la foto */
+  document.addEventListener('click', e => { if(g.classList.contains('on') && !e.target.closest('#vs .pt')) cerrar(); });
+  let ancho = innerWidth; addEventListener('resize', () => { if(innerWidth !== ancho){ ancho = innerWidth; cerrar(); } });
 })();
 
 /* ═════ FAQ ═════ */
