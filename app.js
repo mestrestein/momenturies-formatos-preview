@@ -2,6 +2,7 @@
    - Enlaza el manifiesto y los iconos, y activa sw.js (carga rápida y funciona con mala cobertura).
    - En el móvil, fuera de la app, avisa de que se puede instalar. Android: botón directo. iPhone: los dos pasos de Safari.
    - Dentro de la app (html.en-app): barra inferior con lo que más se usa. En el personalizador no sale.
+   - 5-nov: opción fija «Instalar la app» en el menú y el pie, también en PC (window.mmInstalarApp).
    ?instalar en la URL vuelve a enseñar el aviso aunque se haya cerrado. */
 (function () {
   var d = document, html = d.documentElement, CLAVE = 'mm_app_aviso', DIAS = 7;
@@ -11,7 +12,7 @@
   var poner = function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} };
   var tag = function (n, a) { var e = d.createElement(n); for (var k in a) e.setAttribute(k, a[k]); d.head.appendChild(e); };
 
-  tag('link', { rel: 'manifest', href: base + 'manifest.webmanifest' });
+  tag('link', { rel: 'manifest', href: base + 'manifest.webmanifest', crossorigin: 'use-credentials' });   // con credenciales: tras la contraseña de la web, sin ellas da 401 y el navegador no ofrece instalar
   tag('link', { rel: 'apple-touch-icon', href: base + 'fotos/app-180.png' });
   tag('meta', { name: 'theme-color', content: '#f6f1ea' });
   tag('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
@@ -54,7 +55,7 @@
 
   /* ── aviso de instalar ── */
   var promptAndroid = null;
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); promptAndroid = e; });
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); promptAndroid = e; var a = d.getElementById('mmApp'); if (a) { a.remove(); aviso(); } });   // si ya estaba abierto con los pasos, pasa al botón
   window.addEventListener('appinstalled', function () { poner(CLAVE, String(Date.now() + 3650 * 864e5)); var a = d.getElementById('mmApp'); if (a) a.remove(); });
 
   function aviso() {
@@ -72,6 +73,7 @@
       + '#mmApp b.n{display:block;font-size:15.5px}#mmApp span{color:#5b5650;font-size:13px}'
       + '#mmApp ol{margin:12px 0 0;padding:0 0 0 20px}#mmApp li{margin:3px 0}#mmApp .p{margin:12px 0 0}'
       + '#mmApp .ok{display:block;width:100%;height:46px;margin-top:12px;border:0;border-radius:999px;background:#0d0d0d;color:#fff;font:700 15px Inter,-apple-system,Arial,sans-serif;cursor:pointer}'
+      + '@media(min-width:821px){#mmApp{left:auto;right:18px;bottom:18px;width:360px}}'
       + '#mmApp .x{position:absolute;right:6px;top:6px;width:36px;height:36px;border:0;background:none;color:#8a8279;font-size:20px;cursor:pointer}');
     var a = d.createElement('div'); a.id = 'mmApp'; a.setAttribute('role', 'dialog'); a.setAttribute('aria-label', 'Instalar la app');
     a.innerHTML = '<button type="button" class="x" aria-label="Cerrar">×</button><div class="t"><img src="' + base + 'fotos/app-192.png" alt=""/><div><b class="n">Instala la app de Momenturies</b><span>Más rápida, a pantalla completa y con tu diseño siempre guardado.</span></div></div>' + cuerpo;
@@ -87,8 +89,26 @@
     if (editorAbierto || cookies) { if (n > 0) setTimeout(function () { cuandoLibre(n - 1); }, 2000); return; }
     aviso();
   }
+  /* opción fija: en el menú y en el pie de todas las páginas; el aviso sale aunque se cerrara antes */
+  window.mmInstalarApp = function (e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (window.closeMenu) { try { closeMenu(); } catch (x) {} }
+    aviso();
+  };
+  function opcionFija() {
+    var nueva = function (c) { var a = d.createElement('a'); a.href = '#'; a.className = (c ? c + ' ' : '') + 'mm-instalar'; a.textContent = 'Instalar la app'; a.onclick = window.mmInstalarApp; return a; };
+    var sep = d.querySelector('.menu-body .menu-sep');
+    if (sep) sep.parentNode.insertBefore(nueva('menu-item menu-item-sm'), sep);
+    var c = d.querySelector('footer a[href*="contacto"]');
+    if (!c) return;
+    var li = c.closest('li');
+    if (li) { var l = d.createElement('li'); l.appendChild(nueva()); li.parentNode.insertBefore(l, li.nextSibling); return; }
+    if (c.closest('.pdp-foot')) c.parentNode.insertBefore(d.createTextNode(' · '), c.nextSibling), c.parentNode.insertBefore(nueva(), c.nextSibling.nextSibling);
+    else c.parentNode.insertBefore(nueva(), c.nextSibling);
+  }
   function arranca() {
     if (dentro) { barra(); return; }
+    opcionFija();
     var forzar = /[?&]instalar\b/.test(location.search);
     if (!movil && !forzar) return;
     if (!forzar && +(leer(CLAVE) || 0) > Date.now()) return;
