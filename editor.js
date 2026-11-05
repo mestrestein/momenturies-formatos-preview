@@ -2729,7 +2729,7 @@ const PRODUCTS = {
             note:'Peana de bambú incluida.',
             /* 12-oct: la lámina con peana de bambú de ahorraentinta (ref. MAD1130) viene en tres
                medidas: 152×102, 178×127 y 254×203 mm. La peana mide siempre el lado corto.
-               M y L nacen con stock:false porque todavía no existen en Shopify: cuando la tienda
+               5-nov: M y L ya están en Shopify (SOB-M, SOB-L); se compran a ahorraentinta al recibir el pedido. Cuando la tienda
                tenga los SKU SOB-M y SOB-L, la lectura de Shopify les pone precio, variante y
                existencias, y se pueden elegir sin tocar nada aquí. Precios provisionales. */
             /* 13-oct: cada medida tiene su proporción (10×15, 13×18 y 20×25, las de foto de siempre),
@@ -2737,8 +2737,8 @@ const PRODUCTS = {
                tarjetas con su forma, los cm debajo y el precio (sizeAsFormatChips). */
             oneRow:true,
             sizes:[ {k:'S',d:[10.2,15.2],price:28.99, variantId:null, es:'Pequeño', en:'Small'},
-                    {k:'M',d:[12.7,17.8],price:34.99, variantId:null, stock:false, es:'Mediano', en:'Medium'},
-                    {k:'L',d:[20.3,25.4],price:44.99, variantId:null, stock:false, es:'Grande', en:'Large'} ] },
+                    {k:'M',d:[12.7,17.8],price:34.99, variantId:null, es:'Mediano', en:'Medium'},
+                    {k:'L',d:[20.3,25.4],price:44.99, variantId:null, es:'Grande', en:'Large'} ] },
   nevera: { name:'Imán',                 short:'Imán',     hanger:'iman-nevera', def:'XS',
             note:'Imán trasero incluido.',
             /* 24-oct: también en S (10×15, la foto de siempre). Precio provisional; en Shopify su SKU es IMA-S */
