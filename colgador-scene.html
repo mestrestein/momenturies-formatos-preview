@@ -1239,6 +1239,8 @@ window.addEventListener('message', (e) => {
 });
 
 // Avisar al padre de que la escena está lista para recibir el diseño del cliente
+/* 5-nov · ?colgador=iman-pared|madera|iman-nevera: la ficha enseña solo ese colgado, sin la barra para cambiarlo */
+(function(){ var c = _params.get('colgador'); if(c && HANGERS[c]){ try{ hangerBar.style.display='none'; hangerBar.classList.remove('visible'); }catch(ex){} selectHanger(c); } })();
 function _announceSceneReady() {
   try { window.parent.postMessage({ type: 'momenturies-scene-ready' }, '*'); } catch (ex) {}
 }

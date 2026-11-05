@@ -12,7 +12,8 @@
   var poner = function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} };
   var tag = function (n, a) { var e = d.createElement(n); for (var k in a) e.setAttribute(k, a[k]); d.head.appendChild(e); };
 
-  tag('link', { rel: 'manifest', href: base + 'manifest.webmanifest', crossorigin: 'use-credentials' });   // con credenciales: tras la contraseña de la web, sin ellas da 401 y el navegador no ofrece instalar
+  var APP_ACTIVA = false;   // 5-nov: apagada por decisión de Marc; true la vuelve a encender (manifiesto, aviso y opción fija)
+  if (APP_ACTIVA) tag('link', { rel: 'manifest', href: base + 'manifest.webmanifest', crossorigin: 'use-credentials' });   // con credenciales: tras la contraseña de la web, sin ellas da 401 y el navegador no ofrece instalar
   tag('link', { rel: 'apple-touch-icon', href: base + 'fotos/app-180.png' });
   tag('meta', { name: 'theme-color', content: '#f6f1ea' });
   tag('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
@@ -108,6 +109,7 @@
   }
   function arranca() {
     if (dentro) { barra(); return; }
+    if (!APP_ACTIVA) return;
     opcionFija();
     var forzar = /[?&]instalar\b/.test(location.search);
     if (!movil && !forzar) return;

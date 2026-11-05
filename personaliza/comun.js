@@ -113,6 +113,23 @@
   var _q = new URLSearchParams(location.search);
   P.prod = { 'cuadro.html': 'cuadro', 'sobremesa.html': 'sobremesa', 'iman.html': 'iman' }[_q.get('para')] || 'cuadro';
   P.anadir = _q.get('anadir') === '1';
+  /* 5-nov · Fecha viva: si la fecha que había sigue escrita en un texto (aunque se haya retocado), al cambiar la fecha se
+     cambia con ella. Lo demás del texto no se toca, y después se puede seguir editando a mano. */
+  document.addEventListener('DOMContentLoaded', function () {
+    var f = document.getElementById('date'); if (!f) return;
+    var formas = function (v) { var d = v.split('-'); if (d.length < 3) return []; return [P.fecha(v), d[2] + '/' + d[1] + '/' + d[0], +d[2] + '/' + +d[1] + '/' + d[0], P.MESES[+d[1] - 1] + ' de ' + d[0]]; };
+    var antes = formas(f.value);
+    f.addEventListener('input', function () {
+      var nuevas = formas(f.value);
+      if (nuevas.length) ['title', 'line2', 'line3'].forEach(function (id) {
+        var e = document.getElementById(id); if (!e) return;
+        for (var i = 0; i < antes.length; i++) if (e.value.indexOf(antes[i]) >= 0) {
+          e.value = e.value.replace(antes[i], nuevas[i]); e.dispatchEvent(new Event('input', { bubbles: true })); break;
+        }
+      });
+      if (nuevas.length) antes = nuevas;
+    });
+  });
   document.addEventListener('DOMContentLoaded', function () {
     var cta = document.getElementById('cta'), txt = document.getElementById('ctaTxt');
     if (!cta || !cta.parentNode) return;

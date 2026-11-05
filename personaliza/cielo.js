@@ -192,11 +192,11 @@
     var k = (v * TEX.w + u) * 4;
     return [TEX.d[k] / 255, TEX.d[k + 1] / 255, TEX.d[k + 2] / 255];
   }
-  function drawMoon(ctx, x, y, r, mo, haloK) {   // haloK: 0 = sin halo (lunas pequeñas en rejilla), 1 = normal
+  function drawMoon(ctx, x, y, r, mo, haloK, opaca) {   // haloK: 0 = sin halo (lunas pequeñas en rejilla), 1 = normal; opaca: sombra sólida, para fondos claros o de color
     var el = mo.el, side = mo.waxing ? 1 : -1;
     var Lx = side * Math.abs(Math.sin(el)), Lz = -Math.cos(el);           // dirección del Sol (z hacia nosotros)
     // halo discreto, algo mayor cuanto más llena
-    haloK = haloK == null ? 1 : haloK;
+    haloK = opaca ? 0 : haloK == null ? 1 : haloK;
     var hr = r * (1 + (0.7 + 1.5 * mo.frac) * haloK), g = ctx.createRadialGradient(x, y, r * 0.95, x, y, hr);
     if (haloK > 0) { g.addColorStop(0, 'rgba(255,248,228,' + ((0.05 + 0.13 * mo.frac) * Math.min(1, haloK)).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,248,228,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill(); }
@@ -210,14 +210,15 @@
       var lit = mu0 > 0 ? 2 * mu0 / (mu0 + Math.max(nz, 0.06)) : 0;           // Lommel-Seeliger
       lit *= Math.min(1, Math.max(0, (mu0 + 0.015) / 0.09));                  // terminador suave
       var t = texAt(px, py, nz), gain = 1.55 * Math.min(1, lit);
-      var la = Math.min(1, lit * 1.6), es = 0.16;                             // es: luz cenicienta (opacidad de la sombra)
+      var la = Math.min(1, lit * 1.6), es = opaca ? 1 : 0.16;                             // es: luz cenicienta (opacidad de la sombra)
       var al = Math.max(la, es);
       // color: lado iluminado = mapa con luz cálida; sombra = gris azulado tenue
       var cr = gain * t[0] * 255 * 1.02, cg = gain * t[1] * 255, cb = gain * t[2] * 255 * 0.94;
       var mix = la / al;
-      d[k]     = Math.min(255, cr * mix + 150 * t[0] * (1 - mix));
-      d[k + 1] = Math.min(255, cg * mix + 160 * t[1] * (1 - mix));
-      d[k + 2] = Math.min(255, cb * mix + 185 * t[2] * (1 - mix));
+      var sr = opaca ? 34 + 42 * t[0] : 150 * t[0], sg = opaca ? 36 + 44 * t[1] : 160 * t[1], sb = opaca ? 42 + 50 * t[2] : 185 * t[2];
+      d[k]     = Math.min(255, cr * mix + sr * (1 - mix));
+      d[k + 1] = Math.min(255, cg * mix + sg * (1 - mix));
+      d[k + 2] = Math.min(255, cb * mix + sb * (1 - mix));
       d[k + 3] = Math.round(255 * al * edge);
     }
     oc.putImageData(img, 0, 0);

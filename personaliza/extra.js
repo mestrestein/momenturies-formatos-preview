@@ -29,6 +29,8 @@
   function isDark(hex) { var n = parseInt(hex.slice(1), 16); return ((n >> 16 & 255) * 0.3 + (n >> 8 & 255) * 0.59 + (n & 255) * 0.11) < 110; }
 
   /* ── 1 · LA LUNA DE VUESTRA NOCHE ── */
+  /* disco claro o de color (Blanco, Menta, Arena, Carmín, Ocre): la Luna necesita su cara en sombra sólida, o se transparenta */
+  function claro(T) { var c = parseInt(T.disk.slice(1), 16), L = function (v) { v /= 255; return v < .04 ? v / 12.9 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * L(c >> 16 & 255) + .7152 * L(c >> 8 & 255) + .0722 * L(c & 255) > .08; }
   function luna(ctx, W, H, o) {
     var C = sky(), T = C.themes[o.theme] || C.themes.medianoche, J = C.jd(o.utc), mo = C.moon(J);
     if (o.lat < 0) mo = Object.assign({}, mo, { waxing: !mo.waxing });   // en el hemisferio sur se ve al revés
@@ -38,7 +40,7 @@
     ctx.save(); if (!isDark(T.bg)) { ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip(); }
     sprinkle(ctx, W, H, 260, T.star, rng(7), isDark(T.bg) ? [0, 0, W, H * 0.74] : [cx - R, cy - R, cx + R, cy + R]);
     ctx.restore();
-    C.drawMoon(ctx, cx, cy, W * 0.29, mo, 0.18);
+    C.drawMoon(ctx, cx, cy, W * 0.29, mo, 0.18, claro(T));
     if (!isDark(T.bg)) { ctx.strokeStyle = T.ring; ctx.lineWidth = W / 3600 * 7; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke(); }
     var pct = Math.round(mo.frac * 100);
     text3(ctx, W, H, { title: o.title, line2: o.line2, line3: o.line3 === null ? '' : (C.faseNombre(mo) + ' · ' + pct + ' % iluminada' + (o.line3 ? ' · ' + o.line3 : '')), font: o.font }, H * 0.84, T);
@@ -97,7 +99,7 @@
       ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(function (d, i) { smallCaps(ctx, d, x0 + cw * (i + 0.5), y0 - ch * 0.15, W * 0.014, T.soft, 0, 600); });
       for (var d = 1; d <= days; d++) {
         var k = first + d - 1, cx = x0 + cw * (k % 7 + 0.5), cy = y0 + ch * (Math.floor(k / 7) + 0.42);
-        C.drawMoon(ctx, cx, cy, r, moonAt(Y, M, d), 0);
+        C.drawMoon(ctx, cx, cy, r, moonAt(Y, M, d), 0, claro(T));
         if (d === Dd) mark(cx, cy, r);
         ctx.fillStyle = d === Dd ? T.text : T.soft; ctx.font = P.subFont(W * 0.012, d === Dd ? 700 : 500); ctx.textAlign = 'center'; ctx.fillText(String(d), cx, cy + r + W * 0.02);
       }
@@ -111,7 +113,7 @@
         var dm = new Date(Date.UTC(Y, m + 1, 0)).getUTCDate();
         for (var dd = 1; dd <= dm; dd++) {
           var cxx = gx0 + cw2 * (dd - 0.5);
-          C.drawMoon(ctx, cxx, cyy, r2, moonAt(Y, m, dd), 0);
+          C.drawMoon(ctx, cxx, cyy, r2, moonAt(Y, m, dd), 0, claro(T));
           if (m === M && dd === Dd) mark(cxx, cyy, r2);
         }
       }

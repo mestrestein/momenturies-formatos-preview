@@ -102,7 +102,7 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 /* visor 3D (CSS) */
 .v3d{position:relative}
 .v3d iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;opacity:0;transition:opacity .6s}
-.v3d.listo iframe{opacity:1}
+.v3d.listo iframe{opacity:1}.v3d.esc{background:#111}.v3d.esc iframe{opacity:1}
 .v3d .pos{width:50%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;box-shadow:0 18px 40px rgba(60,40,20,.2);transition:opacity .4s}
 .v3d.listo .pos{opacity:0}
 .v3d .hint,.v3d .flip{z-index:2}.v3d .hint{pointer-events:none}
@@ -196,6 +196,7 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .opt.on .more{display:block;animation:entra .35s var(--ease)}
 @keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .prev{display:grid;grid-template-columns:1fr;gap:10px}
+.cta-arriba{display:flex;align-items:center;justify-content:center;width:100%;margin:12px 0 2px}
 .prev .pic{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/10;background:#eee center/cover}
 .prev .sw{position:absolute;left:10px;top:10px;display:flex;gap:6px}
 .prev .sw button{border:0;border-radius:999px;font-size:12px;font-weight:700;padding:6px 11px;background:rgba(255,255,255,.88);cursor:pointer}
@@ -723,7 +724,9 @@ const $ = s => document.querySelector(s);
    txt:true = la imagen ya lleva su texto, sin etiqueta encima */
 const GAL = [
   {t:'3d', cap:'Gíralo: así es por delante y por detrás', thumb:'fotos/stock/1474552226712-300x420.webp'},
-  {img:'fotos/pdp/escena-cuadro.webp', cap:'Así queda en tu salón'},
+  {t:'esc', cap:'Así se cuelga: solo con el imán', thumb:'fotos/pdp/paso-4-colgado.webp', src:'colgador-scene.html?colgador=iman-pared&poster=fotos/stock/1474552226712-600x800.webp'},
+  {img:'fotos/pdp/lugar-salon.jpg', cap:'Míralo en tu casa antes de comprar'},
+  {img:'fotos/pdp/combo-W31.jpg', cap:'Elige tu combinación favorita'},
   {img:'fotos/pdp/gen-momento-movil-pared.webp', cap:'Del momento al móvil, del móvil a tu pared', txt:true},
   {img:'fotos/pdp/gen-metal-vs-tradicional.webp', cap:'Cuadro metálico HD frente a póster tradicional', txt:true},
   {img:'fotos/pdp/gen-colgado-segundos.webp', cap:'Colgado magnético en segundos'},
@@ -736,7 +739,8 @@ const GAL = [
 const slides = $('#slides'), thumbs = $('#thumbs');
 GAL.forEach((g,i) => {
   const s = document.createElement('div');
-  if(g.t === '3d'){
+  if(g.t === 'esc'){ s.className = 'slide v3d esc'; s.innerHTML = `<iframe class="esc-f" data-src="${g.src}" title="${g.cap}"></iframe>`; }
+  else if(g.t === '3d'){
     s.className = 'slide v3d'; s.id = 'v3d';
     s.innerHTML = `<img class="pos" src="fotos/stock/1474552226712-600x800.webp" alt=""><iframe id="vis3d" data-src="visor.html?p=metal&img=fotos/stock/1474552226712-600x800.webp&ded=Para%20ti%2C%20siempre" title="Vista 3D del producto"></iframe><span class="hint">↔ Arrastra para girarlo</span><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
   } else {
@@ -754,6 +758,7 @@ GAL.forEach((g,i) => {
 let cur = 0;
 function goSlide(i){ i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
 function markSlide(){
+  if(Math.round(slides.scrollLeft / slides.clientWidth) === 1){ const e = document.querySelector('.esc-f'); if(e && !e.src) e.src = e.dataset.src; }
   cur = Math.round(slides.scrollLeft / slides.clientWidth);
   [...thumbs.children].forEach((b,j) => b.classList.toggle('on', j === cur));
   $('#count').textContent = (cur + 1) + ' / ' + GAL.length;
@@ -822,6 +827,7 @@ function renderPacks(){
         <div class="pr"><b>${eur(p.price)}</b>${p.gross ? `<s>${eur(p.gross)}</s>` : ''}</div>
       </div>
       <div class="more">
+        <a class="btn cta-arriba" href="${p.href}">${p.cta}</a>
         <div class="prev">
           <div class="pic" style="background-image:url(${p.alt})"><div class="sw"><button type="button" class="on" data-img="${p.alt}">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div></div>
         </div>
@@ -1008,6 +1014,6 @@ const FAQ = [
     document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
 })();
 </script>
-<script src="carrito.js?v=b923aa51"></script><script src="app.js?v=caee4d1b" defer></script>
+<script src="carrito.js?v=b923aa51"></script><script src="app.js?v=c1eb62d9" defer></script>
 </body>
 </html>

@@ -1713,7 +1713,7 @@ document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9))
 document.getElementById('pvZoomOut').addEventListener('click', ()=>stepZoom(.9));
 /* 24-oct · nevera: subir y bajar por la puerta (18 cm por toque; neveraPan() pone el tope) */
 /* ── mapa de la nevera ── la puerta en pequeño con los imanes y un marco con lo que se ve */
-const FRIDGE_COLORS = { 'nevera-menta':'#a9d8c4', 'nevera-roja':'#c8382f', 'nevera-crema':'#f0e6cc' };
+const FRIDGE_COLORS = { 'nevera-negra':'#232325', 'nevera-menta':'#a9d8c4', 'nevera-roja':'#c8382f', 'nevera-crema':'#f0e6cc' };
 const fridgeMapEl = document.getElementById('fridgeMap');
 let _fmKey = '';
 function syncFridgeMap(){
@@ -3472,7 +3472,7 @@ const _EDCFG = window.MOMENTURIES_EDITOR || {};
 if(_EDCFG.lock) document.documentElement.classList.add('ed-locked');
 if(_urlType && PRODUCTS[_urlType]){
   /* 28-oct · al terminar de cargar el script: abrir aquí mismo tocaba editorRootEl antes de declararse y fallaba */
-  if(_urlType === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-menta'; }   // el imán, en su nevera
+  if(_urlType === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-negra'; }   // el imán, en su nevera
   queueMicrotask(() => openEditorWithType(_urlType));
 }else if(_EDCFG.product && PRODUCTS[_EDCFG.product]){
   /* pagina dedicada: fija el producto pero NO abre el editor (se ve antes el marketing) */
@@ -3486,7 +3486,7 @@ if(_urlType && PRODUCTS[_urlType]){
     layout(); updateTotal(); syncConfigUI(); applyMountVisual(_p0);
   }
   /* 16-oct · el imán se enseña en una nevera desde el principio */
-  if(_EDCFG.product === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-menta'; }
+  if(_EDCFG.product === 'nevera' && ROOM_CFG.mode === 'none'){ ROOM_CFG.mode = 'geo'; ROOM_CFG.scene = 'nevera-negra'; }
 }
 
 
@@ -3883,9 +3883,9 @@ function dropMagnets(from){
 var NEVERA_PAN = 0, _panNow = false, FRIDGE_VIEW = null;   // FRIDGE_VIEW: qué trozo de nevera se ve (cm), para el mapa
 function enNevera(){ return ROOM_CFG.mode === 'geo' && /^nevera-/.test(ROOM_CFG.scene || ''); }
 function neveraCentro(sc, Hcm){
-  if(WALL && WALL.fridge) return Math.max(80, Math.min(100, 150 - Hcm/2));   // 5-nov: más arriba si cabe; lo que llena la puerta sigue centrado
-  /* sueltos: el de abajo a 112 cm, a mano; si son muchos, bajan lo que haga falta para no salirse por arriba */
-  const c = sc.furnCm + sc.gapCm + 12 + Hcm/2;
+  if(WALL && WALL.fridge) return Math.max(80, Math.min(118, 152 - Hcm/2));   // 5-nov: más arriba si cabe; lo que llena la puerta sigue centrado
+  /* sueltos: el de abajo a 130 cm, a mano; si son muchos, bajan lo que haga falta para no salirse por arriba */
+  const c = sc.furnCm + sc.gapCm + 30 + Hcm/2;
   return Math.max(Math.min(c, 154 - Hcm/2), Math.min(80, 14 + Hcm/2));
 }
 function neveraPan(sc, Hcm, topCm, botCm){
@@ -6098,7 +6098,7 @@ function applyWall(w, opts){
   NEVERA_PAN = 0;
   if(w.fridge){
     /* los imanes, siempre en una nevera (la que hubiera puesta, o la menta) */
-    if(!(ROOM_CFG.mode === 'geo' && NEVERA_SCENES.test(ROOM_CFG.scene))) setScene('nevera-menta');
+    if(!(ROOM_CFG.mode === 'geo' && NEVERA_SCENES.test(ROOM_CFG.scene))) setScene('nevera-negra');
   } else if(!keep){
     /* si el cliente había elegido la habitación, primero la otra foto de esa misma (la cercana) */
     const alt = (ROOM_BY_USER || opts.keepRoom) && ROOM_CFG.mode === 'photo' && ROOM && !ROOM.custom ? roomFor(ROOM, w) : null;
