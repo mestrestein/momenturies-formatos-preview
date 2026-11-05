@@ -236,6 +236,9 @@ body { background: #0b0b0f; font-family: -apple-system, BlinkMacSystemFont, 'Seg
   #btn-upload-photo { left: 16px; }
   #crop-area { width: min(90vw, 50vh); height: min(90vw, 50vh); }
 }
+/* 5-nov · en las fichas (?colgador=) la escena va sin fondo: se ve el mismo fondo crema que el 3D de la foto 1. En el editor sigue negra */
+html.en-ficha body { background: transparent; }
+html.en-ficha #overview-title, html.en-ficha #step-label { color: rgba(74,46,26,0.62); }
 </style>
 </head>
 <body>
@@ -298,10 +301,12 @@ body { background: #0b0b0f; font-family: -apple-system, BlinkMacSystemFont, 'Seg
 <script>
 // ─── RENDERER / SCENE / CAMERA ───────────────────────────────────────────────
 const canvas   = document.getElementById('three-canvas');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, failIfMajorPerformanceCaveat: false });
+const EN_FICHA = new URLSearchParams(window.location.search).has('colgador');
+if (EN_FICHA) document.documentElement.classList.add('en-ficha');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: EN_FICHA, failIfMajorPerformanceCaveat: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(1, 1, false);
-renderer.setClearColor(0x0b0b0f, 1);
+renderer.setClearColor(0x0b0b0f, EN_FICHA ? 0 : 1);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
 

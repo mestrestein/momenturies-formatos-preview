@@ -216,15 +216,34 @@
     ctx.restore();
   }
   function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); c.fill(); }
-  /* audio → picos normalizados (RMS por tramo) */
+  /* audio → picos para dibujar la onda (5-nov).
+     Una grabación real es casi todo silencio: se recorta a lo que suena, sin contar los golpes sueltos del
+     botón, y se normaliza con el percentil 95 para que una sola punta no aplaste el resto. */
   function audioPicos(arrayBuffer, n) {
     var AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
+    function cierra() { try { ac.close && ac.close(); } catch (e) {} }
     return new Promise(function (res, rej) { ac.decodeAudioData(arrayBuffer, res, rej); }).then(function (buf) {
-      var d = buf.getChannelData(0), step = Math.floor(d.length / n), out = [];
-      for (var i = 0; i < n; i++) { var s = 0; for (var j = i * step; j < (i + 1) * step; j += 4) s += d[j] * d[j]; out.push(Math.sqrt(s / (step / 4))); }
-      var mx = Math.max.apply(null, out) || 1; ac.close && ac.close();
-      return out.map(function (v) { return Math.max(0.03, Math.pow(v / mx, 0.8)); });
-    });
+      cierra();
+      var N = buf.length, canales = [], c, i, j;
+      for (c = 0; c < buf.numberOfChannels; c++) canales.push(buf.getChannelData(c));
+      function muestra(k) { var v = 0; for (var q = 0; q < canales.length; q++) v += canales[q][k]; return v / canales.length; }
+      function rms(a, b) { var s = 0, m = 0; for (var k = a; k < b; k++) { var v = muestra(k); s += v * v; m++; } return m ? Math.sqrt(s / m) : 0; }
+      var hop = Math.max(1, Math.round(buf.sampleRate * 0.01)), env = [];   // energía cada 10 ms
+      for (i = 0; i < N; i += hop) env.push(rms(i, Math.min(N, i + hop)));
+      var orden = env.slice().sort(function (x, y) { return x - y; }), techo = orden[Math.floor(orden.length * 0.98)] || 0, suelo = orden[Math.floor(orden.length * 0.1)] || 0;
+      var umbral = Math.max(suelo * 3, techo * 0.08), seguidos = 4;         // 40 ms seguidos: un clic no cuenta como sonido
+      if (techo < 0.002) throw new Error('silencio');
+      function sube(k) { for (var m = 0; m < seguidos; m++) if ((env[k + m] || 0) < umbral) return false; return true; }
+      var ini = -1, fin = -1;
+      for (i = 0; i < env.length; i++) if (sube(i)) { ini = i; break; }
+      for (i = env.length - seguidos; i >= 0; i--) if (sube(i)) { fin = i + seguidos; break; }
+      if (ini < 0 && techo < 0.02) throw new Error('silencio');              // ruido de fondo o un golpe suelto
+      /* sin silencios que recortar (una canción fuerte y continua) se usa entero */
+      var a = ini < 0 ? 0 : Math.max(0, (ini - 6) * hop), b = ini < 0 ? N : Math.min(N, (fin + 6) * hop), paso = (b - a) / n, out = [];   // 60 ms de margen
+      for (i = 0; i < n; i++) out.push(rms(Math.floor(a + i * paso), Math.max(Math.floor(a + i * paso) + 1, Math.floor(a + (i + 1) * paso))));
+      var o2 = out.slice().sort(function (x, y) { return x - y; }), mx = o2[Math.floor(n * 0.95)] || 1;
+      return out.map(function (v) { return Math.max(0.03, Math.pow(Math.min(1, v / mx), 0.8)); });
+    }, function (e) { cierra(); throw e; });
   }
 
   /* ── 7 · COORDENADAS ── */
