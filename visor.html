@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Momenturies · Visor 3D</title>
+<link rel="stylesheet" href="editor.css?v=564abfa5">
+<!-- 5-nov · El 3D de las fichas: el motor del editor sin su interfaz, para verlo dentro de un iframe.
+     ?p=metal|madera|nevera  &img=foto  &ded=dedicatoria  &escena=id (solo para sacar fotos de escena)
+     No guarda nada (MOMENTURIES_EDITOR.vista) y no carga consent, carrito ni medición: no pisa el diseño del cliente
+     ni cuenta visitas. La ficha le habla por postMessage: {visor:'girar'}; él avisa con {visor:'listo'}. -->
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:transparent}
+.editor{background:transparent!important}
+.editor>*:not(#pvStage),#pvStage>*:not(#pvCanvas),body>*:not(#editor):not(#capa):not(script){display:none!important}
+body::before{content:'';position:fixed;left:18%;right:18%;bottom:7%;height:7%;background:radial-gradient(closest-side,rgba(60,40,20,.26),transparent);filter:blur(5px)}
+#capa{position:fixed;inset:0;z-index:2000;cursor:grab;touch-action:pan-y}
+#capa:active{cursor:grabbing}
+</style>
+</head>
+<body>
+<script>
+window.VISOR_Q = new URLSearchParams(location.search);
+window.MOMENTURIES_EDITOR = { product: VISOR_Q.get('p') || 'metal', lock: true, vista: true };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<script src="paredes.js?v=a20cf894"></script>
+<script src="photo-handoff.js?v=9639e829"></script>
+<script src="fotos/entornos/entornos.js?v=23c2a392"></script>
+<script src="dibujos.js?v=6b0d71c9"></script>
+<script src="editor.js?v=8dda5a6e"></script>
+<div id="capa"></div>
+<script>
+(function(){
+  var q = VISOR_Q, p = POSTERS[selected], capa = document.getElementById('capa'), escena = q.get('escena');
+  if(q.get('p') === 'nevera' && !escena) clearRoom();          // el imán solo; la nevera ya sale en la foto de escena
+  openEditorWithType(MOMENTURIES_EDITOR.product);
+  if(q.get('talla')){ var sz = sizesOf(p).find(function(x){ return x.k === q.get('talla'); }); if(sz){ applyProductSize(p, sz, p.format); layout(); } }
+  if(escena) setScene(escena);
+  /* el editor encuadra dejando sitio a sus barras y según el ancho; aquí la pieza ocupa siempre el 57 % del alto y va centrada */
+  function encuadra(){
+    if(escena) return;
+    camera.clearViewOffset(); camera.zoom = 1; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true); p.rig.updateWorldMatrix(true, false);
+    var caja = new THREE.Box3().setFromObject(p.mesh), c = caja.getCenter(new THREE.Vector3()), m = (caja.max.y - caja.min.y) / 2;
+    var a = c.clone().setY(c.y + m).project(camera).y, b = c.clone().setY(c.y - m).project(camera).y;
+    camera.zoom = 1.14 / Math.max(.02, a - b); camera.updateProjectionMatrix();
+    var v = c.clone().project(camera), W = innerWidth, H = innerHeight;
+    camera.setViewOffset(W, H, v.x * W / 2, -v.y * H / 2 + H * .035, W, H); camera.updateProjectionMatrix();
+    dirty3D = true;
+  }
+  addEventListener('resize', function(){ setTimeout(encuadra, 250); });
+  var img = new Image();
+  img.onload = function(){
+    applyPhoto(selected, img, true);
+    if(q.get('ded')){ p.backText = q.get('ded'); applyBackText(selected); }
+    dirty3D = true; [120, 700, 1500, 2600].forEach(function(ms){ setTimeout(encuadra, ms); });
+    setTimeout(function(){ if(parent !== window) parent.postMessage({ visor:'listo' }, location.origin); }, 250);
+  };
+  img.src = q.get('img') || 'fotos/stock/1474552226712-600x800.webp';
+
+  /* gira solo y despacio hasta que lo tocan; a mano se arrastra; desde la ficha se le da la vuelta */
+  var libre = !escena, t = 0, base = 0, dr = false, x0 = 0, y0 = 0, ry0 = 0, rx0 = 0, atras = false;
+  var pausa = false;
+  (function vaiven(){
+    if(libre && !pausa && !document.hidden){ t += .012; tRy = base + Math.sin(t) * .5; tRx = -.04 + Math.sin(t * .7) * .05; dirty3D = true; }
+    requestAnimationFrame(vaiven);
+  })();
+  capa.addEventListener('pointerdown', function(e){ dr = true; libre = false; x0 = e.clientX; y0 = e.clientY; ry0 = tRy; rx0 = tRx; });
+  addEventListener('pointermove', function(e){ if(!dr) return; tRy = ry0 + (e.clientX - x0) * .0105; tRx = Math.max(-.35, Math.min(.35, rx0 + (e.clientY - y0) * .004)); dirty3D = true; });
+  addEventListener('pointerup', function(){ dr = false; });
+  addEventListener('pointercancel', function(){ dr = false; });
+  addEventListener('message', function(e){
+    if(e.origin !== location.origin || !e.data) return;
+    if(e.data.visor === 'pausa'){ pausa = !!e.data.on; return; }
+    if(e.data.visor !== 'girar') return;
+    libre = false; atras = !atras; tRx = -.04; flipToFace(atras ? Math.PI + .12 : .15); dirty3D = true;
+  });
+})();
+</script>
+</body>
+</html>

@@ -3695,13 +3695,13 @@ function store(){ return window.MOMENTURIES_STORE || null; }
 var _saveT = null, _savedBlobs = null, _restoring = false, _userEdited = false;
 
 function scheduleSave(){
-  if(_restoring || !store() || typeof POSTERS === 'undefined') return;
+  if((window.MOMENTURIES_EDITOR||{}).vista || _restoring || !store() || typeof POSTERS === 'undefined') return;
   clearTimeout(_saveT);
   _saveT = setTimeout(saveDesign, 700);
 }
 
 async function saveDesign(){
-  const st = store(); if(!st) return;
+  const st = store(); if((window.MOMENTURIES_EDITOR||{}).vista || !st) return;
   try{
     const items = POSTERS.filter(p => p.srcImg || p.frontText || p.frontText2 || p.backText || p.backText2 || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
