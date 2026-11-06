@@ -20,7 +20,7 @@
 <!-- rendimiento: la tipografía no bloquea el primer render; las fotos de stock viven en fotos/stock/ (WebP a 2x, localizadas 11-sep-2026) -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="image" href="fotos/portada-nueva/hero-recuerdos-movil.webp" fetchpriority="high"/>
+<link rel="preload" as="image" href="fotos/portada-nueva/hero-sin-clavos-iman-v2.webp" fetchpriority="high"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"/></noscript>
 
@@ -1417,7 +1417,7 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 })();
 </script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'"/>
-<link rel="stylesheet" href="portada.css?v=334b1b1e"/>
+<link rel="stylesheet" href="portada.css?v=290fcd4b"/>
 <script src="consent.js?v=bafba393" defer></script>
 </head>
 <body>
@@ -1525,20 +1525,13 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 </div>
 <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
 
-<!-- HERO EN CARRUSEL: cinco ángulos (recuerdos, sin clavos, en tu casa, con los tuyos, regalo). Fotos 16:9 enteras, sin recortar. portada.js -->
+<!-- HERO EN CARRUSEL: cinco ángulos (sin clavos, en tu casa, recuerdos, con los tuyos, regalo). Fotos 16:9 enteras, sin recortar. portada.js -->
 <section class="hx" id="hx" aria-roledescription="carrusel" aria-label="Momenturies">
   <div class="hx-copy">
     <div class="hx-txt">
       <div class="hx-t on">
-        <p class="hx-tag">Tus recuerdos</p>
-        <h1>No dejes tus recuerdos <em>en el móvil.</em></h1>
-        <p class="sub">Disfrútalos cada día en casa.</p>
-        <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#productos" class="hx-link">Ver formatos y precios</a></div>
-        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
-      </div>
-      <div class="hx-t">
         <p class="hx-tag">Sin clavos</p>
-        <p class="h1">Cuélgalo en segundos <em>sin daños en la pared.</em></p>
+        <h1>Cuélgalo en segundos <em>sin daños en la pared.</em></h1>
         <p class="sub">Sin clavos, sin agujeros, sin ser un manitas. Con imán.</p>
         <p class="sub fuerte">Intercámbialo de lugar cuando quieras.</p>
         <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#asi-se-cuelga" class="hx-link">Ver cómo se cuelga</a></div>
@@ -1549,6 +1542,14 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
         <p class="h1">Elige el lugar y tu combinación favorita, <em>desde el móvil.</em></p>
         <p class="sub">Asegúrate de ver cómo queda antes de comprar.</p>
         <div class="hx-btns"><a href="cuadro.html?pared=W27" class="hx-cta" data-photo-pick>Ver cómo queda en mi casa <span>→</span></a></div>
+        <div class="hx-rutas"><a href="#en-tu-casa">El lugar</a><a href="#paredes">La combinación</a></div>
+        <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
+      </div>
+      <div class="hx-t">
+        <p class="hx-tag">Tus recuerdos</p>
+        <p class="h1">No dejes tus recuerdos <em>en el móvil.</em></p>
+        <p class="sub">Disfrútalos cada día en casa.</p>
+        <div class="hx-btns"><a href="cuadro.html" class="hx-cta" data-photo-pick>Elegir mis fotos <span>→</span></a><a href="#productos" class="hx-link">Ver formatos y precios</a></div>
         <p class="hx-prod">Cuadros metálicos HD con colgado magnético. Cuélgalo en segundos sin daños en la pared.</p>
       </div>
       <div class="hx-t">
@@ -1567,17 +1568,17 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
       </div>
     </div>
     <div class="hx-nav" role="tablist">
-      <button type="button" class="on" role="tab">Tus recuerdos</button>
-      <button type="button" role="tab">Sin clavos</button>
+      <button type="button" class="on" role="tab">Sin clavos</button>
       <button type="button" role="tab">En tu casa</button>
+      <button type="button" role="tab">Tus recuerdos</button>
       <button type="button" role="tab">Con los tuyos</button>
       <button type="button" role="tab">Para regalar</button>
     </div>
   </div>
   <div class="hx-media">
-    <div class="hx-m on" style="--p:56% 50%"><img src="fotos/portada-nueva/hero-recuerdos-movil.webp" width="1920" height="1080" alt="Una pareja en el sofá enseña en el móvil las mismas fotos que tiene colgadas en aluminio en la pared" fetchpriority="high"/></div>
-    <div class="hx-m" style="--p:58% 50%"><img src="fotos/portada-nueva/hero-sin-clavos-iman.webp" width="1920" height="1080" alt="Él pega el imán en la pared y ella acerca el cuadro de aluminio para colgarlo" loading="lazy"/></div>
+    <div class="hx-m on" style="--p:50% 50%"><img src="fotos/portada-nueva/hero-sin-clavos-iman-v2.webp" width="1402" height="1122" alt="Él pega el imán en la pared y ella acerca el cuadro de aluminio para colgarlo" fetchpriority="high"/></div>
     <div class="hx-m" style="--p:88% 50%"><video data-src="fotos/historia/DondeLimpio-web.mp4?v=28550616" poster="fotos/historia/DondeLimpio-poster.jpg?v=28550616" muted loop playsinline preload="none" aria-label="La misma pared en el salón, la cocina, el recibidor y el dormitorio, elegida desde el móvil"></video></div>
+    <div class="hx-m" style="--p:56% 50%"><img src="fotos/portada-nueva/hero-recuerdos-movil.webp" width="1920" height="1080" alt="Una pareja en el sofá enseña en el móvil las mismas fotos que tiene colgadas en aluminio en la pared" loading="lazy"/></div>
     <div class="hx-m" style="--p:64% 40%"><img src="fotos/portada-nueva/hero-pared-familia.webp" width="1920" height="1080" alt="Una familia cuelga entre todos sus fotos en aluminio con imanes en la pared del salón" loading="lazy"/></div>
     <div class="hx-m" style="--p:50% 50%"><img src="fotos/portada-nueva/hero-regalo-dedicatoria.webp" width="1920" height="1080" alt="Tres generaciones abren el regalo: su foto en aluminio con la dedicatoria «Siempre juntos» detrás" loading="lazy"/></div>
     <div class="hx-arr"><button type="button" data-d="-1" aria-label="Anterior">‹</button><button type="button" data-d="1" aria-label="Siguiente">›</button></div>
