@@ -88,7 +88,7 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .thumbs button{flex:0 0 auto;width:76px;height:76px;border-radius:12px;border:2px solid transparent;background:#eee center/cover;cursor:pointer;position:relative;transition:border-color .2s,transform .2s}
 .thumbs button:hover{transform:scale(1.03)}
 .thumbs button.on{border-color:var(--ink)}
-.thumbs button .t3d{position:absolute;inset:auto 6px 6px auto;font:800 9px/1 var(--sans);background:var(--ink);color:#fff;border-radius:4px;padding:3px 4px}
+.thumbs button .t3d{position:absolute;top:5px;left:5px;font:800 9px/1 var(--sans);background:var(--ink);color:#fff;border-radius:4px;padding:3px 4px}
 @media(max-width:980px){.thumbs button{width:64px;height:64px}}
 .stage{position:relative;border-radius:var(--r);overflow:hidden;background:var(--cream);aspect-ratio:1/1}
 .slides{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth}
@@ -101,10 +101,8 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 
 /* visor 3D (CSS) */
 .v3d{position:relative}
-.v3d iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;opacity:0;transition:opacity .6s}
+.v3d iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;opacity:0}
 .v3d.listo iframe{opacity:1}.v3d.esc iframe{opacity:1}
-.v3d .pos{width:50%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;box-shadow:0 18px 40px rgba(60,40,20,.2);transition:opacity .4s}
-.v3d.listo .pos{opacity:0}
 .v3d .hint,.v3d .flip{z-index:2}.v3d .hint{pointer-events:none}
 .v3d{background:radial-gradient(120% 90% at 50% 40%,#fbf7f1 0%,#ece3d6 70%,#e2d6c5 100%);display:grid;place-items:center;cursor:grab;touch-action:pan-y}
 .v3d:active{cursor:grabbing}
@@ -742,7 +740,7 @@ GAL.forEach((g,i) => {
   if(g.t === 'esc'){ s.className = 'slide v3d esc'; s.innerHTML = `<iframe class="esc-f" data-src="${g.src}" title="${g.cap}"></iframe>`; }
   else if(g.t === '3d'){
     s.className = 'slide v3d'; s.id = 'v3d';
-    s.innerHTML = `<img class="pos" src="fotos/stock/1474552226712-600x800.webp" alt=""><iframe id="vis3d" data-src="visor.html?p=metal&img=fotos/stock/1474552226712-600x800.webp&ded=Para%20ti%2C%20siempre" title="Vista 3D del producto"></iframe><span class="hint">↔ Arrastra para girarlo</span><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
+    s.innerHTML = `<iframe id="vis3d" data-src="visor.html?p=metal&img=fotos/stock/1474552226712-600x800.webp&ded=Para%20ti%2C%20siempre" title="Vista 3D del producto"></iframe><span class="hint">↔ Arrastra para girarlo</span><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
   } else {
     s.className = 'slide'; s.style.backgroundImage = `url(${g.img})`;
     s.setAttribute('role','img'); s.setAttribute('aria-label', g.cap);
@@ -751,7 +749,7 @@ GAL.forEach((g,i) => {
   slides.appendChild(s);
   const b = document.createElement('button'); b.type = 'button';
   b.style.backgroundImage = `url(${g.thumb || g.img})`; b.setAttribute('aria-label', g.cap);
-  if(g.t === '3d') b.innerHTML = '<span class="t3d">3D</span>';
+  if(g.t === '3d' || g.t === 'esc') b.innerHTML = `<span class="t3d">${g.t === '3d' ? '3D' : 'ESCENA'}</span>`;
   b.onclick = () => goSlide(i);
   thumbs.appendChild(b);
 });
@@ -773,12 +771,12 @@ document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => goSlide(cu
 markSlide.last = 0; markSlide();
 
 const FLIP = 'Ver el dorso con dedicatoria';
-/* visor 3D: el motor real del editor (visor.html), cargado al terminar la página. Mientras llega se ve la foto */
+/* visor 3D: el motor real del editor (visor.html), cargado al terminar la página */
 (function(){
   const box = $('#v3d'), f = $('#vis3d'); if(!box) return;
   const carga = () => { f.src = f.dataset.src; };
   if(document.readyState === 'complete') setTimeout(carga, 200); else addEventListener('load', () => setTimeout(carga, 200));
-  addEventListener('message', e => { if(e.origin === location.origin && e.data && e.data.visor === 'listo') box.classList.add('listo'); });
+  addEventListener('message', e => { if(e.origin === location.origin && e.data && e.data.visor === 'listo'){ box.classList.add('listo'); } });
   const manda = m => f.contentWindow && f.contentWindow.postMessage(m, location.origin);
   new IntersectionObserver(c => manda({ visor:'pausa', on:!c[0].isIntersecting }), { threshold:.1 }).observe(box);
   let back = false;
