@@ -468,6 +468,54 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 footer{background:#1d120a;color:rgba(255,255,255,.6);font-size:13px;padding:30px 0 90px}
 footer .c{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
+
+/* 6-nov: consulta de tamaños (FAQ y pop-up) */
+.info .cta-main{margin-top:18px}
+.packs-tam{display:block;margin:-6px auto 14px;padding:4px 8px;border:0;background:none;font:inherit;font-size:12.5px;color:var(--mid);text-align:center;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.packs-tam:hover{color:var(--ink)}
+.tam{width:100%;border-collapse:collapse;font-size:13.5px;color:var(--ink2)}
+.tam th,.tam td{padding:7px 6px;text-align:left;white-space:nowrap}
+.tam thead th{font-size:11.5px;font-weight:700;color:var(--mid);border-bottom:1px solid var(--line)}
+.tam .f th{padding-top:12px;font-size:13.5px;font-weight:900;color:var(--brown);border-bottom:1px solid var(--line)}
+.tam tbody tr:not(.f) td{border-bottom:1px solid var(--line)}
+.tam td:first-child{font-weight:800;color:var(--ink)}
+.tam td:nth-child(3){font-weight:800;color:var(--brown)}
+.opt .tit small.iman{color:var(--brown)}
+.tam-iva{font-size:12px;color:var(--mid);margin-top:8px}
+.tam-nota{font-size:14px;color:var(--ink2);margin-top:10px}
+.tam-nota a{color:var(--terra);font-weight:800}
+.tam-pop{width:min(520px,calc(100vw - 32px));max-height:88dvh;margin:auto;border:0;border-radius:20px;padding:20px;background:#fff;color:var(--ink);overscroll-behavior:contain}
+.tam-pop::backdrop{background:rgba(30,20,12,.55)}
+.tam-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tam-cab h2{font-family:var(--serif);font-size:24px;line-height:1.1;color:var(--brown)}
+.tam-cab button{width:36px;height:36px;flex:none;border:1px solid var(--line);border-radius:50%;background:#fff;font-size:22px;line-height:1;color:var(--ink);cursor:pointer}
+.tam-pop .cta-main{display:flex;margin-top:12px;font-size:16px;padding:16px 20px}
+.room-gap{height:22px}
+.combos-mas{margin-top:34px}
+.lead-1l{white-space:nowrap}
+/* 6-nov: en móvil, «Así queda en tu casa» y «Tus fotos, en composición» con menos scroll */
+@media(max-width:760px){
+  #casa,#combinaciones{padding:32px 0}
+  #casa .h2,#combinaciones .h2{font-size:clamp(21px,6.5vw,28px)}
+  #casa .lead,#combinaciones .lead{margin-top:6px;font-size:clamp(12.5px,3.7vw,16px)}
+  .rooms-tabs{flex-wrap:nowrap;justify-content:flex-start!important;overflow-x:auto;margin:12px -16px;padding:0 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .rooms-tabs::-webkit-scrollbar{display:none}
+  .rooms-tabs button{flex:none;padding:8px 14px;font-size:13.5px}
+  .room-view{gap:10px}
+  .room-view .big{border-radius:16px;box-shadow:none}
+  .room-side{padding:14px 16px;border-radius:16px}
+  .room-side h3{font-size:20px}
+  .room-side p{font-size:13.5px;line-height:1.45;margin-top:6px}
+  .room-side .tip{margin-top:8px;padding:9px 12px;font-size:12.5px;line-height:1.4}
+  .room-gap{height:10px}
+  .room-side .btn{padding:14px 20px;font-size:15px}
+  .room-strip{display:none}
+  .combo-grid{margin-top:14px;gap:10px}
+  .combo-grid .tx{padding:9px 12px}
+  .combos-mas{margin-top:14px}
+  .combos-mas .btn{padding:13px 20px;font-size:14.5px}
+}
+@media(max-width:520px){.combo-grid{grid-template-columns:repeat(11,66vw)}}
 </style>
 <script src="consent.js?v=bafba393" defer></script>
 </head>
@@ -513,15 +561,13 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <div class="coupon">🏷️ −10 % en tu primer pedido <code id="cupon" title="Copiar código">HOLA10</code></div>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
     <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
-    <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras, y listo. Dale vida a vuestro hogar en segundos con <b>cuadros metálicos, con colgado magnético</b> fácil de instalar, sin herramientas ni agujeros.</p>
-    <div class="from"><b>desde 19,99 €</b><span>IVA incluido · imán incluido</span></div>
+    <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras. Dale vida a vuestro hogar en segundos con vuestros <b>cuadros metálicos premium, con colgado magnético incluido</b>. Fácil de instalar, sin herramientas, sin agujeros, con imán.</p>
+    <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
 
     <div class="packs-h">Uno queda bien · varios quedan mejor</div>
     <p class="packs-ref">Precios basados en el tamaño clásico M (21×29,7 cm)</p>
+    <button type="button" class="packs-tam" id="tamAbrir">Consulta tamaños y precios disponibles</button>
     <div id="packs"></div>
-
-    <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
-    <p class="cta-note" id="ctaNote">Subes tus fotos y lo ves colgado antes de pagar.</p>
 
     <div class="qfaq">
       <details><summary>¿Qué es un cuadro metálico con colgado magnético?</summary><div class="a">Tu foto impresa en alta definición directamente sobre aluminio, lista para colgar sin herramientas.
@@ -534,6 +580,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
         <ol><li>Quita el protector de la base adhesiva.</li><li>Pega la base en la pared y aprieta unos segundos.</li><li>Acerca el cuadro: el imán se engancha solo.</li><li>Endérézalo con la mano y listo.</li></ol>
         Para cambiarlo de sitio, lo separas del imán y lo pones en otra base. Sin agujeros ni marcas.</div></details>
       <details><summary>¿Puedo ver cómo queda desde el móvil?</summary><div class="a">Sí. Desde el móvil subes tus fotos, eliges la composición y la ves colgada a escala en una estancia (salón, dormitorio, pasillo…) o en una foto de tu propia casa. Cambias fotos, orden y tamaño las veces que quieras, y solo pagas cuando te guste.</div></details>
+      <details><summary>Tamaños y precios</summary><div class="a"><div data-tam></div><p class="tam-nota">Para elegir tu tamaño ideal, dale clic a <a href="cuadro.html">Diseña tu pared</a>.</p></div></details>
     </div>
 
     <div class="trust"><span>Envío gratis en España desde 60 €</span><span>Impreso en 1-2 días laborables</span><span>Si llega mal, lo reimprimimos</span><span>Dedicatoria gratis en el dorso</span></div>
@@ -602,7 +649,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 
 <!-- ═════════════════ 3 · EN TU CASA ═════════════════ -->
 <section class="sec" id="casa"><div class="c">
-  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Así queda <em>en tu casa</em>.</h2><p class="lead">Elige una estancia. En el editor haces lo mismo con tus fotos: las ves colgadas, a tamaño real, antes de pagar.</p></div>
+  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Así queda <em>en tu casa</em>.</h2><p class="lead"><span class="solo-pc">Elige una estancia. En el editor haces lo mismo con tus fotos: las ves colgadas, a tamaño real, antes de pagar.</span><span class="solo-movil lead-1l">Desde el editor ves cómo queda antes de comprar</span></p></div>
   <div class="rooms-tabs" id="roomTabs" style="justify-content:center"></div>
   <div class="room-view">
     <div class="big" id="roomBig"></div>
@@ -610,7 +657,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
       <h3 id="roomTit"></h3>
       <p id="roomTxt"></p>
       <div class="tip" id="roomTip"></div>
-      <div style="height:22px"></div>
+      <div class="room-gap"></div>
       <a class="btn" href="cuadro.html">Probar con mis fotos →</a>
     </div>
   </div>
@@ -619,9 +666,9 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 
 <!-- ═════════════════ 4 · COMBINACIONES ═════════════════ -->
 <section class="sec combos" id="combinaciones"><div class="c">
-  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Tus fotos, <em>en composición</em>.</h2><p class="lead">De tres en fila a una pared entera de recuerdos. Toca una y se abre el editor con esa composición ya puesta: solo te queda subir las fotos.</p></div>
+  <div class="center"><p class="tag">Míralo antes de comprar</p><h2 class="h2">Tus fotos, <em>en composición</em>.</h2><p class="lead">Elige tu combinación favorita</p></div>
   <div class="combo-grid" id="comboGrid"></div>
-  <div class="center" style="margin-top:34px"><a class="btn ghost" href="paredes.html">Ver las +60 composiciones →</a></div>
+  <div class="center combos-mas"><a class="btn ghost" href="paredes.html">Ver las +60 composiciones →</a></div>
 </div></section>
 
 <!-- ═════════════════ 5 · ALUMINIO VS TRADICIONAL ═════════════════ -->
@@ -706,6 +753,13 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 </div></section>
 
 <footer><div class="c"><div><a href="nosotros.html">Nosotros</a><a href="contacto.html">Contacto</a><a href="terminos.html">Términos</a><a href="privacidad.html">Privacidad</a><a href="cookies.html">Cookies</a><a href="https://www.instagram.com/momenturies.official/" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com/people/Momenturies/61596238460014/" target="_blank" rel="noopener">Facebook</a></div><div>© 2026 Momenturies</div></div></footer>
+
+<dialog class="tam-pop" id="tamPop" aria-labelledby="tamPopTit">
+  <div class="tam-cab"><h2 id="tamPopTit">Tamaños y precios</h2><button type="button" id="tamCerrar" aria-label="Cerrar">×</button></div>
+  <div data-tam></div>
+  <p class="tam-nota">Para elegir el tuyo, dale a <b>Diseña tu pared</b>.</p>
+  <a class="btn cta-main" href="cuadro.html">Diseña tu pared →</a>
+</dialog>
 
 <div class="sticky" id="sticky"><div class="t"><span id="stTit">4 cuadros · Melodía suave</span><b id="stPr">101,97 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
 
@@ -802,7 +856,7 @@ const TIERS = [{n:5,pct:20},{n:3,pct:15},{n:2,pct:10}];
 const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
 const KM = 29.99; // 4-nov: la referencia de precios y fotos es el clásico M, 21×29,7
 const PACKS = [
-  {id:'1', n:1, sub:'Tu foto favorita, sola', price:KM, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', cta:'Sube tu foto →', note:'Eliges formato y tamaño en el editor, viendo ya tu foto.'},
+  {id:'1', n:1, sub:'Tu foto favorita, sola', price:KM, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.jpg', alt:'fotos/pdp/pack-UNO-casa.jpg', cta:'Diseña tu pared →'},
   {id:'W83', n:2, name:'Dos clásicos', gross:2*KM, href:'cuadro.html?pared=W83', img:'fotos/pdp/pack-W83-cerca.jpg', alt:'fotos/pdp/pack-W83-casa.jpg'},
   {id:'W84', n:3, name:'Tres clásicos', gross:3*KM, href:'cuadro.html?pared=W84', img:'fotos/pdp/pack-W84-cerca.jpg', alt:'fotos/pdp/pack-W84-casa.jpg'},
   {id:'W85', n:4, name:'Cuatro en fila', gross:4*KM, href:'cuadro.html?pared=W85', img:'fotos/pdp/pack-W85-cerca.jpg', alt:'fotos/pdp/pack-W85-casa.jpg', badge:'Más elegido'},
@@ -810,7 +864,7 @@ const PACKS = [
   {id:'W87', n:9, name:'Nueve clásicos', gross:9*KM, href:'cuadro.html?pared=W87', img:'fotos/pdp/pack-W87-cerca.jpg', alt:'fotos/pdp/pack-W87-casa.jpg', badge:'Mejor precio', terra:true},
 ];
 PACKS.forEach(p => p.tit = p.n + (p.n > 1 ? ' cuadros' : ' cuadro'));
-PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; p.note = 'Se abre el editor con esta composición. Subes tus fotos y la ves colgada.'; } });
+PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; } });
 const packsEl = $('#packs');
 let sel = 'W85';
 function renderPacks(){
@@ -821,7 +875,7 @@ function renderPacks(){
       ${p.badge ? `<span class="badge ${p.terra ? 'terra' : ''}">${p.badge}</span>` : ''}
       <div class="row">
         <span class="rad"></span>
-        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}${p.save ? `<small class="ahorra">Ahorras ${eur(p.save)}</small>` : ''}</div>
+        <div class="tit">${p.tit}${p.pct ? `<span class="pill">-${p.pct} %</span>` : ''}${p.save ? `<small class="ahorra">Ahorras ${eur(p.save)}</small>` : ''}<small class="iman">🧲 Imán incluido gratis</small></div>
         <div class="pr"><b>${eur(p.price)}</b>${p.gross ? `<s>${eur(p.gross)}</s>` : ''}</div>
       </div>
       <div class="more">
@@ -835,11 +889,9 @@ function renderPacks(){
 function choose(id){
   sel = id; renderPacks();
   const p = PACKS.find(x => x.id === id);
-  $('#ctaMain').href = p.href; $('#ctaMain').textContent = p.cta;
-  $('#ctaNote').textContent = p.note;
   $('#stTit').textContent = p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro';
   $('#stPr').textContent = eur(p.price);
-  $('#stCta').href = p.href; $('#stCta').textContent = p.n > 1 ? 'Diseña tu pared →' : 'Sube tu foto →';
+  $('#stCta').href = p.href; $('#stCta').textContent = p.cta;
 }
 packsEl.addEventListener('click', e => {
   const sw = e.target.closest('.sw button');
@@ -849,8 +901,26 @@ packsEl.addEventListener('click', e => {
 packsEl.addEventListener('keydown', e => { const o = e.target.closest('.opt'); if(o && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); choose(o.dataset.id); } });
 choose(sel);
 
-/* barra fija: aparece cuando el botón principal se sale de la pantalla */
-new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe($('#ctaMain'));
+/* barra fija: aparece cuando las ofertas se salen de la pantalla */
+new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe(packsEl);
+
+/* ═════ TAMAÑOS Y PRECIOS ═════
+   Copia a mano de FORMATS en editor.js: si cambia un precio o una medida, cambiarlo también aquí. */
+const TAMANOS = [
+  ['Cuadrado', [{k:'S',d:'10×10',price:14.99},{k:'M',d:'15×15',price:24.99},{k:'ML',d:'20×20',price:29.99},{k:'L',d:'30×30',price:54.99}]],
+  ['Clásico', [{k:'S',d:'10×15',price:19.99},{k:'M',d:'21×29,7',price:29.99},{k:'L',d:'25,5×36',price:44.99},{k:'XL',d:'30,5×43,1',price:59.99}]],
+  ['Retrato', [{k:'S',d:'12×16',price:19.99},{k:'M',d:'18×24',price:29.99},{k:'L',d:'24×32',price:44.99},{k:'XL',d:'30×40',price:54.99}]],
+];
+const tamHtml = '<table class="tam"><thead><tr><th>Tamaño</th><th>Medida</th><th>Precio</th></tr></thead>'
+  + TAMANOS.map(([f, ss]) => `<tbody><tr class="f"><th colspan="3" scope="colgroup">${f}</th></tr>` + ss.map(s => `<tr><td>${s.k}</td><td>${s.d} cm</td><td>${eur(s.price)}</td></tr>`).join('') + '</tbody>').join('')
+  + '</table><p class="tam-iva">IVA e imán incluidos en todos los precios.</p>';
+document.querySelectorAll('[data-tam]').forEach(el => el.innerHTML = tamHtml);
+(function(){
+  const pop = $('#tamPop');
+  $('#tamAbrir').addEventListener('click', () => pop.showModal());
+  $('#tamCerrar').addEventListener('click', () => pop.close());
+  pop.addEventListener('click', e => { if(e.target === pop) pop.close(); });
+})();
 
 /* ═════ DEL RECUERDO A TU PARED ═════ */
 const PG = ['1438761681033','1474552226712','1491013516836','1499714608240','1502759683299','1507003211169','1518568814500','1519689373023','1529156069898','1544005313','1555685812'];
