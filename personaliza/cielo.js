@@ -28,19 +28,24 @@
     montana: { name: 'Montaña', sky: ['#14152a', '#22243f', '#33365b'] },
     cumbres: { name: 'Cumbres', sky: ['#070d1b', '#18223d', '#303c5b'] },
     ciudad:  { name: 'Ciudad',  sky: ['#04152a', '#0a2846', '#11395c'] },
-    mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] }
+    mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] },
+    desierto: { name: 'Desierto', sky: ['#040312', '#07051c', '#0b0828'] },
+    pueblo:  { name: 'Pueblo',  sky: ['#040b18', '#071429', '#0a1c3a'] },
+    lago:    { name: 'Lago',    sky: ['#030e15', '#051a26', '#082536'] },
+    campo:   { name: 'Campo',   sky: ['#050913', '#0a1020', '#0e162d'] }
   };
   /* 6-nov: Montaña, Cumbres y Ciudad son fotos (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
      ven por encima de los picos. Solo se cargan en cielo.html; si no llegan, se dibuja la montaña de antes */
-  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1', ciudad: 'paisaje-ciudad.webp?v=1' }, IMG = {};
-  var FUNDE = { montana: .33, cumbres: .34, ciudad: .22 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
+  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1', ciudad: 'paisaje-ciudad.webp?v=1',
+    desierto: 'paisaje-desierto.webp?v=1', pueblo: 'paisaje-pueblo.webp?v=1', lago: 'paisaje-lago.webp?v=1', campo: 'paisaje-campo.webp?v=1' }, IMG = {};
+  var FUNDE = { montana: .33, cumbres: .34, ciudad: .22, desierto: .415, pueblo: .281, lago: .438, campo: .32 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
   var BASE = ((document.currentScript && document.currentScript.src) || 'personaliza/cielo.js').replace(/cielo\.js(\?.*)?$/, '');
   var fotosReady = !/\/cielo(\.html)?$/.test(location.pathname) ? Promise.resolve() : Promise.all(Object.keys(FOTOS).map(function (k) {
     return new Promise(function (res) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { res(); }; im.src = BASE + FOTOS[k]; });
   }));
   var CLARO = 'rgba(255,255,255,';
   Object.keys(ESCENAS).forEach(function (k) {
-    var E = ESCENAS[k]; E.escena = k; E.bg = E.sky[0]; E.disk = E.sky[2]; E.ring = 'rgba(0,0,0,0)'; E.star = '#ffffff'; E.line = CLARO + '.3)'; E.grid = CLARO + '.05)';
+    var E = ESCENAS[k]; E.escena = k; E.bg = E.sky[0]; E.disk = E.sky[2]; E.ring = 'rgba(0,0,0,0)'; E.star = '#ffffff'; E.line = CLARO + '.2)'; E.grid = CLARO + '.05)';
     E.text = '#ffffff'; E.soft = CLARO + '.72)'; E.moonDark = E.sky[1];
   });
   function azar(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -240,6 +245,84 @@
 
   /* el disco del cielo (estrellas, constelaciones, Luna y aros) centrado en (cx, cy) con radio R.
      W = ancho del póster: da el grosor de líneas y el tamaño de estrellas */
+
+  /* 6-nov: estrellas «de foto» para los cielos con paisaje. Las posiciones siguen siendo las reales de la fecha; lo que
+     cambia es cómo se pintan: núcleo pequeño con halo suave (sprites precalculados, rápido también a 3600 px), color
+     según el tipo de estrella (al azar fijo por estrella: el catálogo no trae el color), apagadas cerca del horizonte,
+     miles de estrellas débiles de fondo y la Vía Láctea en su sitio de verdad (plano galáctico → ecuatoriales). */
+  var SPR = {}, CAMPO = null, VIA = null;
+  function sprite(rgb) {
+    if (SPR[rgb]) return SPR[rgb];
+    var c = document.createElement('canvas'); c.width = c.height = 128; var x = c.getContext('2d');
+    var g = x.createRadialGradient(64, 64, 0, 64, 64, 64), f = function (a) { return 'rgba(' + rgb + ',' + a + ')'; };
+    g.addColorStop(0, f(1)); g.addColorStop(.07, f(.9)); g.addColorStop(.14, f(.32)); g.addColorStop(.26, f(.07)); g.addColorStop(.55, f(.012)); g.addColorStop(1, f(0));
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128); return (SPR[rgb] = c);
+  }
+  function nube() {   // mancha suave para la Vía Láctea
+    if (SPR.nube) return SPR.nube;
+    var c = document.createElement('canvas'); c.width = c.height = 64; var x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.4, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64); return (SPR.nube = c);
+  }
+  var COLORES = [[[200, 218, 255], .14], [[226, 234, 255], .22], [[255, 255, 255], .3], [[255, 244, 226], .18], [[255, 222, 186], .11], [[255, 196, 150], .05]];
+  function colorDe(R) { var t = R(), i; for (i = 0; i < COLORES.length - 1; i++) { t -= COLORES[i][1]; if (t < 0) break; } return COLORES[i][0].join(','); }
+  function galEq(l, b) {   // galácticas → ecuatoriales J2000 (grados)
+    var aG = 192.85948 * D2R, dG = 27.12825 * D2R, lN = 122.93192 * D2R; l *= D2R; b *= D2R;
+    var sd = Math.sin(b) * Math.sin(dG) + Math.cos(b) * Math.cos(dG) * Math.cos(lN - l);
+    var ra = aG + Math.atan2(Math.cos(b) * Math.sin(lN - l), Math.sin(b) * Math.cos(dG) - Math.cos(b) * Math.sin(dG) * Math.cos(lN - l));
+    return [((ra / D2R) % 360 + 360) % 360, Math.asin(sd) / D2R];
+  }
+  function prepara() {
+    if (CAMPO) return;
+    var R = azar(2026), i; CAMPO = [];
+    for (i = 0; i < 9000; i++) { var ra = R() * 360, dec = Math.asin(R() * 2 - 1) / D2R; CAMPO.push(ra, dec, 6.2 + Math.pow(R(), .6) * 2.6, R()); }
+    VIA = [];   // banda uniforme en longitud galáctica: brillo según la zona (más hacia Sagitario), textura suave y la grieta oscura
+    for (var l = -180; l < 180; l += .6) {
+      var cerca = Math.exp(-Math.pow(l / 60, 2)), w = .45 + .55 * cerca + .18 * Math.sin(l * .11) * Math.sin(l * .037 + 1.3);
+      for (var n = 0; n < 7; n++) {
+        var b = (R() + R() + R() + R() - 2) * (5 + 6 * cerca), ww = w * (1 - .55 * Math.exp(-Math.pow(Math.abs(b) / (6 + 5 * cerca), 2) * 0)) ;
+        if (l > -35 && l < 55 && Math.abs(b - 1.2) < 2) ww *= .35;
+        var e = galEq(l + (R() - .5) * .6, b); VIA.push(e[0], e[1], ww, R(), R());
+      }
+    }
+  }
+  function estrellasFoto(ctx, W, cx, cy, Rd, S, lat, lw) {
+    prepara();
+    var i, a, q, sz, al, k = lw * (W > 2000 ? 1 : 1.35), px = W / 3600, hz = function (alt) { return Math.min(1, Math.max(0, alt / 14)) * (.45 + .55 * Math.min(1, alt / 35)); };
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    var nb = nube(), sc = Math.min(1, 700 / (2 * Rd)), D = Math.ceil(2 * Rd * sc);   // Vía Láctea en un lienzo aparte (si no, tan tenue, se redondea a cero)
+    var vc = document.createElement('canvas'); vc.width = vc.height = D; var vx = vc.getContext('2d'); vx.globalCompositeOperation = 'lighter';
+    var motas = [];
+    for (i = 0; i < VIA.length; i += 5) {
+      a = altaz(VIA[i], VIA[i + 1], S, lat); if (a[0] < 1) continue;
+      q = proj(a[0], a[1], cx, cy, Rd); sz = Rd * (.02 + VIA[i + 3] * .03) * sc;
+      var x0 = (q[0] - cx + Rd) * sc, y0 = (q[1] - cy + Rd) * sc;
+      vx.globalAlpha = .07 * VIA[i + 2] * hz(a[0]); vx.drawImage(nb, x0 - sz, y0 - sz, sz * 2, sz * 2);
+      if (VIA[i + 4] < .35) motas.push(q[0] + (VIA[i + 4] - .17) * Rd * .05, q[1] + (VIA[i + 3] - .5) * Rd * .05, VIA[i + 2] * hz(a[0]), VIA[i + 3]);
+    }
+    ctx.globalAlpha = .55; ctx.drawImage(vc, cx - Rd, cy - Rd, 2 * Rd, 2 * Rd);
+    ctx.fillStyle = '#e6eaff';                                                        // grano de estrellas dentro de la banda
+    for (i = 0; i < motas.length; i += 4) { var d = Math.max(.5, k * (.7 + motas[i + 3] * 1.4)); ctx.globalAlpha = (.08 + motas[i + 3] * .2) * motas[i + 2]; ctx.fillRect(motas[i], motas[i + 1], d, d); }
+    ctx.fillStyle = '#ffffff';                                                        // estrellas débiles de fondo
+    for (i = 0; i < CAMPO.length; i += 4) {
+      a = altaz(CAMPO[i], CAMPO[i + 1], S, lat); if (a[0] < 2) continue;
+      q = proj(a[0], a[1], cx, cy, Rd); sz = Math.max(.6, k * (2.2 - (CAMPO[i + 2] - 6.2) * .5));
+      ctx.globalAlpha = (.42 - (CAMPO[i + 2] - 6.2) * .13) * hz(a[0]); ctx.fillRect(q[0] - sz / 2, q[1] - sz / 2, sz, sz);
+    }
+    var st = DATA.S, R = azar(77);                                                    // las del catálogo
+    for (i = 0; i < st.length; i += 3) {
+      var col = colorDe(R); a = altaz(st[i], st[i + 1], S, lat); if (a[0] < 0) continue;
+      var m = st[i + 2]; q = proj(a[0], a[1], cx, cy, Rd);
+      sz = Math.max(1.8, k * (6 + 2.2 * Math.pow(Math.max(0, 6.6 - m), 1.75)));
+      al = Math.min(1, .28 + (6.6 - m) * .14) * hz(a[0]);
+      ctx.globalAlpha = al; ctx.drawImage(sprite(col), q[0] - sz, q[1] - sz, sz * 2, sz * 2);
+      if (m < .3) {                                                                   // las más brillantes, con un destello fino
+        var L = sz * .8; ctx.globalAlpha = al * .14; ctx.strokeStyle = 'rgb(' + col + ')'; ctx.lineWidth = k * 1.3;
+        ctx.beginPath(); ctx.moveTo(q[0] - L, q[1]); ctx.lineTo(q[0] + L, q[1]); ctx.moveTo(q[0], q[1] - L); ctx.lineTo(q[0], q[1] + L); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
   function sky(ctx, W, cx, cy, R, o, T) {
     var J = jd(o.utc), S = lst(J, o.lon), k = R / (W * 0.38);   // k: estrellas proporcionales al disco
     ctx.save();
@@ -252,7 +335,7 @@
       for (var g8 = 0; g8 < 8; g8++) { var p = proj(0, g8 * 45, cx, cy, R); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
     }
     if (o.lines) {
-      ctx.strokeStyle = T.line; ctx.lineWidth = 3 * lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = T.line; ctx.lineWidth = (T.escena ? 2 : 3) * lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       DATA.L.forEach(function (seg) {
         ctx.beginPath(); var started = false;
         for (var i = 0; i < seg.length; i += 2) {
@@ -264,7 +347,8 @@
         ctx.stroke();
       });
     }
-    var st = DATA.S;
+    var st = T.escena ? [] : DATA.S;
+    if (T.escena) estrellasFoto(ctx, W, cx, cy, R, S, o.lat, lw);
     for (var i = 0; i < st.length; i += 3) {
       var a = altaz(st[i], st[i + 1], S, o.lat); if (a[0] < 0) continue;
       var m = st[i + 2], q = proj(a[0], a[1], cx, cy, R);
