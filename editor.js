@@ -2545,6 +2545,18 @@ async function jpgConDpi(blob, dpi){
   return new Blob([u.subarray(0,2), new Uint8Array(app0), u.subarray(2)], {type:'image/jpeg'});
 }
 
+/* lo mismo para el PNG del dorso: chunk pHYs (píxeles por metro) justo después del IHDR */
+const CRC_T = (() => { const t = new Uint32Array(256); for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+async function pngConDpi(blob, dpi){
+  const u = new Uint8Array(await blob.arrayBuffer());
+  if(u[1] !== 0x50 || u[2] !== 0x4E || u[3] !== 0x47) return blob;
+  const ppm = Math.round(dpi / 0.0254), ch = new Uint8Array(21), dv = new DataView(ch.buffer);
+  dv.setUint32(0, 9); ch.set([0x70,0x48,0x59,0x73], 4); dv.setUint32(8, ppm); dv.setUint32(12, ppm); ch[16] = 1;
+  let c = 0xFFFFFFFF; for(let i = 4; i < 17; i++) c = CRC_T[(c ^ ch[i]) & 255] ^ (c >>> 8);
+  dv.setUint32(17, (c ^ 0xFFFFFFFF) >>> 0);
+  return new Blob([u.subarray(0, 33), ch, u.subarray(33)], {type:'image/png'});
+}
+
 /* la foto original del cliente, para poder rehacer el recorte sin pedírsela otra vez.
    Si es HEIC, pesa más de lo que admite la tienda o pasa de MAX_ORIGINAL_PX, va en JPG
    a la mayor resolución que cabe */
@@ -2568,18 +2580,28 @@ async function uploadPosterArt(p){
   const frontBlob = await jpgConDpi(await canvasToBlob(print.canvas, 0.95), print.dpi);
   print.canvas.width = print.canvas.height = 0;   // libera memoria en el móvil antes del siguiente
   const {W,H} = printDimsPx(p);
+  /* 6-nov: el recorte = el mismo archivo de impresión (medida + sangrado) pero solo la foto, sin frases,
+     fecha ni dibujos, por si hay que rehacer el texto */
+  const rec = buildPrintCanvas(Object.assign({}, p, {frontText:'', frontText2:'', frontDate:'', frontDeco:null}));
+  const cropBlob = await jpgConDpi(await canvasToBlob(rec.canvas, 0.95), rec.dpi);
+  rec.canvas.width = rec.canvas.height = 0;
+  /* 6-nov: el dorso va en PNG transparente a la medida final exacta (sin sangrado). Antes era JPG
+     y lo transparente salía NEGRO */
   const backCanvas = buildBackCanvas(p, W, H);
-  const backBlob = backCanvas ? await jpgConDpi(await canvasToBlob(backCanvas), PRINT_DPI) : null;
+  const backBlob = backCanvas ? await pngConDpi(await new Promise(res => backCanvas.toBlob(res, 'image/png')), PRINT_DPI) : null;
   const orig = await originalBlob(p);
   const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
-  const [frontUrl, backUrl, originalUrl] = await Promise.all([
+  const [frontUrl, backUrl, originalUrl, cropUrl] = await Promise.all([
     uploadToCloudinary(frontBlob, `impresion-${t}.jpg`),
-    backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.jpg`) : null,
+    backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.png`) : null,
     // la original es un extra: si no sube, el pedido sigue con el archivo de impresión
     uploadToCloudinary(orig, `original-${t}.${ext}`).catch(e => { console.warn('[Momenturies] Original sin subir:', e.message); return null; }),
+    uploadToCloudinary(cropBlob, `recorte-${t}.jpg`).catch(e => { console.warn('[Momenturies] Recorte sin subir:', e.message); return null; }),
   ]);
-  const medida = `${print.cm.map(n => n.toFixed(1).replace('.', ',')).join('×')} cm (con ${BLEED_MM} mm de sangrado) a ${print.dpi} ppp`;
-  return {frontUrl, backUrl, originalUrl, medida};
+  const cmTxt = a => a.map(n => n.toFixed(1).replace('.', ',')).join('×');
+  const medida = `${cmTxt(print.cm)} cm (con ${BLEED_MM} mm de sangrado) a ${print.dpi} ppp`
+    + (backBlob ? ` · dorso ${cmTxt([W/PRINT_DPI*2.54, H/PRINT_DPI*2.54])} cm exactos, PNG sin fondo, a ${PRINT_DPI} ppp` : '');
+  return {frontUrl, backUrl, originalUrl, cropUrl, medida};
 }
 
 function variantIdOf(p){
@@ -2638,7 +2660,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     if(!p.srcImg) continue;
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
-    const {frontUrl, backUrl, originalUrl, medida} = await uploadPosterArt(p);
+    const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await uploadPosterArt(p);
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
       {key:'_impresion', value: medida},
@@ -2656,6 +2678,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     // el dorso puede llevar solo fecha: la imagen va siempre que haya algo detrás
     if(backUrl) attributes.push({key:'_dedicatoria_imagen', value:backUrl});
     if(originalUrl) attributes.push({key:'_foto_original', value:originalUrl});
+    if(cropUrl) attributes.push({key:'_foto_recorte', value:cropUrl});
     /* área de cliente (cuenta.html): con un conjunto puesto, cada cuadro guarda su sitio en la pared para rehacerla en 3D */
     const pc = WALL && WALL.pieces && WALL.pieces[POSTERS.indexOf(p)];
     if(pc){
