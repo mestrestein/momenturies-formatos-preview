@@ -239,6 +239,14 @@ body { background: #0b0b0f; font-family: -apple-system, BlinkMacSystemFont, 'Seg
 /* 5-nov · en las fichas (?colgador=) la escena va sin fondo: se ve el mismo fondo crema que el 3D de la foto 1. En el editor sigue negra */
 html.en-ficha body { background: transparent; }
 html.en-ficha #overview-title, html.en-ficha #step-label { color: rgba(74,46,26,0.62); }
+/* 6-nov · las flechas y el «−» iban sueltos (lados y debajo del cuadro) y se pisaban: ahora en fila bajo «Paso 1 de 4» */
+.scene-arrow, #back-btn { top: 86px !important; bottom: auto !important; width: 38px; height: 38px; font-size: 19px; transform: translateX(-50%) !important; }
+#prev-arrow { left: calc(50% - 50px) !important; right: auto !important; }
+#back-btn   { left: 50% !important; }
+#next-arrow { left: calc(50% + 50px) !important; right: auto !important; }
+.scene-arrow:hover, #back-btn:hover { transform: translateX(-50%) scale(1.08) !important; }
+html.en-ficha #overview-title { bottom: 14px; white-space: nowrap; font-size: 10px; letter-spacing: 2px; }
+html.en-ficha #back-btn { background: rgba(255,255,255,0.9); border-color: rgba(74,46,26,0.25); color: #333; box-shadow: 0 2px 14px rgba(0,0,0,0.2); }
 </style>
 </head>
 <body>
@@ -375,6 +383,7 @@ const LEAF_SCENE_POS   = { x:-2.4, y:0.2, z:-3.8 };
 const MAGNET_SCENE_POS = { x:-0.3, y:0.3, z:-1.0 };
 
 const RX = 0.04, RZ = -0.02;
+const POSTER_RY = EN_FICHA ? 0.5 : 0.85, POSTER_RX = RX;   // 6-nov · en la ficha, menos de canto (sin inclinar: la peana va pegada al cuadro)
 
 // ─── POSTER URL ───────────────────────────────────────────────────────────────
 const _params  = new URLSearchParams(window.location.search);
@@ -484,6 +493,9 @@ const posterFrontMat = new THREE.MeshPhysicalMaterial({
   envMapIntensity: 1.18,
   ior: 1.8
 });
+/* 6-nov · en la ficha el cuadro se veía apagado: sin tinte metálico, menos reflejo del entorno oscuro y su propia
+   imagen como luz suave, para que los colores salgan vivos */
+if (EN_FICHA) Object.assign(posterFrontMat, { metalness: 0, envMapIntensity: .55, emissive: new THREE.Color(0xffffff), emissiveMap: posterFrontTex, emissiveIntensity: .32 });
 
 // ─── MESHES ──────────────────────────────────────────────────────────────────
 const leafMesh = new THREE.Mesh(
@@ -958,7 +970,7 @@ function animate(ts) {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 posterMesh.position.set(POSTER_SCENE_POS.x, POSTER_SCENE_POS.y, POSTER_SCENE_POS.z);
-posterMesh.rotation.set(RX, 0.85, RZ);
+posterMesh.rotation.set(POSTER_RX, POSTER_RY, RZ);
 camPos.x=SCENE_CAM_POS.x; camPos.y=SCENE_CAM_POS.y; camPos.z=SCENE_CAM_POS.z;
 camTarget.x=SCENE_CAM_TARGET.x; camTarget.y=SCENE_CAM_TARGET.y; camTarget.z=SCENE_CAM_TARGET.z;
 // botones de colgador
@@ -1191,6 +1203,7 @@ function _applyPosterTexture(mat, src, prev) {
   tex.magFilter = THREE.LinearFilter;
   tex.generateMipmaps = true;
   mat.map = tex;
+  if (mat.emissiveMap) mat.emissiveMap = tex;
   mat.needsUpdate = true;
   if (prev) { try { prev.dispose(); } catch (ex) {} }
   return tex;
@@ -1218,7 +1231,7 @@ window.addEventListener('message', (e) => {
     // id = 'iman-pared' | 'madera' | 'iman-nevera' | 'none'
     var _id = e.data.id;
     if (HANGERS[_id]) {
-      try { posterMesh.rotation.set(RX, 0.85, RZ); } catch(ex){} // recupera el ángulo de montaje (por si venía del modo frontal)
+      try { posterMesh.rotation.set(POSTER_RX, POSTER_RY, RZ); } catch(ex){} // recupera el ángulo de montaje (por si venía del modo frontal)
       selectHanger(_id);
       if (Date.now() - _lastRaf > 500) animate();
     }
