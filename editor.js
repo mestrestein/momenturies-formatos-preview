@@ -2463,7 +2463,7 @@ const CLOUDINARY = {
   uploadPreset: '',        // Settings → Upload → Add upload preset → Signing Mode: Unsigned
 };
 const PRINT_DPI = 300;     // resolución de la foto que se manda a producción (no la del visor 3D)
-const BLEED_MM = 3;        // sangrado por lado para sublimar: el archivo sigue 3 mm más allá del corte
+const BLEED_MM = 2;        // sangrado por lado para sublimar: el archivo sigue 2 mm más allá del corte (6-nov, antes 3)
 const MAX_CANVAS_PX = 16.7e6;  // Safari en iPhone no pinta lienzos de más de 16,77 Mpx
 const MAX_ORIGINAL_PX = 16e6, MAX_ORIGINAL_BYTES = 19*1024*1024;  // la tienda admite 20 Mpx y 20 MB por imagen
 
@@ -2577,13 +2577,13 @@ async function uploadPosterArt(p){
   await decoReady(p);
   const t = Date.now();
   const print = buildPrintCanvas(p);
-  const frontBlob = await jpgConDpi(await canvasToBlob(print.canvas, 0.95), print.dpi);
+  const frontBlob = await jpgConDpi(await canvasToBlob(print.canvas, 0.98), print.dpi);
   print.canvas.width = print.canvas.height = 0;   // libera memoria en el móvil antes del siguiente
   const {W,H} = printDimsPx(p);
   /* 6-nov: el recorte = el mismo archivo de impresión (medida + sangrado) pero solo la foto, sin frases,
      fecha ni dibujos, por si hay que rehacer el texto */
   const rec = buildPrintCanvas(Object.assign({}, p, {frontText:'', frontText2:'', frontDate:'', frontDeco:null}));
-  const cropBlob = await jpgConDpi(await canvasToBlob(rec.canvas, 0.95), rec.dpi);
+  const cropBlob = await jpgConDpi(await canvasToBlob(rec.canvas, 0.98), rec.dpi);
   rec.canvas.width = rec.canvas.height = 0;
   /* 6-nov: el dorso va en PNG transparente a la medida final exacta (sin sangrado). Antes era JPG
      y lo transparente salía NEGRO */
