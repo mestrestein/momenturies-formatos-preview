@@ -518,3 +518,8 @@
   .cf-movil{width:max(240px,min(270px,70vw,calc((100svh - 268px)*9/19)))}
 }
 button{color:inherit}
+
+/* 6-nov: «El lugar» y «La combinación», debajo del botón de «En tu casa» (también en móvil) */
+.hx-rutas{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hx-rutas a{font-size:14.5px;font-weight:600;color:var(--black);border-bottom:1.5px solid rgba(0,0,0,.25);padding-bottom:2px}
+@media(max-width:860px){.hx-rutas{justify-content:center;gap:24px}.hx-rutas a{font-size:calc(14px * var(--k,1))}}
