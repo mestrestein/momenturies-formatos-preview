@@ -27,13 +27,13 @@
     bosque:  { name: 'Bosque',  sky: ['#05201f', '#0d3a40', '#1f5a66'] },
     montana: { name: 'Montaña', sky: ['#14152a', '#22243f', '#33365b'] },
     cumbres: { name: 'Cumbres', sky: ['#070d1b', '#18223d', '#303c5b'] },
-    ciudad:  { name: 'Ciudad',  sky: ['#04182f', '#0a2a4a', '#123a5c'] },
+    ciudad:  { name: 'Ciudad',  sky: ['#04152a', '#0a2846', '#11395c'] },
     mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] }
   };
-  /* 6-nov: Montaña y Cumbres son fotos (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
+  /* 6-nov: Montaña, Cumbres y Ciudad son fotos (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
      ven por encima de los picos. Solo se cargan en cielo.html; si no llegan, se dibuja la montaña de antes */
-  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1' }, IMG = {};
-  var FUNDE = { montana: .33, cumbres: .34 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
+  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1', ciudad: 'paisaje-ciudad.webp?v=1' }, IMG = {};
+  var FUNDE = { montana: .33, cumbres: .34, ciudad: .22 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
   var BASE = ((document.currentScript && document.currentScript.src) || 'personaliza/cielo.js').replace(/cielo\.js(\?.*)?$/, '');
   var fotosReady = !/\/cielo(\.html)?$/.test(location.pathname) ? Promise.resolve() : Promise.all(Object.keys(FOTOS).map(function (k) {
     return new Promise(function (res) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { res(); }; im.src = BASE + FOTOS[k]; });
