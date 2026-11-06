@@ -2604,6 +2604,38 @@ async function uploadPosterArt(p){
   return {frontUrl, backUrl, originalUrl, cropUrl, medida};
 }
 
+/* 6-nov: los archivos de impresión se preparan y suben EN SEGUNDO PLANO al abrir el carrito, uno detrás
+   de otro, y «Finalizar compra» reutiliza lo ya subido. Antes todo empezaba al pulsar (~6 s por cuadro
+   con fotos pequeñas, bastante más con fotos de móvil). Si el cuadro cambia después, la huella cambia y
+   se vuelve a hacer. frontSize/backSize los recalcula el propio pintado: no cuentan. */
+const ART_CACHE = new Map();
+let artCola = Promise.resolve();
+function huellaArte(p){
+  const o = {};
+  for(const [k, v] of Object.entries(p)){
+    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize') continue;
+    if(v == null || typeof v !== 'object' && typeof v !== 'function') o[k] = v;
+  }
+  o.img = p.srcImg ? p.srcImg.src.slice(0, 120) + p.srcImg.naturalWidth + 'x' + p.srcImg.naturalHeight : '';
+  return JSON.stringify(o);
+}
+function prepararArte(p){
+  const clave = p.uid || POSTERS.indexOf(p), huella = huellaArte(p);
+  const hay = ART_CACHE.get(clave);
+  if(hay && hay.huella === huella) return hay.promesa;
+  // de uno en uno: en el móvil dos lienzos de impresión a la vez pueden quedarse sin memoria
+  // si el cuadro cambia mientras espera turno, se sube como esté; la huella vieja no casará y al pagar se rehace
+  const promesa = artCola.then(() => uploadPosterArt(p));
+  artCola = promesa.catch(() => {});
+  promesa.catch(() => { if(ART_CACHE.get(clave)?.promesa === promesa) ART_CACHE.delete(clave); });
+  ART_CACHE.set(clave, {huella, promesa});
+  return promesa;
+}
+function prepararCarrito(){
+  if(!(SHOPIFY.domain && SHOPIFY.storefrontToken)) return;
+  POSTERS.filter(q => q.srcImg).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
+}
+
 function variantIdOf(p){
   const s = sizeOf(p);
   return s.variantIds ? s.variantIds[mountOf(p)] : s.variantId;
@@ -2660,7 +2692,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     if(!p.srcImg) continue;
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
-    const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await uploadPosterArt(p);
+    const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await prepararArte(p);
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
       {key:'_impresion', value: medida},
@@ -3642,6 +3674,7 @@ function openCheckout(){
   const items = POSTERS.filter(p=>p.srcImg);
   if(!items.length){ toast('Sube al menos una foto primero'); return; }
   coRenderShip(); coRenderSum();
+  prepararCarrito();
   const next = !CO.mail ? 'mail' : (!CO.envio ? 'envio' : '');
   coOpen(next);
   coEl('coRoot').classList.add('open');
