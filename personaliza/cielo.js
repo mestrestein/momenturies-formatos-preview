@@ -25,10 +25,19 @@
   /* 4-nov: el cielo a sangre, con un paisaje abajo. Todo dibujado aquí, sin fotos: sirve a cualquier tamaño de impresión */
   var ESCENAS = {
     bosque:  { name: 'Bosque',  sky: ['#05201f', '#0d3a40', '#1f5a66'] },
-    montana: { name: 'Montaña', sky: ['#11131f', '#1b1f33', '#2a2f4a'] },
+    montana: { name: 'Montaña', sky: ['#14152a', '#22243f', '#33365b'] },
+    cumbres: { name: 'Cumbres', sky: ['#070d1b', '#18223d', '#303c5b'] },
     ciudad:  { name: 'Ciudad',  sky: ['#04182f', '#0a2a4a', '#123a5c'] },
     mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] }
   };
+  /* 6-nov: Montaña y Cumbres son fotos (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
+     ven por encima de los picos. Solo se cargan en cielo.html; si no llegan, se dibuja la montaña de antes */
+  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1' }, IMG = {};
+  var FUNDE = { montana: .33, cumbres: .34 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
+  var BASE = ((document.currentScript && document.currentScript.src) || 'personaliza/cielo.js').replace(/cielo\.js(\?.*)?$/, '');
+  var fotosReady = !/\/cielo(\.html)?$/.test(location.pathname) ? Promise.resolve() : Promise.all(Object.keys(FOTOS).map(function (k) {
+    return new Promise(function (res) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { res(); }; im.src = BASE + FOTOS[k]; });
+  }));
   var CLARO = 'rgba(255,255,255,';
   Object.keys(ESCENAS).forEach(function (k) {
     var E = ESCENAS[k]; E.escena = k; E.bg = E.sky[0]; E.disk = E.sky[2]; E.ring = 'rgba(0,0,0,0)'; E.star = '#ffffff'; E.line = CLARO + '.3)'; E.grid = CLARO + '.05)';
@@ -80,14 +89,17 @@
   }
   function paisaje(ctx, W, H, tipo) {
     var R = azar(7), base = H * .8, i, g;
-    if (tipo === 'bosque') {
+    if (IMG[tipo]) {
+      var im = IMG[tipo], ih = W * im.naturalHeight / im.naturalWidth;
+      ctx.drawImage(im, 0, H * .85 - ih, W, ih);
+    } else if (tipo === 'bosque') {
       g = ctx.createLinearGradient(0, H * .55, 0, base); g.addColorStop(0, 'rgba(120,190,190,0)'); g.addColorStop(1, 'rgba(150,215,205,.34)'); ctx.fillStyle = g; ctx.fillRect(0, H * .55, W, base - H * .55);
       [['#0c2d30', .1, .062], ['#071a1c', .055, .09], ['#010505', .018, .125]].forEach(function (c) {
         ctx.fillStyle = c[0]; var y = base - H * c[1] * .1 + H * (c[1] < .05 ? .012 : -.012 * (c[1] * 20));
         for (var x = -W * .02; x < W * 1.02; x += W * (.012 + R() * .017)) pino(ctx, x, y + H * .03, H * c[2] * (.6 + R() * .75), R);
         ctx.fillRect(0, y + H * .029, W, H);
       });
-    } else if (tipo === 'montana') {
+    } else if (tipo === 'montana' || tipo === 'cumbres') {
       g = ctx.createLinearGradient(0, H * .56, 0, base); g.addColorStop(0, 'rgba(150,160,200,0)'); g.addColorStop(1, 'rgba(170,180,215,.22)'); ctx.fillStyle = g; ctx.fillRect(0, H * .56, W, base - H * .56);
       var Rm = azar(41);
       [[.08, .115, .17], [.3, .15, .2], [.56, .125, .17], [.8, .16, .21], [1.0, .11, .15]].forEach(function (m) { pico(ctx, W, H, base, m[0], m[1], m[2], Rm, '#4a5478', '#262c47', .62); });
@@ -130,7 +142,8 @@
     ctx.fillStyle = '#000'; ctx.fillRect(0, H * .86, W, H * .14);
   }
   function drawEscena(ctx, W, H, o, T) {
-    var g = ctx.createLinearGradient(0, 0, 0, H * .8); g.addColorStop(0, T.sky[0]); g.addColorStop(.55, T.sky[1]); g.addColorStop(1, T.sky[2]);
+    var im = IMG[T.escena], fin = im ? H * .85 - W * im.naturalHeight / im.naturalWidth * (1 - FUNDE[T.escena]) : H * .8;   // con foto, el degradado llega a su color justo donde la foto aparece
+    var g = ctx.createLinearGradient(0, 0, 0, fin); g.addColorStop(0, T.sky[0]); g.addColorStop(.55, T.sky[1]); g.addColorStop(1, T.sky[2]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     var b = Object.assign({}, o, { grid: false }), C = Object.assign({}, T, { disk: 'rgba(0,0,0,0)' });
     sky(ctx, W, W / 2, H * .36, W * .86, b, C);
@@ -308,5 +321,5 @@
     try { var u = guess - tzOffsetMs(guess, tz); return guess - tzOffsetMs(u, tz); } catch (e) { return guess; }
   }
 
-  window.MOM_CIELO = { ready: texReady, drawMoon: drawMoon, sky: sky, faseNombre: faseNombre, draw: draw, themes: THEMES, escenas: ESCENAS, localToUtc: localToUtc, moon: moon, jd: jd };
+  window.MOM_CIELO = { ready: Promise.all([texReady, fotosReady]), drawMoon: drawMoon, sky: sky, faseNombre: faseNombre, draw: draw, themes: THEMES, escenas: ESCENAS, localToUtc: localToUtc, moon: moon, jd: jd };
 })();
