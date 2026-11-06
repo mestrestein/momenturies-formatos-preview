@@ -25,20 +25,24 @@
   /* 4-nov: el cielo a sangre, con un paisaje abajo. Todo dibujado aquí, sin fotos: sirve a cualquier tamaño de impresión */
   var ESCENAS = {
     bosque:  { name: 'Bosque',  sky: ['#05201f', '#0d3a40', '#1f5a66'] },
-    montana: { name: 'Montaña', sky: ['#14152a', '#22243f', '#33365b'] },
-    cumbres: { name: 'Cumbres', sky: ['#070d1b', '#18223d', '#303c5b'] },
-    ciudad:  { name: 'Ciudad',  sky: ['#04152a', '#0a2846', '#11395c'] },
-    mar:     { name: 'Mar',     sky: ['#14133f', '#2a2670', '#5b4a9a'] },
-    desierto: { name: 'Desierto', sky: ['#040312', '#07051c', '#0b0828'] },
-    pueblo:  { name: 'Pueblo',  sky: ['#040b18', '#071429', '#0a1c3a'] },
-    lago:    { name: 'Lago',    sky: ['#030e15', '#051a26', '#082536'] },
-    campo:   { name: 'Campo',   sky: ['#050913', '#0a1020', '#0e162d'] }
+    montana: { name: 'Montaña', sky: ['#151626', '#23253f', '#32355b'] },
+    cumbres: { name: 'Cumbres', sky: ['#050a13', '#091220', '#0d1a2f'] },
+    alba: { name: 'Alba', sky: ['#030a16', '#061225', '#091a36'] },
+    amanecer: { name: 'Amanecer', sky: ['#050c17', '#091527', '#0d1e38'] },
+    mar: { name: 'Faro', sky: ['#090a1b', '#10122e', '#171a42'] },
+    desierto: { name: 'Desierto', sky: ['#040310', '#07051c', '#0b0828'] },
+    lago: { name: 'Lago', sky: ['#030f16', '#051925', '#082536'] },
+    campo: { name: 'Campo', sky: ['#050912', '#090f1e', '#0e162c'] },
+    pueblo: { name: 'Pueblo', sky: ['#040b17', '#071327', '#0a1c39'] },
+    ciudad: { name: 'Ciudad', sky: ['#061727', '#0b2741', '#10395d'] },
+    rio: { name: 'Río', sky: ['#000915', '#010f23', '#021632'] },
+    tejados: { name: 'Tejados', sky: ['#0a0f18', '#101929', '#18253b'] }
   };
-  /* 6-nov: Montaña, Cumbres y Ciudad son fotos (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
+  /* 6-nov: Los temas con foto (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
      ven por encima de los picos. Solo se cargan en cielo.html; si no llegan, se dibuja la montaña de antes */
-  var FOTOS = { montana: 'paisaje-montana.webp?v=1', cumbres: 'paisaje-montana-noche.webp?v=1', ciudad: 'paisaje-ciudad.webp?v=1',
-    desierto: 'paisaje-desierto.webp?v=1', pueblo: 'paisaje-pueblo.webp?v=1', lago: 'paisaje-lago.webp?v=1', campo: 'paisaje-campo.webp?v=1' }, IMG = {};
-  var FUNDE = { montana: .33, cumbres: .34, ciudad: .22, desierto: .415, pueblo: .281, lago: .438, campo: .32 };   // altura (fracción de la foto) donde su cielo empieza a ser visible
+  /* 6-nov (tarde): el cielo de cada foto es transparente hasta el contorno exacto del paisaje (y el resplandor del
+     amanecer, semitransparente según su brillo): las estrellas llegan hasta el borde. Preparado con build.py */
+  var FOTOS = { montana: 'paisaje-montana.webp?v=2', cumbres: 'paisaje-cumbres.webp?v=2', alba: 'paisaje-alba.webp?v=2', amanecer: 'paisaje-amanecer.webp?v=2', mar: 'paisaje-mar.webp?v=2', desierto: 'paisaje-desierto.webp?v=2', lago: 'paisaje-lago.webp?v=2', campo: 'paisaje-campo.webp?v=2', pueblo: 'paisaje-pueblo.webp?v=2', ciudad: 'paisaje-ciudad.webp?v=2', rio: 'paisaje-rio.webp?v=2', tejados: 'paisaje-tejados.webp?v=2' }, IMG = {};
   var BASE = ((document.currentScript && document.currentScript.src) || 'personaliza/cielo.js').replace(/cielo\.js(\?.*)?$/, '');
   var fotosReady = !/\/cielo(\.html)?$/.test(location.pathname) ? Promise.resolve() : Promise.all(Object.keys(FOTOS).map(function (k) {
     return new Promise(function (res) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { res(); }; im.src = BASE + FOTOS[k]; });
@@ -147,7 +151,7 @@
     ctx.fillStyle = '#000'; ctx.fillRect(0, H * .86, W, H * .14);
   }
   function drawEscena(ctx, W, H, o, T) {
-    var im = IMG[T.escena], fin = im ? H * .85 - W * im.naturalHeight / im.naturalWidth * (1 - FUNDE[T.escena]) : H * .8;   // con foto, el degradado llega a su color justo donde la foto aparece
+    var im = IMG[T.escena], fin = im ? H * .85 - W * im.naturalHeight / im.naturalWidth : H * .8;   // con foto, el degradado llega a su color donde empieza la foto
     var g = ctx.createLinearGradient(0, 0, 0, fin); g.addColorStop(0, T.sky[0]); g.addColorStop(.55, T.sky[1]); g.addColorStop(1, T.sky[2]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     var b = Object.assign({}, o, { grid: false }), C = Object.assign({}, T, { disk: 'rgba(0,0,0,0)' });
