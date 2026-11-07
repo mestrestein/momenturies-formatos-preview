@@ -37,6 +37,8 @@ canvas#c.drag{cursor:grabbing}
 #stick i{position:absolute;left:40px;top:40px;width:50px;height:50px;border-radius:50%;background:var(--papel);box-shadow:0 2px 8px rgba(0,0,0,.25)}
 @media (pointer:coarse){#stick{display:block}#giro{display:flex}#ayuda{bottom:calc(186px + env(safe-area-inset-bottom));white-space:normal;width:min(300px,calc(100vw - 32px));text-align:center}}
 @media (max-width:520px){#plano svg{width:112px}}
+@media (max-height:500px){#plano svg{width:84px}#plano{padding:6px}#top{padding:7px 13px;font-size:13px}#giro{padding:9px 13px}}
+html,body{-webkit-touch-callout:none}
 </style></head>
 <body>
 <canvas id="c"></canvas>
@@ -50,5 +52,5 @@ canvas#c.drag{cursor:grabbing}
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="gltf-loader.js"></script>
 <script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Toca un cuadro para verlo' : 'Anda con WASD o las flechas · Arrastra para mirar · Toca un cuadro para ver el conjunto';</script>
-<script src="casa.js?v=9955eff2"></script>
+<script src="casa.js?v=d096e00f"></script>
 </body></html>

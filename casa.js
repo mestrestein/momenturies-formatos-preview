@@ -331,7 +331,7 @@ const fuera = (() => {
     const cuerda = new THREE.LineBasicMaterial({ color:'#3a332c' });
     [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, b]) => g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(a*55, -785, b*55), new THREE.Vector3(a*70, -670, b*70)]), cuerda)));
     scene.add(g);
-    anim.push(t => { const a = t*.012; g.position.set(530 + Math.cos(a)*3600, 1500 + Math.sin(t*.25)*60, 650 + Math.sin(a)*3600 + 600); g.rotation.y = t*.03; });
+    anim.push(t => { const a = t*.012; g.position.set(530 + Math.cos(a)*2700, 2050 + Math.sin(t*.25)*60, 650 + Math.sin(a)*2700 + 500); g.rotation.y = t*.03; });
   }
 
   /* avioneta con pancarta, dando vueltas a la casa */
