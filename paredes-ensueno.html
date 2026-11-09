@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Momenturies — Paredes de ensueño: todos los conjuntos colgados en casas de verdad</title>
+<meta name="description" content="Todos nuestros conjuntos de cuadros colgados en salones, dormitorios, comedores y escaleras. Filtra por número de cuadros y por habitación, entra en la que te guste y pon tus fotos.">
+<link rel="canonical" href="https://momenturies.com/paredes-ensueno.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Momenturies"/>
+<meta property="og:title" content="Momenturies — Paredes de ensueño: composiciones de cuadros listas para tus fotos"/>
+<meta property="og:description" content="Todos nuestros conjuntos de cuadros colgados en salones, dormitorios, comedores y escaleras."/>
+<meta property="og:image" content="https://momenturies.com/fotos/producto-hero-pared.jpg"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'"/>
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"/></noscript>
+<link rel="stylesheet" href="pdp.css?v=9ccc2287">
+<meta name="theme-color" content="#1c1c1c"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Inicio",
+      "item": "https://momenturies.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Paredes de ensueño",
+      "item": "https://momenturies.com/paredes-ensueno.html"
+    }
+  ]
+}
+</script>
+<style>
+  /* paredes-ensueno.html (9-nov): todos los conjuntos, de los mejores al resto, cada uno colgado en
+     habitaciones distintas (fotos/ensueno, fotos/_build_ensueno_fotos.py). Se filtra por número de
+     cuadros y por tipo de habitación; cada foto entra en el editor con ese conjunto y esa habitación.
+     Se genera con _build_paredes_ensueno.py desde _paredes_ensueno_tpl.html: no editar a mano. */
+  .ens-head{max-width:1240px;margin:0 auto;padding:44px 40px 6px}
+  .ens-kick{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin:0 0 12px}
+  .ens-head h1{font-family:var(--font-serif);font-size:clamp(30px,3.8vw,46px);font-weight:700;letter-spacing:-.01em;line-height:1.1;margin:0 0 12px}
+  .ens-lead{font-size:15px;color:var(--mid);line-height:1.55;max-width:680px;margin:0}
+  .ens-bar{position:sticky;top:60px;z-index:50;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-bottom:1px solid var(--gray2);margin-top:22px}
+  .ens-bar-in{max-width:1240px;margin:0 auto;padding:12px 40px;display:flex;flex-direction:column;gap:9px}
+  .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
+  .ens-row::-webkit-scrollbar{display:none}
+  .ens-row small{flex:0 0 auto;width:92px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light)}
+  .ens-row button{flex:0 0 auto;border:1px solid var(--gray2);background:#fff;border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);white-space:nowrap;transition:background .15s,border-color .15s}
+  .ens-row button:hover{border-color:#aaa}
+  .ens-row button[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .ens-count{max-width:1240px;margin:0 auto;padding:16px 40px 0;font-size:13px;color:var(--mid)}
+  .ens-grid{max-width:1240px;margin:0 auto;padding:16px 40px 64px;display:grid;grid-template-columns:repeat(2,1fr);gap:44px 28px}
+  .ens-card{display:flex;flex-direction:column;min-width:0}
+  .ens-media{position:relative;display:block;border-radius:12px;overflow:hidden;background:#ece7de;aspect-ratio:4/3}
+  .ens-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease,ease)}
+  .ens-media:hover img{transform:scale(1.025)}
+  .ens-go{position:absolute;right:14px;bottom:14px;background:rgba(255,255,255,.94);color:var(--black);font-size:13px;font-weight:600;padding:9px 14px;border-radius:22px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .ens-room{position:absolute;left:14px;bottom:14px;background:rgba(26,26,26,.72);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px}
+  .ens-rank{position:absolute;top:14px;left:14px;background:#c2582c;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:5px}
+  .ens-thumbs{display:flex;gap:8px;margin-top:10px}
+  .ens-thumbs button{flex:0 0 auto;width:74px;aspect-ratio:4/3;padding:0;border:2px solid transparent;border-radius:7px;overflow:hidden;cursor:pointer;background:#ece7de;opacity:.72;transition:opacity .15s,border-color .15s}
+  .ens-thumbs button:hover{opacity:1}
+  .ens-thumbs button[aria-pressed="true"]{border-color:var(--black);opacity:1}
+  .ens-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+  .ens-info{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:12px}
+  .ens-info b{display:block;font-size:17px;font-weight:700}
+  .ens-meta{font-size:13px;color:var(--mid);margin-top:3px}
+  .ens-price{text-align:right;white-space:nowrap;font-size:15px}
+  .ens-price s{display:block;color:var(--light);font-size:12.5px}
+  .ens-empty{grid-column:1/-1;text-align:center;color:var(--mid);padding:60px 0}
+  .ens-empty button{margin-top:12px;border:1px solid var(--black);background:#fff;border-radius:20px;padding:8px 16px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+  @media(max-width:860px){ .ens-grid{grid-template-columns:1fr;gap:38px} }
+  @media(max-width:640px){
+    .ens-head{padding:26px 16px 4px}
+    .ens-lead{font-size:14px}
+    .ens-bar-in{padding:10px 16px}
+    .ens-row small{width:auto;margin-right:2px}
+    .ens-count{padding:14px 16px 0}
+    .ens-grid{padding:14px 16px 48px}
+    .ens-thumbs button{width:62px}
+    .ens-go{font-size:12px;padding:7px 11px;right:10px;bottom:10px}
+    .ens-room{left:10px;bottom:10px;font-size:11px}
+  }
+</style>
+<script src="consent.js?v=bafba393" defer></script>
+</head>
+<body>
+
+
+<div class="topbar">
+  <span class="es">Tus fotos en aluminio HD · Se cuelgan sin agujeros · Envío a España y Europa</span>
+  <span class="en">Your photos on HD aluminium · Hang without holes · Shipping to Spain and Europe</span>
+</div>
+
+<nav class="nav" id="nav">
+  <div class="nav-left">
+    <a href="momenturies.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <span class="es">Inicio</span><span class="en">Home</span>
+    </a>
+  </div>
+  <a href="momenturies.html" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
+      <rect x="15.8" y="3.5" width="9.6" height="7.9" rx="1.1" fill="#c2613a"/>
+      <rect x="15.8" y="13.1" width="9.6" height="11.4" rx="1.1" fill="#1a1a1a"/>
+      <rect x="2.6" y="20.1" width="11.4" height="4.4" rx="1.1" fill="#c2613a"/>
+    </svg>
+    <span class="nav-logo-word">Momenturies</span>
+  </a>
+  <div class="nav-right-slot">
+    <a class="nav-icon-btn" href="cuenta.html" aria-label="Mi cuenta" title="Mi cuenta"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+    <button class="nav-icon-btn" aria-label="Carrito">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MENÚ DE DISTRIBUCIÓN POR PRODUCTO -->
+<div class="fstrip">
+    <a href="ficha-cuadro.html"><span class="es">Cuadro</span><span class="en">Wall print</span></a>
+    <a href="ficha-sobremesa.html"><span class="es">Sobremesa</span><span class="en">Desk print</span></a>
+    <a href="ficha-iman.html"><span class="es">Imán</span><span class="en">Fridge magnet</span></a>
+    <a href="colgador-iman.html"><span class="es">Colgador</span><span class="en">Magnetic hanger</span></a>
+    <a href="paredes-ensueno.html" aria-current="page"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></a>
+</div>
+
+
+<!-- CABECERA -->
+<section class="ens-head">
+  <p class="ens-kick"><span class="es">Ideas para tu pared</span><span class="en">Ideas for your wall</span></p>
+  <h1><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></h1>
+  <p class="ens-lead"><span class="es">Todos nuestros conjuntos colgados en casas de verdad, empezando por los que más gustan. Toca la habitación que te guste y entras en ella con ese conjunto puesto, listo para tus fotos.</span><span class="en">All our sets hung in real homes, starting with the favourites. Tap the room you like and you step into it with that set on the wall, ready for your photos.</span></p>
+</section>
+
+<!-- FILTROS: número de cuadros y tipo de habitación (los botones los pinta el script) -->
+<div class="ens-bar" id="ensBar">
+  <div class="ens-bar-in">
+    <div class="ens-row" id="fN" role="group"><small><span class="es">Cuadros</span><span class="en">Prints</span></small></div>
+    <div class="ens-row" id="fT" role="group"><small><span class="es">Habitación</span><span class="en">Room</span></small></div>
+  </div>
+</div>
+<p class="ens-count" id="ensCount" aria-live="polite"></p>
+<section class="ens-grid" id="ensGrid"></section>
+
+<!-- CROSS-SELL -->
+<section class="otherfmt">
+  <h2><span class="es">¿Prefieres buscar por el hueco que tienes?</span><span class="en">Rather shop by the space you have?</span></h2>
+  <div class="otherfmt-grid">
+      <a class="otherfmt-card" href="paredes.html"><b><span class="es">Por tamaño de pared</span><span class="en">By wall size</span></b><span class="es">Rincón, cómoda o encima del sofá, con todas las tallas</span><span class="en">Corner, dresser or above the sofa, every size</span></a>
+      <a class="otherfmt-card" href="ficha-cuadro.html"><b><span class="es">Un solo cuadro</span><span class="en">A single print</span></b><span class="es">Desde 19,99€ · imán premium incluido</span><span class="en">From €19.99 · premium magnet included</span></a>
+  </div>
+</section>
+
+<footer class="pdp-foot">
+  &copy; 2026 Momenturies · <a href="momenturies.html"><span class="es">Inicio</span><span class="en">Home</span></a> · <a href="https://www.instagram.com/momenturies.official/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/people/Momenturies/61596238460014/" target="_blank" rel="noopener">Facebook</a>
+</footer>
+
+<script src="paredes.js?v=a20cf894"></script>
+<script src="fotos/ensueno/ensueno-fotos.js?v=8f10c55c"></script>
+<script>
+(function(){
+  'use strict';
+  var WALLS = window.MOMENTURIES_WALLS || [], PH = window.MOMENTURIES_ENSUENO || {};
+  /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) y paredes.html */
+  var TIERS = [ {n:5, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
+  var pct = function(w){ for(var i = 0; i < TIERS.length; i++) if(w.n >= TIERS[i].n) return TIERS[i].pct; return 0; };
+  var eur = function(v){ return v.toFixed(2).replace('.', ',') + ' €'; };
+  var esen = function(o){ return '<span class="es">' + o.es + '</span><span class="en">' + o.en + '</span>'; };
+
+  /* orden: Cariño (el más vendido), los demás marcados como mejores y luego el resto */
+  var FIRST = ['W13'];
+  var rank = function(w){ var i = FIRST.indexOf(w.id); return i >= 0 ? i : (w.best ? 10 : 100); };
+  var list = WALLS.filter(function(w){ return !w.soldOut && PH[w.id] && PH[w.id].length; })
+    .map(function(w, i){ return {w:w, i:i}; })
+    .sort(function(a, b){ return rank(a.w) - rank(b.w) || a.i - b.i; })
+    .map(function(x){ return x.w; });
+
+  var TYPES = [
+    {k:'salon', es:'Salón', en:'Living room'}, {k:'dormitorio', es:'Dormitorio', en:'Bedroom'},
+    {k:'comedor', es:'Comedor', en:'Dining room'}, {k:'aparador', es:'Aparador y cómoda', en:'Sideboard'},
+    {k:'escalera', es:'Escalera', en:'Stairs'}, {k:'rincon', es:'Rincón y escritorio', en:'Nook and desk'}
+  ];
+  /* mismo reparto que TYPE() de fotos/_build_ensueno_fotos.py */
+  var typeOf = function(r){
+    if(/^(salon|sofa)/.test(r)) return 'salon';
+    if(/^dormitorio/.test(r) || r === 'comoda-cama') return 'dormitorio';
+    if(/^comedor/.test(r)) return 'comedor';
+    if(/^escalera/.test(r)) return 'escalera';
+    if(/^rincon/.test(r) || r === 'comoda-escritorio') return 'rincon';
+    return 'aparador';
+  };
+  var tName = function(k){ for(var i = 0; i < TYPES.length; i++) if(TYPES[i].k === k) return TYPES[i]; };
+  var NS = [
+    {k:'', es:'Todos', en:'All'}, {k:'2-3', es:'2 o 3', en:'2 or 3'}, {k:'4-6', es:'4 a 6', en:'4 to 6'},
+    {k:'7-9', es:'7 a 9', en:'7 to 9'}, {k:'10-99', es:'10 o más', en:'10 or more'}
+  ];
+  var state = {n:'', t:''};
+  var grid = document.getElementById('ensGrid'), count = document.getElementById('ensCount'), bar = document.getElementById('ensBar');
+
+  function chips(el, items, key){
+    items.forEach(function(o){
+      var b = document.createElement('button');
+      b.type = 'button'; b.dataset.k = o.k; b.innerHTML = esen(o);
+      b.addEventListener('click', function(){
+        state[key] = o.k; sync(); render();
+        // si ya se había bajado, volver al principio de la lista (la barra se queda pegada arriba)
+        if(window.scrollY > bar.offsetTop) window.scrollTo({top: bar.offsetTop - 60, behavior:'smooth'});
+      });
+      el.appendChild(b);
+    });
+  }
+  chips(document.getElementById('fN'), NS, 'n');
+  chips(document.getElementById('fT'), [{k:'', es:'Todas', en:'All'}].concat(TYPES), 't');
+
+  function sync(){
+    [['fN','n'], ['fT','t']].forEach(function(p){
+      document.querySelectorAll('#' + p[0] + ' button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.k === state[p[1]] ? 'true' : 'false'); });
+    });
+    var h = [state.n && 'cuadros=' + state.n, state.t && 'habitacion=' + state.t].filter(Boolean).join('&');
+    try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch(e){}
+  }
+
+  function card(w, rooms, best){
+    var el = document.createElement('article');
+    el.className = 'ens-card';
+    var link = function(r){ return 'cuadro.html?pared=' + w.id + '&entorno=' + r; };
+    var src = function(r){ return 'fotos/ensueno/' + w.id + '-' + r + '.webp'; };
+    var p = pct(w), net = Math.round(w.price * (100 - p)) / 100;
+    el.innerHTML = '<a class="ens-media" href="' + link(rooms[0]) + '">'
+      + '<img src="' + src(rooms[0]) + '" alt="' + w.name + '" width="1400" height="1050" loading="lazy" decoding="async">'
+      + (best ? '<span class="ens-rank">' + esen({es:'De los favoritos', en:'A favourite'}) + '</span>' : '')
+      + '<span class="ens-room">' + esen(tName(typeOf(rooms[0]))) + '</span>'
+      + '<span class="ens-go">' + esen({es:'Entrar y poner mis fotos', en:'Step in, add my photos'}) + ' &rarr;</span></a>'
+      + (rooms.length > 1 ? '<div class="ens-thumbs">' + rooms.map(function(r, i){
+          var t = tName(typeOf(r));
+          return '<button type="button" data-r="' + r + '" aria-pressed="' + (i ? 'false' : 'true') + '" aria-label="' + t.es + '" title="' + t.es + '"><img src="' + src(r) + '" alt="" loading="lazy" decoding="async"></button>';
+        }).join('') + '</div>' : '')
+      + '<div class="ens-info"><div><b>' + w.name + '</b><div class="ens-meta">' + w.n + ' ' + esen({es:'cuadros', en:'prints'}) + ' · ' + Math.round(w.width) + ' × ' + Math.round(w.height) + ' cm</div></div>'
+      + '<div class="ens-price">' + eur(net) + (p ? '<s>' + eur(w.price) + '</s>' : '') + '</div></div>';
+    var a = el.querySelector('.ens-media'), img = a.querySelector('img'), tag = a.querySelector('.ens-room');
+    el.querySelectorAll('.ens-thumbs button').forEach(function(b){
+      b.addEventListener('click', function(){
+        var r = b.dataset.r;
+        el.querySelectorAll('.ens-thumbs button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        img.src = src(r); a.href = link(r); tag.innerHTML = esen(tName(typeOf(r)));
+      });
+    });
+    return el;
+  }
+
+  function render(){
+    grid.innerHTML = '';
+    var lo = 0, hi = 99, shown = 0;
+    if(state.n){ var s = state.n.split('-'); lo = +s[0]; hi = +s[1]; }
+    list.forEach(function(w){
+      if(w.n < lo || w.n > hi) return;
+      var rooms = PH[w.id].slice();
+      if(state.t){   // con filtro de habitación, sale primero la foto de esa habitación
+        var m = rooms.filter(function(r){ return typeOf(r) === state.t; });
+        if(!m.length) return;
+        rooms = m.concat(rooms.filter(function(r){ return typeOf(r) !== state.t; }));
+      }
+      grid.appendChild(card(w, rooms, w.best || FIRST.indexOf(w.id) >= 0));
+      shown++;
+    });
+    count.innerHTML = esen({es: shown + (shown === 1 ? ' conjunto' : ' conjuntos'), en: shown + (shown === 1 ? ' set' : ' sets')});
+    if(!shown){
+      grid.innerHTML = '<div class="ens-empty">' + esen({es:'No hay conjuntos con esos filtros.', en:'No sets match those filters.'}) + '<br><button type="button">' + esen({es:'Quitar filtros', en:'Clear filters'}) + '</button></div>';
+      grid.querySelector('button').addEventListener('click', function(){ state = {n:'', t:''}; sync(); render(); });
+    }
+  }
+
+  /* filtros desde la dirección, para poder enlazarlos: paredes-ensueno.html#cuadros=4-6&habitacion=salon */
+  location.hash.replace(/^#/, '').split('&').forEach(function(kv){
+    var p = kv.split('=');
+    if(p[0] === 'cuadros' && NS.some(function(o){ return o.k === p[1]; })) state.n = p[1];
+    if(p[0] === 'habitacion' && tName(p[1])) state.t = p[1];
+  });
+  sync(); render();
+})();
+</script>
+<script src="carrito.js?v=b923aa51"></script><script src="app.js?v=c1eb62d9" defer></script>
+</body>
+</html>
