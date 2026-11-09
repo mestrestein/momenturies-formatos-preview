@@ -237,6 +237,7 @@
     <div class="format-chips crop-format-chips" id="cropFormatChips"></div>
     <div class="size-grid crop-size-grid" id="cropSizeGrid"></div>
     <div class="crop-stagebox" id="cropBox"><canvas id="cropCanvas"></canvas></div>
+    <p class="crop-quality" id="cropQuality" hidden></p>
     <div class="crop-ctrl">
       <div class="orient-row">
         <button class="orient-btn" id="orientV" onclick="setOrientBtn('portrait')"><span class="es">Vertical</span><span class="en">Portrait</span></button>
@@ -2476,10 +2477,30 @@ function printDimsPx(p){
 /* aviso (no bloqueante) si la foto del cliente no llega a los píxeles del tamaño elegido:
    compara el recorte real (cropWindow, ya tiene en cuenta el zoom) contra el objetivo a PRINT_DPI */
 function photoIsLowRes(p){
-  if(!p.srcImg) return false;
+  return !!p.srcImg && photoQuality(p) < 0.92;
+}
+/* 9-nov: cuánto llega la foto a los píxeles que pide el tamaño (1 = 300 ppp o más; 0,5 = 150 ppp).
+   Por debajo de 0,6 la foto sale borrosa de verdad (WhatsApp, capturas): se avisa en el encuadre
+   y el primer «Añadir al carrito» lleva al aviso en vez de pasar al pago. */
+function photoQuality(p){
+  if(!p || !p.srcImg) return 1;
   const {W,H} = printDimsPx(p);
   const cw = cropWindow(p, W, H);
-  return cw.sw < W*0.92 || cw.sh < H*0.92;
+  return Math.min(cw.sw / W, cw.sh / H);
+}
+const LOWRES_MALA = 0.6;
+function updateCropQuality(){
+  const el = document.getElementById('cropQuality'); if(!el) return;
+  const p = POSTERS[selected];
+  const q = photoQuality(p);
+  if(!p || !p.srcImg || q >= 0.92){ el.hidden = true; return; }
+  const d = sizeOf(p).d, med = (isLand(p) ? [d[1],d[0]] : d).map(cm).join('×');
+  const mala = q < LOWRES_MALA;
+  el.hidden = false;
+  el.classList.toggle('mala', mala);
+  el.innerHTML = mala
+    ? `<span class="es"><b>Esta foto tiene poca resolución para ${med} cm y saldría borrosa.</b> Elige un tamaño más pequeño, quita zoom o usa la foto original (las de WhatsApp y las capturas llegan comprimidas).</span><span class="en"><b>This photo is too small for ${med} cm and would print blurry.</b> Pick a smaller size, zoom out or use the original photo (WhatsApp photos and screenshots are compressed).</span>`
+    : `<span class="es">A ${med} cm esta foto puede verse un poco suave. Si tienes la original, mejor; si no, también vale.</span><span class="en">At ${med} cm this photo may look slightly soft. The original is better, but this works too.</span>`;
 }
 
 function canvasToBlob(c, quality){
@@ -3092,6 +3113,7 @@ function drawCropPreview(){
   document.getElementById('orientV').classList.toggle('active', !land);
   document.getElementById('orientH').classList.toggle('active', land);
   cropZoom.value = Math.round(((p.crop&&p.crop.scale)||1)*100);
+  updateCropQuality();
 }
 
 /* formato + talla dentro de la propia ventana de encuadre — mismo botón que el de la barra
@@ -3419,8 +3441,17 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
   const lowRes = POSTERS.some(p=>p.srcImg && photoIsLowRes(p));
 
-  if(lowRes){
-    toast('Alguna foto se vería algo borrosa a este tamaño. Seguimos con el pedido igualmente.');
+  // foto muy corta para su tamaño: la primera vez se enseña el aviso en el encuadre; si vuelve a pulsar, sigue
+  const mala = POSTERS.findIndex(p=>p.srcImg && photoQuality(p) < LOWRES_MALA);
+  const firmaMala = mala < 0 ? '' : POSTERS.map(p=>p.sizeKey+':'+(p.crop&&p.crop.scale)+':'+(p.srcImg&&p.srcImg.width)).join('|');
+  if(mala >= 0 && window.mmAvisoBorrosa !== firmaMala){
+    window.mmAvisoBorrosa = firmaMala;
+    selectPoster(mala); openCropModal();
+    toast('Esta foto saldría borrosa. Si quieres seguir igual, vuelve a pulsar «Añadir al carrito».');
+    return;
+  }
+  if(lowRes && mala < 0){
+    toast('A este tamaño alguna foto puede verse un poco suave. Seguimos con el pedido.');
   }
   // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
   const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
