@@ -24,7 +24,6 @@
 
   /* 4-nov: el cielo a sangre, con un paisaje abajo. Todo dibujado aquí, sin fotos: sirve a cualquier tamaño de impresión */
   var ESCENAS = {
-    bosque:  { name: 'Bosque',  sky: ['#05201f', '#0d3a40', '#1f5a66'] },
     montana: { name: 'Montaña', sky: ['#151626', '#23253f', '#32355b'] },
     cumbres: { name: 'Cumbres', sky: ['#050a13', '#091220', '#0d1a2f'] },
     alba: { name: 'Alba', sky: ['#030a16', '#061225', '#091a36'] },
@@ -34,15 +33,15 @@
     lago: { name: 'Lago', sky: ['#030f16', '#051925', '#082536'] },
     campo: { name: 'Campo', sky: ['#050912', '#090f1e', '#0e162c'] },
     pueblo: { name: 'Pueblo', sky: ['#040b17', '#071327', '#0a1c39'] },
-    ciudad: { name: 'Ciudad', sky: ['#061727', '#0b2741', '#10395d'] },
-    rio: { name: 'Río', sky: ['#000915', '#010f23', '#021632'] },
+    /* 9-nov: fuera Bosque y la Ciudad dibujada (la vieja); la ciudad junto al río pasa a llamarse Ciudad (id rio) */
+    rio: { name: 'Ciudad', sky: ['#000915', '#010f23', '#021632'] },
     tejados: { name: 'Tejados', sky: ['#0a0f18', '#101929', '#18253b'] }
   };
   /* 6-nov: Los temas con foto (Firefly), con el cielo ya fundido a transparente: las estrellas de la fecha se
      ven por encima de los picos. Solo se cargan en cielo.html; si no llegan, se dibuja la montaña de antes */
   /* 6-nov (tarde): el cielo de cada foto es transparente hasta el contorno exacto del paisaje (y el resplandor del
      amanecer, semitransparente según su brillo): las estrellas llegan hasta el borde. Preparado con build.py */
-  var FOTOS = { montana: 'paisaje-montana.webp?v=2', cumbres: 'paisaje-cumbres.webp?v=2', alba: 'paisaje-alba.webp?v=2', amanecer: 'paisaje-amanecer.webp?v=2', mar: 'paisaje-mar.webp?v=2', desierto: 'paisaje-desierto.webp?v=2', lago: 'paisaje-lago.webp?v=2', campo: 'paisaje-campo.webp?v=2', pueblo: 'paisaje-pueblo.webp?v=2', ciudad: 'paisaje-ciudad.webp?v=2', rio: 'paisaje-rio.webp?v=2', tejados: 'paisaje-tejados.webp?v=2' }, IMG = {};
+  var FOTOS = { montana: 'paisaje-montana.webp?v=2', cumbres: 'paisaje-cumbres.webp?v=3', alba: 'paisaje-alba.webp?v=3', amanecer: 'paisaje-amanecer.webp?v=3', mar: 'paisaje-mar.webp?v=2', desierto: 'paisaje-desierto.webp?v=2', lago: 'paisaje-lago.webp?v=2', campo: 'paisaje-campo.webp?v=2', pueblo: 'paisaje-pueblo.webp?v=2', rio: 'paisaje-rio.webp?v=2', tejados: 'paisaje-tejados.webp?v=2' }, IMG = {};
   var BASE = ((document.currentScript && document.currentScript.src) || 'personaliza/cielo.js').replace(/cielo\.js(\?.*)?$/, '');
   var fotosReady = !/\/cielo(\.html)?$/.test(location.pathname) ? Promise.resolve() : Promise.all(Object.keys(FOTOS).map(function (k) {
     return new Promise(function (res) { var im = new Image(); im.onload = function () { IMG[k] = im; res(); }; im.onerror = function () { res(); }; im.src = BASE + FOTOS[k]; });
@@ -219,8 +218,9 @@
     var Lx = side * Math.abs(Math.sin(el)), Lz = -Math.cos(el);           // dirección del Sol (z hacia nosotros)
     // halo discreto, algo mayor cuanto más llena
     haloK = opaca ? 0 : haloK == null ? 1 : haloK;
-    var hr = r * (1 + (0.7 + 1.5 * mo.frac) * haloK), g = ctx.createRadialGradient(x, y, r * 0.95, x, y, hr);
-    if (haloK > 0) { g.addColorStop(0, 'rgba(255,248,228,' + ((0.05 + 0.13 * mo.frac) * Math.min(1, haloK)).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,248,228,0)');
+    /* 9-nov: el halo era una bola con borde (degradado lineal de dos paradas): ahora cae como el resplandor de verdad */
+    var hr = r * (1 + (0.9 + 1.6 * mo.frac) * haloK), g = ctx.createRadialGradient(x, y, r * 0.98, x, y, hr), ha = (0.035 + 0.09 * mo.frac) * Math.min(1, haloK);
+    if (haloK > 0) { [[0, 1], [.12, .62], [.3, .3], [.55, .1], [.8, .025], [1, 0]].forEach(function (p) { g.addColorStop(p[0], 'rgba(255,246,226,' + (ha * p[1]).toFixed(4) + ')'); });
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, hr, 0, Math.PI * 2); ctx.fill(); }
     var N = Math.max(8, Math.ceil(r * 2) + 2), off = document.createElement('canvas'); off.width = off.height = N;
     var oc = off.getContext('2d'), img = oc.createImageData(N, N), d = img.data, c = (N - 1) / 2;
@@ -230,14 +230,20 @@
       if (edge <= 0) { d[k + 3] = 0; continue; }
       var nz = Math.sqrt(Math.max(0, 1 - q)), mu0 = px * Lx + nz * Lz;
       var lit = mu0 > 0 ? 2 * mu0 / (mu0 + Math.max(nz, 0.06)) : 0;           // Lommel-Seeliger
-      lit *= Math.min(1, Math.max(0, (mu0 + 0.015) / 0.09));                  // terminador suave
-      var t = texAt(px, py, nz), gain = 1.55 * Math.min(1, lit);
-      var la = Math.min(1, lit * 1.6), es = opaca ? 1 : 0.16;                             // es: luz cenicienta (opacidad de la sombra)
+      /* 9-nov (Marc: «la luna queda muy falsa»): la luz baja poco a poco hacia el terminador (luz rasante) en vez de
+         cortarse en seco, y ahí el relieve se marca más; el lado iluminado ya no se quema a blanco */
+      lit *= Math.min(1, Math.max(0, (mu0 + 0.03) / 0.16));
+      /* rasante = cerca del terminador según la propia ley de luz (en la llena el contorno sigue brillante) */
+      var ras = Math.min(1, lit / 0.85); ras = ras * ras * (3 - 2 * ras);
+      var t = texAt(px, py, nz), rel = 1 + (1 - ras) * 0.8 * (mu0 > 0 ? 1 : 0);
+      t = [Math.pow(t[0], rel), Math.pow(t[1], rel), Math.pow(t[2], rel)];
+      var gain = 1.32 * Math.min(1, lit);
+      var la = Math.min(1, lit * 1.6), es = opaca ? 1 : 0.07;                             // es: luz cenicienta (casi no se ve, como en una foto)
       var al = Math.max(la, es);
       // color: lado iluminado = mapa con luz cálida; sombra = gris azulado tenue
       var cr = gain * t[0] * 255 * 1.02, cg = gain * t[1] * 255, cb = gain * t[2] * 255 * 0.94;
       var mix = la / al;
-      var sr = opaca ? 34 + 42 * t[0] : 150 * t[0], sg = opaca ? 36 + 44 * t[1] : 160 * t[1], sb = opaca ? 42 + 50 * t[2] : 185 * t[2];
+      var sr = opaca ? 34 + 42 * t[0] : 95 * t[0], sg = opaca ? 36 + 44 * t[1] : 102 * t[1], sb = opaca ? 42 + 50 * t[2] : 118 * t[2];
       d[k]     = Math.min(255, cr * mix + sr * (1 - mix));
       d[k + 1] = Math.min(255, cg * mix + sg * (1 - mix));
       d[k + 2] = Math.min(255, cb * mix + sb * (1 - mix));

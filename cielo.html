@@ -111,11 +111,12 @@
 <script src="photo-handoff.js?v=9639e829"></script>
 <script src="personaliza/comun.js?v=13f2501d"></script>
 <script src="personaliza/cielo-datos.js?v=1a0d033a"></script>
-<script src="personaliza/cielo.js?v=07a3298a"></script>
+<script src="personaliza/cielo.js?v=f61dc176"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var TODOS = Object.assign({}, MOM_CIELO.escenas, MOM_CIELO.themes), TEMA = new URLSearchParams(location.search).get('tema');
+  TEMA = { bosque: 'cumbres', ciudad: 'rio' }[TEMA] || TEMA;   // 9-nov: temas retirados → el más parecido
   var st = { lat: 38.8408, lon: 0.1057, city: 'Dénia', theme: TODOS[TEMA] ? TEMA : 'medianoche', font: 'elegante', line2Touched: false };
   var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var today = new Date(); $('date').value = today.toISOString().slice(0, 10);

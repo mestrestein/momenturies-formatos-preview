@@ -2411,7 +2411,7 @@ function applyToAll(p){
    Se guarda lo que hay, se abre la página del diseño con el producto de esta página marcado y, al terminarlo,
    vuelve aquí con ?foto=1&anadir=1: se recupera lo guardado y el diseño entra como una pieza más. */
 const DISENOS = [
-  ['cielo','Cielo con paisaje','cielo-paisaje','tema=bosque&'], ['cielo','El cielo de vuestra noche'], ['luna','La Luna de vuestra noche'], ['cielo-mapa','Cielo y mapa'],
+  ['cielo','Cielo con paisaje','cielo-paisaje','tema=cumbres&'], ['cielo','El cielo de vuestra noche'], ['luna','La Luna de vuestra noche'], ['cielo-mapa','Cielo y mapa'],
   ['dos-cielos','Dos cielos, una historia'], ['mapa','Vuestro lugar en el mapa'], ['viaje','Cartel de viaje'],
   ['mapa-viajes','Mapa de viajes'], ['lunas','Las lunas de un mes'], ['constelacion','Vuestra constelación'],
   ['coordenadas','Coordenadas'], ['onda','La onda de vuestra voz'] ];
