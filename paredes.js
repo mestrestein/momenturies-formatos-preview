@@ -48,35 +48,105 @@ window.MOMENTURIES_wallSteps = function(w){
   var out = []; for(var d = lo; d <= hi; d++) out.push(d);
   return out;
 };
+/* 9-nov: colocación de un escalón (+1/-1) de un conjunto que mezcla tallas.
+   Antes se escalaban los centros por igual y se apretaba hasta el hueco mínimo: los demás huecos crecían
+   (Conjunto desenfadado +2: de 3 a 9,6 cm). Ahora, por cada eje, mínimos cuadrados sobre las relaciones
+   del original: vecinos lado a lado → mismo hueco; uno encima de otro → misma alineación (izquierda,
+   centro o derecha, la que tenían); en diagonal → misma separación de centros, escalada. */
+function stepPositions(base, ps, g){
+  function axis(X, W, Y, H){   // X/Y = 'x'/'y', W/H = 'w'/'h' del eje que se resuelve y del otro
+    var n = ps.length, A = [], b = [], wt = [], i, j;
+    var P = ps.map(function(q){ return q.pc; });
+    var ratio = 0; ps.forEach(function(q){ ratio += q[W] / q.pc[W]; }); ratio /= n;
+    var row = function(){ var r = []; for(var k = 0; k < n; k++) r.push(0); return r; };
+    var add = function(r, v, w){ A.push(r); b.push(v); wt.push(w); };
+    for(i = 0; i < n; i++) for(j = 0; j < n; j++){
+      if(i === j) continue;
+      var a = P[i], c = P[j];
+      var ovO = Math.min(a[Y] + a[H], c[Y] + c[H]) - Math.max(a[Y], c[Y]);   // solape en el otro eje
+      var gap = c[X] - (a[X] + a[W]);                                         // c a la derecha (abajo) de a
+      if(ovO > .5 && gap > -.5){
+        // solo vecinos de verdad: ningún otro cuadro en medio que se cruce con los dos en el otro eje
+        var entre = P.some(function(e, k){
+          if(k === i || k === j) return false;
+          var dentro = e[X] >= a[X] + a[W] - .5 && e[X] + e[W] <= c[X] + .5;   // cae en el hueco entre los dos
+          var cruza = Math.min(e[Y] + e[H], a[Y] + a[H]) - Math.max(e[Y], a[Y]) > .5 || Math.min(e[Y] + e[H], c[Y] + c[H]) - Math.max(e[Y], c[Y]) > .5;
+          return dentro && cruza;
+        });
+        if(entre) continue;
+        // vecinos: mismo hueco; separados a propósito (más de 12 cm): el hueco crece o encoge con los cuadros
+        var r = row(); r[j] = 1; r[i] = -1; add(r, ps[i][W] + (gap > 12 ? gap * ratio : gap), gap > 12 ? 1 : 4);
+        continue;
+      }
+      if(i > j) continue;
+      var ovS = Math.min(a[X] + a[W], c[X] + c[W]) - Math.max(a[X], c[X]);    // solape en este eje
+      var gO = Math.max(c[Y] - (a[Y] + a[H]), a[Y] - (c[Y] + c[H]));          // hueco en el otro eje
+      if(ovS > .5){
+        if(gO > 12) continue;
+        var dL = c[X] - a[X], dC = (c[X] + c[W]/2) - (a[X] + a[W]/2), dR = (c[X] + c[W]) - (a[X] + a[W]);
+        var best = Math.abs(dL) <= Math.abs(dC) && Math.abs(dL) <= Math.abs(dR) ? 'L' : Math.abs(dC) <= Math.abs(dR) ? 'C' : 'R';
+        var d0 = best === 'L' ? dL : best === 'C' ? dC : dR, dn = Math.abs(d0) < 1 ? d0 : d0 * ratio;
+        var off = best === 'L' ? 0 : best === 'C' ? ps[i][W]/2 - ps[j][W]/2 : ps[i][W] - ps[j][W];
+        var r2 = row(); r2[j] = 1; r2[i] = -1; add(r2, dn + off, Math.abs(d0) < 1 ? 2 : .5);   // misma alineación
+      } else {
+        var gS = Math.max(c[X] - (a[X] + a[W]), a[X] - (c[X] + c[W]));
+        if(Math.max(gS, gO) > 15) continue;
+        var dc = ((c[X] + c[W]/2) - (a[X] + a[W]/2)) * ratio;
+        var r3 = row(); r3[j] = 1; r3[i] = -1; add(r3, dc + ps[i][W]/2 - ps[j][W]/2, .3);   // diagonal
+      }
+    }
+    for(i = 0; i < n; i++){ var r4 = row(); r4[i] = 1; add(r4, (P[i][X] + P[i][W]/2) * ratio - ps[i][W]/2, .02); }
+    // normales: (AᵀWA) x = AᵀWb
+    var M = [], v = [], k, l, m;
+    for(k = 0; k < n; k++){ M.push(row()); v.push(0); }
+    for(m = 0; m < A.length; m++) for(k = 0; k < n; k++){ if(!A[m][k]) continue;
+      v[k] += wt[m] * A[m][k] * b[m];
+      for(l = 0; l < n; l++) M[k][l] += wt[m] * A[m][k] * A[m][l]; }
+    for(k = 0; k < n; k++){   // Gauss con pivote
+      var p = k; for(l = k + 1; l < n; l++) if(Math.abs(M[l][k]) > Math.abs(M[p][k])) p = l;
+      var t = M[k]; M[k] = M[p]; M[p] = t; t = v[k]; v[k] = v[p]; v[p] = t;
+      for(l = k + 1; l < n; l++){ var f = M[l][k] / M[k][k]; if(!f) continue;
+        for(var c2 = k; c2 < n; c2++) M[l][c2] -= f * M[k][c2]; v[l] -= f * v[k]; }
+    }
+    var x = row();
+    for(k = n - 1; k >= 0; k--){ var s = v[k]; for(l = k + 1; l < n; l++) s -= M[k][l] * x[l]; x[k] = s / M[k][k]; }
+    return x;
+  }
+  var xs = axis('x', 'w', 'y', 'h'), ys = axis('y', 'h', 'x', 'w');
+  /* ningún par más cerca que el hueco mínimo del original: se separan por el eje en que ya estaban separados */
+  var P0 = ps.map(function(q){ return q.pc; }), G = g;
+  var hu = function(a, b){ return Math.max(Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w)), Math.max(b.y - (a.y + a.h), a.y - (b.y + b.h))); };
+  for(var i = 0; i < P0.length; i++) for(var j = i + 1; j < P0.length; j++) G = Math.min(G, hu(P0[i], P0[j]));
+  var R = ps.map(function(q, i){ return { x:xs[i], y:ys[i], w:q.w, h:q.h }; });
+  for(var it = 0; it < 200; it++){
+    var moved = false;
+    for(i = 0; i < R.length; i++) for(j = i + 1; j < R.length; j++){
+      var a = R[i], c = R[j], gx = Math.max(c.x - (a.x + a.w), a.x - (c.x + c.w)), gy = Math.max(c.y - (a.y + a.h), a.y - (c.y + c.h));
+      if(Math.max(gx, gy) >= G - .02) continue;
+      // eje: el que los separaba en el original
+      var o = P0[i], q = P0[j], ox = Math.max(q.x - (o.x + o.w), o.x - (q.x + q.w)), oy = Math.max(q.y - (o.y + o.h), o.y - (q.y + q.h));
+      var ax = ox >= oy ? 'x' : 'y', need = (G - (ax === 'x' ? gx : gy)) / 2 + .01;
+      var sgn = (q[ax] + (ax === 'x' ? q.w : q.h) / 2) >= (o[ax] + (ax === 'x' ? o.w : o.h) / 2) ? 1 : -1;
+      c[ax] += sgn * need; a[ax] -= sgn * need; moved = true;
+    }
+    if(!moved) break;
+  }
+  return R.map(function(r){ return { x:r.x, y:r.y }; });
+}
 function wallStepAt(base, k){
   var FS = window.MOMENTURIES_FORMAT_SIZES, SI = window.MOMENTURIES_SIZE_INFO, d = parseInt(k, 10), g = base.gap || 3;
   if(window.MOMENTURIES_wallSteps(base).indexOf(d) < 0) return base;
-  var dims = function(f, s, o){ return o === 'h' ? [FS[f][s][1], FS[f][s][0]] : FS[f][s]; }, rx = 0, ry = 0;
+  var dims = function(f, s, o){ return o === 'h' ? [FS[f][s][1], FS[f][s][0]] : FS[f][s]; };
   var ps = base.pieces.map(function(pc){
     var ks = Object.keys(FS[pc.format]), s = ks[ks.indexOf(pc.size) + d], a = dims(pc.format, s, pc.orient);
-    rx = Math.max(rx, (a[0] + g) / (pc.w + g)); ry = Math.max(ry, (a[1] + g) / (pc.h + g));
     return { pc:pc, size:s, w:a[0], h:a[1] };
   });
-  /* separación mínima que ya tenía el conjunto: se aprieta hasta ahí para que la figura no se abra */
-  var hueco = function(a, b, ax, ay, bx, by){ return Math.max(Math.max(bx - b.w/2 - (ax + a.w/2), ax - a.w/2 - (bx + b.w/2)), Math.max(by - b.h/2 - (ay + a.h/2), ay - a.h/2 - (by + b.h/2))); };
-  var G = g, i, j, A, B;
-  for(i = 0; i < ps.length; i++) for(j = i + 1; j < ps.length; j++){ A = ps[i].pc; B = ps[j].pc;
-    G = Math.min(G, hueco(A, B, A.x + A.w/2, A.y + A.h/2, B.x + B.w/2, B.y + B.h/2)); }
-  var cabe = function(sx, sy){
-    for(var i = 0; i < ps.length; i++) for(var j = i + 1; j < ps.length; j++){
-      var a = ps[i], b = ps[j];
-      if(hueco(a, b, (a.pc.x + a.pc.w/2)*sx, (a.pc.y + a.pc.h/2)*sy, (b.pc.x + b.pc.w/2)*sx, (b.pc.y + b.pc.h/2)*sy) < G - .01) return false;
-    }
-    return true;
-  };
-  var ajusta = function(tope, prueba){ for(var r = .3; r < tope; r += .01) if(prueba(r)) return r; return tope; };
-  ry = ajusta(ry, function(r){ return cabe(rx, r); });
-  rx = ajusta(rx, function(r){ return cabe(r, ry); });
+  var pos = stepPositions(base, ps, g);
   var out = {}; for(var key in base) out[key] = base[key];
   out.base = base; out.vk = k; out.price = 0; out.soldOut = false; out.counts = {};
   var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-  out.pieces = ps.map(function(q){
-    var pc = q.pc, n = { format:pc.format, size:q.size, orient:pc.orient, x:(pc.x + pc.w/2)*rx - q.w/2, y:(pc.y + pc.h/2)*ry - q.h/2, w:q.w, h:q.h };
+  out.pieces = ps.map(function(q, qi){
+    var pc = q.pc, n = { format:pc.format, size:q.size, orient:pc.orient, x:pos[qi].x, y:pos[qi].y, w:q.w, h:q.h };
     var info = SI[pc.format][q.size], c = { cuadrado:'C', clasico:'K', retrato:'R' }[pc.format] + q.size;
     out.counts[c] = (out.counts[c] || 0) + 1; out.price += info.price; if(!info.stock) out.soldOut = true;
     x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y); x1 = Math.max(x1, n.x + n.w); y1 = Math.max(y1, n.y + n.h);
