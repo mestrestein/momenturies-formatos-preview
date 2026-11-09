@@ -2480,27 +2480,29 @@ function photoIsLowRes(p){
   return !!p.srcImg && photoQuality(p) < 0.92;
 }
 /* 9-nov: cuánto llega la foto a los píxeles que pide el tamaño (1 = 300 ppp o más; 0,5 = 150 ppp).
-   Por debajo de 0,6 la foto sale borrosa de verdad (WhatsApp, capturas): se avisa en el encuadre
-   y el primer «Añadir al carrito» lleva al aviso en vez de pasar al pago. */
+   Las que no llegan a 300 ppp se amplían con IA al imprimir (/imprimir del Vestuario), así que una foto
+   normal de WhatsApp (~170 ppp en un 18×24) sale bien y no se asusta a nadie. Solo por debajo de
+   LOWRES_MALA (~100 ppp: capturas, fotos minúsculas) no hay ampliación que la salve: se avisa en rojo
+   y el primer «Añadir al carrito» lleva al aviso en vez de pasar al pago. Entre medias, una línea suave. */
 function photoQuality(p){
   if(!p || !p.srcImg) return 1;
   const {W,H} = printDimsPx(p);
   const cw = cropWindow(p, W, H);
   return Math.min(cw.sw / W, cw.sh / H);
 }
-const LOWRES_MALA = 0.6;
+const LOWRES_MALA = 0.33, LOWRES_SUAVE = 0.6;
 function updateCropQuality(){
   const el = document.getElementById('cropQuality'); if(!el) return;
   const p = POSTERS[selected];
   const q = photoQuality(p);
-  if(!p || !p.srcImg || q >= 0.92){ el.hidden = true; return; }
+  if(!p || !p.srcImg || q >= LOWRES_SUAVE){ el.hidden = true; return; }
   const d = sizeOf(p).d, med = (isLand(p) ? [d[1],d[0]] : d).map(cm).join('×');
   const mala = q < LOWRES_MALA;
   el.hidden = false;
   el.classList.toggle('mala', mala);
   el.innerHTML = mala
     ? `<span class="es"><b>Esta foto tiene poca resolución para ${med} cm y saldría borrosa.</b> Elige un tamaño más pequeño, quita zoom o usa la foto original (las de WhatsApp y las capturas llegan comprimidas).</span><span class="en"><b>This photo is too small for ${med} cm and would print blurry.</b> Pick a smaller size, zoom out or use the original photo (WhatsApp photos and screenshots are compressed).</span>`
-    : `<span class="es">A ${med} cm esta foto puede verse un poco suave. Si tienes la original, mejor; si no, también vale.</span><span class="en">At ${med} cm this photo may look slightly soft. The original is better, but this works too.</span>`;
+    : `<span class="es">Tu foto tiene algo menos de resolución de la ideal para ${med} cm. La revisamos y la mejoramos antes de imprimir. Si tienes la original, mejor.</span><span class="en">Your photo is a little below the ideal resolution for ${med} cm. We check and enhance it before printing. The original is even better.</span>`;
 }
 
 function canvasToBlob(c, quality){
@@ -3439,7 +3441,6 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
     return;
   }
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
-  const lowRes = POSTERS.some(p=>p.srcImg && photoIsLowRes(p));
 
   // foto muy corta para su tamaño: la primera vez se enseña el aviso en el encuadre; si vuelve a pulsar, sigue
   const mala = POSTERS.findIndex(p=>p.srcImg && photoQuality(p) < LOWRES_MALA);
@@ -3450,9 +3451,7 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
     toast('Esta foto saldría borrosa. Si quieres seguir igual, vuelve a pulsar «Añadir al carrito».');
     return;
   }
-  if(lowRes && mala < 0){
-    toast('A este tamaño alguna foto puede verse un poco suave. Seguimos con el pedido.');
-  }
+
   // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
   const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
   if(window.mmTrack && firma !== window.mmCarritoMedido){
