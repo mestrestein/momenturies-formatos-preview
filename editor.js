@@ -6579,7 +6579,8 @@ window.MOMENTURIES_openWall = function(id, k){
   /* repetido de otro conjunto (paredes.js lo marca con `dup`): se abre aquel, en la talla de este */
   if(base.dup && findWall(base.dup)){ k = k || base.pieces[0].size; base = findWall(base.dup); }
   openEditorWithType('metal');
-  const w = wallPick(base, k);              // la talla pedida, o la más cercana que tenga existencias
+  /* 9-nov: ?talla=+1 / -1 = escalón de un conjunto que mezcla tallas (lo manda paredes-ensueno.html) */
+  const w = /^[+-]\d+$/.test(k || '') ? wallAt(base, k) : wallPick(base, k);   // la talla pedida, o la más cercana que tenga existencias
   if(!wallInStock(w)){ openWallModal(); toast('La pared «' + w.name + '» no tiene existencias ahora mismo. Elige otra'); return; }
   applyWall(w);
   if(wallKOf(w) !== (k || wallKOf(base))) toast('Ese tamaño está agotado. Te lo enseñamos con cuadros de ' + wallPieceDims(w) + ' cm');

@@ -74,6 +74,12 @@
   .ens-meta{font-size:13px;color:var(--mid);margin-top:3px}
   .ens-price{text-align:right;white-space:nowrap;font-size:15px}
   .ens-price s{display:block;color:var(--light);font-size:12.5px}
+  .ens-sizes{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .ens-sizes small{font-size:12px;color:var(--light);margin-right:3px}
+  .ens-sizes button{border:1px solid var(--gray2);background:#fff;border-radius:14px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black)}
+  .ens-sizes button:hover{border-color:#aaa}
+  .ens-sizes button.on{background:var(--black);border-color:var(--black);color:#fff}
+  .ens-sizes button:disabled{color:var(--light);text-decoration:line-through;cursor:not-allowed;border-color:var(--gray2)}
   .ens-empty{grid-column:1/-1;text-align:center;color:var(--mid);padding:60px 0}
   .ens-empty button{margin-top:12px;border:1px solid var(--black);background:#fff;border-radius:20px;padding:8px 16px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
   @media(max-width:860px){ .ens-grid{grid-template-columns:1fr;gap:38px} }
@@ -85,6 +91,7 @@
     .ens-count{padding:14px 16px 0}
     .ens-grid{padding:14px 16px 48px}
     .ens-thumbs button{width:62px}
+    .ens-sizes button{padding:7px 12px}
     .ens-go{font-size:12px;padding:7px 11px;right:10px;bottom:10px}
     .ens-room{left:10px;bottom:10px;font-size:11px}
   }
@@ -164,7 +171,7 @@
 </footer>
 
 <script src="paredes.js?v=a20cf894"></script>
-<script src="fotos/ensueno/ensueno-fotos.js?v=8f10c55c"></script>
+<script src="fotos/ensueno/ensueno-fotos.js?v=5da7c6c6"></script>
 <script>
 (function(){
   'use strict';
@@ -178,7 +185,8 @@
   /* orden: Cariño (el más vendido), los demás marcados como mejores y luego el resto */
   var FIRST = ['W13'];
   var rank = function(w){ var i = FIRST.indexOf(w.id); return i >= 0 ? i : (w.best ? 10 : 100); };
-  var list = WALLS.filter(function(w){ return !w.soldOut && PH[w.id] && PH[w.id].length; })
+  /* dup = misma forma que otro conjunto en otra talla: sale dentro del selector de tamaño de aquel */
+  var list = WALLS.filter(function(w){ return !w.dup && !w.soldOut && PH[w.id] && PH[w.id].length; })
     .map(function(w, i){ return {w:w, i:i}; })
     .sort(function(a, b){ return rank(a.w) - rank(b.w) || a.i - b.i; })
     .map(function(x){ return x.w; });
@@ -228,12 +236,48 @@
     try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch(e){}
   }
 
-  function card(w, rooms, best){
+  /* tallas (9-nov, Marc: ahora que se ve la habitación tiene sentido elegir el tamaño aquí). Igual que
+     paredes.html: MOMENTURIES_wallVersions da las tallas del conjunto y cada una lleva sus fotos
+     "<pared>-<talla>" en las mismas habitaciones, si caben. */
+  var FS = window.MOMENTURIES_FORMAT_SIZES || {}, versions = window.MOMENTURIES_wallVersions;
+  var steps = window.MOMENTURIES_wallSteps, at = window.MOMENTURIES_wallAt;
+  /* mezcla tallas → no hay «talla del cuadro»: suben o bajan todos un escalón a la vez (+1, -1) */
+  var mixed = function(w){ return !window.MOMENTURIES_wallSizeKeys(w).length; };
+  var kOf = function(v){ return v.vk || (mixed(v) ? '0' : v.pieces[0].size); };
+  var dims = function(v){
+    if(mixed(v)) return Math.round(v.width) + '×' + Math.round(v.height);
+    var d = FS[v.pieces[0].format][kOf(v)]; return (d[0] + '×' + d[1]).replace(/\./g, ',');
+  };
+  var code = function(k){ return String(k).replace('+', 'p').replace('-', 'm'); };   // +1 → p1 (nombre de archivo)
+  var keyOf = function(w){ return w.vk && PH[w.id + '-' + code(w.vk)] ? w.id + '-' + code(w.vk) : w.id; };
+  var allOf = function(w){
+    var base = w.base || w;
+    if(!mixed(base)) return versions(base);
+    var st = steps(base); return st.length ? st.map(function(d){ return d ? at(base, (d > 0 ? '+' : '') + d) : base; }) : [base];
+  };
+  /* orden de las fotos: la habitación que se estaba viendo, luego la del filtro, luego el resto */
+  function roomsOf(w, keep){
+    var rooms = (PH[keyOf(w)] || []).slice();
+    var first = function(test){ var m = rooms.filter(test); rooms = m.concat(rooms.filter(function(r){ return !test(r); })); };
+    if(state.t) first(function(r){ return typeOf(r) === state.t; });
+    if(keep && rooms.indexOf(keep) > 0) first(function(r){ return r === keep; });
+    return rooms;
+  }
+
+  function card(w, best, keep){
     var el = document.createElement('article');
     el.className = 'ens-card';
-    var link = function(r){ return 'cuadro.html?pared=' + w.id + '&entorno=' + r; };
-    var src = function(r){ return 'fotos/ensueno/' + w.id + '-' + r + '.webp'; };
+    var key = keyOf(w), rooms = roomsOf(w, keep);
+    var link = function(r){ return 'cuadro.html?pared=' + w.id + (w.vk ? '&talla=' + encodeURIComponent(w.vk) : '') + '&entorno=' + r; };
+    var src = function(r){ return 'fotos/ensueno/' + key + '-' + r + '.webp'; };
     var p = pct(w), net = Math.round(w.price * (100 - p)) / 100;
+    var all = allOf(w), sizes = '';
+    if(all.length > 1 && all.filter(function(v){ return !v.soldOut; }).length > 1){
+      sizes = '<div class="ens-sizes"><small>' + (mixed(w) ? esen({es:'Tamaño del conjunto (cm)', en:'Size of the set (cm)'}) : esen({es:'Tamaño de cada cuadro', en:'Size of each print'})) + '</small>' + all.map(function(v){
+        var has = !!PH[keyOf(v)];
+        return '<button type="button" data-k="' + kOf(v) + '"' + (kOf(v) === kOf(w) ? ' class="on"' : '') + (v.soldOut || !has ? ' disabled title="No disponible"' : '') + '>' + dims(v) + '</button>';
+      }).join('') + '</div>';
+    }
     el.innerHTML = '<a class="ens-media" href="' + link(rooms[0]) + '">'
       + '<img src="' + src(rooms[0]) + '" alt="' + w.name + '" width="1400" height="1050" loading="lazy" decoding="async">'
       + (best ? '<span class="ens-rank">' + esen({es:'De los favoritos', en:'A favourite'}) + '</span>' : '')
@@ -243,14 +287,23 @@
           var t = tName(typeOf(r));
           return '<button type="button" data-r="' + r + '" aria-pressed="' + (i ? 'false' : 'true') + '" aria-label="' + t.es + '" title="' + t.es + '"><img src="' + src(r) + '" alt="" loading="lazy" decoding="async"></button>';
         }).join('') + '</div>' : '')
-      + '<div class="ens-info"><div><b>' + w.name + '</b><div class="ens-meta">' + w.n + ' ' + esen({es:'cuadros', en:'prints'}) + ' · ' + Math.round(w.width) + ' × ' + Math.round(w.height) + ' cm</div></div>'
-      + '<div class="ens-price">' + eur(net) + (p ? '<s>' + eur(w.price) + '</s>' : '') + '</div></div>';
-    var a = el.querySelector('.ens-media'), img = a.querySelector('img'), tag = a.querySelector('.ens-room');
+      + '<div class="ens-info"><div><b>' + w.name + '</b><div class="ens-meta">' + w.n + ' ' + esen({es:'cuadros', en:'prints'}) + ' · ' + esen({es:'ocupa ', en:'covers '}) + Math.round(w.width) + ' × ' + Math.round(w.height) + ' cm</div></div>'
+      + '<div class="ens-price">' + eur(net) + (p ? '<s>' + eur(w.price) + '</s>' : '') + '</div></div>'
+      + sizes;
+    var a = el.querySelector('.ens-media'), img = a.querySelector('img'), tag = a.querySelector('.ens-room'), cur = rooms[0];
     el.querySelectorAll('.ens-thumbs button').forEach(function(b){
       b.addEventListener('click', function(){
-        var r = b.dataset.r;
+        cur = b.dataset.r;
         el.querySelectorAll('.ens-thumbs button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-        img.src = src(r); a.href = link(r); tag.innerHTML = esen(tName(typeOf(r)));
+        img.src = src(cur); a.href = link(cur); tag.innerHTML = esen(tName(typeOf(cur)));
+      });
+    });
+    // otro tamaño: la tarjeta se vuelve a pintar con sus medidas, su precio y sus fotos, en la misma habitación
+    el.querySelectorAll('.ens-sizes button').forEach(function(b){
+      b.addEventListener('click', function(){
+        if(b.disabled || b.className === 'on') return;
+        var k = b.getAttribute('data-k'), nw = card(k === '0' ? (w.base || w) : at(w, k), best, cur);
+        el.parentNode.replaceChild(nw, el);
       });
     });
     return el;
@@ -262,13 +315,9 @@
     if(state.n){ var s = state.n.split('-'); lo = +s[0]; hi = +s[1]; }
     list.forEach(function(w){
       if(w.n < lo || w.n > hi) return;
-      var rooms = PH[w.id].slice();
-      if(state.t){   // con filtro de habitación, sale primero la foto de esa habitación
-        var m = rooms.filter(function(r){ return typeOf(r) === state.t; });
-        if(!m.length) return;
-        rooms = m.concat(rooms.filter(function(r){ return typeOf(r) !== state.t; }));
-      }
-      grid.appendChild(card(w, rooms, w.best || FIRST.indexOf(w.id) >= 0));
+      // con filtro de habitación, solo los que tienen foto en una de ese tipo (y esa sale primero)
+      if(state.t && !PH[w.id].some(function(r){ return typeOf(r) === state.t; })) return;
+      grid.appendChild(card(w, w.best || FIRST.indexOf(w.id) >= 0));
       shown++;
     });
     count.innerHTML = esen({es: shown + (shown === 1 ? ' conjunto' : ' conjuntos'), en: shown + (shown === 1 ? ' set' : ' sets')});
