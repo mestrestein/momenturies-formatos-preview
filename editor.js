@@ -2490,19 +2490,14 @@ function photoQuality(p){
   const cw = cropWindow(p, W, H);
   return Math.min(cw.sw / W, cw.sh / H);
 }
-const LOWRES_MALA = 0.33, LOWRES_SUAVE = 0.6;
+const LOWRES_MALA = 0.25;   // 9-nov (Marc): aviso solo con fotos muy muy pequeñas (< 75 ppp a su tamaño)
 function updateCropQuality(){
   const el = document.getElementById('cropQuality'); if(!el) return;
   const p = POSTERS[selected];
-  const q = photoQuality(p);
-  if(!p || !p.srcImg || q >= LOWRES_SUAVE){ el.hidden = true; return; }
+  if(!p || !p.srcImg || photoQuality(p) >= LOWRES_MALA){ el.hidden = true; return; }
   const d = sizeOf(p).d, med = (isLand(p) ? [d[1],d[0]] : d).map(cm).join('×');
-  const mala = q < LOWRES_MALA;
   el.hidden = false;
-  el.classList.toggle('mala', mala);
-  el.innerHTML = mala
-    ? `<span class="es"><b>Esta foto tiene poca resolución para ${med} cm y saldría borrosa.</b> Elige un tamaño más pequeño, quita zoom o usa la foto original (las de WhatsApp y las capturas llegan comprimidas).</span><span class="en"><b>This photo is too small for ${med} cm and would print blurry.</b> Pick a smaller size, zoom out or use the original photo (WhatsApp photos and screenshots are compressed).</span>`
-    : `<span class="es">Tu foto tiene algo menos de resolución de la ideal para ${med} cm. La revisamos y la mejoramos antes de imprimir. Si tienes la original, mejor.</span><span class="en">Your photo is a little below the ideal resolution for ${med} cm. We check and enhance it before printing. The original is even better.</span>`;
+  el.innerHTML = `<span class="es"><b>Esta foto es muy pequeña para ${med} cm.</b> Nosotros la mejoramos antes de imprimirla, pero al ser tan pequeña el resultado puede verse afectado. Si tienes la original o eliges un tamaño menor, saldrá mejor.</span><span class="en"><b>This photo is very small for ${med} cm.</b> We enhance it before printing, but being so small the result may be affected. The original photo or a smaller size will look better.</span>`;
 }
 
 function canvasToBlob(c, quality){
@@ -3442,16 +3437,8 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
   }
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
 
-  // foto muy corta para su tamaño: la primera vez se enseña el aviso en el encuadre; si vuelve a pulsar, sigue
-  const mala = POSTERS.findIndex(p=>p.srcImg && photoQuality(p) < LOWRES_MALA);
-  const firmaMala = mala < 0 ? '' : POSTERS.map(p=>p.sizeKey+':'+(p.crop&&p.crop.scale)+':'+(p.srcImg&&p.srcImg.width)).join('|');
-  if(mala >= 0 && window.mmAvisoBorrosa !== firmaMala){
-    window.mmAvisoBorrosa = firmaMala;
-    selectPoster(mala); openCropModal();
-    toast('Esta foto saldría borrosa. Si quieres seguir igual, vuelve a pulsar «Añadir al carrito».');
-    return;
-  }
-
+  // foto muy muy pequeña: solo se avisa (no se para la compra; al imprimir se mejora con IA)
+  if(POSTERS.some(p=>p.srcImg && photoQuality(p) < LOWRES_MALA)) toast('Alguna foto es muy pequeña: la mejoraremos, pero puede verse afectada.');
   // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
   const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
   if(window.mmTrack && firma !== window.mmCarritoMedido){
