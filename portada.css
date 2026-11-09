@@ -63,7 +63,10 @@
   .hx-link,.hx-trust{display:none}
   .hx-nav{position:static;margin-top:calc(18px * var(--k,1));gap:6px}
   .hx-nav button{flex:1;min-width:0;font-size:0;padding:8px 0 0}
-  .hx-arr{display:none}
+  /* 9-nov (Marc): flechas discretas a los lados de la imagen para cambiar en móvil */
+  .hx-arr{inset:0;bottom:auto;right:auto;height:100%;width:100%;justify-content:space-between;align-items:center;padding:0 8px;pointer-events:none}
+  .hx-arr button{pointer-events:auto;width:30px;height:30px;font-size:19px;line-height:1;padding:0 0 2px;display:grid;place-items:center;background:rgba(255,255,255,.42);color:rgba(20,20,20,.75);box-shadow:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-tap-highlight-color:transparent}
+  .hx-arr button:active{background:rgba(255,255,255,.75)}
   .hx.apretado .hx-prod{display:none}
 }
 
