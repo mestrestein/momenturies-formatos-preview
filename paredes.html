@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Momenturies — Paredes de ensueño: más de 60 composiciones de cuadros listas para tus fotos</title>
-<meta name="description" content="Más de 60 composiciones de 2 a 20 cuadros, para un rincón, una cómoda o encima del sofá. Eliges una, pones tus fotos y la ves en tu tipo de habitación antes de pedirla. Aluminio HD.">
+<title>Momenturies — Paredes de ensueño: todos los conjuntos colgados en casas de verdad</title>
+<meta name="description" content="Todos nuestros conjuntos de cuadros colgados en salones, dormitorios, comedores y escaleras. Filtra por número de cuadros y por habitación, entra en la que te guste y pon tus fotos.">
 <link rel="canonical" href="https://momenturies.com/paredes.html"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Momenturies"/>
 <meta property="og:title" content="Momenturies — Paredes de ensueño: composiciones de cuadros listas para tus fotos"/>
-<meta property="og:description" content="Más de 60 composiciones de 2 a 20 cuadros, para un rincón, una cómoda o encima del sofá. Eliges una, pones tus fotos y la ves en tu tipo de habitación antes de pedirla. Aluminio HD."/>
+<meta property="og:description" content="Todos nuestros conjuntos de cuadros colgados en salones, dormitorios, comedores y escaleras."/>
 <meta property="og:image" content="https://momenturies.com/fotos/producto-hero-pared.jpg"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='8' width='26' height='34' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='36' y='8' width='22' height='18' rx='2.5' fill='%23c2613a'/%3E%3Crect x='36' y='30' width='22' height='26' rx='2.5' fill='%231a1a1a'/%3E%3Crect x='6' y='46' width='26' height='10' rx='2.5' fill='%23c2613a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -39,64 +39,67 @@
 }
 </script>
 <style>
-  /* específico de esta página: catálogo de paredes, tarjetas cuadradas con pase de fotos */
-  .pw-head{max-width:1240px;margin:0 auto;padding:40px 40px 8px}
-  .pw-head h1{font-family:var(--font-serif);font-size:clamp(28px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin:0 0 10px}
-  .pw-lead{font-size:14.5px;color:var(--mid);line-height:1.55;max-width:720px;margin:0 0 22px}
-  .pw-tabs{display:flex;gap:8px;border-top:1px solid var(--gray2);padding-top:18px}
-  .pw-tabs button{border:1px solid var(--gray2);background:#fff;border-radius:22px;padding:9px 20px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);transition:background .15s,border-color .15s}
-  .pw-tabs button:hover{border-color:#aaa}
-  .pw-tabs button[aria-selected="true"]{background:#efebe5;border-color:#efebe5}
-  .pw-tabs button i{font-style:normal;font-weight:500;color:var(--mid);margin-left:5px}
-  .pw-where{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light);margin:0 0 10px}
-  /* tamaño del conjunto: mismas piezas, todas a la vez */
-  .pw-sizes{display:flex;align-items:center;gap:5px;margin-top:9px;flex-wrap:wrap}
-  .pw-sizes small{font-size:12px;color:var(--light);margin-right:3px}
-  .pw-sizes button{border:1px solid var(--gray2);background:#fff;border-radius:14px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black)}
-  .pw-sizes button:hover{border-color:#aaa}
-  .pw-sizes button.on{background:var(--black);border-color:var(--black);color:#fff}
-  .pw-sizes button:disabled{color:var(--light);text-decoration:line-through;cursor:not-allowed;border-color:var(--gray2)}
-  .pw-grid{max-width:1240px;margin:0 auto;padding:22px 40px 64px;display:grid;grid-template-columns:repeat(3,1fr);gap:34px 22px}
-  .pw-card{display:block;color:inherit;text-decoration:none}
-  .pw-media{position:relative;border-radius:12px;overflow:hidden;background:#ece7de;aspect-ratio:1/1}
-  .pw-track{display:flex;width:100%;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-  .pw-track::-webkit-scrollbar{display:none}
-  .pw-track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;display:block;transition:transform .5s var(--ease,ease)}
-  .pw-card:hover .pw-track img{transform:scale(1.02)}
-  .pw-dots{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:none}
-  .pw-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 2px rgba(0,0,0,.3)}
-  .pw-dots i.on{background:#fff}
-  .pw-arr{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.88);font-size:22px;line-height:1;cursor:pointer;opacity:0;transition:opacity .2s;color:#222;display:flex;align-items:center;justify-content:center;padding-bottom:3px}
-  .pw-prev{left:10px}.pw-next{right:10px}
-  .pw-card:hover .pw-arr{opacity:1}
-  .pw-badge{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.9);color:#b4462f;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:5px}
-  .pw-info{padding:12px 2px 0}
-  .pw-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .pw-row b{font-size:15.5px;font-weight:700}
-  .pw-dim{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--mid);white-space:nowrap}
-  .pw-sub{margin-top:3px}
-  .pw-price{font-size:14.5px}
-  .pw-price s{color:var(--light);font-size:13px;margin-left:4px}
-  .pw-n{font-size:12.5px;color:var(--light)}
-  .pw-badge.pw-best{background:#c2582c;color:#fff}
-  .pw-card.sold-out{cursor:default}
-  .pw-card.sold-out .pw-track img{filter:grayscale(.85) brightness(1.04);transform:none}
-  .pw-card.sold-out .pw-info{opacity:.55}
-  @media(max-width:1000px){ .pw-grid{grid-template-columns:repeat(2,1fr)} }
+  /* paredes-ensueno.html (9-nov): todos los conjuntos, de los mejores al resto, cada uno colgado en
+     habitaciones distintas (fotos/ensueno, fotos/_build_ensueno_fotos.py). Se filtra por número de
+     cuadros y por tipo de habitación; cada foto entra en el editor con ese conjunto y esa habitación.
+     Se genera con _build_paredes_ensueno.py desde _paredes_ensueno_tpl.html: no editar a mano. */
+  .ens-head{max-width:1240px;margin:0 auto;padding:44px 40px 6px}
+  .ens-kick{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin:0 0 12px}
+  .ens-head h1{font-family:var(--font-serif);font-size:clamp(30px,3.8vw,46px);font-weight:700;letter-spacing:-.01em;line-height:1.1;margin:0 0 12px}
+  .ens-lead{font-size:15px;color:var(--mid);line-height:1.55;max-width:680px;margin:0}
+  .ens-bar{position:sticky;top:60px;z-index:50;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-bottom:1px solid var(--gray2);margin-top:22px}
+  .ens-bar-in{max-width:1240px;margin:0 auto;padding:12px 40px;display:flex;flex-direction:column;gap:9px}
+  .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
+  .ens-row::-webkit-scrollbar{display:none}
+  .ens-row small{flex:0 0 auto;width:92px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light)}
+  .ens-row button{flex:0 0 auto;border:1px solid var(--gray2);background:#fff;border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);white-space:nowrap;transition:background .15s,border-color .15s}
+  .ens-row button:hover{border-color:#aaa}
+  .ens-row button[aria-pressed="true"]{background:var(--black);border-color:var(--black);color:#fff}
+  .ens-count{max-width:1240px;margin:0 auto;padding:16px 40px 0;font-size:13px;color:var(--mid)}
+  .ens-grid{max-width:1240px;margin:0 auto;padding:16px 40px 64px;display:grid;grid-template-columns:repeat(2,1fr);gap:44px 28px}
+  .ens-card{display:flex;flex-direction:column;min-width:0}
+  .ens-media{position:relative;display:block;border-radius:12px;overflow:hidden;background:#ece7de;aspect-ratio:4/3}
+  .ens-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease,ease)}
+  .ens-media:hover img{transform:scale(1.025)}
+  .ens-go{position:absolute;right:14px;bottom:14px;background:rgba(255,255,255,.94);color:var(--black);font-size:13px;font-weight:600;padding:9px 14px;border-radius:22px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .ens-room{position:absolute;left:14px;bottom:14px;background:rgba(26,26,26,.72);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:16px}
+  .ens-rank{position:absolute;top:14px;left:14px;background:#c2582c;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:5px}
+  .ens-thumbs{display:flex;gap:8px;margin-top:10px}
+  .ens-thumbs button{flex:0 0 auto;width:74px;aspect-ratio:4/3;padding:0;border:2px solid transparent;border-radius:7px;overflow:hidden;cursor:pointer;background:#ece7de;opacity:.72;transition:opacity .15s,border-color .15s}
+  .ens-thumbs button:hover{opacity:1}
+  .ens-thumbs button[aria-pressed="true"]{border-color:var(--black);opacity:1}
+  .ens-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+  .ens-info{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:12px}
+  .ens-info b{display:block;font-size:17px;font-weight:700}
+  .ens-meta{font-size:13px;color:var(--mid);margin-top:3px}
+  .ens-price{text-align:right;white-space:nowrap;font-size:15px}
+  .ens-price s{display:block;color:var(--light);font-size:12.5px}
+  .ens-sizes{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .ens-sizes small{font-size:12px;color:var(--light);margin-right:3px}
+  .ens-sizes button{border:1px solid var(--gray2);background:#fff;border-radius:14px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black)}
+  .ens-sizes button:hover{border-color:#aaa}
+  .ens-sizes button.on{background:var(--black);border-color:var(--black);color:#fff}
+  .ens-sizes button:disabled{color:var(--light);text-decoration:line-through;cursor:not-allowed;border-color:var(--gray2)}
+  .ens-empty{grid-column:1/-1;text-align:center;color:var(--mid);padding:60px 0}
+  .ens-empty button{margin-top:12px;border:1px solid var(--black);background:#fff;border-radius:20px;padding:8px 16px;font-weight:600;cursor:pointer;font-family:var(--font-sans)}
+  @media(max-width:860px){ .ens-grid{grid-template-columns:1fr;gap:38px} }
   @media(max-width:640px){
-    .pw-head{padding:24px 16px 4px}
-    .pw-lead{font-size:13.5px}
-    .pw-tabs{gap:6px;overflow-x:auto}
-    .pw-tabs button{padding:8px 14px;font-size:13px;white-space:nowrap}
-    .pw-tabs button i{display:block;margin:1px 0 0;font-size:11.5px}
-    .pw-sizes button{padding:6px 11px}
-    .pw-grid{grid-template-columns:1fr;padding:18px 16px 48px;gap:28px}
-    .pw-arr{display:none}
+    .ens-head{padding:26px 16px 4px}
+    .ens-lead{font-size:14px}
+    .ens-bar-in{padding:10px 16px}
+    .ens-row small{width:auto;margin-right:2px}
+    .ens-count{padding:14px 16px 0}
+    .ens-grid{padding:14px 16px 48px}
+    .ens-thumbs button{width:62px}
+    .ens-sizes button{padding:7px 12px}
+    .ens-go{font-size:12px;padding:7px 11px;right:10px;bottom:10px}
+    .ens-room{left:10px;bottom:10px;font-size:11px}
   }
 </style>
 <script src="consent.js?v=bafba393" defer></script>
 </head>
 <body>
+
 
 <div class="topbar">
   <span class="es">Tus fotos en aluminio HD · Se cuelgan sin agujeros · Envío a España y Europa</span>
@@ -136,24 +139,30 @@
     <a href="paredes.html" aria-current="page"><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></a>
 </div>
 
-<!-- CABECERA: título y huecos (dónde va), como un catálogo -->
-<section class="pw-head">
+
+<!-- CABECERA -->
+<section class="ens-head">
+  <p class="ens-kick"><span class="es">Ideas para tu pared</span><span class="en">Ideas for your wall</span></p>
   <h1><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></h1>
-  <p class="pw-lead"><span class="es">Más de 60 composiciones con la separación ya pensada. Dinos dónde va, elige la que te guste y su tamaño, pon una foto en cada cuadro y te la mandamos entera, con los imanes. Dentro puedes cambiar la habitación, la composición y el tamaño cuando quieras.</span><span class="en">Over 60 layouts with the spacing already worked out. Tell us where it goes, pick the one you like and its size, put a photo in each print and we ship the whole wall, magnets included. Inside you can switch the room, the layout and the size any time.</span></p>
-  <p class="pw-where"><span class="es">¿Dónde va?</span><span class="en">Where does it go?</span></p>
-  <!-- las pestañas las pinta el script con MOMENTURIES_HUECOS (paredes.js) -->
-  <div class="pw-tabs" id="pwTabs" role="tablist"></div>
+  <p class="ens-lead"><span class="es">Todos nuestros conjuntos colgados en casas de verdad, empezando por los que más gustan. Toca la habitación que te guste y entras en ella con ese conjunto puesto, listo para tus fotos.</span><span class="en">All our sets hung in real homes, starting with the favourites. Tap the room you like and you step into it with that set on the wall, ready for your photos.</span></p>
 </section>
 
-<!-- LAS PAREDES (las tarjetas las pinta el script de abajo con paredes.js + fotos/paredes/paredes-fotos.js) -->
-<section class="pw-grid" id="pwGrid" aria-live="polite"></section>
+<!-- FILTROS: número de cuadros y tipo de habitación (los botones los pinta el script) -->
+<div class="ens-bar" id="ensBar">
+  <div class="ens-bar-in">
+    <div class="ens-row" id="fN" role="group"><small><span class="es">Cuadros</span><span class="en">Prints</span></small></div>
+    <div class="ens-row" id="fT" role="group"><small><span class="es">Habitación</span><span class="en">Room</span></small></div>
+  </div>
+</div>
+<p class="ens-count" id="ensCount" aria-live="polite"></p>
+<section class="ens-grid" id="ensGrid"></section>
 
 <!-- CROSS-SELL -->
 <section class="otherfmt">
   <h2><span class="es">¿Prefieres un solo cuadro?</span><span class="en">Prefer a single print?</span></h2>
   <div class="otherfmt-grid">
-      <a class="otherfmt-card" href="ficha-cuadro.html"><b><span class="es">Cuadro</span><span class="en">Wall print</span></b><span class="es">Desde 19,99€ · 3 formatos · imán premium incluido</span><span class="en">From €19.99 · 3 formats · premium magnet included</span></a>
       <a class="otherfmt-card" href="galeria.html"><b><span class="es">Galería de arte</span><span class="en">Art gallery</span></b><span class="es">Obras maestras y diseños listos para tu pared</span><span class="en">Masterpieces and designs ready for your wall</span></a>
+      <a class="otherfmt-card" href="ficha-cuadro.html"><b><span class="es">Un solo cuadro</span><span class="en">A single print</span></b><span class="es">Desde 19,99€ · imán premium incluido</span><span class="en">From €19.99 · premium magnet included</span></a>
   </div>
 </section>
 
@@ -162,109 +171,169 @@
 </footer>
 
 <script src="paredes.js?v=1e9df1aa"></script>
-<script src="fotos/paredes/paredes-fotos.js?v=fa8f7578"></script>
+<script src="fotos/ensueno/ensueno-fotos.js?v=22388ab1"></script>
 <script>
-/* Tarjetas de las paredes de ensueño. Cada tarjeta enseña la pared colgada en 3 habitaciones
-   (fotos/_build_paredes_fotos.py) y lleva a cuadro.html con la habitación que se esté viendo,
-   donde se puede cambiar de habitación y de composición. */
 (function(){
   'use strict';
-  var WALLS = window.MOMENTURIES_WALLS || [], PH = window.MOMENTURIES_WALL_PHOTOS || {};
-  /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) */
+  var WALLS = window.MOMENTURIES_WALLS || [], PH = window.MOMENTURIES_ENSUENO || {};
+  /* mismo escalón de descuento que el carrito (PACK_TIERS en editor.js) y paredes.html */
   var TIERS = [ {n:5, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];
   var pct = function(w){ for(var i = 0; i < TIERS.length; i++) if(w.n >= TIERS[i].n) return TIERS[i].pct; return 0; };
-  var net = function(w){ return Math.round(w.price * (100 - pct(w))) / 100; };
   var eur = function(v){ return v.toFixed(2).replace('.', ',') + ' €'; };
-  var cm = function(v){ return String(Math.round(v)); };
-  var grid = document.getElementById('pwGrid'), tabs = document.getElementById('pwTabs');
-  var HUECOS = window.MOMENTURIES_HUECOS || [], FS = window.MOMENTURIES_FORMAT_SIZES || {};
-  var versions = window.MOMENTURIES_wallVersions, forHueco = window.MOMENTURIES_wallForHueco;
-  var kOf = function(v){ return v.vk || v.pieces[0].size; };
-  var dims = function(v){ var d = FS[v.pieces[0].format][kOf(v)]; return (d[0] + '×' + d[1]).replace(/\./g, ','); };
+  var esen = function(o){ return '<span class="es">' + o.es + '</span><span class="en">' + o.en + '</span>'; };
 
-  /* w = el conjunto en la talla que se enseña (el original o una versión de MOMENTURIES_wallAt).
-     Las fotos de las otras tallas van con la clave "<pared>-<talla>" (fotos/_build_paredes_fotos.py). */
-  function card(w){
-    var key = w.vk && PH[w.id + '-' + w.vk] ? w.id + '-' + w.vk : w.id;
-    /* 3-nov: las fotos en terraza no se enseñan (no se vende para exterior); n = número de la foto en disco */
-    var rooms = [], nums = [], ok = !w.soldOut;
-    (PH[key] || []).forEach(function(r, i){ if(!/^terraza/.test(r)){ rooms.push(r); nums.push(i + 1); } });
-    var link = function(r){ return 'cuadro.html?pared=' + w.id + (w.vk ? '&talla=' + w.vk : '') + '&entorno=' + (r || ''); };
-    var a = document.createElement(ok ? 'a' : 'div');
-    a.className = 'pw-card' + (ok ? '' : ' sold-out');
-    if(ok) a.href = link(rooms[0]);
-    var slides = rooms.map(function(r, i){
-      return '<img src="fotos/paredes/' + key + '-' + nums[i] + '.webp" alt="' + w.name + ' en ' + r.replace(/-/g, ' ') + '" width="1000" height="1000" loading="lazy" decoding="async" draggable="false">';
-    }).join('');
-    /* tamaño del conjunto: solo si es de una sola talla y hay más de una a elegir */
-    var all = versions(w), sizes = '';
-    if(ok && all.length > 1 && all.filter(function(v){ return !v.soldOut; }).length > 1){
-      sizes = '<div class="pw-sizes"><small><span class="es">Tamaño</span><span class="en">Size</span></small>' + all.map(function(v){
-        return '<button type="button" data-k="' + kOf(v) + '"' + (kOf(v) === kOf(w) ? ' class="on"' : '') + (v.soldOut ? ' disabled title="Sin existencias"' : '') + '>' + dims(v) + '</button>';
+  /* orden: Cariño (el más vendido), los demás marcados como mejores y luego el resto */
+  var FIRST = ['W13'];
+  var rank = function(w){ var i = FIRST.indexOf(w.id); return i >= 0 ? i : (w.best ? 10 : 100); };
+  /* dup = misma forma que otro conjunto en otra talla: sale dentro del selector de tamaño de aquel */
+  var list = WALLS.filter(function(w){ return !w.dup && !w.soldOut && PH[w.id] && PH[w.id].length; })
+    .map(function(w, i){ return {w:w, i:i}; })
+    .sort(function(a, b){ return rank(a.w) - rank(b.w) || a.i - b.i; })
+    .map(function(x){ return x.w; });
+
+  var TYPES = [
+    {k:'salon', es:'Salón', en:'Living room'}, {k:'dormitorio', es:'Dormitorio', en:'Bedroom'},
+    {k:'comedor', es:'Comedor', en:'Dining room'}, {k:'aparador', es:'Aparador y cómoda', en:'Sideboard'},
+    {k:'escalera', es:'Escalera', en:'Stairs'}, {k:'rincon', es:'Rincón y escritorio', en:'Nook and desk'}
+  ];
+  /* mismo reparto que TYPE() de fotos/_build_ensueno_fotos.py */
+  var typeOf = function(r){
+    if(/^(salon|sofa)/.test(r)) return 'salon';
+    if(/^dormitorio/.test(r) || r === 'comoda-cama') return 'dormitorio';
+    if(/^comedor/.test(r)) return 'comedor';
+    if(/^escalera/.test(r)) return 'escalera';
+    if(/^rincon/.test(r) || r === 'comoda-escritorio') return 'rincon';
+    return 'aparador';
+  };
+  var tName = function(k){ for(var i = 0; i < TYPES.length; i++) if(TYPES[i].k === k) return TYPES[i]; };
+  var NS = [
+    {k:'', es:'Todos', en:'All'}, {k:'2-3', es:'2 o 3', en:'2 or 3'}, {k:'4-6', es:'4 a 6', en:'4 to 6'},
+    {k:'7-9', es:'7 a 9', en:'7 to 9'}, {k:'10-99', es:'10 o más', en:'10 or more'}
+  ];
+  var state = {n:'', t:''};
+  var grid = document.getElementById('ensGrid'), count = document.getElementById('ensCount'), bar = document.getElementById('ensBar');
+
+  function chips(el, items, key){
+    items.forEach(function(o){
+      var b = document.createElement('button');
+      b.type = 'button'; b.dataset.k = o.k; b.innerHTML = esen(o);
+      b.addEventListener('click', function(){
+        state[key] = o.k; sync(); render();
+        // si ya se había bajado, volver al principio de la lista (la barra se queda pegada arriba)
+        if(window.scrollY > bar.offsetTop) window.scrollTo({top: bar.offsetTop - 60, behavior:'smooth'});
+      });
+      el.appendChild(b);
+    });
+  }
+  chips(document.getElementById('fN'), NS, 'n');
+  chips(document.getElementById('fT'), [{k:'', es:'Todas', en:'All'}].concat(TYPES), 't');
+
+  function sync(){
+    [['fN','n'], ['fT','t']].forEach(function(p){
+      document.querySelectorAll('#' + p[0] + ' button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.k === state[p[1]] ? 'true' : 'false'); });
+    });
+    var h = [state.n && 'cuadros=' + state.n, state.t && 'habitacion=' + state.t].filter(Boolean).join('&');
+    try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch(e){}
+  }
+
+  /* tallas (9-nov, Marc: ahora que se ve la habitación tiene sentido elegir el tamaño aquí). Igual que
+     paredes.html: MOMENTURIES_wallVersions da las tallas del conjunto y cada una lleva sus fotos
+     "<pared>-<talla>" en las mismas habitaciones, si caben. */
+  var FS = window.MOMENTURIES_FORMAT_SIZES || {}, versions = window.MOMENTURIES_wallVersions;
+  var steps = window.MOMENTURIES_wallSteps, at = window.MOMENTURIES_wallAt;
+  /* mezcla tallas → no hay «talla del cuadro»: suben o bajan todos un escalón a la vez (+1, -1) */
+  var mixed = function(w){ return !window.MOMENTURIES_wallSizeKeys(w).length; };
+  var kOf = function(v){ return v.vk || (mixed(v) ? '0' : v.pieces[0].size); };
+  var dims = function(v){
+    if(mixed(v)) return Math.round(v.width) + '×' + Math.round(v.height);
+    var d = FS[v.pieces[0].format][kOf(v)]; return (d[0] + '×' + d[1]).replace(/\./g, ',');
+  };
+  var code = function(k){ return String(k).replace('+', 'p').replace('-', 'm'); };   // +1 → p1 (nombre de archivo)
+  var keyOf = function(w){ return w.vk && PH[w.id + '-' + code(w.vk)] ? w.id + '-' + code(w.vk) : w.id; };
+  var allOf = function(w){
+    var base = w.base || w;
+    if(!mixed(base)) return versions(base);
+    var st = steps(base); return st.length ? st.map(function(d){ return d ? at(base, (d > 0 ? '+' : '') + d) : base; }) : [base];
+  };
+  /* orden de las fotos: la habitación que se estaba viendo, luego la del filtro, luego el resto */
+  function roomsOf(w, keep){
+    var rooms = (PH[keyOf(w)] || []).slice();
+    var first = function(test){ var m = rooms.filter(test); rooms = m.concat(rooms.filter(function(r){ return !test(r); })); };
+    if(state.t) first(function(r){ return typeOf(r) === state.t; });
+    if(keep && rooms.indexOf(keep) > 0) first(function(r){ return r === keep; });
+    return rooms;
+  }
+
+  function card(w, best, keep){
+    var el = document.createElement('article');
+    el.className = 'ens-card';
+    var key = keyOf(w), rooms = roomsOf(w, keep);
+    var link = function(r){ return 'cuadro.html?pared=' + w.id + (w.vk ? '&talla=' + encodeURIComponent(w.vk) : '') + '&entorno=' + r; };
+    var src = function(r){ return 'fotos/ensueno/' + key + '-' + r + '.webp'; };
+    var p = pct(w), net = Math.round(w.price * (100 - p)) / 100;
+    var all = allOf(w), sizes = '';
+    if(all.length > 1 && all.filter(function(v){ return !v.soldOut; }).length > 1){
+      sizes = '<div class="ens-sizes"><small>' + (mixed(w) ? esen({es:'Tamaño del conjunto (cm)', en:'Size of the set (cm)'}) : esen({es:'Tamaño de cada cuadro', en:'Size of each print'})) + '</small>' + all.map(function(v){
+        var has = !!PH[keyOf(v)];
+        return '<button type="button" data-k="' + kOf(v) + '"' + (kOf(v) === kOf(w) ? ' class="on"' : '') + (v.soldOut || !has ? ' disabled title="No disponible"' : '') + '>' + dims(v) + '</button>';
       }).join('') + '</div>';
     }
-    var dots = rooms.length > 1 ? '<span class="pw-dots">' + rooms.map(function(_, i){ return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span>' : '';
-    a.innerHTML = '<div class="pw-media"><div class="pw-track">' + slides + '</div>' + dots
-      + (ok ? (w.best ? '<span class="pw-badge pw-best"><span class="es">Más vendido</span><span class="en">Best seller</span></span>' : '') : '<span class="pw-badge"><span class="es">Sin existencias</span><span class="en">Out of stock</span></span>')
-      + (rooms.length > 1 ? '<button type="button" class="pw-arr pw-prev" aria-label="Anterior">&#8249;</button><button type="button" class="pw-arr pw-next" aria-label="Siguiente">&#8250;</button>' : '')
-      + '</div>'
-      + '<div class="pw-info"><div class="pw-row"><b>' + w.name + '</b>'
-      + '<span class="pw-dim"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>' + cm(w.width) + 'cm × ' + cm(w.height) + 'cm</span></div>'
-      + '<div class="pw-row pw-sub"><span class="pw-price">' + eur(net(w)) + (pct(w) ? ' <s>' + eur(w.price) + '</s>' : '') + '</span>'
-      + '<span class="pw-n">' + w.n + ' <span class="es">cuadros' + (all.length > 1 ? ' de ' + dims(w) : '') + '</span><span class="en">prints' + (all.length > 1 ? ', ' + dims(w) : '') + '</span></span></div>'
-      + sizes + '</div>';
-    // otro tamaño: la tarjeta se vuelve a pintar con sus medidas, su precio y sus fotos
-    a.querySelectorAll('.pw-sizes button').forEach(function(b){
-      b.addEventListener('click', function(e){
-        e.preventDefault(); e.stopPropagation();
+    el.innerHTML = '<a class="ens-media" href="' + link(rooms[0]) + '">'
+      + '<img src="' + src(rooms[0]) + '" alt="' + w.name + '" width="1400" height="1050" loading="lazy" decoding="async">'
+      + (best ? '<span class="ens-rank">' + esen({es:'De los favoritos', en:'A favourite'}) + '</span>' : '')
+      + '<span class="ens-room">' + esen(tName(typeOf(rooms[0]))) + '</span>'
+      + '<span class="ens-go">' + esen({es:'Entrar y poner mis fotos', en:'Step in, add my photos'}) + ' &rarr;</span></a>'
+      + (rooms.length > 1 ? '<div class="ens-thumbs">' + rooms.map(function(r, i){
+          var t = tName(typeOf(r));
+          return '<button type="button" data-r="' + r + '" aria-pressed="' + (i ? 'false' : 'true') + '" aria-label="' + t.es + '" title="' + t.es + '"><img src="' + src(r) + '" alt="" loading="lazy" decoding="async"></button>';
+        }).join('') + '</div>' : '')
+      + '<div class="ens-info"><div><b>' + w.name + '</b><div class="ens-meta">' + w.n + ' ' + esen({es:'cuadros', en:'prints'}) + ' · ' + esen({es:'ocupa ', en:'covers '}) + Math.round(w.width) + ' × ' + Math.round(w.height) + ' cm</div></div>'
+      + '<div class="ens-price">' + eur(net) + (p ? '<s>' + eur(w.price) + '</s>' : '') + '</div></div>'
+      + sizes;
+    var a = el.querySelector('.ens-media'), img = a.querySelector('img'), tag = a.querySelector('.ens-room'), cur = rooms[0];
+    el.querySelectorAll('.ens-thumbs button').forEach(function(b){
+      b.addEventListener('click', function(){
+        cur = b.dataset.r;
+        el.querySelectorAll('.ens-thumbs button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        img.src = src(cur); a.href = link(cur); tag.innerHTML = esen(tName(typeOf(cur)));
+      });
+    });
+    // otro tamaño: la tarjeta se vuelve a pintar con sus medidas, su precio y sus fotos, en la misma habitación
+    el.querySelectorAll('.ens-sizes button').forEach(function(b){
+      b.addEventListener('click', function(){
         if(b.disabled || b.className === 'on') return;
-        a.parentNode.replaceChild(card(window.MOMENTURIES_wallAt(w, b.getAttribute('data-k'))), a);
+        var k = b.getAttribute('data-k'), nw = card(k === '0' ? (w.base || w) : at(w, k), best, cur);
+        el.parentNode.replaceChild(nw, el);
       });
     });
-    // pase de fotos: el enlace se lleva la habitación que se está viendo
-    var track = a.querySelector('.pw-track'), dotEls = a.querySelectorAll('.pw-dots i');
-    var idx = function(){ return Math.round(track.scrollLeft / track.clientWidth); };
-    var sync = function(){
-      var i = idx();
-      for(var j = 0; j < dotEls.length; j++) dotEls[j].className = j === i ? 'on' : '';
-      if(ok && rooms[i]) a.href = link(rooms[i]);
-    };
-    track.addEventListener('scroll', function(){ window.requestAnimationFrame(sync); }, {passive:true});
-    a.querySelectorAll('.pw-arr').forEach(function(b){
-      b.addEventListener('click', function(e){
-        e.preventDefault(); e.stopPropagation();
-        var n = rooms.length, i = (idx() + (b.classList.contains('pw-next') ? 1 : n - 1)) % n;
-        track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
-      });
-    });
-    return a;
+    return el;
   }
 
-  /* 11-oct: se reparten por el hueco donde caben (ancho que ocupan), no por la categoría del
-     catálogo de referencia. Un conjunto que se puede pedir en varias tallas sale en cada hueco
-     con la talla que le toca. Primero las que se pueden pedir; las agotadas al final, apagadas. */
-  function render(h){
+  function render(){
     grid.innerHTML = '';
-    var list = WALLS.map(function(w){ return forHueco(w, h); }).filter(Boolean);
-    /* 3-nov: primero los más vendidos (como Mixtiles), luego el resto con existencias y las agotadas al final */
-    list.filter(function(v){ return !v.soldOut && v.best; }).concat(list.filter(function(v){ return !v.soldOut && !v.best; }), list.filter(function(v){ return v.soldOut; }))
-      .forEach(function(v){ grid.appendChild(card(v)); });
-  }
-  HUECOS.forEach(function(h){
-    var b = document.createElement('button');
-    b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('data-cat', h.k); b.setAttribute('aria-selected', 'false');
-    b.innerHTML = '<span class="es">' + h.es + '<i>' + h.esR + '</i></span><span class="en">' + h.en + '<i>' + h.enR + '</i></span>';
-    tabs.appendChild(b);
-  });
-  tabs.querySelectorAll('button').forEach(function(b){
-    b.addEventListener('click', function(){
-      tabs.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
-      render(b.dataset.cat);
-      try { history.replaceState(null, '', '#' + b.dataset.cat); } catch(e){}
+    var lo = 0, hi = 99, shown = 0;
+    if(state.n){ var s = state.n.split('-'); lo = +s[0]; hi = +s[1]; }
+    list.forEach(function(w){
+      if(w.n < lo || w.n > hi) return;
+      // con filtro de habitación, solo los que tienen foto en una de ese tipo (y esa sale primero)
+      if(state.t && !PH[w.id].some(function(r){ return typeOf(r) === state.t; })) return;
+      grid.appendChild(card(w, w.best || FIRST.indexOf(w.id) >= 0));
+      shown++;
     });
+    count.innerHTML = esen({es: shown + (shown === 1 ? ' conjunto' : ' conjuntos'), en: shown + (shown === 1 ? ' set' : ' sets')});
+    if(!shown){
+      grid.innerHTML = '<div class="ens-empty">' + esen({es:'No hay conjuntos con esos filtros.', en:'No sets match those filters.'}) + '<br><button type="button">' + esen({es:'Quitar filtros', en:'Clear filters'}) + '</button></div>';
+      grid.querySelector('button').addEventListener('click', function(){ state = {n:'', t:''}; sync(); render(); });
+    }
+  }
+
+  /* filtros desde la dirección, para poder enlazarlos: paredes.html#cuadros=4-6&habitacion=salon */
+  location.hash.replace(/^#/, '').split('&').forEach(function(kv){
+    var p = kv.split('=');
+    if(p[0] === 'cuadros' && NS.some(function(o){ return o.k === p[1]; })) state.n = p[1];
+    if(p[0] === 'habitacion' && tName(p[1])) state.t = p[1];
   });
-  var start = { '#s':'s', '#m':'m', '#l':'l' }[location.hash] || 's';
-  tabs.querySelector('[data-cat="' + start + '"]').click();
+  sync(); render();
 })();
 </script>
 <script src="carrito.js?v=b923aa51"></script><script src="app.js?v=c1eb62d9" defer></script>
