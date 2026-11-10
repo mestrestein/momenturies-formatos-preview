@@ -18,7 +18,7 @@ canvas#c.drag{cursor:grabbing}
 #plano text{font-size:44px;fill:var(--suave);pointer-events:none;text-anchor:middle}
 #ayuda{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(43,37,32,.82);color:#fff;font-size:13px;padding:9px 15px;border-radius:999px;white-space:nowrap;transition:opacity .5s;pointer-events:none}
 #ayuda.fuera{opacity:0}
-#ficha{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(340px,calc(100vw - 32px));background:var(--papel);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.22);display:none}
+#ficha-viejo-no{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(340px,calc(100vw - 32px));background:var(--papel);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.22);display:none}
 #ficha.ver{display:block}
 #ficha b{display:block;font-size:16px}
 #ficha span{display:block;color:var(--suave);font-size:13px;margin:3px 0 11px}
@@ -39,6 +39,32 @@ canvas#c.drag{cursor:grabbing}
 @media (max-width:520px){#plano svg{width:112px}}
 @media (max-height:500px){#plano svg{width:84px}#plano{padding:6px}#top{padding:7px 13px;font-size:13px}#giro{padding:9px 13px}}
 html,body{-webkit-touch-callout:none}
+/* 10-nov · botones al lado de cada pieza y ficha al acercarse */
+#puntos{position:fixed;inset:0;pointer-events:none;z-index:2}
+.pto{position:absolute;left:0;top:0;margin:-17px 0 0 -17px;display:flex;align-items:center;gap:8px;border:0;background:none;padding:0;cursor:pointer;pointer-events:auto;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;font:600 13px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tinta)}
+.pto.ver{opacity:1;visibility:visible}
+.pto i{position:relative;flex:none;width:34px;height:34px;border-radius:50%;background:var(--papel);box-shadow:0 3px 12px rgba(0,0,0,.28)}
+.pto i::before,.pto i::after{content:'';position:absolute;left:50%;top:50%;width:13px;height:2px;margin:-1px 0 0 -6.5px;background:var(--tinta);border-radius:1px}
+.pto i::after{transform:rotate(90deg)}
+.pto i{animation:late 2.4s ease-out infinite}
+@keyframes late{0%{box-shadow:0 3px 12px rgba(0,0,0,.28),0 0 0 0 rgba(246,241,231,.75)}70%{box-shadow:0 3px 12px rgba(0,0,0,.28),0 0 0 14px rgba(246,241,231,0)}100%{box-shadow:0 3px 12px rgba(0,0,0,.28),0 0 0 0 rgba(246,241,231,0)}}
+.pto span{background:var(--papel);border-radius:999px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.2);white-space:nowrap;transition:opacity .2s}
+.pto.lejos span{opacity:0}
+.pto:hover span{opacity:1}
+.pto:hover i{background:#fff}
+body.enfoque #ayuda,body.enfoque #puntos,body.enfoque #plano{opacity:0;pointer-events:none}
+#puntos,#plano{transition:opacity .3s}
+#ficha{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));width:min(380px,calc(100vw - 32px));background:var(--papel);border-radius:18px;padding:18px 18px 12px;box-shadow:0 10px 40px rgba(0,0,0,.28);z-index:3;
+  opacity:0;visibility:hidden;transform:translate(-50%,24px);transition:opacity .35s,transform .45s cubic-bezier(.2,.8,.2,1),visibility .35s}
+#ficha.ver{opacity:1;visibility:visible;transform:translate(-50%,0)}
+#ficha em{display:block;font-style:normal;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acento);margin-bottom:6px}
+#ficha b{display:block;font-size:19px;line-height:1.2;padding-right:26px}
+#ficha>span{display:block;color:var(--suave);font-size:14px;line-height:1.45;margin:6px 0 14px}
+#ficha a{display:flex;justify-content:center;gap:6px;text-align:center;background:var(--tinta);color:#fff;text-decoration:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600}
+#ficha a span{display:inline;color:inherit;margin:0;font-size:inherit}
+#ficha button{position:absolute;right:8px;top:8px;border:0;background:none;font-size:22px;color:var(--suave);padding:6px 10px;cursor:pointer}
+#ficha button.seguir{position:static;display:block;width:100%;font-size:14px;font-weight:600;padding:12px 0 4px;color:var(--suave)}
+@media (pointer:coarse){#ficha{bottom:calc(16px + env(safe-area-inset-bottom))}body.enfoque #stick{opacity:0}}
 </style></head>
 <body>
 <canvas id="c"></canvas>
@@ -47,10 +73,11 @@ html,body{-webkit-touch-callout:none}
 <div id="stick"><i></i></div>
 <button id="giro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8"/></svg><span>Activar giroscopio</span></button>
 <div id="ayuda"></div>
-<div id="ficha"><button aria-label="Cerrar">×</button><b></b><span></span><a href="#">Ver este conjunto</a></div>
+<div id="puntos"></div>
+<div id="ficha"><button aria-label="Cerrar">×</button><em></em><b></b><span></span><a href="#">Personalizar con mis fotos <span aria-hidden="true">→</span></a><button type="button" class="seguir">Seguir paseando</button></div>
 <div id="carga"><p>Abriendo la casa…</p><div id="barra"><i></i></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="gltf-loader.js"></script>
-<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Toca un cuadro para verlo' : 'Anda con WASD o las flechas · Arrastra para mirar · Toca un cuadro para ver el conjunto';</script>
-<script src="casa.js?v=d096e00f"></script>
+<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Toca el + de un cuadro para verlo de cerca' : 'Anda con WASD o las flechas · Arrastra para mirar · Toca el + de un cuadro para verlo de cerca';</script>
+<script src="casa.js?v=50880e00"></script>
 </body></html>

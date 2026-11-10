@@ -116,7 +116,7 @@ function carga(z){
 /* ── andar ── */
 const pos = { x:70, z:537 }; let yaw = -Math.PI/2, pitch = -.02;
 const tecla = {}; let joy = { x:0, y:0 }, pinta = true, mover = null;
-addEventListener('keydown', e => { tecla[e.code] = true; if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
+addEventListener('keydown', e => { tecla[e.code] = true; if(/^(Key[WASD]|Arrow)/.test(e.code)){ vuelo = null; if(enFoco) ficha(null); } if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
 addEventListener('keyup', e => { tecla[e.code] = false; });
 addEventListener('blur', () => { for(const k in tecla) tecla[k] = false; });
 function fueraAyuda(){ $('#ayuda').classList.add('fuera'); }
@@ -144,7 +144,7 @@ canvas.addEventListener('pointerdown', e => {
   dedos.set(e.pointerId, { modo, x:e.clientX, y:e.clientY, x0:e.clientX, y0:e.clientY, t:performance.now() });
   try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
   if(modo === 'stick') stickEn(e.clientX, e.clientY); else canvas.classList.add('drag');
-  mover = null; fueraAyuda();
+  mover = null; vuelo = null; fueraAyuda();
 });
 canvas.addEventListener('pointermove', e => {
   const d = dedos.get(e.pointerId); if(!d) return;
@@ -200,7 +200,7 @@ function toque(e){
   ray.setFromCamera(v, camera);
   const h = ray.intersectObjects(fotos, false)[0];
   /* el cuadro tiene que ser lo primero que se ve: si hay una pared antes, no cuenta */
-  if(h && h.distance < 720 && visible(h.point)) return ficha(h.object.userData.placa);
+  if(h && h.distance < 720 && visible(h.point)){ const g = grupos.find(q => q.mallas.includes(h.object)); if(g) return enfoca(g); }
   ficha(null);
   const d = ray.ray.direction;
   if(d.y < -.05){ const t = -camera.position.y/d.y; mover = { x:camera.position.x+d.x*t, z:camera.position.z+d.z*t, n:0 }; }
@@ -211,16 +211,86 @@ function visible(p){
     if(caja.some(b => b[3]-b[1] <= 14 || b[2]-b[0] <= 14 ? (x > b[0] && x < b[2] && z > b[1] && z < b[3]) : false)) return false; }
   return true;
 }
-function ficha(p){
-  const f = $('#ficha'); if(!p){ f.classList.remove('ver'); return; }
-  const n = datos.placas.filter(q => q.set === p.set).length, a = f.querySelector('a');
-  const T = { iman:[`${n} imanes en la puerta de la nevera`, 'iman.html?conjunto=N09', 'Ver los imanes'],
-              sobremesa:['Lámina de metal con peana de bambú', 'sobremesa.html', 'Ver el sobremesa'] }[p.set]
-    || [`${n} ${n === 1 ? 'pieza' : 'piezas'} de metal, colgadas con imán`, `cuadro.html?pared=${p.set}`, 'Ver este conjunto'];
-  f.querySelector('b').textContent = p.nombre; f.querySelector('span').textContent = T[0]; a.href = T[1]; a.textContent = T[2];
+/* ── 10-nov (Marc): un botón al lado de cada pieza (conjunto, imanes, sobremesa). Al tocarlo la cámara se acerca
+   hasta tenerla de frente y sale la ficha con el botón que lleva al personalizador con eso ya puesto. ── */
+const QUE = {
+  iman:      g => ({ tag:'Imanes', tit:'Imanes para la nevera', txt:`${g.n} imanes de aluminio HD con tus fotos. Se pegan a la nevera y se cambian cuando quieras.`, url:'iman.html?conjunto=N09' }),
+  sobremesa: g => ({ tag:'Sobremesa', tit:'Foto de sobremesa', txt:'Aluminio HD con peana de bambú, para la mesita, la estantería o el escritorio.', url:'sobremesa.html' }),
+};
+const queEs = g => (QUE[g.set] || (g => ({ tag:g.nombre, tit:`Conjunto «${g.nombre}»`, txt:`${g.n} ${g.n === 1 ? 'cuadro' : 'cuadros'} de aluminio HD. Se cuelgan con imán, sin agujeros, y ya llevan los tamaños y la separación resueltos.`, url:`cuadro.html?pared=${g.set}` })))(g);
+let grupos = [], enFoco = null, vuelo = null;
+/* junta las placas en piezas: mismo conjunto y a menos de 70 cm entre bordes (un mismo conjunto puede salir en dos sitios) */
+function hazGrupos(){
+  scene.updateMatrixWorld(true);
+  const gs = [], b = new THREE.Box3(), nm = new THREE.Matrix3(), v = new THREE.Vector3();
+  fotos.forEach(o => {
+    const p = o.userData.placa; b.setFromObject(o); const c = b.getCenter(new THREE.Vector3());
+    let g = gs.find(q => q.set === p.set && q.caja.distanceToPoint(c) < 70);
+    if(!g){ g = { set:p.set, nombre:p.nombre, mallas:[], caja:new THREE.Box3(), c, n:0 }; gs.push(g); }
+    g.mallas.push(o); g.caja.union(b); g.n++;
+    if(!g.normal){ const a = o.geometry.attributes.normal; if(a){ nm.getNormalMatrix(o.matrixWorld); v.fromBufferAttribute(a, 0).applyMatrix3(nm); v.y = 0; if(v.lengthSq() > 1e-6) g.normal = v.clone().normalize(); } }
+  });
+  /* une los trozos del mismo conjunto que han quedado separados (bordes a menos de 70 cm) */
+  for(let i = 0; i < gs.length; i++) for(let j = gs.length - 1; j > i; j--){ const A = gs[i], B = gs[j];
+    if(A.set !== B.set) continue; const e = A.caja.clone().expandByScalar(70);
+    if(!e.intersectsBox(B.caja)) continue;
+    A.mallas.push(...B.mallas); A.caja.union(B.caja); A.n += B.n; A.normal = A.normal || B.normal; gs.splice(j, 1); j = gs.length; }
+  gs.forEach(g => {
+    g.c = g.caja.getCenter(new THREE.Vector3());
+    const s = salaEn(g.c.x, g.c.z) || salas[0], hacia = new THREE.Vector3((s.x0+s.x1)/2 - g.c.x, 0, (s.z0+s.z1)/2 - g.c.z);
+    if(!g.normal) g.normal = Math.abs(hacia.x) > Math.abs(hacia.z) ? new THREE.Vector3(Math.sign(hacia.x), 0, 0) : new THREE.Vector3(0, 0, Math.sign(hacia.z));
+    if(g.normal.dot(hacia) < 0) g.normal.negate();   // hacia dentro de la habitación
+    g.t = new THREE.Vector3(-g.normal.z, 0, g.normal.x);   // a lo largo de la pared
+    const sz = g.caja.getSize(new THREE.Vector3());
+    g.ancho = Math.abs(sz.x*g.t.x) + Math.abs(sz.z*g.t.z); g.alto = sz.y;
+    /* el botón va al lado, a la derecha de la pieza (mirándola), a media altura de su parte de arriba */
+    g.ancla = g.c.clone().addScaledVector(g.t, -(g.ancho/2 + 14)); g.ancla.y = g.c.y + g.alto*.25;
+    const q = queEs(g), el = document.createElement('button');
+    el.type = 'button'; el.className = 'pto'; el.innerHTML = `<i></i><span></span>`; el.querySelector('span').textContent = q.tag;
+    el.setAttribute('aria-label', 'Ver ' + q.tit);
+    el.addEventListener('click', e => { e.stopPropagation(); enfoca(g); });
+    $('#puntos').append(el); g.el = el;
+  });
+  grupos = gs; pinta = true;
+}
+/* vuela hasta tener la pieza de frente, que ocupe ~60 % de la pantalla */
+function enfoca(g){
+  ficha(null); fueraAyuda(); mover = null; enFoco = g;
+  const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2*Math.atan(Math.tan(vf/2)*camera.aspect);
+  /* la ficha tapa la parte de abajo: la pieza va en el hueco de encima (avail = parte de la altura libre) */
+  const avail = Math.max(.42, 1 - 310/innerHeight), tv = Math.tan(vf/2), th = Math.tan(hf/2);
+  const d = Math.max(95, Math.min(380, Math.max(g.alto/(2*tv*avail*.7), g.ancho/(2*th*.78))));
+  const fin = { x:g.c.x + g.normal.x*d, z:g.c.z + g.normal.z*d }; resuelve(fin);
+  const dx = g.c.x - fin.x, dz = g.c.z - fin.z;
+  let y1 = Math.atan2(-dx, -dz); while(y1 - yaw > Math.PI) y1 -= 2*Math.PI; while(y1 - yaw < -Math.PI) y1 += 2*Math.PI;
+  const p1 = Math.max(-.9, Math.min(.6, Math.atan2(g.c.y - OJO, Math.hypot(dx, dz)) - Math.atan((1 - avail)*.85*tv)));
+  vuelo = { t0:performance.now(), dur:1150, a:{ x:pos.x, z:pos.z, yaw, pitch }, b:{ x:fin.x, z:fin.z, yaw:y1, pitch:p1 }, g };
+  document.body.classList.add('enfoque'); pinta = true;
+}
+function ficha(g){
+  const f = $('#ficha');
+  if(!g){ f.classList.remove('ver'); document.body.classList.remove('enfoque'); enFoco = null; pinta = true; return; }
+  const q = queEs(g);
+  f.querySelector('em').textContent = NOMBRES[(salaEn(g.c.x, g.c.z) || {}).id] || '';
+  f.querySelector('b').textContent = q.tit; f.querySelector('span').textContent = q.txt; f.querySelector('a').href = q.url;
   f.classList.add('ver');
 }
 $('#ficha button').onclick = () => ficha(null);
+$('#ficha .seguir').onclick = () => ficha(null);
+/* coloca los botones encima de la imagen 3D: solo los de piezas que se ven (de frente, cerca y sin pared delante) */
+const _v = new THREE.Vector3();
+function ponPuntos(){
+  if(!grupos.length) return;
+  const W = innerWidth, H = innerHeight, cam = camera.position;
+  grupos.forEach(g => {
+    _v.copy(g.ancla).project(camera);
+    const dist = Math.hypot(g.c.x - cam.x, g.c.z - cam.z);
+    const deFrente = (cam.x - g.c.x)*g.normal.x + (cam.z - g.c.z)*g.normal.z > 20;
+    const ve = !vuelo && g !== enFoco && _v.z < 1 && Math.abs(_v.x) < 1.05 && Math.abs(_v.y) < 1.05 && dist < 760 && deFrente && visible(g.c.clone().addScaledVector(g.normal, 4));
+    g.el.classList.toggle('ver', ve);
+    if(ve){ g.el.style.transform = `translate(${(_v.x+1)/2*W}px,${(1-_v.y)/2*H}px)`; g.el.classList.toggle('lejos', dist > 430); }
+  });
+}
 
 /* plano pequeño: toca una habitación para ir */
 const CENTRO = { pasillo:[120, 537, -Math.PI/2], salon:[640, 760, -2.1], cocina:[230, 800, 1.2], dormitorio:[300, 340, 1.4], despacho:[640, 360, -1.4], terraza:[800, 1120, 2.4] };
@@ -250,6 +320,9 @@ function bucle(t){
   if(m > .02){ const k = Math.min(1, m)/m*VEL*dt, s = Math.sin(yaw), c = Math.cos(yaw);
     pos.x += (-s*f + c*l)*k; pos.z += (-c*f - s*l)*k; resuelve(pos); balanceo += dt*9; pinta = true; }
   fuera(t/1000);
+  if(vuelo){ const k = Math.min(1, (performance.now() - vuelo.t0)/vuelo.dur), e = k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3)/2, A = vuelo.a, B = vuelo.b;
+    pos.x = A.x + (B.x-A.x)*e; pos.z = A.z + (B.z-A.z)*e; yaw = A.yaw + (B.yaw-A.yaw)*e; pitch = A.pitch + (B.pitch-A.pitch)*e; pinta = true;
+    if(k >= 1){ const g = vuelo.g; vuelo = null; ficha(g); } }
   if(!pinta) return; pinta = false;
   camera.position.set(pos.x, OJO + Math.sin(balanceo)*.9, pos.z);
   camera.rotation.set(pitch, yaw, 0, 'YXZ');
@@ -257,6 +330,7 @@ function bucle(t){
   const s = salaEn(pos.x, pos.z);
   if(s && s.id !== actual){ actual = s.id; $('#top').textContent = NOMBRES[s.id]; document.querySelectorAll('#plano rect').forEach(r => r.classList.toggle('on', r.dataset.id === s.id)); }
   renderer.render(scene, camera);
+  ponPuntos();
 }
 /* ── Lo de fuera: flotadores con la marca en el mar, el logo hinchable, un globo y una avioneta con pancarta.
    No se hornea: luz propia (cielo + sol) y se mueve solo. Todo dentro del cilindro del cielo (r 5200 en 530,650). */
@@ -373,11 +447,12 @@ const fuera = (() => {
 })();
 
 /* para las capturas y las pruebas */
-window.CASA = { pos, datos, toque, scene, camera, mira(x, y, z){ const dx = x-pos.x, dz = z-pos.z; yaw = Math.atan2(-dx, -dz); pitch = Math.atan2(y-OJO, Math.hypot(dx, dz)); pinta = true; }, ir(x, z, y, p){ pos.x = x; pos.z = z; yaw = y; pitch = p || 0; pinta = true; }, get listo(){ return hechos === ZONAS.length; }, caja, resuelve, get salas(){ return salas; }, renderer };
+window.CASA = { pos, datos, toque, get grupos(){ return grupos; }, enfoca, scene, camera, mira(x, y, z){ const dx = x-pos.x, dz = z-pos.z; yaw = Math.atan2(-dx, -dz); pitch = Math.atan2(y-OJO, Math.hypot(dx, dz)); pinta = true; }, ir(x, z, y, p){ pos.x = x; pos.z = z; yaw = y; pitch = p || 0; pinta = true; }, get listo(){ return hechos === ZONAS.length; }, caja, resuelve, get salas(){ return salas; }, renderer };
 
 requestAnimationFrame(bucle);
 await carga('pasillo');
 await Promise.all(ZONAS.slice(1).map(carga));
+hazGrupos();
 const espera = () => { let n = 0; datos.placas.forEach(p => { if(encuadra(p)) n++; }); pinta = true; if(n < datos.placas.length) setTimeout(espera, 300); };
 espera();
 $('#carga').classList.add('fuera');
