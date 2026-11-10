@@ -302,11 +302,11 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     </div>
   </div>
   <div class="hang-steps">
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-1-protector.webp)"><b>1</b></div><div class="tx"><h4>Quita el protector</h4><p>Despegas el papel de la base adhesiva.</p><span class="time">2 segundos</span></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-2-base.webp)"><b>2</b></div><div class="tx"><h4>Pega la base</h4><p>Donde quieras el cuadro. Aprietas unos segundos y listo.</p><span class="time">5 segundos</span></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-3-acerca.webp)"><b>3</b></div><div class="tx"><h4>Acerca el cuadro</h4><p>El imán va detrás. Lo notarás engancharse solo.</p><span class="time">2 segundos</span></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-4-colgado.webp)"><b>4</b></div><div class="tx"><h4>Ya está colgado</h4><p>Lo enderezas con la mano. El imán queda oculto detrás.</p><span class="time">1 segundo</span></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-5-cambia.webp)"><b>↻</b></div><div class="tx"><h4>Cámbialo cuando quieras</h4><p>Lo despegas del imán y lo pones en otra base. Sin rastro.</p><span class="time">Siempre que quieras</span></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-1-protector.webp"><b>1</b></div><div class="tx"><h4>Quita el protector</h4><p>Despegas el papel de la base adhesiva.</p><span class="time">2 segundos</span></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-2-base.webp"><b>2</b></div><div class="tx"><h4>Pega la base</h4><p>Donde quieras el cuadro. Aprietas unos segundos y listo.</p><span class="time">5 segundos</span></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-3-acerca.webp"><b>3</b></div><div class="tx"><h4>Acerca el cuadro</h4><p>El imán va detrás. Lo notarás engancharse solo.</p><span class="time">2 segundos</span></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-4-colgado.webp"><b>4</b></div><div class="tx"><h4>Ya está colgado</h4><p>Lo enderezas con la mano. El imán queda oculto detrás.</p><span class="time">1 segundo</span></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-5-cambia.webp"><b>↻</b></div><div class="tx"><h4>Cámbialo cuando quieras</h4><p>Lo despegas del imán y lo pones en otra base. Sin rastro.</p><span class="time">Siempre que quieras</span></div></div>
   </div>
 </div></section>
 
@@ -314,9 +314,9 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 <section class="sec" id="para"><div class="c">
   <div class="center"><p class="tag">Para qué sirve</p><h2 class="h2">Una base en cada pared,<br><em>el cuadro donde quieras</em>.</h2></div>
   <div class="uses">
-    <div><div class="im" style="background-image:url(fotos/pdp/gen-intercambia.jpg)"></div><div class="bd"><h3>Cambiarlo de habitación</h3><p>Deja una base en el salón y otra en el dormitorio. El cuadro pasa de una a otra en segundos, sin hacer agujeros nuevos.</p></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/lugar-pasillo.jpg)"></div><div class="bd"><h3>Ir rotando las fotos</h3><p>Llega otra foto favorita y la cambias por la de siempre. La base se queda en la pared, lista para la siguiente.</p></div></div>
-    <div><div class="im" style="background-image:url(fotos/pdp/paso-2-base.webp)"></div><div class="bd"><h3>Tener uno de repuesto</h3><p>Por si te mudas, pintas la pared o quieres llevarte el cuadro a otra casa.</p></div></div>
+    <div><div class="im" data-bg="fotos/pdp/gen-intercambia.webp"></div><div class="bd"><h3>Cambiarlo de habitación</h3><p>Deja una base en el salón y otra en el dormitorio. El cuadro pasa de una a otra en segundos, sin hacer agujeros nuevos.</p></div></div>
+    <div><div class="im" data-bg="fotos/pdp/lugar-pasillo.webp"></div><div class="bd"><h3>Ir rotando las fotos</h3><p>Llega otra foto favorita y la cambias por la de siempre. La base se queda en la pared, lista para la siguiente.</p></div></div>
+    <div><div class="im" data-bg="fotos/pdp/paso-2-base.webp"></div><div class="bd"><h3>Tener uno de repuesto</h3><p>Por si te mudas, pintas la pared o quieres llevarte el cuadro a otra casa.</p></div></div>
   </div>
 </div></section>
 
@@ -424,5 +424,6 @@ const FAQ = [
 $('#faqList').innerHTML = FAQ.map((f,i) => `<details ${i ? '' : 'open'}><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join('');
 </script>
 <script src="carrito.js?v=0de0bab0"></script><script src="app.js?v=c1eb62d9" defer></script>
+<script src="lazy-bg.js?v=c4bf2642" defer></script>
 </body>
 </html>

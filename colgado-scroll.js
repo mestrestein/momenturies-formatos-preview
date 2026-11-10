@@ -12,7 +12,7 @@
   const SWAP = sec.hasAttribute('data-intercambio');
 
   const X = 22, Y = -14;                                   // donde va el cuadro principal (cm, sobre la luz de la ventana)
-  const P = Pared3D({ canvas, stage, foto:'fotos/entornos/salon-luz.jpg', fotoPx:[2304, 2236], pxPorCm:9.75,
+  const P = Pared3D({ canvas, stage, foto:'fotos/entornos/salon-luz.webp', fotoPx:[2304, 2236], pxPorCm:9.75,
     foco:{ x:X, y:Y, w:170, h:130 }, luz:[-90, 80, 170], blur:20, sombra:.3, fov:24 });
   const { E, cl, lerp } = P;
 

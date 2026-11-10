@@ -248,7 +248,7 @@ function paredEn(caja, roomId, wallId, peque, op = {}){
   const r = ENTORNOS.find(x => x.id === roomId), w = pared(wallId); if(!r || !w) return;
   const inicio = String(wallId).split('').reduce((a, c) => a + c.charCodeAt(0), 0);   // cada pared empieza por una foto distinta
   const fotoDe = k => STOCK[(inicio + k) % STOCK.length];
-  caja.innerHTML = `<div class="sala"><img alt="" src="fotos/entornos/${r.id}${peque ? '_thumb' : ''}.jpg"/>${w.pieces.map((p, k) => `<i class="mw" style="background-image:url(${fotoDe(k)})"></i>`).join('')}</div>`;
+  caja.innerHTML = `<div class="sala"><img alt="" src="fotos/entornos/${r.id}${peque ? '_thumb' : ''}.webp" decoding="async"/>${w.pieces.map((p, k) => `<i class="mw" style="background-image:url(${fotoDe(k)})"></i>`).join('')}</div>`;
   const img = $('img', caja), piezas = $$('.mw', caja), ppc = r.pxPerCm;
   const W = w.width * ppc, H = w.height * ppc, techo = Math.max(r.free ? r.free[1] : 0, r.h * .04);
   /* a lo ancho, centrada en el mueble (anchorX); a lo alto, en el hueco entre lo alto y el mueble, algo por debajo de la mitad */
@@ -295,7 +295,7 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   const nombre = e => Array.isArray(e) ? e[0] : e;
   /* pinta un estilo en una caja: la foto de Aitor tal cual, o la habitación vacía con su pared */
   const pintaEn = (caja, r, e, peque) => { if(Array.isArray(e)) paredEn(caja, e[1], e[2], peque, e[3]);
-    else { caja._pinta = null; caja.innerHTML = `<div class="sala"><div class="foto" style="background-image:url(fotos/pdp/lugar-${r[0]}.jpg)"></div></div>`; } };
+    else { caja._pinta = null; caja.innerHTML = `<div class="sala"><div class="foto" style="background-image:url(fotos/pdp/lugar-${r[0]}.webp)"></div></div>`; } };
   tabs.innerHTML = ROOMS.map((r, i) => `<button type="button" data-i="${i}">${r[1]}</button>`).join('');
   let room = 0;
   /* 10-nov: «Ver cómo queda en mi casa» abre Paredes de ensueño con esa habitación ya filtrada */
