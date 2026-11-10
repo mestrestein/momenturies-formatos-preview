@@ -190,6 +190,10 @@
 .zone-tab.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .txt-size{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--black)}
 .txt-size input{flex:1;min-width:0;accent-color:var(--black)}
+/* 10-nov · inclinación de la frase de delante */
+.txt-incl{margin-top:8px}
+.txt-rot0{flex:none;border:1px solid #d9d4cc;background:#fff;border-radius:999px;padding:5px 10px;font:600 12px inherit;color:var(--black);cursor:pointer}
+.txt-rot0:hover{border-color:var(--black)}
 
 /* selector de tipografía: un botón que se abre en una lista, cada opción escrita
    con SU PROPIA fuente y con el texto que el cliente ya ha escrito (o un ejemplo si

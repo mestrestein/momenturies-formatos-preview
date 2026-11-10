@@ -191,6 +191,11 @@
         <label class="txt-size"><span class="es">Tamaño</span><span class="en">Size</span>
           <input type="range" id="frontSizeRange" min="40" max="260" step="4" value="260"></label>
       </div>
+      <div class="txt-row txt-front txt-incl">
+        <label class="txt-size"><span class="es">Inclinación</span><span class="en">Tilt</span>
+          <input type="range" id="frontRotRange" min="-45" max="45" step="1" value="0"></label>
+        <button type="button" class="txt-rot0" id="frontRot0" aria-label="Sin inclinación">0°</button>
+      </div>
       <div class="deco-box txt-front" id="frontDecoBox"></div>
 
       <p class="config-label txt-sub txt-back"><span class="es">Frase detrás</span><span class="en">Back message</span></p>
@@ -1058,7 +1063,7 @@ function makePoster(){
            ptype:defaultType, mount:pr.hanger, format:fmt0, sizeKey:s0.k, sizeScale:1, price:s0.price,
            frontText:'', frontX:50, frontY:14, frontSize:62, frontFont:FONT_DEFAULT, frontDate:'',
            backText:'',  backX:50,  backY:50,  backSize:46,  backFont:FONT_DEFAULT,  backDate:'',
-           backZone:'bottom', backMax:200, frontMax:260, frontText2:'', backText2:'' };
+           backZone:'bottom', backMax:200, frontMax:260, frontRot:0, frontText2:'', backText2:'' };
 }
 
 function createPoster(){
@@ -1528,7 +1533,7 @@ function moveTextTo(mx,my){
   if(textDrag==='decoFront' || textDrag==='decoBack'){
     const f = textDrag==='decoFront', h = pickHit(mx,my,[f ? p.mesh : p.backPlane]); if(!h||!h.uv) return;
     const X = clampPct(h.uv.x*100), Y = clampPct((1-h.uv.y)*100);
-    if(f){ p.frontDecoX = X; p.frontDecoY = Y; applyFrontTexture(selected); document.querySelectorAll('#frontDecoBox [data-pos].active').forEach(b => b.classList.remove('active')); }
+    if(f){ p.frontDecoX = X; p.frontDecoY = Y; applyFrontRapido(selected); document.querySelectorAll('#frontDecoBox [data-pos].active').forEach(b => b.classList.remove('active')); }
     else { p.backDecoX = X; p.backDecoY = Y; applyBackText(selected); }
     return;
   }
@@ -1540,7 +1545,7 @@ function moveTextTo(mx,my){
   } else {
     const h = pickHit(mx,my,[p.mesh]); if(!h||!h.uv) return;
     p.frontX = clampPct(h.uv.x*100); p.frontY = clampPct((1-h.uv.y)*100);
-    applyFrontTexture(selected);
+    applyFrontRapido(selected);
   }
 }
 
@@ -1631,8 +1636,9 @@ const up3d = e=>{
   if(p2&&e.pointerId===p2.id)p2=null;
   if(pc<2)lpd=0;
   if(apId!==null&&e.pointerId===apId){
-    const wasText=!!textDrag;
+    const wasText=!!textDrag, eraDelante = textDrag === 'front' || textDrag === 'decoFront';
     drag=false; textDrag=null;
+    if(eraDelante) applyFrontTexture(selected);   // al soltar: miniatura y guardado
     if(compDrag){ compDrag=null; scheduleSave(); }
     try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
     apId=null;
@@ -2044,7 +2050,10 @@ function buildFrontCanvas(p, W, H){
     p.frontSize = sz/scl;   // a talla "sin escalar", igual que antes lo dejaba el slider
     x.font = fontCss(p.frontFont, sz);
     x.fillStyle = frontInk(p);
-    drawLines(x, fit.lines, px, py, sz*1.18, false);
+    /* 10-nov (Marc): la frase de delante se puede inclinar (de -45° a 45°), girando sobre su centro */
+    const rot = (p.frontRot || 0) * Math.PI / 180;
+    if(rot){ x.save(); x.translate(px, py); x.rotate(rot); drawLines(x, fit.lines, 0, 0, sz*1.18, false); x.restore(); }
+    else drawLines(x, fit.lines, px, py, sz*1.18, false);
   };
   if(FRONT_TEXT && p.frontText && p.frontText.trim()) frontLine(p.frontText, W*(p.frontX/100), H*(p.frontY/100));
   if(FRONT_TEXT && p.frontText2 && p.frontText2.trim()) frontLine(p.frontText2, W/2, H*(p.frontY < 50 ? .86 : .14));
@@ -2074,6 +2083,17 @@ function applyFrontTexture(idx){
   renderThumbs(); dirty3D = true;
 }
 
+let _rapidoRaf = 0, _rapidoIdx = -1;
+function applyFrontRapido(idx){
+  _rapidoIdx = idx; if(_rapidoRaf) return;
+  _rapidoRaf = requestAnimationFrame(() => {
+    _rapidoRaf = 0; const p = POSTERS[_rapidoIdx]; if(!p) return;
+    const c = buildFrontCanvas(p), t = p.frontMat.map;
+    if(t && t.isCanvasTexture && t.image && t.image.width === c.width && t.image.height === c.height){ t.image = c; t.needsUpdate = true; }
+    else { const tex = tune(new THREE.CanvasTexture(c)); p.frontMat.map = tex; p.frontMat.needsUpdate = true; if(t && t !== tex) t.dispose(); }
+    dirty3D = true;
+  });
+}
 function applyPhoto(idx, img, silent){
   POSTERS[idx].srcImg = img;
   applyFrontTexture(idx);
@@ -3248,13 +3268,23 @@ function syncFrontZoneUI(){
   const zona = p.frontY < 50 ? 'top' : 'bottom';
   document.querySelectorAll('#frontZoneTabs [data-zone]').forEach(b => { const on = b.dataset.zone === zona; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
   frontSizeRange.value = p.frontMax || 260;
+  const rr = document.getElementById('frontRotRange'); if(rr) rr.value = p.frontRot || 0;
 }
 document.querySelectorAll('#frontZoneTabs [data-zone]').forEach(b => b.addEventListener('click', () => {
   const p = POSTERS[selected]; if(!p) return;
   p.frontX = 50; p.frontY = b.dataset.zone === 'top' ? 14 : 86;
   syncFrontZoneUI(); renderTwo('front'); renderDeco('front'); applyFrontTexture(selected);
 }));
-frontSizeRange.addEventListener('input', () => { const p = POSTERS[selected]; if(!p) return; p.frontMax = +frontSizeRange.value; applyFrontTexture(selected); });
+frontSizeRange.addEventListener('input', () => { const p = POSTERS[selected]; if(!p) return; p.frontMax = +frontSizeRange.value; applyFrontRapido(selected); });
+frontSizeRange.addEventListener('change', () => applyFrontTexture(selected));
+const frontRotRange = document.getElementById('frontRotRange');
+frontRotRange.addEventListener('input', () => {
+  const p = POSTERS[selected]; if(!p) return;
+  let v = +frontRotRange.value; if(Math.abs(v) <= 2) v = 0;   // cerca de recto, se queda recto
+  p.frontRot = v; applyFrontRapido(selected);
+});
+frontRotRange.addEventListener('change', () => { syncFrontZoneUI(); applyFrontTexture(selected); });
+document.getElementById('frontRot0').addEventListener('click', () => { const p = POSTERS[selected]; if(!p) return; p.frontRot = 0; syncFrontZoneUI(); applyFrontTexture(selected); });
 const backSizeRange = document.getElementById('backSizeRange');
 function syncBackZoneUI(){
   const p = POSTERS[selected]; if(!p) return;
@@ -3315,8 +3345,33 @@ function typingOff(){
   panelEl.querySelectorAll('.typing-path').forEach(n => n.classList.remove('typing-path'));
   applySelection(); dirty3D = true;
 }
-panelEl.addEventListener('focusin', e => { if(e.target.matches(TXT_CAMPOS)) typingOn(e.target); });
-panelEl.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if(!a || !a.matches || !a.matches(TXT_CAMPOS)) typingOff(); }, 60));
+/* 10-nov (Marc): mientras se cambia algo del diseño (cualquier control del panel) el cuadro no se va para atrás */
+const enBloqueTexto = el => !!(el && panelEl.contains(el));
+let _toqueTexto = 0;
+panelEl.addEventListener('pointerdown', e => { if(enBloqueTexto(e.target)) _toqueTexto = Date.now(); }, true);
+/* sin barra de teclado (deslizadores, botones): el cuadro sigue grande, pero se quita la barra del móvil */
+function barraOff(){
+  if(!TYPING_BAR) return;
+  TYPING_BAR = false; editorRootEl.classList.remove('ed-typing'); panelEl.style.top = ''; typeOk.remove();
+  panelEl.querySelectorAll('.typing-path').forEach(n => n.classList.remove('typing-path'));
+  applySelection(); dirty3D = true;
+}
+function mirandoTexto(){ if(TYPING) return; TYPING = true; applySelection(); dirty3D = true; }
+panelEl.addEventListener('focusin', e => { if(e.target.matches(TXT_CAMPOS)) typingOn(e.target); else if(enBloqueTexto(e.target)){ barraOff(); mirandoTexto(); } });
+panelEl.addEventListener('focusout', () => setTimeout(() => {
+  const a = document.activeElement;
+  if(a && a.matches && a.matches(TXT_CAMPOS)) return;
+  if(enBloqueTexto(a) || Date.now() - _toqueTexto < 500){ barraOff(); return; }   // sigue en el bloque de Texto
+  typingOff();
+}, 60));
+/* tocar fuera del panel (la escena, las barras) devuelve el cuadro a su sitio, salvo que se esté arrastrando la frase */
+document.addEventListener('pointerdown', e => {
+  if(!TYPING || (panelEl.contains(e.target))) return;
+  /* tocar el propio cuadro tampoco lo devuelve a la pared */
+  const q = POSTERS[selected];
+  if(q && e.target === canvas){ const objs = [q.mesh]; if(q.backPlane) objs.push(q.backPlane); if(pickHit(e.clientX, e.clientY, objs)){ _toqueTexto = Date.now(); return; } }
+  setTimeout(() => { if(!textDrag && !(document.activeElement && document.activeElement.matches && document.activeElement.matches(TXT_CAMPOS))) typingOff(); }, 30);
+}, true);
 if(window.visualViewport){ visualViewport.addEventListener('resize', colocaBarra); visualViewport.addEventListener('scroll', colocaBarra); }
 
 /* Selector de tipografía: un botón + lista, sin <select> nativo porque no deja pintar
@@ -3834,7 +3889,7 @@ async function saveDesign(){
     const items = POSTERS.filter(p => !p.fuera).filter(p => p.srcImg || p.frontText || p.frontText2 || p.backText || p.backText2 || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
-      frontText2:p.frontText2, backText2:p.backText2, frontMax:p.frontMax,
+      frontText2:p.frontText2, backText2:p.backText2, frontMax:p.frontMax, frontRot:p.frontRot||0,
       frontColor:p.frontColor, frontDeco:p.frontDeco, frontDecoPos:p.frontDecoPos, frontDecoSize:p.frontDecoSize,
       frontDecoX:p.frontDecoX, frontDecoY:p.frontDecoY, frontDecoColor:p.frontDecoColor,
       backColor:p.backColor, backDeco:p.backDeco, backDecoSize:p.backDecoSize,
@@ -3898,7 +3953,7 @@ async function restoreDesign(saved){
         applyProductSize(p, pickSize(list, list.some(s => s.k === it.sizeKey) ? it.sizeKey : (pr.formats ? SIZE_DEFAULT : pr.def)), fmt);
       } else if(PRODUCTS.metal.mounts.includes(it.mount)) p.mount = it.mount;
       Object.assign(p, {
-        frontText2:it.frontText2||'', backText2:it.backText2||'', frontMax:it.frontMax||260,
+        frontText2:it.frontText2||'', backText2:it.backText2||'', frontMax:it.frontMax||260, frontRot:it.frontRot||0,
         frontColor:it.frontColor, frontDeco:it.frontDeco||'', frontDecoPos:it.frontDecoPos, frontDecoSize:it.frontDecoSize,
         frontDecoX:it.frontDecoX, frontDecoY:it.frontDecoY, frontDecoColor:it.frontDecoColor,
         backColor:it.backColor, backDeco:it.backDeco||'', backDecoSize:it.backDecoSize,
