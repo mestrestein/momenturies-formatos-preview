@@ -197,6 +197,25 @@ button{font-family:inherit;color:inherit}
 .faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:400;color:var(--terra);transition:transform .2s}
 .faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .faq details p{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+/* 10-nov: FAQ comunes (salen de preguntas.js, las mismas que en la portada) */
+.faq-cats{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.faq-cats button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .2s}
+.faq-cats button:hover{border-color:#bbb}
+.faq-cats button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.faq .fq-a{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+.faq .fq-a p{padding:0;margin:0 0 10px}
+.faq .fq-a ul,.faq .fq-a ol{margin:0 0 12px;padding-left:22px}
+.faq .fq-a li{margin:4px 0}
+.faq .fq-a b{color:var(--ink)}
+.faq .fq-a a{color:var(--ink);text-decoration:underline}
+.faq .fq-nota{background:var(--cream);border-radius:10px;padding:10px 14px;font-size:14px}
+.faq .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+.faq .fq-tabla th,.faq .fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.faq .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.faq .fq-vs td:first-child{background:var(--cream);color:var(--ink)}
+.faq .fq-vs thead th:first-child{color:var(--terra)}
+.faq .fq-tam .f th{padding-top:14px;color:var(--ink)}
+@media(max-width:700px){.faq-cats{flex-wrap:nowrap;overflow-x:auto;margin:20px -16px 0;padding:0 16px;scrollbar-width:none}.faq-cats button{white-space:nowrap;flex:none}}
 .help{margin-top:26px;background:var(--cream);border-radius:18px;padding:22px}
 .help b{font-size:16px}
 .help p{font-size:14.5px;color:var(--ink2);margin-top:6px;line-height:1.5}
@@ -325,6 +344,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   <div>
     <p class="tag">Preguntas frecuentes</p><h2 class="h2">Todo lo que nos <em>preguntan</em>.</h2>
     <p class="lead">Y si te queda alguna duda, escríbenos: contestamos personas, no robots.</p>
+    <div class="faq-cats" id="faqCats"></div>
     <div class="help"><b>¿Hablamos?</b><p>Escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a> o desde <a href="contacto.html">contacto</a>.</p></div>
   </div>
   <div class="faq" id="faqList"></div>
@@ -409,20 +429,9 @@ slides.addEventListener('scroll', () => requestAnimationFrame(markSlide));
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => goSlide(cur + +b.dataset.go));
 markSlide();
 
-/* ═════ FAQ ═════ */
-const FAQ = [
-  ['¿Cuánto peso aguanta?','Hasta 1 kg. Da de sobra para un cuadro mediano, una lámina con marco ligero o un espejo pequeño. Para algo más pesado, escríbenos y lo vemos.'],
-  ['¿Qué puedo colgar, además de vuestros cuadros?','Casi cualquier cosa plana de hasta 1 kg: cuadros y láminas de otras tiendas, espejos pequeños, pizarras, corchos, calendarios o dibujos. El imán va detrás de lo que cuelgas y la base, en la pared.'],
-  ['¿Qué lleva cada colgador?','Las dos piezas: el imán, que va detrás del cuadro, y la base adhesiva, que va en la pared. Al acercarlos se enganchan solos.'],
-  ['¿Cuál elijo, el grande o el pequeño?','El grande (8×8 cm) para los cuadros grandes y el pequeño (2×2 cm) para los pequeños. Si dudas, escríbenos con la medida de tu cuadro y te decimos cuál.'],
-  ['¿Mis cuadros de Momenturies ya lo llevan?','Sí. Cada cuadro llega con su colgador incluido. Este es para colgar otras cosas, tener bases de más o uno de repuesto.'],
-  ['¿En qué paredes se puede pegar la base?','En paredes lisas y limpias: pintura plástica, azulejo, madera lacada, cristal o puertas de armario. En gotelé muy marcado, papel pintado que se despega o pintura recién dada (menos de 3 semanas) no te lo recomendamos. Si dudas, escríbenos con una foto de tu pared.'],
-  ['¿Deja marca al quitarlo?','No. El cuadro se separa del imán sin esfuerzo y la base adhesiva se retira tirando despacio, en paralelo a la pared. No quedan agujeros ni marcas de taladro.'],
-  ['¿Cuánto tarda en llegar?','Sale en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
-  ['¿Puedo devolverlo?','Sí. Como no está personalizado, tienes 14 días desde que lo recibes para devolverlo. Escríbenos y te contamos cómo.'],
-];
-$('#faqList').innerHTML = FAQ.map((f,i) => `<details ${i ? '' : 'open'}><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join('');
 </script>
+<script src="preguntas.js?v=0d363e14"></script>
+<script>/* 10-nov: FAQ comunes */ mmPintaFaq({ chips: document.getElementById('faqCats'), lista: document.getElementById('faqList'), grupos: false, ficha: 'colgador' });</script>
 <script src="carrito.js?v=0de0bab0"></script><script src="app.js?v=c1eb62d9" defer></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
 </body>
