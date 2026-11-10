@@ -2491,12 +2491,25 @@ function photoQuality(p){
   return Math.min(cw.sw / W, cw.sh / H);
 }
 const LOWRES_MALA = 0.25;   // 9-nov (Marc): aviso solo con fotos muy muy pequeñas (< 75 ppp a su tamaño)
+/* 10-nov (Marc): alerta amarilla en las que mejoramos con IA (no llegan a 300 ppp a su tamaño): encuadre y carrito */
+const MEJORA_IA = 0.98;
+function mejoraDe(p){ if(!p || !p.srcImg) return null; const q = photoQuality(p); return q < LOWRES_MALA ? 'mala' : q < MEJORA_IA ? 'ia' : null; }
+function avisoIA(p, corto){
+  const m = mejoraDe(p); if(!m) return '';
+  if(m === 'mala') return `<span class="ia-aviso mala"><span class="es">Foto muy pequeña: la mejoramos con IA, pero puede notarse</span><span class="en">Very small photo: we enhance it with AI, but it may show</span></span>`;
+  return `<span class="ia-aviso"><span class="es">✨ La mejoramos con IA antes de imprimirla</span><span class="en">✨ We enhance it with AI before printing</span></span>`;
+}
 function updateCropQuality(){
   const el = document.getElementById('cropQuality'); if(!el) return;
   const p = POSTERS[selected];
-  if(!p || !p.srcImg || photoQuality(p) >= LOWRES_MALA){ el.hidden = true; return; }
+  const m = mejoraDe(p);
+  if(!m){ el.hidden = true; return; }
   const d = sizeOf(p).d, med = (isLand(p) ? [d[1],d[0]] : d).map(cm).join('×');
-  el.hidden = false;
+  el.hidden = false; el.classList.toggle('mala', m === 'mala');
+  if(m === 'ia'){
+    el.innerHTML = `<span class="es"><b>✨ Mejoraremos esta foto con IA.</b> Para que salga nítida a ${med} cm, antes de imprimirla la ampliamos con inteligencia artificial. No tienes que hacer nada.</span><span class="en"><b>✨ We'll enhance this photo with AI.</b> So it prints sharp at ${med} cm, we upscale it with AI before printing. Nothing to do on your side.</span>`;
+    return;
+  }
   el.innerHTML = `<span class="es"><b>Esta foto es muy pequeña para ${med} cm.</b> Nosotros la mejoramos antes de imprimirla, pero al ser tan pequeña el resultado puede verse afectado. Si tienes la original o eliges un tamaño menor, saldrá mejor.</span><span class="en"><b>This photo is very small for ${med} cm.</b> We enhance it before printing, but being so small the result may be affected. The original photo or a smaller size will look better.</span>`;
 }
 
@@ -3616,7 +3629,7 @@ function coRenderSum(){
     const mount = pr.mounts ? ' · ' + (MOUNTS[mountOf(p)]||{}).label : '';
     return `<div class="co-sum-line">
       ${p.thumb ? `<img class="co-sum-thumb" src="${p.thumb}" alt="">` : '<div class="co-sum-thumb"></div>'}
-      <span class="co-sum-txt"><b>${pr.name}</b><small>${dimsLabel(p)}${mount}</small>${coFrase(p)}</span>
+      <span class="co-sum-txt"><b>${pr.name}</b><small>${dimsLabel(p)}${mount}</small>${coFrase(p)}${avisoIA(p)}</span>
       <span class="co-sum-amt">${eur(p.price||0)}</span></div>`;
   }).join('');
   const dto = coDiscount();
@@ -3803,7 +3816,7 @@ async function saveDesign(){
     const conFoto = POSTERS.filter(p => p.srcImg), piezas = WALL ? POSTERS : conFoto;
     const bruto = piezas.reduce((s, p) => s + (p.price || 0), 0), tramo = PACK_TIERS.find(t => piezas.length >= t.n), pct = tramo ? tramo.pct : 0;
     const dto = Math.round(bruto * pct) / 100;
-    const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), frase: fraseDe(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg })),
+    const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), frase: fraseDe(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg, mejora: mejoraDe(p) })),
       bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
     if(window.mmEstado && conFoto.length) mmEstado('editor', conFoto.length + ' piezas');

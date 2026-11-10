@@ -63,6 +63,7 @@
     '.mc-l span{font-size:13px;color:#888}' +
     '.mc-l .fr{display:block;margin-top:3px;font-size:12.5px;font-style:italic;color:#6b5a48;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}' +
     '.mc-l em{font-style:normal;font-weight:700;font-size:15px;white-space:nowrap}' +
+    '.mc-ia{display:inline-block;margin-top:5px;padding:3px 8px;border-radius:6px;font-size:11.5px;line-height:1.35;font-weight:600;font-style:normal;background:#fff4cc;border:1px solid #f0d77a;color:#6b5200}.mc-ia.mala{background:#fde9e2;border-color:#f0b9a6;color:#8a2d14}' +
     '.mc-aviso{margin:14px 0;background:#fdf6e9;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.45;color:#6b4e16}' +
     '.mc-foot{border-top:1px solid #eee;padding:18px 22px 22px}' +
     '.mc-fila{display:flex;justify-content:space-between;font-size:14px;color:#555;margin-bottom:8px}' +
@@ -124,7 +125,8 @@
       '<div class="mc-envio">' + envio + '<i><u style="width:' + Math.min(100, r.total / ENVIO_GRATIS * 100) + '%"></u></i></div>' +
       (r.pared ? '<div class="mc-pared">Pared «' + esc(r.pared) + '»</div>' : '') +
       r.lineas.map(function (l) {
-        return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : (l.sinFoto ? ' style="background:#fff;outline:1.5px dashed #cfc6b8;outline-offset:-1.5px"' : '')) + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + (l.sinFoto ? ' · <i style="color:#b3412a;font-style:normal">sin foto</i>' : '') + '</span>' + (l.frase ? '<span class="fr">«' + esc(l.frase) + '»</span>' : '') + '</div><em>' + eur(l.precio) + '</em></div>';
+        return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : (l.sinFoto ? ' style="background:#fff;outline:1.5px dashed #cfc6b8;outline-offset:-1.5px"' : '')) + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + (l.sinFoto ? ' · <i style="color:#b3412a;font-style:normal">sin foto</i>' : '') + '</span>' + (l.frase ? '<span class="fr">«' + esc(l.frase) + '»</span>' : '') +
+          (l.mejora === 'ia' ? '<i class="mc-ia">✨ La mejoramos con IA antes de imprimirla</i>' : l.mejora === 'mala' ? '<i class="mc-ia mala">Foto muy pequeña: la mejoramos con IA, pero puede notarse</i>' : '') + '</div><em>' + eur(l.precio) + '</em></div>';
       }).join('') +
       (r.faltan > 0 ? '<div class="mc-aviso">' + (r.faltan === 1 ? 'Falta 1 foto' : 'Faltan ' + r.faltan + ' fotos') + ' para completar la pared. Termínala en el editor para poder pedirla.</div>' : '') +
       '</div><div class="mc-foot">' +

@@ -692,3 +692,7 @@ button{color:inherit}
 /* 9-nov: aviso de resolución en el encuadre */
 .crop-quality{margin:10px 0 0;padding:10px 12px;border-radius:8px;font-size:12.5px;line-height:1.5;background:#fff4cc;border:1px solid #f0d77a;color:#6b5200}
 .crop-quality b{font-weight:700}
+.crop-quality.mala{background:#fde9e2;border-color:#f0b9a6;color:#8a2d14}
+/* 10-nov · alerta de mejora con IA en el resumen del carrito */
+.ia-aviso{display:inline-block;margin-top:5px;padding:3px 8px;border-radius:6px;font-size:11.5px;line-height:1.35;font-weight:600;background:#fff4cc;border:1px solid #f0d77a;color:#6b5200}
+.ia-aviso.mala{background:#fde9e2;border-color:#f0b9a6;color:#8a2d14}
