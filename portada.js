@@ -298,7 +298,11 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
     else { caja._pinta = null; caja.innerHTML = `<div class="sala"><div class="foto" style="background-image:url(fotos/pdp/lugar-${r[0]}.jpg)"></div></div>`; } };
   tabs.innerHTML = ROOMS.map((r, i) => `<button type="button" data-i="${i}">${r[1]}</button>`).join('');
   let room = 0;
-  const estilo = k => { const r = ROOMS[room]; pintaEn(big, r, r[5][k]); [...est.children].forEach((b, j) => b.classList.toggle('on', j === k)); };
+  /* 10-nov: «Ver cómo queda en mi casa» abre Paredes de ensueño con esa habitación ya filtrada */
+  const TIPO = { salon:'salon', dormitorio:'dormitorio', comedor:'comedor', pasillo:'aparador', escalera:'escalera', despacho:'rincon' };
+  const cta = $('#ecCta');
+  const estilo = k => { const r = ROOMS[room]; pintaEn(big, r, r[5][k]); [...est.children].forEach((b, j) => b.classList.toggle('on', j === k));
+    if(cta) cta.href = 'paredes.html' + (TIPO[r[0]] ? '#habitacion=' + TIPO[r[0]] : ''); };
   const show = i => {
     room = i; const r = ROOMS[i];
     $('#ecTit').textContent = r[2]; $('#ecTxt').textContent = r[3]; $('#ecTip').innerHTML = r[4];
@@ -348,8 +352,10 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
   /* primero las que más lucen de lejos; detrás, el resto de lo que hay en stock */
   const PRIMERO = ['W27', 'W42', 'W21', 'W53', 'W39', 'W25', 'W47', 'W09', 'W20', 'W31', 'W56', 'W28'];
   const orden = w => { const k = PRIMERO.indexOf(w.id); return k < 0 ? 100 + w.n : k; };
-  const lista = WALLS.filter(w => !w.soldOut && w.n >= 3).sort((a, b) => orden(a) - orden(b));
-  riel.innerHTML = lista.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}"><div class="img" style="background-image:url(fotos/paredes/${w.id}-1.webp)"></div><b>${w.name}</b><span>${w.n} cuadros · <s>${eur(w.price)}</s>${eur(neto(w))}<em>-${pctDe(w.n)} %</em></span></a>`).join('');
+  /* 10-nov: cada tarjeta es la pared en su habitación, vista de lejos (fotos de Paredes de ensueño), y abre el editor con esa pared y ese entorno */
+  const ENS = window.MOMENTURIES_ENSUENO || {};
+  const lista = WALLS.filter(w => !w.soldOut && w.n >= 3 && !w.dup && ENS[w.id]).sort((a, b) => orden(a) - orden(b));
+  riel.innerHTML = lista.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}&entorno=${ENS[w.id][0]}"><div class="img"><img loading="lazy" alt="${w.name}: ${w.n} cuadros de aluminio colgados en la pared" src="fotos/ensueno/${w.id}-${ENS[w.id][0]}.webp"/></div><b>${w.name}</b><span>${w.n} cuadros · <s>${eur(w.price)}</s>${eur(neto(w))}<em>-${pctDe(w.n)} %</em></span></a>`).join('');
   $$('.pw-ctrl button').forEach(b => b.addEventListener('click', () => riel.scrollBy({ left: +b.dataset.d * riel.clientWidth * .8, behavior:'smooth' })));
 })();
 
@@ -357,13 +363,14 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
 /* ═════ ¿CUÁNTAS FOTOS?: + y − y salen las paredes de ese número (las que hay en stock) ═════ */
 (function(){
   const r = $('#cuantas'); if(!r) return;
-  const hay = WALLS.filter(w => !w.soldOut);
+  const ENS = window.MOMENTURIES_ENSUENO || {};
+  const hay = WALLS.filter(w => !w.soldOut && !w.dup && ENS[w.id]);
   const nums = [...new Set(hay.map(w => w.n))].sort((a, b) => a - b);
   let k = Math.max(0, nums.indexOf(4));
   const pinta = () => {
     const n = nums[k]; $('.cu-num b', r).textContent = n;
     const ws = hay.filter(w => w.n === n).slice(0, 6);
-    $('.cu-g', r).innerHTML = ws.length ? ws.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}"><div class="img" style="background-image:url(fotos/paredes/${w.id}-1.webp)"></div><b>${w.name}</b><span>${w.n} ${w.n > 1 ? 'cuadros' : 'cuadro'}<i class="pz">${pctDe(w.n) ? `<s>${eur(w.price)}</s>` : ''}${eur(neto(w))}${pctDe(w.n) ? `<em>-${pctDe(w.n)} %</em>` : ''}</i></span></a>`).join('')
+    $('.cu-g', r).innerHTML = ws.length ? ws.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}&entorno=${ENS[w.id][0]}"><div class="img"><img loading="lazy" alt="${w.name}: ${w.n} ${w.n > 1 ? 'cuadros' : 'cuadro'} de aluminio colgados en la pared" src="fotos/ensueno/${w.id}-${ENS[w.id][0]}.webp"/></div><b>${w.name}</b><span>${w.n} ${w.n > 1 ? 'cuadros' : 'cuadro'}<i class="pz">${pctDe(w.n) ? `<s>${eur(w.price)}</s>` : ''}${eur(neto(w))}${pctDe(w.n) ? `<em>-${pctDe(w.n)} %</em>` : ''}</i></span></a>`).join('')
       : '<p class="vacio">Para ese número aún no hay paredes con existencias.</p>';
   };
   $$('.cu-num button', r).forEach(b => b.onclick = () => { k = Math.max(0, Math.min(nums.length - 1, k + +b.dataset.d)); pinta(); });
