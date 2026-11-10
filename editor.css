@@ -339,7 +339,18 @@ html.ed-locked #ptypeLabel{display:none}
 .co-sum-txt b{display:block;font-size:13px;font-weight:600}
 .co-sum-txt small{font-size:11.5px;color:var(--mid)}
 .co-sum-txt .co-sum-frase{display:block;margin-top:3px;font-size:12px;font-style:italic;color:#6b5a48;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.co-sum-amt{font-size:13.5px;font-weight:600;white-space:nowrap}
+.co-sum-amt{font-size:13.5px;font-weight:600;white-space:nowrap;text-align:right}
+/* 10-nov · quitar del carrito y volver a ponerlo */
+.co-quitar{display:block;margin:4px 0 0 auto;padding:0;border:0;background:none;font:500 11.5px/1.2 inherit;color:var(--mid);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.co-quitar:hover{color:#b3412a}
+.co-sum-line.fuera{opacity:1}
+.co-sum-line.fuera .co-sum-thumb{filter:grayscale(1);opacity:.45}
+.co-sum-line.fuera .co-sum-txt{color:#a39b8f}
+.co-sum-line.fuera .co-sum-txt b{color:#a39b8f;text-decoration:line-through}
+.co-reponer{flex:none;border:1px solid #1a1a1a;background:#fff;color:#1a1a1a;border-radius:999px;padding:7px 12px;font:600 12px inherit;cursor:pointer;white-space:nowrap}
+.co-reponer:hover{background:#1a1a1a;color:#fff}
+.co-pay:disabled{opacity:.35;cursor:not-allowed}
+.pv-thumb.fuera{filter:grayscale(1);opacity:.4}
 .co-sum-rule{height:1px;background:var(--gray2);margin:12px 0}
 .co-sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:13.5px;color:var(--mid)}
 .co-sum-row.total{font-size:17px;font-weight:700;color:var(--black);padding-top:10px}

@@ -2276,7 +2276,7 @@ function renderThumbs(){
   thumbsEl.innerHTML='';
   POSTERS.forEach((p,i)=>{
     const t = document.createElement('div');
-    t.className = 'pv-thumb' + (isLand(p)?' landscape':'') + (i===selected && panelOpen ? ' active' : '');
+    t.className = 'pv-thumb' + (isLand(p)?' landscape':'') + (i===selected && panelOpen ? ' active' : '') + (p.fuera ? ' fuera' : '');   // fuera = quitado del carrito, en gris unos minutos
     if(p.thumb){ t.style.backgroundImage = `url(${p.thumb})`; }
     else { t.innerHTML = '<span class="pv-thumb-cam">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+'<path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2L8 5h8l1.5 2h2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/>'+'<circle cx="12" cy="12.5" r="3.2"/></svg>'+'</span>'; }
     /* 3-nov (Aitor no encontraba cómo quitar un cuadro): en un conjunto la X de un hueco vacío quita el cuadro
@@ -2495,14 +2495,18 @@ const LOWRES_MALA = 0.25;   // 9-nov (Marc): aviso solo con fotos muy muy peque�
    Texto en positivo («Retoque profesional incluido») para no perder la compra; el «?» explica que puede cambiar algún detalle. */
 const MEJORA_IA = 0.98;
 function mejoraDe(p){ if(!p || !p.srcImg) return null; const q = photoQuality(p); return q < LOWRES_MALA ? 'mala' : q < MEJORA_IA ? 'ia' : null; }
-function avisoIA(p, corto){
+function avisoIA(p){
   const m = mejoraDe(p); if(!m) return '';
-  const q = `<button type="button" class="ia-q" aria-label="Qué significa">?</button><span class="ia-mas" hidden><span class="es">Esta foto no tiene toda la resolución que pide este tamaño. Antes de imprimirla, nuestro equipo de fotografía la mejora con herramientas profesionales para que salga nítida; puede cambiar algún detalle mínimo.</span><span class="en">This photo doesn't have all the resolution this size needs. Before printing, our photo team enhances it with professional tools so it prints sharp; some tiny detail may change.</span></span>`;
-  if(m === 'mala') return `<span class="ia-aviso mala"><span class="es">Foto pequeña: la retocamos, pero en un tamaño menor quedaría mejor</span><span class="en">Small photo: we retouch it, but a smaller size would look better</span>${q}</span>`;
-  return `<span class="ia-aviso"><span class="es">✨ Retoque profesional incluido</span><span class="en">✨ Professional retouch included</span>${q}</span>`;
+  const mas = m === 'mala'
+    ? ['La retocamos para que salga lo mejor posible, pero en un tamaño menor quedaría más nítida.', "We retouch it to look its best, but a smaller size would be sharper."]
+    : ['Tiene poca resolución para este tamaño. La retocamos antes de imprimir para que salga nítida; algún detalle puede cambiar un poco.', "It's low resolution for this size. We retouch it before printing so it comes out sharp; a detail may change slightly."];
+  const q = `<button type="button" class="ia-q" aria-label="Qué significa">?</button><span class="ia-mas" hidden><span class="es">${mas[0]}</span><span class="en">${mas[1]}</span></span>`;
+  if(m === 'mala') return `<span class="ia-aviso mala"><span class="es">Foto pequeña para este tamaño</span><span class="en">Small photo for this size</span>${q}</span>`;
+  return `<span class="ia-aviso"><span class="es">✨ Retoque incluido</span><span class="en">✨ Retouch included</span>${q}</span>`;
 }
 function updateCropQuality(){
   const el = document.getElementById('cropQuality'); if(!el) return;
+  el.hidden = true; return;   // 10-nov (Marc): el aviso de retoque sale solo en el carrito, para no cortar el flujo al subir la foto
   const p = POSTERS[selected];
   const m = mejoraDe(p);
   if(!m){ el.hidden = true; return; }
@@ -2666,7 +2670,7 @@ function prepararArte(p){
 }
 function prepararCarrito(){
   if(!(SHOPIFY.domain && SHOPIFY.storefrontToken)) return;
-  POSTERS.filter(q => q.srcImg).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
+  POSTERS.filter(cuenta).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
 }
 
 function variantIdOf(p){
@@ -2722,7 +2726,7 @@ async function shopifySelectShipping(cart, shipId){
 async function checkoutWithShopify(buyerIdentity, shipId){
   const lines = [];
   for(const p of POSTERS){
-    if(!p.srcImg) continue;
+    if(!cuenta(p)) continue;   // las quitadas del carrito (en gris) no van al pedido
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
     const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await prepararArte(p);
@@ -3376,9 +3380,33 @@ backInput.addEventListener('input', () => backFontDD.render());
    entran de lleno en el tramo más alto. Los porcentajes son un valor de partida:
    se cambian aquí y en el bloque .pk- de cuadro.html / pdp.css. */
 const PACK_TIERS = [ {n:5, pct:20}, {n:3, pct:15}, {n:2, pct:10} ];   // 26-oct: 2 → 10 %, 3-4 → 15 %, 5 o más → 20 %
-function packPieces(){ return POSTERS.filter(p=>p.srcImg).length; }
+/* 10-nov (Marc): quitar del carrito. La pieza se queda en gris con «Volver a ponerlo» durante QUITAR_MIN minutos: no cuenta
+   en el precio, el descuento ni el pedido, y no se ve en el 3D. Pasado ese rato se quita de verdad (removePoster). */
+const QUITAR_MIN = 10;
+const vivo = p => !p.fuera, cuenta = p => !!p.srcImg && !p.fuera;
+function quitarDelCarrito(p){
+  if(!p || p.fuera) return;
+  mmEv('quitar_del_carrito');
+  p.fuera = Date.now(); if(p.rig) p.rig.visible = false;
+  clearTimeout(p._tFuera); p._tFuera = setTimeout(() => quitarYa(p), QUITAR_MIN * 60e3);
+  dirty3D = true; _userEdited = true; refrescaCarrito();
+}
+function reponerEnCarrito(p){
+  if(!p || !p.fuera) return;
+  mmEv('reponer_en_carrito');
+  clearTimeout(p._tFuera); p.fuera = 0; if(p.rig) p.rig.visible = true;
+  dirty3D = true; _userEdited = true; refrescaCarrito();
+}
+function quitarYa(p){
+  if(!p.fuera) return;
+  const i = POSTERS.indexOf(p); p.fuera = 0; if(p.rig) p.rig.visible = true;
+  if(i >= 0) removePoster(i);
+  refrescaCarrito();
+}
+function refrescaCarrito(){ updateTotal(); coRenderSum(); renderThumbs(); }
+function packPieces(){ return POSTERS.filter(cuenta).length; }
 function packPct(){ const n = packPieces(), t = PACK_TIERS.find(t=>n>=t.n); return t ? t.pct : 0; }
-function coGross(){ return POSTERS.filter(p=>p.srcImg).reduce((s,p)=>s+(p.price||0),0); }
+function coGross(){ return POSTERS.filter(cuenta).reduce((s,p)=>s+(p.price||0),0); }
 function coDiscount(){ return Math.round(coGross()*packPct())/100; }
 function coSubtotal(){ return Math.round((coGross()-coDiscount())*100)/100; }
 
@@ -3387,8 +3415,8 @@ function updateTotal(){
   scheduleSave();
   /* En un conjunto cuenta la pared entera (hay que llenarla para pedirla); sueltos, los que llevan foto,
      y sin ninguna, los huecos que hay. Con descuento por cantidad sale el precio tachado al lado. */
-  const conFoto = POSTERS.filter(p=>p.srcImg);
-  const piezas = (WALL || !conFoto.length) ? POSTERS : conFoto;
+  const conFoto = POSTERS.filter(cuenta);
+  const piezas = (WALL || !conFoto.length) ? POSTERS.filter(vivo) : conFoto;
   const bruto = piezas.reduce((s,p)=>s+(p.price||0),0);
   const t = PACK_TIERS.find(t=>piezas.length>=t.n), pct = t ? t.pct : 0;
   const total = Math.round((bruto - Math.round(bruto*pct)/100)*100)/100;
@@ -3439,14 +3467,14 @@ function syncConfigUI(){
 }
 
 document.getElementById('addToCart').addEventListener('click', async ()=>{
-  const withPhoto = POSTERS.filter(p=>p.srcImg).length;
+  const withPhoto = POSTERS.filter(cuenta).length, enPared = POSTERS.filter(vivo).length;
   if(!withPhoto){ pickMode='add'; fileInput.click(); return; }
   // red de seguridad: los botones de talla agotada ya están desactivados, pero un diseño
   // guardado de antes o una pared abierta por URL podrían traer una
   const agotado = POSTERS.findIndex(p=>p.srcImg && !inStock(sizeOf(p)));
   if(agotado >= 0){ toast('Uno de los cuadros lleva una talla sin existencias: cámbiala para seguir'); selectPoster(agotado); return; }
-  if(WALL && withPhoto < POSTERS.length){
-    const faltan = POSTERS.length - withPhoto;
+  if(WALL && withPhoto < enPared){
+    const faltan = enPared - withPhoto;
     toast(faltan===1 ? 'Falta 1 foto para completar la pared' : 'Faltan ' + faltan + ' fotos para completar la pared');
     const i = POSTERS.findIndex(p=>!p.srcImg); if(i>=0) selectPoster(i);
     return;
@@ -3454,9 +3482,9 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
 
   // foto muy muy pequeña: solo se avisa (no se para la compra; al imprimir se mejora con IA)
-  if(POSTERS.some(p=>p.srcImg && photoQuality(p) < LOWRES_MALA)) toast('Alguna foto es pequeña: la retocamos para que salga lo mejor posible.');
+  // 10-nov: el aviso de foto pequeña ya sale en el carrito, en su línea
   // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
-  const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
+  const conFoto = POSTERS.filter(cuenta), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
   if(window.mmTrack && firma !== window.mmCarritoMedido){
     window.mmCarritoMedido = firma;
     mmTrack('AddToCart', {value:Math.round(conFoto.reduce((s,p)=>s+(p.price||0),0)*100)/100, currency:'EUR', num_items:conFoto.length,
@@ -3624,27 +3652,37 @@ function fraseDe(p){
 }
 const coFrase = p => { const f = fraseDe(p); return f ? `<em class="co-sum-frase">«${coEsc(f)}»</em>` : ''; };
 document.addEventListener('change', e => { if(e.target && e.target.id === 'coVerMejora') CO.verMejora = e.target.checked; });
+document.addEventListener('click', e => {
+  const q = e.target.closest && e.target.closest('[data-quitar],[data-reponer]'); if(!q || !q.closest('#coSum')) return;
+  const p = POSTERS[+(q.dataset.quitar ?? q.dataset.reponer)];
+  if(q.dataset.quitar != null) quitarDelCarrito(p); else reponerEnCarrito(p);
+});
 function coRenderSum(){
   const box = coEl('coSum'); if(!box) return;
   const items = POSTERS.filter(p=>p.srcImg);
   const envio = coShipCost();
   const lines = items.map(p=>{
-    const pr = prodOf(p);
+    const pr = prodOf(p), k = POSTERS.indexOf(p);
     const mount = pr.mounts ? ' · ' + (MOUNTS[mountOf(p)]||{}).label : '';
+    if(p.fuera) return `<div class="co-sum-line fuera">
+      ${p.thumb ? `<img class="co-sum-thumb" src="${p.thumb}" alt="">` : '<div class="co-sum-thumb"></div>'}
+      <span class="co-sum-txt"><b>${pr.name}</b><small><span class="es">Quitado · lo guardamos aquí unos minutos</span><span class="en">Removed · kept here for a few minutes</span></small></span>
+      <button type="button" class="co-reponer" data-reponer="${k}"><span class="es">Volver a ponerlo</span><span class="en">Put it back</span></button></div>`;
     return `<div class="co-sum-line">
       ${p.thumb ? `<img class="co-sum-thumb" src="${p.thumb}" alt="">` : '<div class="co-sum-thumb"></div>'}
       <span class="co-sum-txt"><b>${pr.name}</b><small>${dimsLabel(p)}${mount}</small>${coFrase(p)}${avisoIA(p)}</span>
-      <span class="co-sum-amt">${eur(p.price||0)}</span></div>`;
+      <span class="co-sum-amt">${eur(p.price||0)}<button type="button" class="co-quitar" data-quitar="${k}" aria-label="Quitar del carrito"><span class="es">Quitar</span><span class="en">Remove</span></button></span></div>`;
   }).join('');
   const dto = coDiscount();
   /* 10-nov (Marc): si alguna foto se retoca, el cliente puede pedir verla antes de que se imprima (va en el pedido) */
-  const ver = items.some(p => mejoraDe(p)) ? `<label class="co-ver"><input type="checkbox" id="coVerMejora"${CO.verMejora ? ' checked' : ''}><span><b><span class="es">Quiero ver la foto retocada antes de que la imprimáis</span><span class="en">I want to see the retouched photo before you print it</span></b><small><span class="es">Te la mandamos por correo y la imprimimos en cuanto nos digas que te gusta. Si en 48 h no nos contestas, la imprimimos tal cual.</span><span class="en">We email it to you and print it as soon as you say you like it. If we don't hear back in 48 h, we print it as is.</span></small></span></label>` : '';
+  const ver = items.some(p => cuenta(p) && mejoraDe(p)) ? `<label class="co-ver"><input type="checkbox" id="coVerMejora"${CO.verMejora ? ' checked' : ''}><span><b><span class="es">Quiero ver la foto retocada antes de imprimirla</span><span class="en">Show me the retouched photo before printing</span></b><small><span class="es">Te la mandamos por correo. Si en 48 h no contestas, la imprimimos.</span><span class="en">We email it to you. No reply in 48 h, we print it.</span></small></span></label>` : '';
   box.innerHTML = lines + ver + `<div class="co-sum-rule"></div>
     ${dto ? `<div class="co-sum-row"><span><span class="es">Subtotal</span><span class="en">Subtotal</span></span><span>${eur(coGross())}</span></div>
     <div class="co-sum-row co-sum-dto"><span><span class="es">Combinación de ${packPieces()} cuadros</span><span class="en">Set of ${packPieces()} prints</span> &minus;${packPct()}%</span><span>&minus;${eur(dto)}</span></div>` : ''}
     <div class="co-sum-row"><span><span class="es">${dto ? 'Subtotal con descuento' : 'Subtotal'}</span><span class="en">${dto ? 'Discounted subtotal' : 'Subtotal'}</span></span><span>${eur(coSubtotal())}</span></div>
     <div class="co-sum-row"><span><span class="es">Envío</span><span class="en">Shipping</span></span><span><span class="es">${coSubtotal() >= 60 ? 'Gratis en España' : 'Se elige al pagar'}</span><span class="en">${coSubtotal() >= 60 ? 'Free in Spain' : 'Chosen at checkout'}</span></span></div>
     <div class="co-sum-row total"><span>Total</span><span>${eur(coSubtotal())}<small><span class="es">IVA incl.</span><span class="en">VAT incl.</span></small></span></div>`;
+  { const pay = coEl('coPay'); if(pay) pay.disabled = !POSTERS.some(cuenta); }   // todo quitado: no se puede pagar
   const ft = coEl('coFootTotal');
   if(ft) ft.innerHTML = `<span><span class="es">Total</span><span class="en">Total</span> <small><span class="es">IVA incluido · envío ${coSubtotal() >= 60 ? 'gratis en España' : 'al pagar'}</span><span class="en">VAT included · shipping ${coSubtotal() >= 60 ? 'free in Spain' : 'at checkout'}</span></small></span><b>${eur(coSubtotal())}</b>`;
 }
@@ -3795,7 +3833,7 @@ function scheduleSave(){
 async function saveDesign(){
   const st = store(); if((window.MOMENTURIES_EDITOR||{}).vista || !st) return;
   try{
-    const items = POSTERS.filter(p => p.srcImg || p.frontText || p.frontText2 || p.backText || p.backText2 || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
+    const items = POSTERS.filter(p => !p.fuera).filter(p => p.srcImg || p.frontText || p.frontText2 || p.backText || p.backText2 || p.frontDate || p.backDate || p.frontDeco || p.backDeco).map(p => ({
       uid:p.uid, ptype:p.ptype, mount:p.mount, format:p.format, sizeKey:p.sizeKey, orient:p.orient, slot:POSTERS.indexOf(p),
       crop:{scale:p.crop.scale, fx:p.crop.fx, fy:p.crop.fy, cx:p.crop.cx, cy:p.crop.cy},
       frontText2:p.frontText2, backText2:p.backText2, frontMax:p.frontMax,
@@ -3819,7 +3857,7 @@ async function saveDesign(){
     }
     // resumen para el carrito de la cabecera (carrito.js), que no carga el editor
     // igual que el botón del editor: en un conjunto cuenta la pared entera, aunque falten fotos
-    const conFoto = POSTERS.filter(p => p.srcImg), piezas = WALL ? POSTERS : conFoto;
+    const conFoto = POSTERS.filter(cuenta), piezas = WALL ? POSTERS.filter(vivo) : conFoto;
     const bruto = piezas.reduce((s, p) => s + (p.price || 0), 0), tramo = PACK_TIERS.find(t => piezas.length >= t.n), pct = tramo ? tramo.pct : 0;
     const dto = Math.round(bruto * pct) / 100;
     const resumen = { lineas: piezas.map(p => ({ nombre: prodOf(p).name, medida: dimsLabel(p), frase: fraseDe(p), precio: p.price || 0, thumb: p.srcImg ? (p.thumb || null) : null, sinFoto: !p.srcImg, mejora: mejoraDe(p) })),

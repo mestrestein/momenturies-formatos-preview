@@ -127,7 +127,8 @@
       (r.pared ? '<div class="mc-pared">Pared «' + esc(r.pared) + '»</div>' : '') +
       r.lineas.map(function (l) {
         return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : (l.sinFoto ? ' style="background:#fff;outline:1.5px dashed #cfc6b8;outline-offset:-1.5px"' : '')) + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + (l.sinFoto ? ' · <i style="color:#b3412a;font-style:normal">sin foto</i>' : '') + '</span>' + (l.frase ? '<span class="fr">«' + esc(l.frase) + '»</span>' : '') +
-          (l.mejora ? '<i class="mc-ia' + (l.mejora === 'mala' ? ' mala">Foto pequeña: la retocamos, pero en un tamaño menor quedaría mejor' : '">✨ Retoque profesional incluido') + '<button type="button" class="mc-q" aria-label="Qué significa">?</button><span class="mc-mas" hidden>Esta foto no tiene toda la resolución que pide este tamaño. Antes de imprimirla, nuestro equipo de fotografía la mejora con herramientas profesionales para que salga nítida; puede cambiar algún detalle mínimo.</span></i>' : '') + '</div><em>' + eur(l.precio) + '</em></div>';
+          (l.mejora ? '<i class="mc-ia' + (l.mejora === 'mala' ? ' mala">Foto pequeña para este tamaño' : '">✨ Retoque incluido') + '<button type="button" class="mc-q" aria-label="Qué significa">?</button><span class="mc-mas" hidden>' +
+            (l.mejora === 'mala' ? 'La retocamos para que salga lo mejor posible, pero en un tamaño menor quedaría más nítida.' : 'Tiene poca resolución para este tamaño. La retocamos antes de imprimir para que salga nítida; algún detalle puede cambiar un poco.') + '</span></i>' : '') + '</div><em>' + eur(l.precio) + '</em></div>';
       }).join('') +
       (r.faltan > 0 ? '<div class="mc-aviso">' + (r.faltan === 1 ? 'Falta 1 foto' : 'Faltan ' + r.faltan + ' fotos') + ' para completar la pared. Termínala en el editor para poder pedirla.</div>' : '') +
       '</div><div class="mc-foot">' +
