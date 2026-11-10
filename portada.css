@@ -316,11 +316,25 @@
 .pq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:300;transition:transform .25s}
 .pq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .pq details p{padding:0 0 22px;color:var(--mid);line-height:1.65;font-size:15px}
+.pq .fq-a{padding:0 0 22px;color:var(--mid);line-height:1.65;font-size:15px}
+.pq .fq-a p{padding:0;margin:0 0 10px}
+.pq .fq-a ul,.pq .fq-a ol{margin:0 0 12px;padding-left:22px}
+.pq .fq-a li{margin:4px 0}
+.pq .fq-a b{color:var(--black)}
+.pq .fq-a a{text-decoration:underline}
+.pq .fq-nota{background:var(--beige);border-radius:10px;padding:10px 14px;font-size:14px}
+.pq .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+.pq .fq-tabla th,.pq .fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--gray2)}
+.pq .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.pq .fq-vs td:first-child{background:var(--beige);color:var(--black)}
+.pq .fq-vs thead th:first-child{color:#c2613a}
+.pq .fq-tam .f th{padding-top:14px;color:var(--black)}
+.pq-todas{display:inline-block;margin-top:22px;font-weight:700;border-bottom:1.5px solid var(--black)}
 .pq-ayuda{margin-top:30px;background:var(--beige);border-radius:18px;padding:22px}
 .pq-ayuda b{display:block;margin-bottom:6px}
 .pq-ayuda p{font-size:14px;color:#555;margin-bottom:14px}
 .pq-ayuda a{font-weight:700;border-bottom:1.5px solid var(--black)}
-@media(max-width:820px){.pq{padding:60px 0}.pq .c{grid-template-columns:1fr;gap:0;padding:0 16px}.pq summary{font-size:16px}}
+@media(max-width:820px){.pq-chips{flex-wrap:nowrap;overflow-x:auto;margin:20px -16px;padding:0 16px;scrollbar-width:none}.pq-chips button{white-space:nowrap;flex:none}.pq{padding:60px 0}.pq .c{grid-template-columns:1fr;gap:0;padding:0 16px}.pq summary{font-size:16px}}
 
 /* ═════ ALUMINIO Y CALIDAD: foto con puntos + comparativa en desplegable ═════ */
 .al{padding:110px 0;background:var(--beige)}
