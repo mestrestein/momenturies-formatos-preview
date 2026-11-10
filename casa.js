@@ -302,6 +302,12 @@ const CENTRO = { pasillo:[120, 537, -Math.PI/2], salon:[640, 760, -2.1], cocina:
   const dot = document.createElementNS(NS, 'circle'); dot.setAttribute('r', 34); dot.setAttribute('fill', '#b2613f'); dot.style.pointerEvents = 'none'; svg.append(dot);
   $('#plano').append(svg); window._dot = dot; }
 
+/* 10-nov: casa.html#salon (o #cocina, #dormitorio, #despacho, #recibidor, #terraza) entra directamente en esa habitación,
+   con la vista de las fotos de la portada */
+{ const ENTRA = { recibidor:[120, 537, -Math.PI/2], pasillo:[120, 537, -Math.PI/2], salon:[700, 900, -1.9], cocina:[330, 1000, -.25], dormitorio:[300, 340, 1.4], despacho:[640, 360, -1.4], terraza:[800, 1120, 2.4] };
+  const c = ENTRA[decodeURIComponent(location.hash.slice(1)).toLowerCase()];
+  if(c){ pos.x = c[0]; pos.z = c[1]; yaw = c[2]; pitch = -.03; } }
+
 function tam(){ const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.fov = w < h ? 76 : 66; camera.updateProjectionMatrix(); pinta = true; }
 addEventListener('resize', tam); tam();
 
