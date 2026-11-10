@@ -349,13 +349,14 @@ addEventListener('resize', () => $$('.ec-big, .ec-estilos .m').forEach(c => c._p
 /* ═════ PAREDES DE ENSUEÑO: las que hay en stock, cada una abre el editor con esa pared ═════ */
 (function(){
   const riel = $('#pwRiel'); if(!riel) return;
-  /* primero las que más lucen de lejos; detrás, el resto de lo que hay en stock */
-  const PRIMERO = ['W27', 'W42', 'W21', 'W53', 'W39', 'W25', 'W47', 'W09', 'W20', 'W31', 'W56', 'W28'];
-  const orden = w => { const k = PRIMERO.indexOf(w.id); return k < 0 ? 100 + w.n : k; };
+  /* el orden (primero las que más lucen) está en fotos/_build_portada_paredes.py */
   /* 10-nov: cada tarjeta es la pared en su habitación, vista de lejos (fotos de Paredes de ensueño), y abre el editor con esa pared y ese entorno */
-  const ENS = window.MOMENTURIES_ENSUENO || {};
-  const lista = WALLS.filter(w => !w.soldOut && w.n >= 3 && !w.dup && ENS[w.id]).sort((a, b) => orden(a) - orden(b));
-  riel.innerHTML = lista.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}&entorno=${ENS[w.id][0]}"><div class="img"><img loading="lazy" alt="${w.name}: ${w.n} cuadros de aluminio colgados en la pared" src="fotos/ensueno/${w.id}-${ENS[w.id][0]}.webp"/></div><b>${w.name}</b><span>${w.n} cuadros · <s>${eur(w.price)}</s>${eur(neto(w))}<em>-${pctDe(w.n)} %</em></span></a>`).join('');
+  /* 10-nov (Marc: «no se pueden repetir los entornos uno al lado del otro»): 20 paredes, cada una en una habitación
+     distinta y sin dos del mismo tipo seguidas (reparto y fotos: fotos/_build_portada_paredes.py) */
+  const PP = window.MOMENTURIES_PORTADA_PAREDES || [], ENT = {};
+  PP.forEach(([id, r]) => ENT[id] = r);
+  const lista = PP.map(([id]) => WALLS.find(w => w.id === id)).filter(w => w && !w.soldOut);
+  riel.innerHTML = lista.map(w => `<a class="pw-card" href="cuadro.html?pared=${w.id}&entorno=${ENT[w.id]}"><div class="img"><img loading="lazy" alt="${w.name}: ${w.n} cuadros de aluminio colgados en la pared" src="fotos/ensueno-portada/${w.id}-${ENT[w.id]}.webp"/></div><b>${w.name}</b><span>${w.n} cuadros · <s>${eur(w.price)}</s>${eur(neto(w))}<em>-${pctDe(w.n)} %</em></span></a>`).join('');
   $$('.pw-ctrl button').forEach(b => b.addEventListener('click', () => riel.scrollBy({ left: +b.dataset.d * riel.clientWidth * .8, behavior:'smooth' })));
 })();
 
