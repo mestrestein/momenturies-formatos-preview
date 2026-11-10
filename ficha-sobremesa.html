@@ -256,6 +256,24 @@ button{font-family:inherit;color:inherit}
 .faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:400;color:var(--terra);transition:transform .2s}
 .faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .faq details p{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+/* 10-nov: FAQ comunes (salen de preguntas.js, las mismas que en la portada) */
+.faq-cats button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .2s}
+.faq-cats button:hover{border-color:#bbb}
+.faq-cats button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.faq .fq-a{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+.faq .fq-a p{padding:0;margin:0 0 10px}
+.faq .fq-a ul,.faq .fq-a ol{margin:0 0 12px;padding-left:22px}
+.faq .fq-a li{margin:4px 0}
+.faq .fq-a b{color:var(--ink)}
+.faq .fq-a a{color:var(--ink);text-decoration:underline}
+.faq .fq-nota{background:var(--cream);border-radius:10px;padding:10px 14px;font-size:14px}
+.faq .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+.faq .fq-tabla th,.faq .fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.faq .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.faq .fq-vs td:first-child{background:var(--cream);color:var(--ink)}
+.faq .fq-vs thead th:first-child{color:var(--terra)}
+.faq .fq-tam .f th{padding-top:14px;color:var(--ink)}
+@media(max-width:700px){.faq-cats{flex-wrap:nowrap;overflow-x:auto;margin:20px -16px 0;padding:0 16px;scrollbar-width:none}.faq-cats button{white-space:nowrap;flex:none}}
 .faq details[hidden]{display:none}
 .help{margin-top:26px;background:var(--cream);border-radius:18px;padding:22px}
 .help b{font-size:16px}
@@ -523,28 +541,9 @@ $('#phoneGrid').innerHTML = FOTOS.concat(FOTOS.slice(0,4)).map((f,i) => `<i clas
 $('#fillOpts').innerHTML = [['S',2],['S',3],['M',3]].map(([k,n]) => { const p = precioDe(k, n);
   return `<a href="sobremesa.html?talla=${k}"><div>${n} ${k === 'S' ? 'pequeñas' : 'medianas'}<br><span>${n} × ${MEDIDA[k]} cm · ${eur(p.price)} con el -${p.pct} %</span></div><em>Probar →</em></a>`; }).join('');
 
-/* ═════ FAQ ═════ */
-const FAQ = [
-  ['sobremesa','¿Cómo se sostiene de pie?','La lámina de aluminio encaja en la peana de bambú y se queda de pie sola. La peana viene incluida en el precio.'],
-  ['sobremesa','¿Lleva dedicatoria detrás?','Si quieres, sí: en el editor escribes el texto, eliges la letra y lo ves en el dorso antes de pagar. Es gratis.'],
-  ['producto','¿Qué tamaños hay?','Tres: pequeña de 10,2×15,2 cm (28,99 €), mediana de 12,7×17,8 cm (34,99 €) y grande de 20,3×25,4 cm (44,99 €). Todas con peana de bambú.'],
-  ['producto','¿Qué diferencia hay con un portafotos?','La foto va impresa directamente sobre aluminio: no hay cristal que refleje o se rompa ni papel que se amarillee con el sol. Se limpia con un paño.'],
-  ['producto','¿Vale cualquier foto del móvil?','Casi todas. A estos tamaños, cualquier foto hecha con el móvil queda bien. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta, el editor te avisa antes de pagar.'],
-  ['packs','¿Cómo funcionan los descuentos por cantidad?','Cuantas más piezas, menos pagas por cada una: 2 piezas -10 %, 3 o 4 -15 % y 5 o más -20 %. El descuento se aplica solo en el carrito y cuenta también los cuadros e imanes que lleves en el mismo pedido.'],
-  ['envio','¿Cuánto tarda en llegar?','La imprimimos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; con el exprés, 1-2. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
-  ['envio','¿Y si llega dañada?','La reimprimimos y te la reenviamos sin coste. Escríbenos con una foto en los 14 días siguientes a la entrega y no hace falta devolver la primera.'],
-  ['envio','¿Puedo devolverla?','Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Por eso te dejamos verla en su sitio antes de pagar. Si llega con un defecto, la reimprimimos.'],
-  ['regalo','¿Puedo mandarla directamente como regalo?','Sí. Pones una dirección de entrega distinta a la tuya y añades una nota en los comentarios del pedido. El precio no aparece dentro del paquete.'],
-];
-(function(){
-  const cats = [['todas','Todas'],['sobremesa','La sobremesa'],['producto','Tamaños y fotos'],['packs','Packs'],['envio','Envío'],['regalo','Regalo']];
-  $('#faqCats').innerHTML = cats.map((c,i) => `<button type="button" class="chipbtn ${i ? '' : 'on'}" data-c="${c[0]}">${c[1]}</button>`).join('');
-  $('#faqList').innerHTML = FAQ.map((f,i) => `<details data-c="${f[0]}" ${i ? '' : 'open'}><summary>${f[1]}</summary><p>${f[2]}</p></details>`).join('');
-  $('#faqCats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
-    [...$('#faqCats').children].forEach(x => x.classList.toggle('on', x === b));
-    document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
-})();
 </script>
+<script src="preguntas.js?v=0d363e14"></script>
+<script>/* 10-nov: FAQ comunes */ mmPintaFaq({ chips: document.getElementById('faqCats'), lista: document.getElementById('faqList'), grupos: false, ficha: 'sobremesa' });</script>
 <script src="carrito.js?v=0de0bab0"></script><script src="app.js?v=c1eb62d9" defer></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
 </body>
