@@ -268,6 +268,24 @@ button{font-family:inherit;color:inherit}
 .faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:400;color:var(--terra);transition:transform .2s}
 .faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .faq details p{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+/* 10-nov: FAQ comunes (salen de preguntas.js, las mismas que en la portada) */
+.faq-cats button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .2s}
+.faq-cats button:hover{border-color:#bbb}
+.faq-cats button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.faq .fq-a{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+.faq .fq-a p{padding:0;margin:0 0 10px}
+.faq .fq-a ul,.faq .fq-a ol{margin:0 0 12px;padding-left:22px}
+.faq .fq-a li{margin:4px 0}
+.faq .fq-a b{color:var(--ink)}
+.faq .fq-a a{color:var(--ink);text-decoration:underline}
+.faq .fq-nota{background:var(--cream);border-radius:10px;padding:10px 14px;font-size:14px}
+.faq .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+.faq .fq-tabla th,.faq .fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.faq .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.faq .fq-vs td:first-child{background:var(--cream);color:var(--ink)}
+.faq .fq-vs thead th:first-child{color:var(--terra)}
+.faq .fq-tam .f th{padding-top:14px;color:var(--ink)}
+@media(max-width:700px){.faq-cats{flex-wrap:nowrap;overflow-x:auto;margin:20px -16px 0;padding:0 16px;scrollbar-width:none}.faq-cats button{white-space:nowrap;flex:none}}
 .faq details[hidden]{display:none}
 .help{margin-top:26px;background:var(--cream);border-radius:18px;padding:22px}
 .help b{font-size:16px}
@@ -580,30 +598,9 @@ $('#cjGrid').innerHTML = CONJ.map(c => `
   </a>`).join('');
 $('#fillOpts').innerHTML = LLENA.map(l => `<a href="iman.html?conjunto=${l.id}"><div>Llena de ${l.k === 'XS' ? 'pequeños' : 'grandes'}<br><span>${l.n} imanes de ${MEDIDA[l.k].join('×')} cm · ${eur(l.price)} con el -${l.pct} %</span></div><em>Probar →</em></a>`).join('');
 
-/* ═════ FAQ ═════ */
-const FAQ = [
-  ['iman','¿En qué neveras se pega?','En cualquier superficie metálica a la que se pegue un imán: la puerta de casi todas las neveras, el lateral de la lavadora o una pizarra magnética. Ojo con algunas neveras de acero inoxidable, que no son magnéticas: antes de pedir, prueba si se te pega cualquier imán que tengas por casa.'],
-  ['iman','¿Viene con el imán puesto?','Sí. Llega con el imán ya pegado detrás, listo para ponerlo en la nevera.'],
-  ['iman','¿Lleva dedicatoria detrás?','No. En el imán la parte de atrás es el propio imán, así que no lleva texto. Si quieres una dedicatoria, el Cuadro sí la lleva impresa en el dorso.'],
-  ['producto','¿Qué tamaños hay?','Dos: pequeño de 7×10 cm (9,99 €) y grande de 10×15 cm (14,99 €). Puedes mezclarlos en el mismo pedido.'],
-  ['producto','¿Qué diferencia hay con un imán de foto normal?','La foto va impresa directamente sobre aluminio, no sobre papel ni plástico. No se dobla, los colores se ven con más fondo y, como está en la cocina, se agradece que se limpie con un paño.'],
-  ['producto','¿Vale cualquier foto del móvil?','Casi todas. A estos tamaños, cualquier foto hecha con el móvil queda bien. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta, el editor te avisa antes de pagar.'],
-  ['conjuntos','¿Cómo funcionan los conjuntos?','Son composiciones pensadas para el centro de la puerta. Al elegir uno se abre el editor con el conjunto puesto y solo tienes que poner una foto en cada hueco. Puedes añadir otro debajo, repetir el tuyo hasta abajo o llenar la nevera entera.'],
-  ['conjuntos','¿Cómo funcionan los descuentos por cantidad?','Cuantos más imanes, menos pagas por cada uno: 2 imanes -10 %, 3 o 4 -15 % y 5 o más -20 %. El descuento se aplica solo en el carrito y cuenta también los cuadros y sobremesas que lleves en el mismo pedido.'],
-  ['envio','¿Cuánto tarda en llegar?','Lo imprimimos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; con el exprés, 1-2. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
-  ['envio','¿Y si llega dañado?','Lo reimprimimos y te lo reenviamos sin coste. Escríbenos con una foto en los 14 días siguientes a la entrega y no hace falta devolver el primero.'],
-  ['envio','¿Puedo devolverlo?','Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Por eso te dejamos verlo en la nevera antes de pagar. Si llega con un defecto, lo reimprimimos.'],
-  ['regalo','¿Puedo mandarlo directamente como regalo?','Sí. Pones una dirección de entrega distinta a la tuya y añades una nota en los comentarios del pedido. El precio no aparece dentro del paquete.'],
-];
-(function(){
-  const cats = [['todas','Todas'],['iman','El imán'],['producto','Tamaños y fotos'],['conjuntos','Conjuntos'],['envio','Envío'],['regalo','Regalo']];
-  $('#faqCats').innerHTML = cats.map((c,i) => `<button type="button" class="chipbtn ${i ? '' : 'on'}" data-c="${c[0]}">${c[1]}</button>`).join('');
-  $('#faqList').innerHTML = FAQ.map((f,i) => `<details data-c="${f[0]}" ${i ? '' : 'open'}><summary>${f[1]}</summary><p>${f[2]}</p></details>`).join('');
-  $('#faqCats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
-    [...$('#faqCats').children].forEach(x => x.classList.toggle('on', x === b));
-    document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
-})();
 </script>
+<script src="preguntas.js?v=0d363e14"></script>
+<script>/* 10-nov: FAQ comunes */ mmPintaFaq({ chips: document.getElementById('faqCats'), lista: document.getElementById('faqList'), grupos: false, ficha: 'iman' });</script>
 <script src="carrito.js?v=0de0bab0"></script><script src="app.js?v=c1eb62d9" defer></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
 </body>
