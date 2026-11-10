@@ -2178,17 +2178,28 @@ const INKS = { front: ['#1a1a1a', '#ffffff', '#c2582c', '#b8893b', '#8e2f3c', '#
 function inkLuma(h){ const n = parseInt(h.slice(1), 16); return (0.299*(n>>16 & 255) + 0.587*(n>>8 & 255) + 0.114*(n & 255)) / 255; }
 const DIBUJOS = window.MOMENTURIES_DIBUJOS || [];
 const DECO_CACHE = {};
+/* 10-nov: dos estilos. t:'l' = dibujo de línea (va del color elegido), t:'e' = emoji (a todo color). Cada uno es un
+   archivo en dibujos/ y se descarga solo cuando hace falta; dibujos.js es solo el catálogo. */
+const decoDe = id => DIBUJOS.find(x => x.id === id);
+const decoUrl = d => d.t === 'e' ? 'dibujos/e/' + d.id.slice(2) + '.svg' : 'dibujos/l/' + d.id + '.svg';
+const DECO_SVG = {};
+const decoSvg = d => DECO_SVG[d.id] || (DECO_SVG[d.id] = fetch(decoUrl(d)).then(r => r.ok ? r.text() : '').catch(() => ''));
 function decoEntry(id, color){
-  const d = DIBUJOS.find(x => x.id === id); if(!d) return null;
-  const k = id + '|' + color; let e = DECO_CACHE[k];
+  const d = decoDe(id); if(!d) return null;
+  const k = d.t === 'e' ? id : id + '|' + color; let e = DECO_CACHE[k];
   if(!e){
     e = DECO_CACHE[k] = { img:new Image(), ok:false, cbs:[] };
     e.ready = new Promise(res => {
       e.img.onload = () => { e.ok = true; res(); e.cbs.splice(0).forEach(f => f()); };
       e.img.onerror = () => res();
+      decoSvg(d).then(txt => {
+        if(!txt){ res(); return; }
+        let svg = txt.replace(/<svg\b([^>]*?)\s(width|height)="[^"]*"/g, '<svg$1').replace(/<svg\b([^>]*?)\s(width|height)="[^"]*"/g, '<svg$1');
+        svg = svg.replace('<svg ', '<svg width="1024" height="1024" ');
+        if(d.t !== 'e') svg = svg.replace(/currentColor/g, color);
+        e.img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      });
     });
-    const svg = d.svg.replace('<svg ', '<svg width="1024" height="1024" ').replace(/currentColor/g, color);
-    e.img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
   return e;
 }
@@ -2201,6 +2212,11 @@ function decoImg(id, color, cb){
 /* antes de generar el archivo de imprenta: que los dibujos ya estén cargados */
 /* 4-nov: el dibujo tiene color propio (si no se elige, el de la frase) y se puede dejar en cualquier punto */
 const decoInk = (p, side) => p[side + 'DecoColor'] || (side === 'front' ? frontInk(p) : backInk(p));
+/* la vista previa en el panel: los de línea con el color elegido (máscara), los emojis tal cual */
+const decoIcon = (d, ink) => d.t === 'e'
+  ? '<img src="' + decoUrl(d) + '" alt="" loading="lazy" decoding="async">'
+  : '<i class="deco-m" style="--u:url(' + decoUrl(d) + ');background:' + (ink || 'currentColor') + '"></i>';
+const DECO_TAB = { front:{ t:'l', c:'' }, back:{ t:'l', c:'' } };
 function decoXY(p, side){
   if(side === 'front' && p.frontDecoX != null) return { x:p.frontDecoX, y:p.frontDecoY };
   return { x:50, y:100 * ({ top:.16, mid:.5, bottom:.84 }[frontDecoPosOf(p)]) };
@@ -2257,15 +2273,26 @@ function renderInk(side){
 function renderDeco(side){
   const box = document.getElementById(side + 'DecoBox'), p = POSTERS[selected]; if(!box || !p) return;
   if(!DIBUJOS.length){ box.hidden = true; return; }
-  const k = side + 'Deco', cur = p[k] || '', d = DIBUJOS.find(x => x.id === cur);
+  const k = side + 'Deco', cur = p[k] || '', d = decoDe(cur);
   const ink = decoInk(p, side);
-  let h = '<button type="button" class="deco-toggle">' + (d ? '<span class="deco-ic" style="color:' + (inkLuma(ink) > .9 ? '#999' : ink) + '">' + d.svg + '</span>' + d.es : '<span class="es">Añadir un dibujo</span><span class="en">Add a drawing</span>') + '<i>' + (decoOpen[side] ? '−' : '+') + '</i></button>';
-  if(decoOpen[side]) h += '<div class="deco-grid"><button type="button" class="deco-b deco-none' + (cur ? '' : ' on') + '" data-d=""><span class="es">Sin dibujo</span><span class="en">None</span></button>'
-    + DIBUJOS.map(x => '<button type="button" class="deco-b' + (x.id === cur ? ' on' : '') + '" data-d="' + x.id + '" title="' + x.es + '">' + x.svg + '</button>').join('') + '</div>';
-  if(cur){
+  const tab = DECO_TAB[side];
+  if(d && !tab.c){ tab.t = d.t; tab.c = d.c; }
+  const temas = [...new Set(DIBUJOS.filter(x => x.t === tab.t).map(x => x.c))];
+  if(!temas.includes(tab.c)) tab.c = temas[0];
+  let h = '<button type="button" class="deco-toggle">' + (d ? '<span class="deco-ic">' + decoIcon(d, inkLuma(ink) > .9 ? '#999' : ink) + '</span>' + d.es : '<span class="es">Añadir un dibujo</span><span class="en">Add a drawing</span>') + '<i>' + (decoOpen[side] ? '−' : '+') + '</i></button>';
+  if(decoOpen[side]){
+    const est = [['l', 'Dibujos', 'Drawings'], ['e', 'Emojis', 'Emojis']];
+    h += '<div class="deco-est" role="tablist">' + est.map(e => '<button type="button" role="tab" class="deco-est-b' + (tab.t === e[0] ? ' on' : '') + '" data-t="' + e[0] + '"><span class="es">' + e[1] + '</span><span class="en">' + e[2] + '</span></button>').join('') + '</div>';
+    h += '<div class="deco-cats">' + temas.map(c => '<button type="button" class="deco-cat' + (c === tab.c ? ' on' : '') + '" data-c="' + c + '">' + c + '</button>').join('') + '</div>';
+    h += '<div class="deco-grid' + (tab.t === 'e' ? ' emo' : '') + '"><button type="button" class="deco-b deco-none' + (cur ? '' : ' on') + '" data-d=""><span class="es">Sin dibujo</span><span class="en">None</span></button>'
+      + DIBUJOS.filter(x => x.t === tab.t && x.c === tab.c).map(x => '<button type="button" class="deco-b' + (x.id === cur ? ' on' : '') + '" data-d="' + x.id + '" title="' + x.es + '" aria-label="' + x.es + '">' + decoIcon(x, x.t === 'e' ? null : '#1a1a1a') + '</button>').join('') + '</div>';
+  }
+  if(cur && d && d.t !== 'e'){
     h += '<div class="ink-row deco-ink"><span class="ink-lbl"><span class="es">Color del dibujo</span><span class="en">Drawing colour</span></span>'
       + INKS[side].map(c => '<button type="button" class="ink' + (c === ink ? ' on' : '') + '" data-c="' + c + '" style="background:' + c + '" aria-label="Color ' + c + '"></button>').join('')
       + '<label class="ink ink-any' + (INKS[side].includes(ink) ? '' : ' on') + '" title="Otro color"><input type="color" value="' + ink + '" aria-label="Otro color"></label></div>';
+  }
+  if(cur){
     h += '<div class="deco-ctrl">';
     if(side === 'front') h += '<div class="zone-tabs">' + [['top','Arriba','Top'],['mid','Centro','Middle'],['bottom','Abajo','Bottom']].map(z => '<button type="button" class="zone-tab' + (p.frontDecoX == null && frontDecoPosOf(p) === z[0] ? ' active' : '') + '" data-pos="' + z[0] + '"' + (frontUsados(p).includes(z[0]) ? ' disabled' : '') + '><span class="es">' + z[1] + '</span><span class="en">' + z[2] + '</span></button>').join('') + '</div>';
     const lim = side === 'front' ? [8, 45, p.frontDecoSize || 16] : [50, 100, p.backDecoSize || 90];
@@ -2274,6 +2301,8 @@ function renderDeco(side){
   }
   box.innerHTML = h;
   box.querySelector('.deco-toggle').onclick = () => { decoOpen[side] = !decoOpen[side]; renderDeco(side); };
+  box.querySelectorAll('.deco-est-b').forEach(b => b.onclick = () => { tab.t = b.dataset.t; tab.c = ''; const t0 = DIBUJOS.find(x => x.t === tab.t); tab.c = t0 ? t0.c : ''; renderDeco(side); });
+  box.querySelectorAll('.deco-cat').forEach(b => b.onclick = () => { tab.c = b.dataset.c; const sl = box.querySelector('.deco-cats').scrollLeft; renderDeco(side); const c2 = box.querySelector('.deco-cats'); if(c2) c2.scrollLeft = sl; });
   box.querySelectorAll('.deco-b').forEach(b => b.onclick = () => { p[k] = b.dataset.d; mmEv('dibujo', side + ' ' + b.dataset.d); decoOpen[side] = false; renderDeco(side); txtRepaint(side); });
   box.querySelectorAll('[data-pos]').forEach(b => b.onclick = () => { p.frontDecoPos = b.dataset.pos; p.frontDecoX = p.frontDecoY = null; renderDeco(side); txtRepaint(side); });
   const color = c => {
@@ -2283,7 +2312,8 @@ function renderDeco(side){
   box.querySelectorAll('.deco-ink button.ink').forEach(b => b.onclick = () => color(b.dataset.c));
   const ci = box.querySelector('.deco-ink input'); if(ci) ci.addEventListener('change', e => color(e.target.value));
   const r = box.querySelector('.deco-ctrl input[type=range]');
-  if(r) r.addEventListener('input', () => { p[k + 'Size'] = +r.value; txtRepaint(side); });
+  if(r){ r.addEventListener('input', () => { p[k + 'Size'] = +r.value; if(side === 'front') applyFrontRapido(selected); else txtRepaint(side); });
+    r.addEventListener('change', () => txtRepaint(side)); }
 }
 function renderTxtExtras(){ ['front','back'].forEach(s => { renderInk(s); renderDeco(s); renderTwo(s); }); syncFrontZoneUI(); }
 
