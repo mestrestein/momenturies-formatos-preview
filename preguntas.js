@@ -213,12 +213,171 @@
       '<p>Si pides con <b>al menos 10 días laborables de margen</b>, normalmente sí. Para fechas justas, elige el envío exprés y escríbenos: haremos lo posible por adelantarlo.</p>']
   ];
 
-  window.MM_FAQ = { temas: TEMAS, preguntas: PREGUNTAS };
+  /* ═════ FAQ DE LAS FICHAS (10-nov) ═════
+     La portada, preguntas.html y la ficha del Cuadro usan la lista de arriba tal cual.
+     Imán, Sobremesa y Colgador usan su propia lista, hecha con las preguntas de arriba que tienen
+     sentido para ellos (G = la misma pregunta, con algún cambio de palabra si hace falta) y las suyas.
+     Si cambia una respuesta común, se cambia arriba y sale en todas. */
+  var G = function(texto, destacada, cambios){
+    var p = PREGUNTAS.filter(function(x){ return x[2] === texto; })[0];
+    if(!p) return null;
+    var r = p[3]; (cambios || []).forEach(function(c){ r = r.split(c[0]).join(c[1]); });
+    return [p[0], destacada == null ? p[1] : destacada, p[2], r];
+  };
+  var PIEZAS = [['Cada conjunto de cuadros se fabrica', 'Cada pieza se fabrica'], ['Todos nuestros cuadros se fabrican', 'Todas nuestras piezas se fabrican'],
+    ['tus cuadros llegan dañados', 'tus piezas llegan dañadas'], ['sustituimos los afectados', 'sustituimos las afectadas'], ['de tus cuadros', 'de tus piezas']];
+  var PEDIDOS = [['qué cuadros has pedido', 'qué piezas has pedido']];
+  var tablaSimple = function(filas, nota){
+    return '<table class="fq-tabla fq-tam"><thead><tr><th>Tamaño</th><th>Medida</th><th>Precio</th></tr></thead><tbody>'
+      + filas.map(function(s){ return '<tr><td>' + s[0] + '</td><td>' + s[1] + ' cm</td><td>' + eur(s[2]) + '</td></tr>'; }).join('')
+      + '</tbody></table><p class="fq-nota">' + nota + '</p>';
+  };
+  var fotosCalidad = function(pieza){
+    return '<p>A estos tamaños, <b>cualquier foto hecha con el móvil y guardada a tamaño completo queda bien</b> en tu ' + pieza + '. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si una foto se queda corta, <b>el editor te avisa antes de pagar</b>.</p>'
+      + '<p>Si alguna foto no llega a nuestro estándar de impresión, <b>la mejoramos con nuestra IA antes de imprimirla, sin coste para ti</b>.</p>'
+      + '<p class="fq-nota">Al hacer el pedido aceptas esta mejora. Si prefieres que no usemos la IA en tus fotos, avísanos al hacer el pedido; en ese caso, la calidad de impresión de esa foto no será motivo de reclamación.</p>';
+  };
+  var fotosRecorte = function(pieza){
+    return '<p>En el editor, <b>toca la foto y adáptala a tu gusto</b>:</p>'
+      + '<ul><li><b>Ajustar el recorte:</b> elige la parte de la foto que quieres en tu ' + pieza + '.</li>'
+      + '<li><b>Centrar la imagen:</b> mueve y recoloca la foto hasta conseguir el encuadre perfecto.</li>'
+      + '<li><b>Horizontal o vertical:</b> colócala como mejor te venga.</li></ul>'
+      + '<p>Así compruebas cómo quedará antes de confirmar la compra.</p>';
+  };
+  var fotosCambiar = function(pieza, otras){
+    return '<p>Cada ' + pieza + ' es <b>una única pieza</b>: la foto va impresa directamente sobre el aluminio, así que, una vez fabricada, <b>no se puede cambiar ni sustituir</b>.</p>'
+      + '<p><b>¡Pero renovarlo es muy sencillo!</b> Pide ' + otras + ' con tus fotos más recientes en unos clics y combínalos con los que ya tienes.</p>';
+  };
+
+  var FICHAS = {
+    iman: {
+      temas: [['iman','El imán'],['fotos','Tus fotos'],['pedido','Precios y pedido'],['envio','Producción y envío'],['garantia','Garantía y devoluciones'],['regalo','Regalo']],
+      preguntas: [
+        ['iman', 1, '¿En qué neveras se pega?',
+          '<p>En <b>cualquier superficie metálica a la que se pegue un imán</b>: la puerta de casi todas las neveras, el lateral de la lavadora o una pizarra magnética.</p>'
+          + '<p class="fq-nota"><b>Ojo:</b> algunas neveras de acero inoxidable no son magnéticas. Antes de pedir, prueba si se te pega cualquier imán que tengas por casa.</p>'],
+        ['iman', 1, '¿Viene con el imán puesto?',
+          '<p>Sí. Llega con el <b>imán ya pegado detrás</b>, listo para ponerlo en la nevera.</p>'],
+        ['iman', 1, 'Tamaños y precios',
+          '<p>El imán va en <b>dos tamaños</b>, y puedes mezclarlos en el mismo pedido:</p>'
+          + tablaSimple([['Pequeño','7×10',9.99],['Grande','10×15',14.99]], 'IVA incluido. Y si pides varios, <b>hasta un 20 % de descuento</b>.')],
+        ['iman', 0, '¿Qué diferencia hay con un imán de foto normal?',
+          '<p>La foto va <b>impresa directamente sobre aluminio</b>, no sobre papel ni plástico. <b>No se dobla</b>, los colores se ven con más fondo y, como está en la cocina, se agradece que <b>se limpie con un paño</b>.</p>'],
+        ['iman', 0, '¿Cómo funcionan los conjuntos?',
+          '<p>Son composiciones pensadas para el centro de la puerta. Al elegir uno se abre el editor con el conjunto puesto y <b>solo tienes que poner una foto en cada hueco</b>. Puedes añadir otro debajo, repetir el tuyo hasta abajo o llenar la nevera entera.</p>'],
+        ['iman', 0, '¿Lleva dedicatoria detrás?',
+          '<p>No. En el imán la parte de atrás es el propio imán, así que no lleva texto. Si quieres una dedicatoria, el <a href="ficha-cuadro.html">Cuadro</a> y la <a href="ficha-sobremesa.html">Sobremesa</a> sí la llevan.</p>'],
+        G('¿Cómo se limpia?'),
+        G('¿Qué productos hay?'),
+        ['fotos', 1, '¿Qué calidad tienen que tener mis fotos?', fotosCalidad('imán')],
+        ['fotos', 1, '¿Cómo recorto y ajusto mis fotos antes del pedido?', fotosRecorte('imán')],
+        ['fotos', 0, '¿Puedo cambiar las fotos una vez comprado?', fotosCambiar('imán', 'nuevos imanes')],
+        G('¿Qué hacéis con mis fotos?'),
+        ['pedido', 1, '¿Cómo funcionan los descuentos por cantidad?',
+          '<p><b>Cuantos más imanes, menos pagas por cada uno:</b></p>'
+          + '<ul><li>2 piezas: <b>-10 %</b></li><li>3 o 4 piezas: <b>-15 %</b></li><li>5 o más: <b>-20 %</b></li></ul>'
+          + '<p>El descuento <b>se aplica solo en el carrito</b> y cuenta también los cuadros y sobremesas que lleves en el mismo pedido.</p>'],
+        G('¿Cómo cancelo o edito mi pedido?'),
+        G('¿Cómo consulto el estado y los detalles de mi pedido?', null, PEDIDOS),
+        G('¿Cómo puedo pagar?'),
+        G('¿Necesito una cuenta para comprar?'),
+        G('¿Cuánto tarda en llegar?'),
+        G('¿Cuánto cuesta el envío?'),
+        G('¿Enviáis fuera de España?'),
+        G('¿Llega bien protegido?'),
+        G('¿Y si llega dañado?'),
+        ['garantia', 1, '¿Puedo devolverlo si cambio de opinión?',
+          '<p>Cada pieza se fabrica con tu foto, así que <b>no tiene derecho de desistimiento</b> (art. 103.c de la Ley General para la Defensa de los Consumidores). Por eso te dejamos <b>verlo en la nevera antes de pagar</b>. Si llega con un defecto, lo reimprimimos.</p>'],
+        G('Política de devoluciones y reembolsos', 0, PIEZAS),
+        G('Mi pedido no llega. ¿Qué hago?'),
+        ['regalo', 1, '¿Puedo mandarlo directamente como regalo?',
+          '<p>Sí. Pones <b>una dirección de entrega distinta a la tuya</b> y añades una nota en los comentarios del pedido. <b>El precio no aparece dentro del paquete</b>.</p>'],
+        G('¿Llega a tiempo para una fecha concreta?')
+      ]
+    },
+    sobremesa: {
+      temas: [['sobremesa','La sobremesa'],['fotos','Tus fotos'],['pedido','Precios y pedido'],['envio','Producción y envío'],['garantia','Garantía y devoluciones'],['regalo','Regalo y dedicatoria']],
+      preguntas: [
+        ['sobremesa', 1, '¿Cómo se sostiene de pie?',
+          '<p>La lámina de aluminio <b>encaja en la peana de bambú</b> y se queda de pie sola, en una estantería, la mesa o la mesilla. <b>La peana viene incluida</b> en el precio.</p>'],
+        ['sobremesa', 1, 'Tamaños y precios',
+          '<p>La sobremesa va en <b>tres tamaños</b>, todos con peana de bambú:</p>'
+          + tablaSimple([['Pequeña','10,2×15,2',28.99],['Mediana','12,7×17,8',34.99],['Grande','20,3×25,4',44.99]], 'IVA y peana incluidos. Y si pides varias piezas, <b>hasta un 20 % de descuento</b>.')],
+        ['sobremesa', 1, '¿Qué diferencia hay con un portafotos?',
+          '<p>La foto va <b>impresa directamente sobre aluminio</b>: no hay cristal que refleje o se rompa ni papel que se amarillee con el sol. Y <b>se limpia con un paño</b>.</p>'],
+        G('¿Cómo es el acabado? ¿Brilla mucho?', null, [['En una pared sin luz directa', 'En un sitio sin luz directa']]),
+        G('¿Cómo se limpia?'),
+        G('¿Qué productos hay?'),
+        ['fotos', 1, '¿Qué calidad tienen que tener mis fotos?', fotosCalidad('sobremesa')],
+        ['fotos', 1, '¿Cómo recorto y ajusto mis fotos antes del pedido?', fotosRecorte('sobremesa')],
+        ['fotos', 0, '¿Puedo cambiar las fotos una vez comprado?', fotosCambiar('sobremesa', 'nuevas piezas')],
+        G('¿Qué hacéis con mis fotos?'),
+        ['pedido', 1, '¿Cómo funcionan los descuentos por cantidad?',
+          '<p><b>Cuantas más piezas, menos pagas por cada una:</b></p>'
+          + '<ul><li>2 piezas: <b>-10 %</b></li><li>3 o 4 piezas: <b>-15 %</b></li><li>5 o más: <b>-20 %</b></li></ul>'
+          + '<p>El descuento <b>se aplica solo en el carrito</b> y cuenta también los cuadros e imanes que lleves en el mismo pedido.</p>'],
+        G('¿Cómo cancelo o edito mi pedido?'),
+        G('¿Cómo consulto el estado y los detalles de mi pedido?', null, PEDIDOS),
+        G('¿Cómo puedo pagar?'),
+        G('¿Necesito una cuenta para comprar?'),
+        G('¿Cuánto tarda en llegar?'),
+        G('¿Cuánto cuesta el envío?'),
+        G('¿Enviáis fuera de España?'),
+        G('¿Llega bien protegido?'),
+        G('¿Y si llega dañado?'),
+        ['garantia', 1, '¿Puedo devolverla si cambio de opinión?',
+          '<p>Cada pieza se fabrica con tu foto, así que <b>no tiene derecho de desistimiento</b> (art. 103.c de la Ley General para la Defensa de los Consumidores). Por eso te dejamos <b>verla en su sitio antes de pagar</b>. Si llega con un defecto, la reimprimimos.</p>'],
+        G('Política de devoluciones y reembolsos', 0, PIEZAS),
+        G('Mi pedido no llega. ¿Qué hago?'),
+        G('¿Puedo mandarlo directamente como regalo?'),
+        G('¿Cómo funciona la dedicatoria?'),
+        G('¿Llega a tiempo para una fecha concreta?')
+      ]
+    },
+    colgador: {
+      temas: [['colgador','El colgador'],['colgar','Colgar sin agujeros'],['pedido','Pedido y envío'],['garantia','Garantía y devoluciones']],
+      preguntas: [
+        ['colgador', 1, '¿Cuánto peso aguanta?',
+          '<p><b>Hasta 1 kg.</b> Da de sobra para un cuadro mediano, una lámina con marco ligero o un espejo pequeño. Para algo más pesado, escríbenos y lo vemos.</p>'],
+        ['colgador', 1, '¿Qué puedo colgar, además de vuestros cuadros?',
+          '<p>Casi cualquier cosa plana de hasta 1 kg: <b>cuadros y láminas de otras tiendas, espejos pequeños, pizarras, corchos, calendarios o dibujos</b>. El imán va detrás de lo que cuelgas y la base, en la pared.</p>'],
+        ['colgador', 1, '¿Qué lleva cada colgador?',
+          '<p>Las dos piezas: el <b>imán</b>, que va detrás del cuadro, y la <b>base adhesiva</b>, que va en la pared. Al acercarlos se enganchan solos.</p>'],
+        ['colgador', 0, '¿Cuál elijo, el grande o el pequeño?',
+          '<p>El <b>grande (8×8 cm)</b> para los cuadros grandes y el <b>pequeño (2×2 cm)</b> para los pequeños. Si dudas, escríbenos con la medida de tu cuadro y te decimos cuál.</p>'],
+        ['colgador', 1, '¿Mis cuadros de Momenturies ya lo llevan?',
+          '<p>Sí. <b>Cada cuadro llega con su colgador incluido.</b> Este es para colgar otras cosas, tener bases de más o uno de repuesto.</p>'],
+        G('¿Se cuelga sin herramientas ni agujeros en la pared?', 0),
+        G('¿En qué paredes se puede pegar la base?'),
+        G('¿Deja marca al quitarlo?'),
+        G('¿Se ve el imán una vez colgado?'),
+        G('¿Tus cuadros se despegan o se caen? Así lo solucionas'),
+        ['pedido', 1, '¿Cuánto tarda en llegar?',
+          '<p>Como no se personaliza, <b>sale en 24 a 72 h</b>. El envío tarda <b>desde 24 h hasta 7 días laborables</b>, según el destino y el tipo de envío. Antes de pagar verás el plazo y el precio exactos.</p>'],
+        ['pedido', 0, '¿Cuánto cuesta el envío?', G('¿Cuánto cuesta el envío?')[3]],
+        ['pedido', 0, '¿Enviáis fuera de España?', G('¿Enviáis fuera de España?')[3]],
+        G('¿Cómo puedo pagar?'),
+        G('¿Necesito una cuenta para comprar?'),
+        ['garantia', 1, '¿Puedo devolverlo?',
+          '<p>Sí. Como no está personalizado, <b>tienes 14 días desde que lo recibes para devolverlo</b>. Escríbenos a ' + MAIL + ' y te contamos cómo.</p>'],
+        ['garantia', 1, '¿Y si llega dañado?',
+          '<p><b>Te enviamos otro sin coste.</b> Escríbenos con una foto en los 14 días siguientes a la entrega; no hace falta que nos devuelvas el primero.</p>'],
+        G('Mi pedido no llega. ¿Qué hago?')
+      ]
+    }
+  };
+  /* las comunes de «El cuadro» van al tema del producto; en el colgador, las de envío van a «Pedido y envío» */
+  var REMAP = { iman: { producto: 'iman' }, sobremesa: { producto: 'sobremesa' }, colgador: { envio: 'pedido' } };
+  Object.keys(FICHAS).forEach(function(f){ FICHAS[f].preguntas.forEach(function(p){ if(p && REMAP[f][p[0]]) p[0] = REMAP[f][p[0]]; }); });
+
+  window.MM_FAQ = { temas: TEMAS, preguntas: PREGUNTAS, fichas: FICHAS };
 
   /* Pinta una lista con chips de filtro. «Todas» = destacadas de cada tema, agrupadas por tema.
-     opciones: { chips, lista, grupos (true = con título de tema), verTodas (texto del enlace por tema o null) } */
+     opciones: { chips, lista, grupos (true = con título de tema), hashes, ficha ('iman' | 'sobremesa' | 'colgador'; sin ficha = la lista común) } */
   window.mmPintaFaq = function(o){
     var chips = o.chips, lista = o.lista; if(!lista) return;
+    var TEMAS = (FICHAS[o.ficha] || {}).temas || window.MM_FAQ.temas;
+    var PREGUNTAS = ((FICHAS[o.ficha] || {}).preguntas || window.MM_FAQ.preguntas).filter(Boolean);
     var nombre = {}; TEMAS.forEach(function(t){ nombre[t[0]] = t[1]; });
     var det = function(p){ return '<details data-t="' + p[0] + '"><summary>' + p[2] + '</summary><div class="fq-a">' + p[3] + '</div></details>'; };
     var pinta = function(t){
