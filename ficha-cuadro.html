@@ -459,6 +459,24 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .faq summary::after{content:'+';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:400;color:var(--terra);transition:transform .2s}
 .faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .faq details p{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+/* 10-nov: FAQ comunes (salen de preguntas.js, las mismas que en la portada) */
+.faq-cats button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .2s}
+.faq-cats button:hover{border-color:#bbb}
+.faq-cats button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.faq .fq-a{font-size:15.5px;line-height:1.65;color:var(--ink2);padding:0 30px 22px 0}
+.faq .fq-a p{padding:0;margin:0 0 10px}
+.faq .fq-a ul,.faq .fq-a ol{margin:0 0 12px;padding-left:22px}
+.faq .fq-a li{margin:4px 0}
+.faq .fq-a b{color:var(--ink)}
+.faq .fq-a a{color:var(--ink);text-decoration:underline}
+.faq .fq-nota{background:var(--cream);border-radius:10px;padding:10px 14px;font-size:14px}
+.faq .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+.faq .fq-tabla th,.faq .fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.faq .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.faq .fq-vs td:first-child{background:var(--cream);color:var(--ink)}
+.faq .fq-vs thead th:first-child{color:var(--terra)}
+.faq .fq-tam .f th{padding-top:14px;color:var(--ink)}
+@media(max-width:700px){.faq-cats{flex-wrap:nowrap;overflow-x:auto;margin:20px -16px 0;padding:0 16px;scrollbar-width:none}.faq-cats button{white-space:nowrap;flex:none}}
 .faq details[hidden]{display:none}
 .help{margin-top:26px;background:var(--cream);border-radius:18px;padding:22px}
 .help b{font-size:16px}
@@ -1061,34 +1079,9 @@ const WHY = [
   let ancho = innerWidth; addEventListener('resize', () => { if(innerWidth !== ancho){ ancho = innerWidth; cerrar(); } });
 })();
 
-/* ═════ FAQ ═════ */
-const FAQ = [
-  ['colgado','¿De verdad aguanta sin clavos?','Sí. La base adhesiva va pegada a la pared y el cuadro se engancha encima con el imán premium que lleva detrás. La plancha de aluminio pesa poco, así que el imán la sujeta sin problema, y puedes recolocarla las veces que quieras.'],
-  ['colgado','¿En qué paredes se puede pegar la base?','En paredes lisas y limpias: pintura plástica, azulejo, madera lacada, cristal o puertas de armario. En gotelé muy marcado, papel pintado que se despega o pintura recién dada (menos de 3 semanas) no te lo recomendamos. Si dudas, escríbenos con una foto de tu pared.'],
-  ['colgado','¿Deja marca al quitarlo?','No. El cuadro se separa del imán sin esfuerzo y la base adhesiva se retira tirando despacio, en paralelo a la pared. No quedan agujeros ni marcas de taladro, por eso funciona tan bien en pisos de alquiler.'],
-  ['colgado','¿Se ve el imán una vez colgado?','No. El imán va justo detrás, en el centro del cuadro, así que una vez colgado solo se ve tu foto, como si flotara en la pared.'],
-  ['producto','¿Qué diferencia hay con una foto enmarcada?','La tinta va impresa directamente sobre el aluminio, sin papel ni cristal delante. Los colores tienen más fondo, no hay reflejos de cristal, no se ondula con la humedad y pesa mucho menos que un marco. Y se cuelga con imán, sin agujeros.'],
-  ['producto','¿Vale cualquier foto del móvil?','Casi todas. Una foto hecha con el móvil a tamaño completo llega bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta para el tamaño que elijas, el editor te avisa antes de pagar.'],
-  ['producto','¿Qué tamaños y formatos hay?','Tres formatos: cuadrado, clásico y retrato, de 10×15 a 30,5×43,1 cm. Los precios van desde 19,99 € (clásico 10×15 y retrato 12×16). Los eliges en el editor viendo ya tu foto encuadrada.'],
-  ['producto','¿Puedo ponerlo en la cocina o el baño?','Sí. El aluminio no absorbe humedad ni se ondula. Solo evita ponerlo justo encima del fuego o en la ducha. Se limpia con un paño suave, seco o un poco húmedo.'],
-  ['producto','¿Cómo funciona la dedicatoria?','En el editor escribes unas palabras para el dorso y eliges la letra. Va impresa detrás del cuadro. Es opcional y no cuesta más.'],
-  ['packs','¿Cómo funcionan los descuentos por cantidad?','Cuantos más cuadros, menos pagas por cada uno: 2 cuadros -10 %, 3 o 4 cuadros -15 % y 5 o más -20 %. El descuento se aplica solo en el carrito y puedes mezclar tamaños y productos.'],
-  ['packs','¿Cómo sé cómo quedará la composición?','Al elegir una composición se abre el editor con ella puesta. Subes tus fotos, eliges la estancia (salón, dormitorio, pasillo…) y la ves colgada a escala antes de pagar. Puedes cambiar fotos y orden todas las veces que quieras.'],
-  ['envio','¿Cuánto tarda en llegar?','Lo imprimimos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; con el exprés, 1-2. Verás el plazo y el precio exactos antes de pagar. A partir de 60 € el envío a España es gratis.'],
-  ['envio','¿Y si llega dañado?','Lo reimprimimos y te lo reenviamos sin coste. Escríbenos con una foto en los 14 días siguientes a la entrega y no hace falta devolver el primero.'],
-  ['envio','¿Puedo devolverlo?','Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Por eso te dejamos verlo en tu pared antes de pagar. Si llega con un defecto, lo reimprimimos.'],
-  ['regalo','¿Puedo mandarlo directamente como regalo?','Sí. Pones una dirección de entrega distinta a la tuya y añades una nota en los comentarios del pedido. El precio no aparece dentro del paquete, y la dedicatoria del dorso la lee solo quien lo descuelgue.'],
-  ['regalo','¿Llega a tiempo para una fecha concreta?','Si pides con al menos 7 días laborables de margen, normalmente sí. Para fechas justas, elige el envío exprés y escríbenos: haremos lo posible por priorizarlo.'],
-];
-(function(){
-  const cats = [['todas','Todas'],['colgado','Colgado'],['producto','El cuadro'],['packs','Packs'],['envio','Envío'],['regalo','Regalo']];
-  $('#faqCats').innerHTML = cats.map((c,i) => `<button type="button" class="chipbtn ${i ? '' : 'on'}" data-c="${c[0]}">${c[1]}</button>`).join('');
-  $('#faqList').innerHTML = FAQ.map((f,i) => `<details data-c="${f[0]}" ${i ? '' : 'open'}><summary>${f[1]}</summary><p>${f[2]}</p></details>`).join('');
-  $('#faqCats').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
-    [...$('#faqCats').children].forEach(x => x.classList.toggle('on', x === b));
-    document.querySelectorAll('#faqList details').forEach(d => d.hidden = b.dataset.c !== 'todas' && d.dataset.c !== b.dataset.c); });
-})();
 </script>
+<script src="preguntas.js?v=0d363e14"></script>
+<script>/* 10-nov: FAQ comunes */ mmPintaFaq({ chips: document.getElementById('faqCats'), lista: document.getElementById('faqList'), grupos: false });</script>
 <script src="carrito.js?v=0de0bab0"></script><script src="app.js?v=c1eb62d9" defer></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
 </body>
