@@ -486,31 +486,11 @@ const RESENAS = [];
   $('#opAviso').hidden = true;
 })();
 
-/* ═════ PREGUNTAS (26-oct): las dudas que también tienen Mixtiles y Metaleks, pero con lo nuestro:
-   aluminio HD, colgado con imán sobre lámina, lo ves en tu casa antes de pedirlo, paredes con descuento y dedicatoria ═════ */
+/* ═════ PREGUNTAS (10-nov): la misma lista que preguntas.html, en preguntas.js.
+   «Todas» enseña las destacadas de cada tema; cada tema, todas las suyas ═════ */
 (function(){
-  const lista = $('#pqLista'); if(!lista) return;
-  const FAQ = [
-    ['colgar', '¿Estropea la pared?', 'No. No hay que hacer ningún agujero. Primero pegas la lámina protectora, encima va el imán de pared y el cuadro se engancha con el suyo. La lámina cuida la pintura y, el día que la quites, sale sin dejar marca.'],
-    ['colgar', '¿De verdad aguanta sin clavos?', 'Sí. La plancha de aluminio pesa poco y el imán la sujeta firme. Aprieta la base contra la pared unos segundos al pegarla y no se mueve. Si un día la quieres en otro sitio, la recolocas.'],
-    ['colgar', '¿Puedo cambiar los cuadros de sitio?', 'Sí, está pensado para eso. Despegas el cuadro del imán y lo pones en otro: se queda recto otra vez. Así puedes intercambiar dos fotos o rehacer la pared entera sin agujeros nuevos.'],
-    ['colgar', '¿En qué paredes se puede poner?', 'En paredes lisas y limpias: pintura, azulejo, madera lacada o cristal. En gotelé muy marcado o papel pintado la lámina agarra peor; si es tu caso, escríbenos antes de pedir y lo vemos.'],
-    ['colgar', '¿Lo puedo poner en la cocina o en el baño?', 'Sí. El aluminio no absorbe humedad ni se ondula como el papel. Evita solo el agua directa y el fuego cerca. Se limpia con un paño suave, seco o un poco húmedo.'],
-    ['foto', '¿Vale cualquier foto del móvil?', 'Casi todas. Una foto hecha con el móvil a tamaño completo va bien hasta el tamaño grande. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si se queda corta para el tamaño que eliges, el editor te avisa antes de pagar.'],
-    ['foto', '¿Puedo ver cómo queda antes de pedirlo?', 'Sí, y es lo que más usáis. En el editor colocas tus fotos en una pared a tamaño real, cambias de habitación o de combinación con un toque y lo giras en 3D. Lo que ves es lo que te llega.'],
-    ['foto', '¿Cómo es el acabado? ¿Brilla mucho?', 'Es acabado brillo, en alta definición: la tinta va directa sobre el aluminio, sin papel ni cristal, y por eso los colores tienen esa profundidad. Como toda superficie brillante, frente a una ventana puede dar algún reflejo; en una pared sin luz directa luce más.'],
-    ['foto', '¿En qué se diferencia de un lienzo o un póster con marco?', 'No necesita marco ni cristal, no se ondula con la humedad, aguanta golpes y se cuelga con imán en vez de con clavo. Y la foto tiene más color y más nitidez que en papel.'],
-    ['pedido', '¿Qué tamaños hay?', 'El cuadro va en tres formatos (cuadrado, clásico y retrato), cada uno en varios tamaños, de 10×10 a 30,5×43,1 cm. Aparte están la sobremesa, de 10,2×15,2 a 20,3×25,4, y el imán para la nevera.'],
-    ['pedido', '¿Hay descuento si pido varios?', 'Sí, y se aplica solo: 10 % con dos cuadros, 15 % con tres o cuatro y 20 % con cinco o más. Las paredes ya montadas llevan el descuento puesto.'],
-    ['pedido', '¿Cuánto tarda en llegar?', 'Lo preparamos en 1-2 días laborables. El envío a España suele tardar 3-5 días laborables más; al resto de Europa, algo más. Verás el plazo y el precio exactos antes de pagar.'],
-    ['pedido', '¿Y si llega dañado o con un fallo de impresión?', 'Escríbenos a info@momenturies.com con una foto del problema en los 14 días siguientes y lo volvemos a imprimir sin coste. No hace falta devolver el primero.'],
-    ['pedido', '¿Puedo devolver mi pedido?', 'Cada pieza se fabrica con tu foto, así que no tiene derecho de desistimiento (art. 103.c de la Ley de Consumidores). Si llega con un defecto o dañado, lo reimprimimos sin coste.'],
-    ['regalo', '¿Puedo enviarlo directamente como regalo?', 'Sí. Pon la dirección de quien lo recibe y añade una nota en los comentarios del pedido. El precio no va dentro del paquete y llega listo para colgar.'],
-    ['regalo', '¿Cómo funciona la dedicatoria?', 'En el editor escribes unas palabras para el dorso y eliges la letra. Va impresa detrás de cada cuadro, así que en una pared de cuatro puedes poner cuatro frases distintas. Es opcional y no cuesta más.'],
-  ];
-  const pinta = c => { lista.innerHTML = FAQ.filter(f => c === '*' || f[0] === c).map(f => `<details><summary>${f[1]}</summary><p>${f[2]}</p></details>`).join(''); };
-  $$('#pqChips button').forEach(b => b.addEventListener('click', () => { $$('#pqChips button').forEach(x => x.classList.toggle('on', x === b)); pinta(b.dataset.c); }));
-  pinta('*');
+  const lista = $('#pqLista'); if(!lista || !window.mmPintaFaq) return;
+  window.mmPintaFaq({ chips: $('#pqChips'), lista, grupos: false });
 })();
 })();
 
