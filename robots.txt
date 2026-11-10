@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /soluciones/
+Disallow: /vista-cambios/
+Disallow: /_sugerencias/
 
 Sitemap: https://momenturies.com/sitemap.xml
