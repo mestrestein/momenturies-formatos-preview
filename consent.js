@@ -134,13 +134,13 @@
   var en = (document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'es').slice(0, 2) === 'en';
   var T = en ? {
     t: 'Cookies, in short', mas: 'More information', cfg: 'Settings', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
-    p: 'We use the necessary ones so the site and the editor work. If you let us, also Meta’s, to know which ads bring you here and show you things you’ll like. Your call.',
+    p: 'We use the necessary ones so the site and the editor work. If you let us, also analytics, to improve the site, and Meta’s, to know which ads bring you here. Your call.',
     nec: ['Necessary', 'Your design, the cart and the language. The site doesn’t work without them.'],
     ana: ['Analytics', 'See how the site is used (pages, buttons, steps in the editor) to improve it. Never what you write or your photos.'],
     ads: ['Advertising (Meta)', 'Measure which ads work and show you ours on Facebook and Instagram.'], link: 'Cookie settings'
   } : {
     t: 'Las cookies, en corto', mas: 'Más información', cfg: 'Configurar', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
-    p: 'Usamos las necesarias para que la web y el editor funcionen. Si nos dejas, también las de Meta, para saber qué anuncios te traen hasta aquí y enseñarte cosas que te interesen. Tú decides.',
+    p: 'Usamos las necesarias para que la web y el editor funcionen. Si nos dejas, también las de analítica, para mejorar la web, y las de Meta, para saber qué anuncios te traen hasta aquí. Tú decides.',
     nec: ['Necesarias', 'Tu diseño, el carrito y el idioma. Sin ellas la web no funciona.'],
     ana: ['Analítica', 'Ver cómo se usa la web (páginas, botones, pasos del editor) para mejorarla. Nunca lo que escribes ni tus fotos.'],
     ads: ['Publicidad (Meta)', 'Medir qué anuncios funcionan y enseñarte los nuestros en Facebook e Instagram.'], link: 'Configurar cookies'
@@ -159,7 +159,7 @@
       caja.setAttribute('role', 'dialog');
       caja.setAttribute('aria-label', T.t);
       caja.innerHTML = '<b class="t">' + T.t + '</b><p>' + T.p + ' <a href="cookies.html">' + T.mas + '</a></p>' +
-        '<div class="op">' + fila(T.nec) + (GA4 ? fila(T.ana, 'mmckAna') : '') + fila(T.ads, 'mmckAds') + '</div>' +
+        '<div class="op">' + fila(T.nec) + fila(T.ana, 'mmckAna') + fila(T.ads, 'mmckAds') + '</div>' +
         '<div class="bs"><button type="button" data-a="no">' + T.no + '</button><button type="button" data-a="si">' + T.si + '</button>' +
         '<button type="button" class="cf" data-a="cfg">' + T.cfg + '</button></div>';
       caja.addEventListener('click', function (e) {
