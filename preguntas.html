@@ -17,8 +17,25 @@
   .fq-wrap h1{font-family:var(--font-serif);font-size:clamp(26px,3.4vw,38px);line-height:1.15;margin-bottom:10px}
   .fq-lead{font-size:15.5px;line-height:1.7;color:#444;margin-bottom:26px}
   .fq-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px;position:sticky;top:0;background:var(--white,#fff);padding:10px 0;z-index:2}
-  .fq-chips a{font-size:13px;font-weight:600;padding:8px 14px;border:1.5px solid var(--gray2);border-radius:999px;color:#222;text-decoration:none;white-space:nowrap}
-  .fq-chips a:hover{border-color:#222}
+  .fq-chips button{font:600 13px Inter,-apple-system,Arial,sans-serif;padding:8px 14px;border:1.5px solid var(--gray2);border-radius:999px;background:#fff;color:#222;white-space:nowrap;cursor:pointer}
+  .fq-chips button:hover{border-color:#222}
+  .fq-chips button.on{background:#1a1a1a;border-color:#1a1a1a;color:#fff}
+  .fq-a{font-size:14.5px;line-height:1.75;color:#333;padding:0 40px 18px 0}
+  .fq-a p{margin:0 0 10px}
+  .fq-a ul,.fq-a ol{margin:0 0 12px;padding-left:22px}
+  .fq-a li{margin:4px 0}
+  .fq-a b{color:#111}
+  .fq-nota{background:#faf8f5;border-radius:10px;padding:10px 14px;font-size:14px}
+  .fq-ojo{background:#fbf1ec}
+  .fq-tabla{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0 12px}
+  .fq-tabla th,.fq-tabla td{padding:9px 8px;text-align:left;vertical-align:top;border-bottom:1px solid var(--gray2)}
+  .fq-tabla thead th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mid)}
+  .fq-vs td:first-child{background:#f6f1ea}
+  .fq-vs thead th:first-child{color:#c2613a}
+  .fq-vs td:last-child{color:#777}
+  .fq-tam .f th{padding-top:14px;font-weight:700;color:#111}
+  .fq-tam td:last-child{font-weight:700}
+  .fq-mas{margin-top:12px;border:0;background:none;padding:6px 0;font:600 14px Inter,-apple-system,Arial,sans-serif;color:#c2613a;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
   .fq-group{scroll-margin-top:70px;margin-bottom:34px}
   .fq-group h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:6px}
   .fq-group details{border-bottom:1px solid var(--gray2)}
@@ -26,15 +43,13 @@
   .fq-group summary::-webkit-details-marker{display:none}
   .fq-group summary::after{content:'+';flex:0 0 28px;height:28px;border:1.5px solid var(--gray2);border-radius:50%;display:grid;place-items:center;font-weight:500;font-size:17px;transition:transform .2s}
   .fq-group details[open] summary::after{transform:rotate(45deg);background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-  .fq-group details p{font-size:14.5px;line-height:1.75;color:#333;padding:0 40px 18px 0;margin:0}
-  .fq-group details p + p{margin-top:-8px}
   .fq-group a{text-decoration:underline}
   .fq-help{border:1px solid var(--gray2);border-radius:14px;padding:22px 24px;margin-top:20px;background:#faf8f5}
   .fq-help b{display:block;font-size:16px;margin-bottom:6px}
   .fq-help p{font-size:14.5px;line-height:1.65;color:#444;margin:0 0 12px}
   .fq-cta{display:inline-flex;background:var(--black);color:#fff;border-radius:8px;padding:12px 20px;font-size:14px;font-weight:700;text-decoration:none}
   .fq-cta:hover{background:#333}
-  @media(max-width:760px){ .fq-wrap{padding:28px 18px 60px} .fq-group details p{padding-right:0} .fq-chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -18px 24px;padding:10px 18px} }
+  @media(max-width:760px){ .fq-wrap{padding:28px 18px 60px} .fq-a{padding-right:0} .fq-tabla{font-size:13px} .fq-chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -18px 24px;padding:10px 18px} }
 </style>
 <script src="consent.js?v=bafba393" defer></script>
 </head>
@@ -61,109 +76,11 @@
 
 <main class="fq-wrap">
   <h1>Preguntas frecuentes</h1>
-  <p class="fq-lead">Lo que más nos preguntáis antes de pedir. Si tu duda no está aquí, escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a> y te contesta una persona.</p>
+  <p class="fq-lead">Todo lo que necesitas saber antes y después de pedir, ordenado por temas. Si tu duda no está aquí, escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a> y te contesta una persona.</p>
 
-  <div class="fq-chips">
-    <a href="#colgar">Colgar</a>
-    <a href="#fotos">Tus fotos</a>
-    <a href="#producto">El producto</a>
-    <a href="#pedido">Precios y pedido</a>
-    <a href="#envio">Envío</a>
-    <a href="#problemas">Si algo va mal</a>
-    <a href="#regalo">Regalo</a>
-  </div>
-
-  <section class="fq-group" id="colgar">
-    <h2>Colgar</h2>
-    <details><summary>¿Hay que hacer agujeros?</summary>
-      <p>No. Primero pegas la lámina protectora en la pared, encima va el imán de pared y el cuadro se engancha con el imán que lleva detrás. No hace falta taladro, ni clavos, ni nivel de burbuja si no quieres.</p></details>
-    <details><summary>¿De verdad aguanta sin clavos?</summary>
-      <p>Sí. La plancha de aluminio pesa poco y el imán la sujeta firme. Al pegar la base, apriétala contra la pared unos segundos y espera un rato antes de colgar el cuadro.</p></details>
-    <details><summary>¿Deja marca al quitarlo?</summary>
-      <p>No. El cuadro se separa del imán sin esfuerzo. La base adhesiva se retira tirando despacio, en paralelo a la pared, y no deja agujeros. Por eso funciona tan bien en pisos de alquiler.</p></details>
-    <details><summary>¿En qué paredes se puede poner?</summary>
-      <p>En paredes lisas y limpias: pintura plástica, azulejo, madera lacada, cristal o puertas de armario. No lo recomendamos en gotelé muy marcado, en papel pintado que se despega ni en pintura recién dada (menos de 3 semanas). Si dudas, mándanos una foto de tu pared y te decimos.</p></details>
-    <details><summary>¿Se ve el imán una vez colgado?</summary>
-      <p>No. Va detrás, en el centro del cuadro. De frente solo se ve tu foto, que queda un poco separada de la pared, como si flotara.</p></details>
-    <details><summary>¿Puedo cambiar los cuadros de sitio?</summary>
-      <p>Sí, está pensado para eso. Despegas el cuadro y lo pones sobre otro imán. Puedes intercambiar dos fotos o rehacer la pared entera sin agujeros nuevos.</p></details>
-    <details><summary>¿Lo puedo poner en la cocina o en el baño?</summary>
-      <p>Sí. El aluminio no absorbe humedad ni se ondula como el papel. Evita solo el agua directa, como dentro de la ducha, y el calor del fuego justo encima.</p></details>
-  </section>
-
-  <section class="fq-group" id="fotos">
-    <h2>Tus fotos</h2>
-    <details><summary>¿Vale cualquier foto del móvil?</summary>
-      <p>Casi todas. Una foto hecha con el móvil y guardada a tamaño completo va bien incluso en los tamaños grandes. Lo que no funciona son las capturas de pantalla ni las fotos reenviadas por WhatsApp, que llegan comprimidas. Si tu foto se queda corta para el tamaño que eliges, el editor te avisa antes de pagar.</p></details>
-    <details><summary>¿Puedo ver cómo queda antes de pedirlo?</summary>
-      <p>Sí. En el editor colocas tus fotos, eliges una habitación (salón, dormitorio, pasillo…) y ves el cuadro colgado a escala. También lo puedes girar en 3D. Lo que ves es lo que imprimimos.</p></details>
-    <details><summary>¿Puedo recortar o mover la foto?</summary>
-      <p>Sí. En el editor arrastras la foto para encuadrarla y haces zoom hasta que quede como quieres. Lo que queda dentro del cuadro es lo que se imprime.</p></details>
-    <details><summary>¿Qué hacéis con mis fotos?</summary>
-      <p>Las usamos solo para fabricar tu pedido. No las publicamos ni se las damos a nadie. Lo explicamos en la <a href="privacidad.html">política de privacidad</a>.</p></details>
-    <details><summary>¿Y si no tengo una foto mía?</summary>
-      <p>Puedes elegir una obra o un diseño de nuestra <a href="galeria.html">galería de arte</a>, o crear un cuadro personalizado de cielo estrellado o de mapa de un sitio que sea importante para ti.</p></details>
-  </section>
-
-  <section class="fq-group" id="producto">
-    <h2>El producto</h2>
-    <details><summary>¿De qué está hecho?</summary>
-      <p>De una plancha fina de aluminio con la foto impresa en alta definición. La tinta queda dentro del recubrimiento del aluminio, no pegada encima, así que no se descascarilla. No lleva papel, ni cristal, ni marco.</p></details>
-    <details><summary>¿Cómo es el acabado? ¿Brilla mucho?</summary>
-      <p>Es acabado brillo. Los colores tienen mucha profundidad y los negros salen muy negros. Como toda superficie brillante, frente a una ventana puede dar algún reflejo. En una pared sin luz directa luce más.</p></details>
-    <details><summary>¿En qué se diferencia de un lienzo o de una foto enmarcada?</summary>
-      <p>No necesita marco ni cristal, no se ondula con la humedad, aguanta golpes y pesa mucho menos. Se cuelga con imán en vez de con clavo. Y la foto tiene más color y más nitidez que en papel o en tela.</p></details>
-    <details><summary>¿Qué productos hay?</summary>
-      <p><b>Cuadro</b> para la pared, en tres formatos (cuadrado, clásico y retrato) de 10×10 a 30,5×43,1 cm. <b>Sobremesa</b>, con peana de bambú, para apoyar en una estantería o en la mesa. Y el <b>Imán</b> para la nevera. También vendemos el <a href="colgador-iman.html">colgador de imán</a> suelto.</p></details>
-    <details><summary>¿Cómo se limpia?</summary>
-      <p>Con un paño suave, seco o un poco húmedo. Sin productos abrasivos ni estropajos.</p></details>
-  </section>
-
-  <section class="fq-group" id="pedido">
-    <h2>Precios y pedido</h2>
-    <details><summary>¿Cuánto cuesta?</summary>
-      <p>Depende del tamaño. El cuadro empieza en 14,99 € (cuadrado 10×10) y el más grande, 30,5×43,1 cm, cuesta 59,99 €. Ves el precio exacto en el editor según lo vas eligiendo. Todos los precios llevan el IVA incluido.</p></details>
-    <details><summary>¿Hay descuento si pido varios?</summary>
-      <p>Sí, y se aplica solo en el carrito: 10 % con dos piezas, 15 % con tres o cuatro y 20 % con cinco o más. Puedes mezclar tamaños y productos. Las <a href="paredes.html">paredes de ensueño</a> ya llevan el descuento puesto.</p></details>
-    <details><summary>¿Cómo puedo pagar?</summary>
-      <p>Con tarjeta y con los demás medios que te enseña el pago seguro de nuestra tienda, que funciona con Shopify. Nosotros nunca vemos ni guardamos los datos de tu tarjeta.</p></details>
-    <details><summary>¿Necesito una cuenta para comprar?</summary>
-      <p>No. Puedes pedir como invitado. Si quieres ver tus pedidos más adelante, entra en <a href="cuenta.html">Mi cuenta</a> con el mismo email: te llega un código y no hace falta contraseña.</p></details>
-    <details><summary>¿Puedo cambiar algo después de pagar?</summary>
-      <p>Escríbenos cuanto antes a <a href="mailto:info@momenturies.com">info@momenturies.com</a> con tu número de pedido. Si todavía no lo hemos impreso, lo cambiamos sin problema.</p></details>
-  </section>
-
-  <section class="fq-group" id="envio">
-    <h2>Envío</h2>
-    <details><summary>¿Cuánto tarda en llegar?</summary>
-      <p>Lo imprimimos y preparamos en 1-2 días laborables. Después, el envío estándar tarda 3-5 días laborables en España, 4-6 en Portugal y 5-8 al resto de la Unión Europea. En España también hay envío exprés de 1-2 días laborables.</p></details>
-    <details><summary>¿Cuánto cuesta el envío?</summary>
-      <p>En España, 4,95 € el estándar y gratis a partir de 60 €. El exprés cuesta 9,95 €. A Portugal, 6,95 € (gratis desde 80 €). Al resto de la Unión Europea, 9,95 € (gratis desde 100 €). Lo ves todo antes de pagar. Tienes el detalle en <a href="envios.html">Envíos y devoluciones</a>.</p></details>
-    <details><summary>¿Enviáis fuera de España?</summary>
-      <p>Sí, a Portugal y a los demás países de la Unión Europea. Fuera de la UE de momento no enviamos.</p></details>
-    <details><summary>¿Llega bien protegido?</summary>
-      <p>Sí. Cada pieza va protegida para que llegue sin golpes ni rayas. Si aun así llega dañada, te la reimprimimos gratis.</p></details>
-  </section>
-
-  <section class="fq-group" id="problemas">
-    <h2>Si algo va mal</h2>
-    <details><summary>¿Y si llega dañado o con un fallo de impresión?</summary>
-      <p>Lo volvemos a imprimir y te lo mandamos sin coste. Escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a> con una foto del problema en los 14 días siguientes a recibirlo. No hace falta que nos devuelvas el primero.</p></details>
-    <details><summary>¿Puedo devolver mi pedido?</summary>
-      <p>Cada pieza se fabrica con tu foto, así que no tiene el derecho de desistimiento de 14 días (art. 103.c de la Ley General para la Defensa de los Consumidores). Por eso te dejamos verla en tu pared antes de pagar. El colgador de imán suelto sí se puede devolver en 14 días. Lo explicamos en <a href="envios.html">Envíos y devoluciones</a>.</p></details>
-    <details><summary>Mi pedido no llega. ¿Qué hago?</summary>
-      <p>Cuando sale el paquete te mandamos un email con el seguimiento. Si ha pasado el plazo y no lo tienes, escríbenos con tu número de pedido y lo buscamos con la empresa de transporte.</p></details>
-  </section>
-
-  <section class="fq-group" id="regalo">
-    <h2>Regalo</h2>
-    <details><summary>¿Puedo enviarlo directamente a quien lo recibe?</summary>
-      <p>Sí. Pon su dirección como dirección de entrega y, si quieres, añade una nota en los comentarios del pedido. El precio no va dentro del paquete y llega listo para colgar.</p></details>
-    <details><summary>¿Cómo funciona la dedicatoria?</summary>
-      <p>En el editor escribes unas palabras para el dorso y eliges la letra. Va impresa detrás de cada cuadro, así que en una pared de cuatro puedes poner cuatro frases distintas. Es opcional y no cuesta más.</p></details>
-    <details><summary>¿Llega a tiempo para una fecha concreta?</summary>
-      <p>Si pides con al menos 7 días laborables de margen, normalmente sí. Para fechas justas, elige el envío exprés y escríbenos: haremos lo posible por adelantarlo.</p></details>
-  </section>
+  <div class="fq-chips" id="fqChips" role="group" aria-label="Temas"></div>
+  <div id="fqLista"></div>
+  <noscript><p>Activa JavaScript para ver las preguntas, o escríbenos a <a href="mailto:info@momenturies.com">info@momenturies.com</a>.</p></noscript>
 
   <div class="fq-help">
     <b>¿No está tu pregunta?</b>
@@ -176,18 +93,8 @@
   &copy; 2026 Momenturies · <a href="momenturies.html">Inicio</a> · <a href="envios.html">Envíos y devoluciones</a> · <a href="contacto.html">Contacto</a> · <a href="https://www.instagram.com/momenturies.official/" target="_blank" rel="noopener">Instagram</a> · <a href="https://www.facebook.com/people/Momenturies/61596238460014/" target="_blank" rel="noopener">Facebook</a>
 </footer>
 
-<script>
-/* datos estructurados FAQPage, sacados de la propia página para que no se desincronicen */
-(function(){
-  var qs=[].map.call(document.querySelectorAll('.fq-group details'),function(d){
-    return {"@type":"Question","name":d.querySelector('summary').textContent.trim(),
-      "acceptedAnswer":{"@type":"Answer","text":[].map.call(d.querySelectorAll('p'),function(p){return p.textContent.trim();}).join(' ')}};
-  });
-  var s=document.createElement('script'); s.type='application/ld+json';
-  s.textContent=JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":qs});
-  document.head.appendChild(s);
-})();
-</script>
+<script src="preguntas.js?v=b72baba4"></script>
+<script>mmPintaFaq({ chips: document.getElementById('fqChips'), lista: document.getElementById('fqLista'), grupos: true, hashes: true }); mmFaqLd();</script>
 <script src="app.js?v=c1eb62d9" defer></script>
 </body>
 </html>
