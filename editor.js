@@ -2491,13 +2491,15 @@ function photoQuality(p){
   return Math.min(cw.sw / W, cw.sh / H);
 }
 const LOWRES_MALA = 0.25;   // 9-nov (Marc): aviso solo con fotos muy muy pequeñas (< 75 ppp a su tamaño)
-/* 10-nov (Marc): alerta amarilla en las que mejoramos con IA (no llegan a 300 ppp a su tamaño): encuadre y carrito */
+/* 10-nov (Marc): alerta amarilla en las que se retocan antes de imprimir (no llegan a 300 ppp a su tamaño): encuadre y carrito.
+   Texto en positivo («Retoque profesional incluido») para no perder la compra; el «?» explica que puede cambiar algún detalle. */
 const MEJORA_IA = 0.98;
 function mejoraDe(p){ if(!p || !p.srcImg) return null; const q = photoQuality(p); return q < LOWRES_MALA ? 'mala' : q < MEJORA_IA ? 'ia' : null; }
 function avisoIA(p, corto){
   const m = mejoraDe(p); if(!m) return '';
-  if(m === 'mala') return `<span class="ia-aviso mala"><span class="es">Foto muy pequeña: la mejoramos con IA, pero puede notarse</span><span class="en">Very small photo: we enhance it with AI, but it may show</span></span>`;
-  return `<span class="ia-aviso"><span class="es">✨ La mejoramos con IA antes de imprimirla</span><span class="en">✨ We enhance it with AI before printing</span></span>`;
+  const q = `<button type="button" class="ia-q" aria-label="Qué significa">?</button><span class="ia-mas" hidden><span class="es">Esta foto no tiene toda la resolución que pide este tamaño. Antes de imprimirla, nuestro equipo de fotografía la mejora con herramientas profesionales para que salga nítida; puede cambiar algún detalle mínimo.</span><span class="en">This photo doesn't have all the resolution this size needs. Before printing, our photo team enhances it with professional tools so it prints sharp; some tiny detail may change.</span></span>`;
+  if(m === 'mala') return `<span class="ia-aviso mala"><span class="es">Foto pequeña: la retocamos, pero en un tamaño menor quedaría mejor</span><span class="en">Small photo: we retouch it, but a smaller size would look better</span>${q}</span>`;
+  return `<span class="ia-aviso"><span class="es">✨ Retoque profesional incluido</span><span class="en">✨ Professional retouch included</span>${q}</span>`;
 }
 function updateCropQuality(){
   const el = document.getElementById('cropQuality'); if(!el) return;
@@ -2507,10 +2509,10 @@ function updateCropQuality(){
   const d = sizeOf(p).d, med = (isLand(p) ? [d[1],d[0]] : d).map(cm).join('×');
   el.hidden = false; el.classList.toggle('mala', m === 'mala');
   if(m === 'ia'){
-    el.innerHTML = `<span class="es"><b>✨ Mejoraremos esta foto con IA.</b> Para que salga nítida a ${med} cm, antes de imprimirla la ampliamos con inteligencia artificial. No tienes que hacer nada.</span><span class="en"><b>✨ We'll enhance this photo with AI.</b> So it prints sharp at ${med} cm, we upscale it with AI before printing. Nothing to do on your side.</span>`;
+    el.innerHTML = `<span class="es"><b>✨ Retoque profesional incluido.</b> Antes de imprimirla, nuestro equipo de fotografía prepara esta foto para que salga nítida a ${med} cm. No tienes que hacer nada.</span><span class="en"><b>✨ Professional retouch included.</b> Before printing, our photo team prepares this photo so it prints sharp at ${med} cm. Nothing to do on your side.</span> <button type="button" class="ia-q" aria-label="Qué significa">?</button><span class="ia-mas" hidden><span class="es">Esta foto no tiene toda la resolución que pide este tamaño. Antes de imprimirla, nuestro equipo de fotografía la mejora con herramientas profesionales para que salga nítida; puede cambiar algún detalle mínimo.</span><span class="en">This photo doesn't have all the resolution this size needs. Before printing, our photo team enhances it with professional tools so it prints sharp; some tiny detail may change.</span></span>`;
     return;
   }
-  el.innerHTML = `<span class="es"><b>Esta foto es muy pequeña para ${med} cm.</b> Nosotros la mejoramos antes de imprimirla, pero al ser tan pequeña el resultado puede verse afectado. Si tienes la original o eliges un tamaño menor, saldrá mejor.</span><span class="en"><b>This photo is very small for ${med} cm.</b> We enhance it before printing, but being so small the result may be affected. The original photo or a smaller size will look better.</span>`;
+  el.innerHTML = `<span class="es"><b>Esta foto es pequeña para ${med} cm.</b> La retocamos igualmente para que salga lo mejor posible. Si tienes la original o eliges un tamaño menor, quedará aún más nítida.</span><span class="en"><b>This photo is small for ${med} cm.</b> We'll still retouch it to look its best. The original photo or a smaller size will be even sharper.</span>`;
 }
 
 function canvasToBlob(c, quality){
@@ -2748,6 +2750,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       attributes.push({key:'_conjunto', value:`${WALL.id}|${WALL.name}|${WALL.width}x${WALL.height}`});
       attributes.push({key:'_pieza', value:[pc.x, pc.y, pc.w, pc.h].join(',')});
     }
+    if(CO.verMejora && mejoraDe(p)) attributes.push({key:'Ver la foto retocada antes de imprimir', value:'Sí'});
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');
@@ -3451,7 +3454,7 @@ document.getElementById('addToCart').addEventListener('click', async ()=>{
   const total = POSTERS.reduce((s,p)=>s+(p.price||0),0).toFixed(2).replace('.',',');
 
   // foto muy muy pequeña: solo se avisa (no se para la compra; al imprimir se mejora con IA)
-  if(POSTERS.some(p=>p.srcImg && photoQuality(p) < LOWRES_MALA)) toast('Alguna foto es muy pequeña: la mejoraremos, pero puede verse afectada.');
+  if(POSTERS.some(p=>p.srcImg && photoQuality(p) < LOWRES_MALA)) toast('Alguna foto es pequeña: la retocamos para que salga lo mejor posible.');
   // píxel de Meta (consent.js): una vez por cada carrito distinto, aunque abra y cierre el panel
   const conFoto = POSTERS.filter(p=>p.srcImg), firma = conFoto.map(p=>p.ptype+':'+p.sizeKey).join('|');
   if(window.mmTrack && firma !== window.mmCarritoMedido){
@@ -3620,6 +3623,7 @@ function fraseDe(p){
   return f.replace(/\s+/g, ' ');
 }
 const coFrase = p => { const f = fraseDe(p); return f ? `<em class="co-sum-frase">«${coEsc(f)}»</em>` : ''; };
+document.addEventListener('change', e => { if(e.target && e.target.id === 'coVerMejora') CO.verMejora = e.target.checked; });
 function coRenderSum(){
   const box = coEl('coSum'); if(!box) return;
   const items = POSTERS.filter(p=>p.srcImg);
@@ -3633,7 +3637,9 @@ function coRenderSum(){
       <span class="co-sum-amt">${eur(p.price||0)}</span></div>`;
   }).join('');
   const dto = coDiscount();
-  box.innerHTML = lines + `<div class="co-sum-rule"></div>
+  /* 10-nov (Marc): si alguna foto se retoca, el cliente puede pedir verla antes de que se imprima (va en el pedido) */
+  const ver = items.some(p => mejoraDe(p)) ? `<label class="co-ver"><input type="checkbox" id="coVerMejora"${CO.verMejora ? ' checked' : ''}><span><b><span class="es">Quiero ver la foto retocada antes de que la imprimáis</span><span class="en">I want to see the retouched photo before you print it</span></b><small><span class="es">Te la mandamos por correo y la imprimimos en cuanto nos digas que te gusta. Si en 48 h no nos contestas, la imprimimos tal cual.</span><span class="en">We email it to you and print it as soon as you say you like it. If we don't hear back in 48 h, we print it as is.</span></small></span></label>` : '';
+  box.innerHTML = lines + ver + `<div class="co-sum-rule"></div>
     ${dto ? `<div class="co-sum-row"><span><span class="es">Subtotal</span><span class="en">Subtotal</span></span><span>${eur(coGross())}</span></div>
     <div class="co-sum-row co-sum-dto"><span><span class="es">Combinación de ${packPieces()} cuadros</span><span class="en">Set of ${packPieces()} prints</span> &minus;${packPct()}%</span><span>&minus;${eur(dto)}</span></div>` : ''}
     <div class="co-sum-row"><span><span class="es">${dto ? 'Subtotal con descuento' : 'Subtotal'}</span><span class="en">${dto ? 'Discounted subtotal' : 'Subtotal'}</span></span><span>${eur(coSubtotal())}</span></div>
