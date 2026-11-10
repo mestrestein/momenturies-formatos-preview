@@ -36,9 +36,7 @@
       <button type="button" id="pvZoomOut" title="Alejar" aria-label="Alejar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <button type="button" id="pvBruma" class="pv-bruma" title="Bruma de los bordes: quitar / poner" aria-label="Bruma de los bordes" aria-pressed="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h16M3 13h18M5 17h14"/></svg>
-      </button>
+      <!-- 10-nov (Marc): fuera el botón de la bruma; el visor va siempre sin bruma -->
     </div>
   </div>
 
@@ -590,7 +588,7 @@ let _numEntorno = 0;                      // contador de la numeración del sele
    render original: sin recortar, el 2D enseñaba esa franja y parecía que fallaba el visor. */
 /* ROOM_LEJOS: 0 = encuadre automático del conjunto, 1 = la habitación entera (ver setZoom) */
 var ROOM_LEJOS = 0;
-var SIN_BRUMA = (() => { try{ return localStorage.getItem('mm-bruma') === 'no'; }catch(e){ return false; } })();
+const SIN_BRUMA = true;   // 10-nov (Marc): siempre sin bruma (antes era una prueba con botón)
 const PHOTO_VIEW = {
   'salon':       { x:200, y:530, w:2000, h:1320 },
   'salon-claro': { x:200, y:530, w:2000, h:1320 },
@@ -1299,7 +1297,7 @@ function layout(){
       }
     }
   }
-  FIT = { s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin, apurado, muebleY, uBot: uBotF, visH, visW, compW: WALL ? WALL.width*CM*s : 0, compH: WALL ? WALL.height*CM*s : 0 };
+  FIT = { photoW: photoMesh && photoMesh.visible ? photoMesh.scale.x * s : 0, photoH: photoMesh && photoMesh.visible ? photoMesh.scale.y * s : 0, s, px, py, cx: -visW * (rightPx/(2*wpx)), cy: visH * ((botPx-topPx)/(2*hpx)), usableW, usableH, sAuto: fitAuto, s0: fitMin, apurado, muebleY, uBot: uBotF, visH, visW, compW: WALL ? WALL.width*CM*s : 0, compH: WALL ? WALL.height*CM*s : 0 };
   /* con foto de entorno el grupo se aleja del pivote (órbita amplia = mirar alrededor) */
   const gz = (WALL && ROOM_CFG.mode === 'photo') ? PIVOT_R : 0;
   orbitPivot.position.z = -gz; group.position.z = gz;
@@ -1658,7 +1656,7 @@ function setZoom(z){
   const paso = (z - tZ) / (BASEZ * 0.35);
   if(foto && FIT && FIT.sAuto > FIT.s0 * 1.01){
     if(paso > 0 && tZ >= BASEZ - 1e-3 && ROOM_LEJOS < 1 && FIT.s > FIT.s0 * 1.01){ ROOM_LEJOS = Math.min(1, ROOM_LEJOS + paso); layout(); return; }
-    if(paso < 0 && ROOM_LEJOS > 0){ ROOM_LEJOS = Math.max(0, ROOM_LEJOS + paso); layout(); return; }
+    if(paso < 0 && ROOM_LEJOS > 0 && tZ <= BASEZ + 1e-3){ ROOM_LEJOS = Math.max(0, ROOM_LEJOS + paso); layout(); return; }
   }
   /* ya se ve toda la foto: si la habitación tiene otra foto tomada desde más lejos (la horizontal de
      los conjuntos pequeños), alejar pasa a esa, enseñándola entera */
@@ -1674,8 +1672,18 @@ function setZoom(z){
       return;
     }
   }
-  const max = foto ? BASEZ : MAXZ;
-  tZ = Math.max(foto ? zoomMinMueble() : MINZ, Math.min(max, z));
+  /* 10-nov (Marc): acercar y alejar sin bloqueos. Antes, sobre una foto no se podía acercar más allá de ver
+     el mueble (zoomMinMueble) ni alejar más que la foto a lo ancho, y en 3D solo hasta el doble. Ahora se
+     acerca hasta tener un cuadro casi a pantalla completa y se aleja hasta ver la foto de la habitación entera. */
+  const [lo, hi] = zoomLimites(foto);
+  tZ = Math.max(lo, Math.min(hi, z));
+}
+function zoomLimites(foto){
+  /* habitaciones 3D: más lejos de MAXZ se ve dónde acaba el suelo; sin entorno no hay nada que se acabe */
+  if(!foto) return [BASEZ * 0.2, ROOM_CFG.mode === 'none' ? BASEZ * 2.2 : MAXZ];
+  const gz = group.position.z;
+  const k = FIT && FIT.photoW ? Math.max(FIT.photoW / FIT.visW, FIT.photoH / FIT.visH) : 1;
+  return [gz + (BASEZ - gz) * 0.15, Math.max(BASEZ, gz + (BASEZ - gz) * k * 1.04)];
 }
 /* 17-oct · tope del zoom sobre una foto nuestra: se puede acercar hasta que la fila `mueble` (el mueble de
    debajo del conjunto) llegaría al borde de abajo del visor; más cerca solo se vería pared lisa. La cámara
@@ -1697,17 +1705,7 @@ function zoomMinMueble(){
 /* PRUEBA (12-oct) · Bruma de los bordes: con ella, las barras de arriba y abajo se funden en blanco
    y, si el conjunto no cabe con la foto tapando todo, quedan franjas claras a los lados. Sin ella, la
    foto tapa siempre el visor. El botón de debajo del zoom la quita y la pone; se recuerda en el navegador. */
-(function(){
-  const b = document.getElementById('pvBruma'); if(!b) return;
-  const pintar = () => { document.getElementById('editor').classList.toggle('sin-bruma', SIN_BRUMA); b.setAttribute('aria-pressed', String(!SIN_BRUMA)); b.classList.toggle('off', SIN_BRUMA); };
-  pintar();
-  b.addEventListener('click', () => {
-    SIN_BRUMA = !SIN_BRUMA;
-    try{ localStorage.setItem('mm-bruma', SIN_BRUMA ? 'no' : 'si'); }catch(e){}
-    pintar(); layout();
-    toast(SIN_BRUMA ? 'Sin bruma en los bordes' : 'Con bruma en los bordes');
-  });
-})();
+document.getElementById('editor').classList.add('sin-bruma');
 /* botones +/− del visor: mismo paso que un golpe de rueda */
 function stepZoom(dz){ setZoom(tZ+dz); }
 document.getElementById('pvZoomIn').addEventListener('click', ()=>stepZoom(-.9));
