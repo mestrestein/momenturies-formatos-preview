@@ -22,12 +22,12 @@ a{text-decoration:none;color:inherit}
 .nav.floating{box-shadow:0 2px 20px rgba(0,0,0,.08)}
 .nav-left{display:flex;align-items:center;font-size:13px;color:var(--mid)}
 .nav-back{display:flex;align-items:center;gap:6px;transition:color .15s}
-.nav-back:hover{color:var(--black)}
+@media(hover:hover){.nav-back:hover{color:var(--black)}}
 .nav-logo{display:flex;align-items:center;gap:9px;justify-content:center}
 .nav-logo-word{font-family:var(--font-serif);font-size:14px;font-weight:700;letter-spacing:2.5px;color:var(--black);text-transform:uppercase}
 .nav-right-slot{display:flex;align-items:center;justify-content:flex-end;gap:2px}
 .nav-icon-btn{width:38px;height:38px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--black);transition:background .15s}
-.nav-icon-btn:hover{background:var(--gray)}
+@media(hover:hover){.nav-icon-btn:hover{background:var(--gray)}}
 
 /* ── BRANDING HERO (la página = branding + un botón) ── */
 .brand-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;max-width:1200px;margin:0 auto;padding:56px 40px 80px;align-items:center}
@@ -54,10 +54,10 @@ a{text-decoration:none;color:inherit}
 .bh-bullets li{display:flex;align-items:center;gap:10px;font-size:15px;color:#333}
 .bh-bullets svg{flex-shrink:0;color:var(--black)}
 .bh-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--black);color:#fff;border:none;cursor:pointer;font-size:17px;font-weight:700;padding:18px 44px;border-radius:8px;transition:background .2s,transform .15s;font-family:var(--font-sans)}
-.bh-cta:hover{background:#333}
+@media(hover:hover){.bh-cta:hover{background:#333}}
 .bh-cta:active{transform:scale(.99)}
 .bh-cta-arr{transition:transform .2s}
-.bh-cta:hover .bh-cta-arr{transform:translateX(4px)}
+@media(hover:hover){.bh-cta:hover .bh-cta-arr{transform:translateX(4px)}}
 .bh-sub{font-size:13px;color:var(--light);margin-top:12px}
 .bh-trust{display:flex;gap:22px;margin-top:30px;padding-top:22px;border-top:1px solid var(--gray2)}
 .bh-trust-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--mid)}
@@ -79,7 +79,7 @@ a{text-decoration:none;color:inherit}
 .fstrip::-webkit-scrollbar{display:none}
 .fstrip a{padding:6px 14px;border-radius:20px;border:1.5px solid transparent;color:var(--mid);
   font-weight:600;white-space:nowrap;flex:0 0 auto;transition:border-color .15s,color .15s,background .15s}
-.fstrip a:hover{color:var(--black);border-color:var(--gray2)}
+@media(hover:hover){.fstrip a:hover{color:var(--black);border-color:var(--gray2)}}
 .fstrip a[aria-current="page"]{background:var(--black);color:#fff}
 
 /* ── CROSS-SELL AL PIE ── */
@@ -87,7 +87,7 @@ a{text-decoration:none;color:inherit}
 .otherfmt h2{font-family:var(--font-serif);font-size:clamp(20px,2.4vw,28px);font-weight:700;margin-bottom:22px}
 .otherfmt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .otherfmt-card{border:1px solid var(--gray2);border-radius:14px;padding:22px;transition:box-shadow .2s,transform .2s;background:#fff}
-.otherfmt-card:hover{box-shadow:0 14px 40px rgba(0,0,0,.10);transform:translateY(-3px)}
+@media(hover:hover){.otherfmt-card:hover{box-shadow:0 14px 40px rgba(0,0,0,.10);transform:translateY(-3px)}}
 .otherfmt-card b{display:block;font-size:15px;margin-bottom:4px}
 .otherfmt-card span{font-size:12.5px;color:var(--mid)}
 .pdp-foot{background:#080808;color:#fff;text-align:center;padding:34px 20px;font-size:12px;opacity:.9}
@@ -189,7 +189,7 @@ a{text-decoration:none;color:inherit}
 .wl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:left}
 .wl-card{display:flex;flex-direction:column;border:1px solid var(--gray2);border-radius:14px;overflow:hidden;background:#fff;
   transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
-.wl-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(0,0,0,.11)}
+@media(hover:hover){.wl-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(0,0,0,.11)}}
 .wl-card img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;display:block}
 .wl-card b{font-size:15px;padding:13px 16px 2px}
 .wl-card>span{font-size:12.5px;color:var(--mid);padding:0 16px 15px}
