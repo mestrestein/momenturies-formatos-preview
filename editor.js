@@ -45,6 +45,10 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       <span class="es">Salir</span><span class="en">Exit</span>
     </button>
+    <button class="ed-save" id="edSave" type="button" title="Guardar en mi cuenta para seguir otro día">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <span class="es">Guardar</span><span class="en">Save</span>
+    </button>
     <div class="ed-logo">
       <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
         <rect x="2.6" y="3.5" width="11.4" height="14.9" rx="1.1" fill="#1a1a1a"/>
@@ -3988,6 +3992,7 @@ var _saveT = null, _savedBlobs = null, _restoring = false, _userEdited = false;
 /* 11-nov (Marc: «ya no se me guardan»): lo guardado solo se borra si en ESTA visita se llegó a guardar algo y luego
    se quitó todo. Antes, entrar con ?pared=… montaba el conjunto vacío y borraba el diseño anterior al instante. */
 var _hayGuardado = false;
+var _cuentaVin = null;   // 11-nov · {id, refs}: el diseño de la cuenta del cliente al que corresponde este (ver GUARDAR EN MI CUENTA)
 /* fotos como bytes (ArrayBuffer), no como Blob: Safari privado y el navegador de Instagram no guardan Blob en
    IndexedDB y fallaba el guardado entero (igual que en photo-handoff.js) */
 async function fotoABytes(f){ return { mfoto:1, name:f.name || 'foto.jpg', type:f.type || 'image/jpeg', lastModified:f.lastModified || Date.now(), buf: await f.arrayBuffer() }; }
@@ -4038,7 +4043,7 @@ async function saveDesign(){
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
     if(window.mmEstado && conFoto.length) mmEstado('editor', conFoto.length + ' piezas');
     _hayGuardado = true;
-    await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
+    await st.put(SAVE_KEY, { v:1, at:Date.now(), cuenta:_cuentaVin, items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
 
@@ -4049,11 +4054,13 @@ async function clearDesign(){
     if(saved && saved.items) for(const it of saved.items) if(it.photo) await st.del(it.photo);
     await st.del(SAVE_KEY);
     if(_savedBlobs) _savedBlobs.clear();
+    _cuentaVin = null;
   }catch(e){}
 }
 
 async function restoreDesign(saved){
   _restoring = true;
+  _cuentaVin = saved.cuenta || null;
   try{
     const st = store();
     const savedWall = saved.fridgeWall && saved.fridgeWall.pieces ? saved.fridgeWall
@@ -4121,6 +4128,7 @@ async function restoreDesign(saved){
   const st = store(); if(!st) return;
   const _q = new URLSearchParams(location.search);
   if(_q.get('foto') === '1') return;   // viene con foto nueva
+  if(_q.get('diseno')) return;         // abre un diseño de la cuenta (abrirDisenoCuenta)
   let saved;
   try{ saved = await st.get(SAVE_KEY); }catch(e){ return; }
   if(!saved || !saved.items || !saved.items.length) return;
@@ -4131,6 +4139,7 @@ async function restoreDesign(saved){
   // desde el carrito de la cabecera: se recupera sin preguntar y, si lo pidió, se abre el pago
   if(_q.get('carrito') === '1' || _q.get('retomar') === '1'){
     await restoreDesign(saved);
+    if(_q.get('guardar') === '1') guardarEnCuenta();   // vuelve de entrar en la cuenta para guardarlo
     if(_q.get('carrito') === '1' && POSTERS.some(p => p.srcImg)){ openCheckout(); if(_q.get('pagar') === '1') coEl('coPay').click(); }
     history.replaceState(null, '', location.pathname);
     return;
@@ -4156,6 +4165,165 @@ async function restoreDesign(saved){
 })();
 
 window.addEventListener('beforeunload', () => { if(!_restoring) saveDesign(); });
+
+/* ═══════════ GUARDAR EN MI CUENTA (11-nov-2026, Marc) ═══════════
+   En el navegador el diseño dura 30 días, pero solo en ese móvil, y Safari lo borra si no se vuelve en 7 días.
+   Con cuenta de Momenturies (la de cuenta.html: Shopify, entrar con el email) se guarda también en el Vestuario:
+   el diseño en JSON y las fotos ORIGINALES en Archivos de Shopify. Se abre desde cuenta.html → «Diseños guardados»
+   (cuadro.html?diseno=ID). Sin sesión: «Entrar y guardar» lleva a cuenta.html y, al volver, lo guarda solo.
+   El token es el que deja cuenta.js en localStorage (mc_tok); aquí solo se lee y, si caducó, se renueva. */
+var CUENTA_ED = { shopId:'108862079310', clientId:'76dc654c-bf59-4d80-80a2-e6eff2bc5e27' };
+var DISENOS_BASE = /(^|\.)momenturies\.com$/.test(location.hostname) ? '' : 'https://momenturies.futsides.workers.dev';
+var _cuentaHuella = null;   // lo último guardado en la cuenta (para no preguntar al salir si no ha cambiado)
+async function accesoCuenta(){
+  let t; try{ t = JSON.parse(localStorage.getItem('mc_tok')); }catch(e){}
+  if(!t || !t.access) return null;
+  if(Date.now() > t.expires_at){
+    if(!t.refresh) return null;
+    try{
+      const r = await fetch('https://shopify.com/authentication/' + CUENTA_ED.shopId + '/oauth/token', { method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({ grant_type:'refresh_token', client_id:CUENTA_ED.clientId, refresh_token:t.refresh }) });
+      if(!r.ok) return null;
+      const j = await r.json();
+      t = { access:j.access_token, refresh:j.refresh_token || t.refresh, id:j.id_token || t.id, expires_at:Date.now() + (j.expires_in || 3600) * 1000 - 60000 };
+      localStorage.setItem('mc_tok', JSON.stringify(t));
+    }catch(e){ return null; }
+  }
+  return t.access;
+}
+async function apiDisenos(accion, cuerpo){
+  const token = await accesoCuenta();
+  if(!token){ const e = new Error('Entra en tu cuenta'); e.sesion = true; throw e; }
+  const r = await fetch(DISENOS_BASE + '/subidas/disenos/' + accion, { method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(Object.assign({}, cuerpo, { token })) });
+  if(r.status === 401){ const e = new Error('Entra en tu cuenta'); e.sesion = true; throw e; }
+  if(accion === 'foto'){ if(!r.ok) throw new Error('No se pudo bajar una foto'); return r.blob(); }
+  const j = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(j.error || 'No se ha podido guardar');
+  return j;
+}
+function huellaCuenta(){ return JSON.stringify(POSTERS.filter(p => p.srcImg).map(p => huellaArte(p))) + (WALL ? WALL.id + (WALL.vk || '') : ''); }
+function nombreDiseno(){
+  const n = POSTERS.filter(p => p.srcImg).length;
+  const f = new Date().toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+  return (WALL ? WALL.name : n === 1 ? prodOf(POSTERS.find(p => p.srcImg)).name : n + ' fotos') + ' · ' + f;
+}
+
+var _guardandoCuenta = null;
+function guardarEnCuenta(){ return _guardandoCuenta || (_guardandoCuenta = _guardarEnCuenta().finally(() => { _guardandoCuenta = null; })); }
+async function _guardarEnCuenta(){
+  if(!POSTERS.some(p => p.srcImg)){ toast('Sube al menos una foto para guardarlo'); return false; }
+  const btn = document.getElementById('edSave');
+  if(btn){ btn.disabled = true; btn.classList.add('busy'); }
+  try{
+    if(!(await accesoCuenta())){ pedirCuenta(); return false; }
+    await saveDesign();   // primero en el navegador, como siempre
+    const st = store(), saved = st && await st.get(SAVE_KEY);
+    if(!saved || !saved.items || !saved.items.length) throw new Error('No hay nada que guardar');
+    // el diseño de la cuenta al que corresponde este (si salió de ahí o ya se guardó): se actualiza, no se duplica
+    const vin = JSON.parse(JSON.stringify(_cuentaVin || { refs:{} }));
+    vin.refs = vin.refs || {};
+    const datos = JSON.parse(JSON.stringify(Object.assign({}, saved, { resumen:undefined, cuenta:undefined })));
+    const miniatura = (saved.items.find(it => it.thumb) || {}).thumb || null;
+    const conFoto = datos.items.filter(it => it.photo);
+    let n = 0;
+    for(const it of datos.items){
+      it.thumb = null;   // las miniaturas se rehacen al abrir: así el diseño pesa poco
+      if(!it.photo) continue;
+      if(!vin.refs[it.uid]){
+        const p = POSTERS.find(q => q.uid === it.uid);
+        if(!p || !p.srcImg) continue;
+        toast('Guardando tus fotos… ' + (++n) + ' de ' + conFoto.length);
+        const orig = await originalBlob(p);
+        const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
+        vin.refs[it.uid] = await uploadToCloudinary(orig, 'diseno-' + it.uid + '.' + ext);
+      }
+      it.fotoRef = vin.refs[it.uid];
+    }
+    const r = await apiDisenos('guardar', { id:vin.id, nombre:nombreDiseno(), pagina:location.pathname.split('/').pop() || 'cuadro.html', datos, miniatura });
+    vin.id = r.id; _cuentaVin = vin;
+    await saveDesign();   // el enlace con la cuenta queda también en lo guardado en el navegador
+    _cuentaHuella = huellaCuenta();
+    mmEv('guardar_cuenta', String(r.id));
+    toast('Guardado en tu cuenta. Lo tienes en «Mi cuenta» → Diseños guardados');
+    return true;
+  }catch(e){
+    if(e.sesion){ pedirCuenta(); return false; }
+    console.warn('[Momenturies] Guardar en la cuenta:', e);
+    toast('No se ha podido guardar en tu cuenta: ' + e.message);
+    return false;
+  }finally{
+    if(btn){ btn.disabled = false; btn.classList.remove('busy'); }
+  }
+}
+
+/* hoja de abajo: sin sesión, para entrar; al salir con cambios sin guardar, para guardarlos */
+function hojaCuenta(html, botones){
+  document.querySelectorAll('.cuenta-hoja').forEach(x => x.remove());
+  const h = document.createElement('div');
+  h.className = 'cuenta-hoja';
+  h.innerHTML = `<div class="cuenta-hoja-caja" role="dialog" aria-modal="true">${html}<div class="cuenta-hoja-btns"></div></div>`;
+  const caja = h.querySelector('.cuenta-hoja-btns');
+  botones.forEach(([txt, cls, fn]) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.innerHTML = txt; b.onclick = () => { h.remove(); fn && fn(); }; caja.appendChild(b); });
+  h.addEventListener('click', e => { if(e.target === h) h.remove(); });
+  document.body.appendChild(h);
+  requestAnimationFrame(() => h.classList.add('show'));
+}
+function pedirCuenta(){
+  hojaCuenta(`<h3>Guárdalo en tu cuenta</h3><p>Entra con tu email (te mandamos un código, sin contraseñas) y tu diseño queda guardado con sus fotos para seguir otro día, desde cualquier móvil u ordenador.</p>`,
+    [['Entrar y guardar', 'cuenta-hoja-si', async () => {
+        await saveDesign();
+        try{ localStorage.setItem('mm_tras_login', location.pathname + '?retomar=1&guardar=1'); }catch(e){}
+        location.href = 'cuenta.html?entrar=1';
+      }],
+     ['Ahora no', 'cuenta-hoja-no', null]]);
+}
+document.getElementById('edSave').addEventListener('click', () => guardarEnCuenta());
+/* al salir: si hay fotos y lo de ahora no está guardado en la cuenta, se ofrece (una vez por cambio) */
+let _salirPreguntado = null;
+document.getElementById('edClose').addEventListener('click', e => {
+  if(!POSTERS.some(p => p.srcImg)) return;
+  const h = huellaCuenta();
+  if(h === _cuentaHuella || h === _salirPreguntado) return;
+  _salirPreguntado = h;
+  e.stopImmediatePropagation();
+  hojaCuenta(`<h3>¿Lo guardamos para otro día?</h3><p>En este navegador se queda unos días. En tu cuenta lo tienes siempre, con sus fotos, en cualquier dispositivo.</p>`,
+    [['Guardar en mi cuenta', 'cuenta-hoja-si', async () => { if(await guardarEnCuenta()) closeEditor(); }],
+     ['Salir', 'cuenta-hoja-no', () => closeEditor()]]);
+}, true);
+
+/* cuadro.html?diseno=ID (desde «Diseños guardados» de cuenta.html): se baja el diseño y sus fotos y se abre tal cual */
+setTimeout(async function abrirDisenoCuenta(){   // en el siguiente turno: el resto del editor tiene que existir ya
+  const id = new URLSearchParams(location.search).get('diseno');
+  if(!id) return;
+  history.replaceState(null, '', location.pathname);
+  openEditor();
+  toast('Abriendo tu diseño…');
+  try{
+    const r = await apiDisenos('abrir', { id:Number(id) });
+    const st = store(), datos = r.datos, refs = {};
+    let n = 0;
+    const conFoto = datos.items.filter(it => it.fotoRef);
+    for(const it of conFoto){
+      toast('Cargando tus fotos… ' + (++n) + ' de ' + conFoto.length);
+      const blob = await apiDisenos('foto', { id:r.id, ref:it.fotoRef });
+      it.photo = 'photo:' + it.uid;
+      refs[it.uid] = it.fotoRef;
+      if(st) await st.put(it.photo, await fotoABytes(new File([blob], 'foto-' + it.uid, { type:blob.type || 'image/jpeg' })));
+    }
+    datos.at = Date.now();
+    datos.cuenta = { id:r.id, refs };
+    if(st) await st.put(SAVE_KEY, datos);
+    _savedBlobs = new Set(Object.keys(refs));
+    await restoreDesign(datos);
+    _cuentaHuella = huellaCuenta();
+    toast('Aquí está tu diseño «' + r.nombre + '»');
+  }catch(e){
+    if(e.sesion){ toast('Entra en tu cuenta para abrir tus diseños'); pedirCuenta(); return; }
+    toast('No se ha podido abrir el diseño: ' + e.message);
+  }
+}, 0);
 
 /* para carrito.js: en una página con editor, el diseño de ahora mismo se abre sin recargar */
 window.MOMENTURIES_EDITOR_VIVO = {

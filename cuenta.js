@@ -400,12 +400,44 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   $('#salir').onclick = salir;
   function fallo(t){ const e = $('#error'); e.textContent = t; e.hidden = false; }
   function fuera(){ $('#cargando').hidden = true; $('#fuera').hidden = false; }
-  function dentro(c){ $('#cargando').hidden = true; $('#dentro').hidden = false; $('#salir').hidden = false; $('#demo-aviso').hidden = !DEMO; pintar(c); }
+  function dentro(c){ $('#cargando').hidden = true; $('#dentro').hidden = false; $('#salir').hidden = false; $('#demo-aviso').hidden = !DEMO; pintar(c); disenos(c); }
+
+  /* ── 11-nov · Diseños guardados desde el editor («Guardar» en el personalizador; src/disenos-cliente.ts del Vestuario) ── */
+  async function api(accion, cuerpo){
+    const token = await acceso(); if(!token) throw new Error('sesion');
+    const r = await fetch('/subidas/disenos/' + accion, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(Object.assign({}, cuerpo, { token })) });
+    const j = await r.json().catch(() => ({})); if(!r.ok) throw new Error(j.error || 'No se ha podido'); return j;
+  }
+  async function disenos(c){
+    const el = $('#p-disenos'); if(!el) return;
+    const sin = '<div class="c-empty"><h3>Aún no has guardado ningún diseño</h3><p>En el personalizador, pulsa «Guardar» y tu diseño queda aquí con sus fotos para seguir otro día, desde cualquier móvil u ordenador.</p><a class="c-btn" href="cuadro.html">Crear mi cuadro</a></div>';
+    if(DEMO){ el.innerHTML = sin; return; }
+    el.innerHTML = '<p class="c-loading">Un momento…</p>';
+    let lista = [];
+    try { lista = (await api('lista', {})).disenos || []; } catch(e){ el.innerHTML = '<div class="c-empty"><h3>No hemos podido cargar tus diseños</h3><p>Vuelve a intentarlo en un rato.</p></div>'; return; }
+    const fecha = s => new Date(String(s).replace(' ', 'T') + 'Z').toLocaleDateString('es-ES', { day:'numeric', month:'long' });
+    el.innerHTML = lista.length ? `<div class="d-grid">${lista.map(d => `<article class="d-card">
+      <a class="d-img" href="${esc(d.pagina)}?diseno=${d.id}" style="${d.miniatura ? `background-image:url(${esc(d.miniatura)})` : ''}" aria-label="Seguir editando"></a>
+      <div class="d-txt"><b>${esc(d.nombre)}</b><span>${d.fotos === 1 ? '1 foto' : d.fotos + ' fotos'} · guardado el ${fecha(d.actualizado)}</span></div>
+      <div class="d-act"><a class="c-btn" href="${esc(d.pagina)}?diseno=${d.id}">Seguir editando</a><button class="d-borrar" type="button" data-borrar="${d.id}">Borrar</button></div></article>`).join('')}</div>` : sin;
+    el.querySelectorAll('[data-borrar]').forEach(b => b.onclick = async () => {
+      if(!b.classList.contains('seguro')){ b.classList.add('seguro'); b.textContent = '¿Seguro? Borrar'; setTimeout(() => { b.classList.remove('seguro'); b.textContent = 'Borrar'; }, 4000); return; }
+      b.disabled = true; b.textContent = 'Borrando…';
+      try { await api('borrar', { id:+b.dataset.borrar }); b.closest('.d-card').remove(); if(!el.querySelector('.d-card')) el.innerHTML = sin; }
+      catch(e){ b.disabled = false; b.textContent = 'No se pudo borrar'; }
+    });
+    // sin pedidos pero con diseños guardados: se abre esa pestaña
+    if(lista.length && !(c.orders && c.orders.nodes && c.orders.nodes.length)) tab($('#t-disenos'));
+  }
   (async () => {
     if(DEMO){ if(q.get('demo') === '1') return dentro(demo()); return fuera(); }
     try {
+      // 11-nov · desde el editor («Entrar y guardar»): sin sesión, directo al acceso; con ella, de vuelta al editor
+      if(q.get('entrar') === '1' && !st.get('mc_tok')){ await entrar(); return; }
       if(q.get('code')) await callback();
-      else if(q.get('error')){ history.replaceState(null, '', location.pathname); fuera(); return fallo('No se ha completado el acceso. Prueba otra vez.'); }
+      let volver = null; try { volver = localStorage.getItem('mm_tras_login'); localStorage.removeItem('mm_tras_login'); } catch(e){}
+      if(volver && !volver.startsWith('//') && /^\/[\w\/.-]*\.html\?[\w=&]*$/.test(volver) && st.get('mc_tok')){ location.replace(volver); return; }
+      if(q.get('error')){ history.replaceState(null, '', location.pathname); fuera(); return fallo('No se ha completado el acceso. Prueba otra vez.'); }
       const c = await datos(); c ? dentro(c) : fuera();
     } catch(e){ console.warn(e); fuera(); fallo('No hemos podido cargar tu cuenta ahora mismo. Vuelve a intentarlo en un rato.'); }
   })();

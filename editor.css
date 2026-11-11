@@ -743,3 +743,21 @@ button,a,label,input,select,textarea,summary,[role=button],[data-quitar],[data-r
 .swap-bar.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .swap-bar button{flex:none;border:0;border-radius:999px;padding:7px 13px;background:#fff;color:#1a1a1a;font:inherit;font-size:12.5px;cursor:pointer;touch-action:manipulation}
 .edp-row2 .edp-photo{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 11-nov · Guardar en mi cuenta: botón junto a «Salir» y hoja de abajo (entrar / guardar antes de salir) */
+.ed-save{display:flex;align-items:center;gap:6px;margin:0 auto 0 8px;background:#fff;border:1px solid var(--gray2);border-radius:24px;
+  padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.07);color:var(--black);font-family:var(--font-sans);touch-action:manipulation}
+.ed-save.busy{opacity:.55;pointer-events:none}
+@media(hover:hover){.ed-save:hover{background:var(--gray)}}
+@media(max-width:480px){.ed-save{padding:8px 10px;margin-left:6px}.ed-save span{display:none}.ed-save svg{width:17px;height:17px}}
+.cuenta-hoja{position:fixed;inset:0;z-index:5000;background:rgba(20,18,16,0);display:flex;align-items:flex-end;justify-content:center;transition:background .25s}
+.cuenta-hoja.show{background:rgba(20,18,16,.38)}
+.cuenta-hoja-caja{width:100%;max-width:440px;margin:0 12px calc(12px + env(safe-area-inset-bottom));background:#fff;border-radius:18px;padding:22px 20px 18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.25);transform:translateY(24px);opacity:0;transition:transform .25s,opacity .25s}
+.cuenta-hoja.show .cuenta-hoja-caja{transform:none;opacity:1}
+.cuenta-hoja h3{font-family:var(--font-serif);font-size:21px;font-weight:500;margin:0 0 6px}
+.cuenta-hoja p{color:#5f584e;font-size:14px;line-height:1.5;margin:0 0 16px}
+.cuenta-hoja-btns{display:grid;gap:8px}
+.cuenta-hoja-btns button{width:100%;padding:13px 16px;border-radius:999px;font:700 14.5px var(--font-sans);cursor:pointer;touch-action:manipulation}
+.cuenta-hoja-si{background:var(--black);color:#fff;border:0}
+.cuenta-hoja-no{background:#fff;color:var(--black);border:1.5px solid var(--gray2)}
