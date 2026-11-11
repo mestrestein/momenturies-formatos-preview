@@ -147,6 +147,7 @@
     <div class="edp-row2">
       <button class="edp-photo" id="edpPhoto"><span class="es">Cambiar foto</span><span class="en">Change photo</span></button>
       <button class="edp-photo" id="edpCrop" style="display:none"><span class="es">Encuadre</span><span class="en">Crop</span></button>
+      <button class="edp-photo" id="edpSwap" style="display:none"><span class="es">Cambiar de sitio</span><span class="en">Swap places</span></button>
     </div>
 
     <p class="config-label" id="ptypeLabel"><span class="es">Producto</span><span class="en">Product</span></p>
@@ -1397,9 +1398,9 @@ function applySelection(){
     }
   }
   POSTERS.forEach((p,i)=>{
-    const on = editing && i === selected;
-    const base = p.sizeScale || 1, sc = on ? base*1.05 : base;
-    let t = pos[i] || {x:p.baseX||0, y:p.baseY||0}, z = on ? 0.35 : 0;
+    const on = editing && i === selected, swapOn = !!(SWAP && POSTERS[SWAP.from] === p);
+    const base = p.sizeScale || 1, sc = on ? base*1.05 : swapOn ? base*1.12 : base;
+    let t = pos[i] || {x:p.baseX||0, y:p.baseY||0}, z = on ? 0.35 : swapOn ? 0.3 : 0;
     /* dorso con entorno: primero se despega y se acerca, luego gira; al volver, al revés
        (gira de cara y después vuelve a su sitio en la pared). Así nunca atraviesa la pared. */
     const flip = !!(on && FACE_BACK && ROOM_CFG.mode !== 'none' && FIT);
@@ -1808,6 +1809,7 @@ function pickPoster(clientX,clientY){
     if(p.bambooGroup && p.bambooGroup.visible){ objs.push(p.bamboo); owner.set(p.bamboo, p); }
   });
   const h = pickHit(clientX,clientY, objs);
+  if(SWAP){ const k = h ? POSTERS.indexOf(owner.get(h.object)) : -1; if(k >= 0) swapTo(k); return; }   // 11-nov · cambiar de sitio
   if(!h){ closePanel(); return; }
   const idx = POSTERS.indexOf(owner.get(h.object));
   if(idx<0) return;
@@ -1834,6 +1836,7 @@ function animate(){
   const moving = Math.abs(tRy-cRy)>1e-4 || Math.abs(tRx-cRx)>1e-4 || Math.abs(tZ-cZ)>1e-4;
   const mounting = POSTERS.some(mountAnimating);   // peana entrando/saliendo
   const matting = POSTERS.some(p => Math.abs(flatTarget(p) - (p.flatK ?? -1)) > 1e-3);
+  if(SWAP) dirty3D = true;                                     // cambiando de sitio: los demás tiemblan
   if(!moving && !mounting && !matting && !dirty3D) return;     // reposo: ni render ni DOM
   cRy+=(tRy-cRy)*.09; cRx+=(tRx-cRx)*.09; cZ+=(tZ-cZ)*.1;
   /* pared con salón geométrico: gira la habitación entera; con foto o sin pared: gira cada cuadro sobre sí mismo */
@@ -1845,6 +1848,7 @@ function animate(){
       faceCamera(p);
       if(p.showing && p.faceK >= 1 && FIT){ const b = p.sizeScale || 1, t = showcasePose(p, b*1.05, true); p.rig.position.set(t.x, t.y, t.z); }
     } else { p.rig.rotation.y=(orbit?0:cRy)+(p.flipA||0); p.rig.rotation.x=orbit?0:cRx; }
+    p.rig.rotation.z = SWAP && POSTERS[SWAP.from] !== p ? Math.sin(performance.now() / 55 + POSTERS.indexOf(p) * 1.7) * 0.022 : 0;
     updateMountAnim(p);
     if(p.shadow) p.shadow.material.opacity = .5*(p.shadowK ?? 1);   // despegado de la pared, sin sombra
     applyFlatGloss(p);
@@ -1933,6 +1937,50 @@ function ingestFiles(files, mode){
 document.getElementById('btnAdd').addEventListener('click', ()=>{ pickMode='add'; fileInput.click(); });
 /* Atajos de la fila móvil: mismo destino que tocar el centro de la foto (openPanel), o el
    selector de fotos si el cuadro seleccionado todavía no tiene ninguna. */
+/* 11-nov (Marc) · CAMBIAR DE SITIO en un conjunto: «Cambiar de sitio» deja el cuadro elegido adelantado, los demás
+   tiemblan y el siguiente que se toca se intercambia con él (cada uno toma la talla y la orientación de su hueco).
+   Se deshace con Deshacer. Tocar el mismo, fuera o «Cancelar» sale sin cambiar nada. */
+var SWAP = null;   // var: applySelection y el bucle la leen antes de llegar aquí
+const swapBar = document.createElement('div');
+swapBar.className = 'swap-bar';
+swapBar.innerHTML = '<span><span class="es">Toca el cuadro con el que quieres cambiarlo</span><span class="en">Tap the print to swap it with</span></span>'
+  + '<button type="button"><span class="es">Cancelar</span><span class="en">Cancel</span></button>';
+swapBar.querySelector('button').addEventListener('click', () => swapEnd());
+function swapStart(){
+  if(!WALL || POSTERS.length < 2) return;
+  mmEv('cambiar_sitio');
+  SWAP = { from: selected };
+  closePanel();
+  /* justo debajo de las barras de arriba (conjunto, entorno, tamaño), que cambian de alto según el conjunto */
+  const tools = document.querySelector('.ed-tools'), r0 = stage.getBoundingClientRect();
+  const tb = tools && tools.offsetParent ? tools.getBoundingClientRect().bottom : r0.top + 120;
+  swapBar.style.top = Math.round(tb - r0.top + 10) + 'px';
+  stage.appendChild(swapBar); requestAnimationFrame(() => swapBar.classList.add('show'));
+  applySelection(); dirty3D = true;
+}
+function swapEnd(){
+  if(!SWAP) return;
+  SWAP = null;
+  swapBar.classList.remove('show'); setTimeout(() => { if(!SWAP) swapBar.remove(); }, 250);
+  POSTERS.forEach(p => { p.rig.rotation.z = 0; });
+  applySelection(); dirty3D = true;
+}
+function swapTo(k){
+  const i = SWAP.from, pcs = WALL && WALL.pieces;
+  if(k === i || !pcs || !pcs[i] || !pcs[k]){ swapEnd(); return; }
+  pushUndo();
+  const a = POSTERS[i], b = POSTERS[k];
+  POSTERS[i] = b; POSTERS[k] = a;
+  applyPieceTo(a, pcs[k]); applyPieceTo(b, pcs[i]);
+  [a, b].forEach(p => { if(p.srcImg) applyFrontTexture(POSTERS.indexOf(p)); });
+  selected = k; _userEdited = true;
+  swapEnd();
+  layout(); renderThumbs(); syncConfigUI(); updateTotal(); syncWallBar(); scheduleSave();
+  toast('Cuadros cambiados de sitio · puedes deshacerlo');
+}
+document.getElementById('edpSwap').addEventListener('click', swapStart);
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && SWAP) swapEnd(); });
+
 function openPanelOrPick(){
   const p = POSTERS[selected];
   if(!p || !p.srcImg){ pickMode = p ? 'replace' : 'add'; fileInput.click(); return; }
@@ -2354,6 +2402,7 @@ function renderThumbs(){
       t.appendChild(del);
     }
     t.onclick = ()=>{
+      if(SWAP){ swapTo(i); return; }   // cambiando de sitio: la miniatura también vale
       if(!p.srcImg){ selectPoster(i); pickMode='replace'; fileInput.click(); return; }
       selectPoster(i); openPanel();
     };
@@ -2818,6 +2867,11 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     if(pc){
       attributes.push({key:'_conjunto', value:`${WALL.id}|${WALL.name}|${WALL.width}x${WALL.height}`});
       attributes.push({key:'_pieza', value:[pc.x, pc.y, pc.w, pc.h].join(',')});
+      /* 11-nov (Marc): en el pedido tiene que verse a simple vista qué conjunto es y dónde va cada cuadro
+         (el Vestuario saca de aquí la hoja de montaje que va en la caja) */
+      const nPz = WALL.pieces.length, kPz = POSTERS.indexOf(p) + 1;
+      attributes.push({key:'Conjunto', value:`${WALL.name} (${WALL.id}) · ${cm(WALL.width)} × ${cm(WALL.height)} cm`});
+      attributes.push({key:'Sitio en el conjunto', value:`${kPz} de ${nPz}`});
     }
     if(CO.verMejora && mejoraDe(p)) attributes.push({key:'Ver la foto retocada antes de imprimir', value:'Sí'});
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
@@ -3561,6 +3615,7 @@ function syncConfigUI(){
   if(!p.backFont)  p.backFont  = FONT_DEFAULT;
   frontFontDD.render(); backFontDD.render(); renderTxtExtras();
   document.getElementById('edpCrop').style.display = p.srcImg ? 'block' : 'none';
+  document.getElementById('edpSwap').style.display = (WALL && WALL.pieces && WALL.pieces.length > 1 && POSTERS.length > 1) ? 'block' : 'none';
   renderPtypes(); renderFormats(); renderSizes(); renderMounts(); syncPanelHead();
   if(hangerModalEl && hangerModalEl.classList.contains('open')) renderHangerChips();
   if(cropModalEl.classList.contains('open')) drawCropPreview();

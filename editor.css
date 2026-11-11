@@ -225,7 +225,7 @@
 .font-dd-opt.active{background:var(--black);color:#fff}
 .font-dd-opt small{display:block;font-size:9.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   opacity:.55;font-family:var(--font-sans)!important;margin-bottom:1px}
-.edp-row2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
+.edp-row2{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:7px;margin-bottom:16px}
 .edp-photo{width:100%;padding:10px 6px;border:1.5px solid var(--black);border-radius:4px;background:none;color:var(--black);font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s,color .15s;font-family:var(--font-sans)}
 @media(hover:hover){.edp-photo:hover{background:var(--black);color:#fff}}
 
@@ -737,3 +737,9 @@ button{color:inherit}
    movil no se queden pegados tras el toque (iOS a veces pedia un segundo toque) */
 html{-webkit-tap-highlight-color:transparent}
 button,a,label,input,select,textarea,summary,[role=button],[data-quitar],[data-reponer]{touch-action:manipulation}
+
+/* 11-nov · Cambiar de sitio (conjuntos): barra arriba mientras se elige el otro cuadro */
+.swap-bar{position:absolute;left:50%;top:140px;z-index:28;transform:translate(-50%,-8px);width:max-content;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:9px 9px 9px 16px;border-radius:22px;line-height:1.3;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.swap-bar.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.swap-bar button{flex:none;border:0;border-radius:999px;padding:7px 13px;background:#fff;color:#1a1a1a;font:inherit;font-size:12.5px;cursor:pointer;touch-action:manipulation}
+.edp-row2 .edp-photo{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
