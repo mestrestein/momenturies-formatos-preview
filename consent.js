@@ -237,7 +237,7 @@
   }
   function elegir(ads, ana) {
     var antes = leer();
-    guardar(ads, ana);
+    aShopify(guardar(ads, ana));
     if (caja) caja.style.display = 'none';
     if (ads) { cargarPixel(); cargarKlaviyo(); }
     if (ana) { cargarGA(); cargarClarity(); seguimiento(true); }
@@ -245,6 +245,30 @@
     if ((!ads && (cargado || klCargado)) || (!ana && gaCargado)) location.reload();
   }
   window.mmCookies = { abrir: function () { abrir(true); } };
+
+  /* ═════ SHOPIFY (11-nov-2026): la elección viaja al checkout ═════
+     checkout.momenturies.com no ve el localStorage de la web. Con la API de privacidad de Shopify (modo headless) la
+     elección se guarda en la cookie _tracking_consent de .momenturies.com: el checkout ya no vuelve a preguntar y el
+     canal Facebook & Instagram manda InitiateCheckout y Purchase solo si aquí se aceptó la publicidad.
+     El token (público, de Storefront) lo pone el worker de la web al servir este archivo, como en editor.js y cuenta.js. */
+  var SHOPIFY = { storefrontToken: '', checkout: 'checkout.momenturies.com', raiz: 'momenturies.com' }, SHOP_KEY = 'mm_cookies_shop';
+  function aShopify(c) {
+    if (!activo || prueba || !SHOPIFY.storefrontToken || !c) return;
+    try { if (localStorage.getItem(SHOP_KEY) === String(c.t)) return; } catch (e) {}
+    var enviar = function () {
+      var cp = window.Shopify && window.Shopify.customerPrivacy;
+      if (!cp || !cp.setTrackingConsent) return;
+      cp.setTrackingConsent({
+        marketing: c.ads, analytics: c.ana, preferences: c.ana, sale_of_data: c.ads,
+        headlessStorefront: true, checkoutRootDomain: SHOPIFY.checkout, storefrontRootDomain: SHOPIFY.raiz,
+        storefrontAccessToken: SHOPIFY.storefrontToken
+      }, function (err) { if (!err) try { localStorage.setItem(SHOP_KEY, String(c.t)); } catch (e) {} });
+    };
+    if (window.Shopify && window.Shopify.customerPrivacy) return enviar();
+    var s = document.createElement('script'); s.async = true; s.onload = enviar;
+    s.src = 'https://cdn.shopify.com/shopifycloud/consent-tracking-api/v0.1/consent-tracking-api.js';
+    document.head.appendChild(s);
+  }
 
   function enlaces() {
     // «Configurar cookies» junto a cada enlace a la política de cookies del pie (no en menús), y [data-mm-cookies] / [data-cookies]
@@ -269,6 +293,7 @@
     var c = leer();
     seguimiento(!!(c && c.ana));
     if (!c) return abrir(false);
+    aShopify(c); // quien eligió antes de esto (o en otra pestaña) también llega al checkout con su elección
     if (c.ads) { cargarPixel(); cargarKlaviyo(); }
     if (c.ana) { cargarGA(); cargarClarity(); }
   }
