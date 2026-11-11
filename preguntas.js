@@ -180,12 +180,12 @@
 
     /* ─── PRODUCCIÓN Y ENVÍO ─── */
     ['envio', 1, '¿Cuánto tarda en llegar?',
-      '<ul><li><b>Producción:</b> de 24 a 72 h.</li><li><b>Envío</b> (después de la producción): <b>desde 24 h hasta 7 días laborables</b>, según el destino y el tipo de envío.</li></ul>'
+      '<ul><li><b>Producción:</b> de 24 a 72 h.</li><li><b>Envío</b> (después de la producción): <b>de 2 a 7 días laborables</b> en España, de 4 a 10 a la Unión Europea y de 7 a 15 al resto de destinos.</li></ul>'
       + '<p>Antes de pagar verás el plazo y el precio exactos.</p>'],
     ['envio', 0, '¿Cuánto cuesta el envío?',
-      '<p>En España, 4,95 € el estándar y <b>gratis a partir de 60 €</b>. El exprés cuesta 9,95 €. A Portugal, 6,95 € (gratis desde 80 €). Al resto de la Unión Europea, 9,95 € (gratis desde 100 €). Tienes el detalle en <a href="envios.html">Envíos y devoluciones</a>.</p>'],
+      '<p><b>Gratis a partir de 60 €</b> en todos los destinos. Por debajo: 5 € en la España peninsular; 7 € en Baleares, Canarias, Ceuta y Melilla; 9,99 € a la Unión Europea (Portugal incluido) y 14,90 € al resto de destinos. Tienes el detalle en <a href="envios.html">Envíos y devoluciones</a>.</p>'],
     ['envio', 0, '¿Enviáis fuera de España?',
-      '<p>Sí, a <b>Portugal y al resto de la Unión Europea</b>. Fuera de la UE, de momento, no enviamos.</p>'],
+      '<p>Sí. Enviamos a <b>toda la Unión Europea</b> (Portugal incluido) y a Estados Unidos, Reino Unido, Suiza, Noruega, Canadá, Australia, Japón, Corea del Sur, Emiratos Árabes Unidos, Israel, Hong Kong, Singapur, Malasia, Nueva Zelanda y Argentina. Fuera de la UE la aduana del destino puede cobrar aranceles o impuestos de importación.</p>'],
     ['envio', 0, '¿Llega bien protegido?',
       '<p>Sí. Cada pieza va protegida para que llegue <b>sin golpes ni rayas</b>. Si aun así llega dañada, te la reimprimimos gratis.</p>'],
 
@@ -210,7 +210,7 @@
     ['regalo', 1, '¿Cómo funciona la dedicatoria?',
       '<p>Puedes añadir unas palabras a tu gusto, <b>por delante o por detrás</b>, adaptadas a tu imagen, con el <b>tamaño, la tipografía y el color que quieras</b>. <b>Sin ningún coste añadido.</b></p>'],
     ['regalo', 0, '¿Llega a tiempo para una fecha concreta?',
-      '<p>Si pides con <b>al menos 10 días laborables de margen</b>, normalmente sí. Para fechas justas, elige el envío exprés y escríbenos: haremos lo posible por adelantarlo.</p>']
+      '<p>Si pides con <b>al menos 10 días laborables de margen</b>, normalmente sí. Si tu fecha es justa, escríbenos antes de pedir y te decimos si llegamos.</p>']
   ];
 
   /* ═════ FAQ DE LAS FICHAS (10-nov) ═════
@@ -353,7 +353,7 @@
         G('¿Se ve el imán una vez colgado?'),
         G('¿Tus cuadros se despegan o se caen? Así lo solucionas'),
         ['pedido', 1, '¿Cuánto tarda en llegar?',
-          '<p>Como no se personaliza, <b>sale en 24 a 72 h</b>. El envío tarda <b>desde 24 h hasta 7 días laborables</b>, según el destino y el tipo de envío. Antes de pagar verás el plazo y el precio exactos.</p>'],
+          '<p>Como no se personaliza, <b>sale en 24 a 72 h</b>. El envío tarda <b>de 2 a 7 días laborables</b> en España, de 4 a 10 a la Unión Europea y de 7 a 15 al resto de destinos. Antes de pagar verás el plazo y el precio exactos.</p>'],
         ['pedido', 0, '¿Cuánto cuesta el envío?', G('¿Cuánto cuesta el envío?')[3]],
         ['pedido', 0, '¿Enviáis fuera de España?', G('¿Enviáis fuera de España?')[3]],
         G('¿Cómo puedo pagar?'),
