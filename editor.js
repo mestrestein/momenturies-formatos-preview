@@ -362,6 +362,23 @@
                     <option value="RO">Rumanía</option>
                     <option value="SE">Suecia</option>
                   </optgroup>
+                  <optgroup label="Resto del mundo">
+                    <option value="AR">Argentina</option>
+                    <option value="AU">Australia</option>
+                    <option value="CA">Canadá</option>
+                    <option value="KR">Corea del Sur</option>
+                    <option value="AE">Emiratos Árabes Unidos</option>
+                    <option value="US">Estados Unidos</option>
+                    <option value="HK">Hong Kong</option>
+                    <option value="IL">Israel</option>
+                    <option value="JP">Japón</option>
+                    <option value="MY">Malasia</option>
+                    <option value="NO">Noruega</option>
+                    <option value="NZ">Nueva Zelanda</option>
+                    <option value="GB">Reino Unido</option>
+                    <option value="SG">Singapur</option>
+                    <option value="CH">Suiza</option>
+                  </optgroup>
                 </select></div>
             </div>
             <div class="co-ship" id="coShipOpts"></div>
@@ -3695,18 +3712,24 @@ if(_urlType && PRODUCTS[_urlType]){
    Las tarifas de envío de abajo son las mismas que tiene la tienda en Shopify: si se cambian
    allí, hay que cambiarlas aquí. */
 const SHIPPING = {
-  ES: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'3-5 días laborables', days:'3-5 working days', price:4.95, free:60},
-        {id:'exp', es:'Envío exprés',   en:'Express shipping',  dias:'1-2 días laborables', days:'1-2 working days', price:9.95, free:null} ],
-  PT: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'4-6 días laborables', days:'4-6 working days', price:6.95, free:80} ],
-  EU: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'5-8 días laborables', days:'5-8 working days', price:9.95, free:100} ],
+  ES:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'2-7 días laborables', days:'2-7 working days', price:5.00, free:60} ],
+  ESI: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'2-7 días laborables', days:'2-7 working days', price:7.00, free:60} ],
+  EU:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'4-10 días laborables', days:'4-10 working days', price:9.99, free:60} ],
+  INT: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'7-15 días laborables', days:'7-15 working days', price:14.90, free:60} ],
 };
+const ENVIO_INT = ['US','GB','CH','NO','CA','AU','JP','KR','AE','IL','HK','SG','MY','NZ','AR'];
 const eur = n => n.toFixed(2).replace('.', ',') + '€';
 const coEl = id => document.getElementById(id);
 const CO = { step:'mail', ship:'std', mail:'', envio:null };
 
 
-/* zonas de envío de la tienda: España, Portugal y el resto de la UE (mercado «Unión Europea» en Shopify) */
-function coShipOpts(){ const c = (coEl('coCountry')||{}).value || 'ES'; return SHIPPING[c] || SHIPPING.EU; }
+/* zonas de envío de la tienda (11-nov): España peninsular; Baleares, Canarias, Ceuta y Melilla (por el C.P.: 07, 35, 38, 51, 52);
+   la UE con Portugal; e Internacional (ENVIO_INT). Gratis desde 60 € en todas. */
+function coShipOpts(){
+  const c = (coEl('coCountry')||{}).value || 'ES';
+  if(c === 'ES') return /^(07|35|38|51|52)/.test(((coEl('coZip')||{}).value || '').trim()) ? SHIPPING.ESI : SHIPPING.ES;
+  return ENVIO_INT.includes(c) ? SHIPPING.INT : SHIPPING.EU;
+}
 function coShipSel(){ const o=coShipOpts(); return o.find(x=>x.id===CO.ship) || o[0]; }
 function coShipCost(){ const o=coShipSel(); return (o.free!=null && coSubtotal()>=o.free) ? 0 : o.price; }
 
@@ -3763,11 +3786,11 @@ function coRenderSum(){
     ${dto ? `<div class="co-sum-row"><span><span class="es">Subtotal</span><span class="en">Subtotal</span></span><span>${eur(coGross())}</span></div>
     <div class="co-sum-row co-sum-dto"><span><span class="es">Combinación de ${packPieces()} cuadros</span><span class="en">Set of ${packPieces()} prints</span> &minus;${packPct()}%</span><span>&minus;${eur(dto)}</span></div>` : ''}
     <div class="co-sum-row"><span><span class="es">${dto ? 'Subtotal con descuento' : 'Subtotal'}</span><span class="en">${dto ? 'Discounted subtotal' : 'Subtotal'}</span></span><span>${eur(coSubtotal())}</span></div>
-    <div class="co-sum-row"><span><span class="es">Envío</span><span class="en">Shipping</span></span><span><span class="es">${coSubtotal() >= 60 ? 'Gratis en España' : 'Se elige al pagar'}</span><span class="en">${coSubtotal() >= 60 ? 'Free in Spain' : 'Chosen at checkout'}</span></span></div>
+    <div class="co-sum-row"><span><span class="es">Envío</span><span class="en">Shipping</span></span><span><span class="es">${coSubtotal() >= 60 ? 'Gratis' : 'Se elige al pagar'}</span><span class="en">${coSubtotal() >= 60 ? 'Free' : 'Chosen at checkout'}</span></span></div>
     <div class="co-sum-row total"><span>Total</span><span>${eur(coSubtotal())}<small><span class="es">IVA incl.</span><span class="en">VAT incl.</span></small></span></div>`;
   { const pay = coEl('coPay'); if(pay) pay.disabled = !POSTERS.some(cuenta); }   // todo quitado: no se puede pagar
   const ft = coEl('coFootTotal');
-  if(ft) ft.innerHTML = `<span><span class="es">Total</span><span class="en">Total</span> <small><span class="es">IVA incluido · envío ${coSubtotal() >= 60 ? 'gratis en España' : 'al pagar'}</span><span class="en">VAT included · shipping ${coSubtotal() >= 60 ? 'free in Spain' : 'at checkout'}</span></small></span><b>${eur(coSubtotal())}</b>`;
+  if(ft) ft.innerHTML = `<span><span class="es">Total</span><span class="en">Total</span> <small><span class="es">IVA incluido · envío ${coSubtotal() >= 60 ? 'gratis' : 'al pagar'}</span><span class="en">VAT included · shipping ${coSubtotal() >= 60 ? 'free' : 'at checkout'}</span></small></span><b>${eur(coSubtotal())}</b>`;
 }
 
 function coOpen(name){
@@ -3859,6 +3882,7 @@ function closeCheckout(){
     });
   });
   coEl('coCountry').addEventListener('change', ()=>{ coRenderShip(); coRenderSum(); });
+  coEl('coZip').addEventListener('input', ()=>{ coRenderShip(); coRenderSum(); });   // Baleares, Canarias, Ceuta y Melilla van por el C.P.
   const payHtml = coEl('coPay').innerHTML;
   // al volver atrás desde la página de pago, el botón vuelve a estar listo
   window.addEventListener('pageshow', e=>{ if(e.persisted){ const b = coEl('coPay'); b.disabled = false; b.innerHTML = payHtml; } });
