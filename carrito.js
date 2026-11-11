@@ -116,8 +116,8 @@
   function lleno(r) {
     var n = r.lineas.length, falta = Math.max(0, ENVIO_GRATIS - r.total);
     var envio = falta > 0
-      ? 'Te faltan <b>' + eur(falta) + '</b> para el envío gratis en España'
-      : '<b>Envío gratis</b> en España';
+      ? 'Te faltan <b>' + eur(falta) + '</b> para el envío gratis'
+      : '<b>Envío gratis</b>';
     if (r.viejo) return '<div class="mc-head"><b>Tu carrito<small>' + n + (n === 1 ? ' pieza' : ' piezas') + '</small></b><button class="mc-x" type="button" aria-label="Cerrar">×</button></div><div class="mc-body">' +
       r.lineas.map(function (l) { return '<div class="mc-l"><div class="t"' + (l.thumb ? ' style="background-image:url(' + l.thumb + ')"' : '') + '></div><div><b>' + esc(l.nombre) + '</b><span>' + esc(l.medida) + '</span></div><em></em></div>'; }).join('') +
       '</div><div class="mc-foot"><button class="mc-btn" type="button" data-ir="editar">Abrir mi diseño →</button><div class="mc-mini"><span>IVA incluido</span><button type="button" data-ir="vaciar">Vaciar</button></div></div>';
