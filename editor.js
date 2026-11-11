@@ -3985,6 +3985,17 @@ function closeCheckout(){
 var SAVE_KEY = 'design', SAVE_TTL = 30 * 24 * 3600e3;   // 30 días
 function store(){ return window.MOMENTURIES_STORE || null; }
 var _saveT = null, _savedBlobs = null, _restoring = false, _userEdited = false;
+/* 11-nov (Marc: «ya no se me guardan»): lo guardado solo se borra si en ESTA visita se llegó a guardar algo y luego
+   se quitó todo. Antes, entrar con ?pared=… montaba el conjunto vacío y borraba el diseño anterior al instante. */
+var _hayGuardado = false;
+/* fotos como bytes (ArrayBuffer), no como Blob: Safari privado y el navegador de Instagram no guardan Blob en
+   IndexedDB y fallaba el guardado entero (igual que en photo-handoff.js) */
+async function fotoABytes(f){ return { mfoto:1, name:f.name || 'foto.jpg', type:f.type || 'image/jpeg', lastModified:f.lastModified || Date.now(), buf: await f.arrayBuffer() }; }
+function bytesAFoto(o){
+  if(!o || !o.mfoto) return o;
+  try{ return new File([o.buf], o.name, {type:o.type, lastModified:o.lastModified}); }
+  catch(e){ const b = new Blob([o.buf], {type:o.type}); b.name = o.name; return b; }
+}
 
 function scheduleSave(){
   if((window.MOMENTURIES_EDITOR||{}).vista || _restoring || !store() || typeof POSTERS === 'undefined') return;
@@ -4008,13 +4019,13 @@ async function saveDesign(){
       backZone:p.backZone, backMax:p.backMax,
       photo: p.file ? ('photo:' + p.uid) : null, thumb: p.thumb || null,
     }));
-    if(!items.length){ if(_userEdited) await clearDesign(); return; }
+    if(!items.length){ if(_userEdited && _hayGuardado){ await clearDesign(); _hayGuardado = false; } return; }
     _savedBlobs = _savedBlobs || new Set();
     // las fotos solo se escriben una vez cada una (pesan)
     for(const p of POSTERS){
       if(p.file && p.uid && !_savedBlobs.has(p.uid)){
-        await st.put('photo:' + p.uid, p.file);
-        _savedBlobs.add(p.uid);
+        try{ await st.put('photo:' + p.uid, await fotoABytes(p.file)); _savedBlobs.add(p.uid); }
+        catch(e){ try{ await st.put('photo:' + p.uid, p.file); _savedBlobs.add(p.uid); }catch(_){} }   // sin sitio: el diseño se guarda igual
       }
     }
     // resumen para el carrito de la cabecera (carrito.js), que no carga el editor
@@ -4026,6 +4037,7 @@ async function saveDesign(){
       bruto, dto, total: Math.round((bruto - dto) * 100) / 100, pct,
       pared: WALL ? WALL.name : null, faltan: WALL ? POSTERS.length - conFoto.length : 0 };
     if(window.mmEstado && conFoto.length) mmEstado('editor', conFoto.length + ' piezas');
+    _hayGuardado = true;
     await st.put(SAVE_KEY, { v:1, at:Date.now(), items, resumen, wall: WALL ? WALL.id : null, wallSize: WALL ? (WALL.vk || null) : null, fridgeWall: WALL && WALL.fridge ? WALL : null, scene: ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : null });
   }catch(e){ /* sin sitio o sin permiso: el editor sigue funcionando igual */ }
 }
@@ -4074,7 +4086,7 @@ async function restoreDesign(saved){
       });
       const i = POSTERS.indexOf(p);
       if(it.photo && st){
-        const blob = await st.get(it.photo);
+        const blob = bytesAFoto(await st.get(it.photo));
         if(blob){
           p.file = blob;
           _savedBlobs = _savedBlobs || new Set();
@@ -4094,6 +4106,7 @@ async function restoreDesign(saved){
       }
       applyBackText(i); applyMountVisual(p);
     }
+    _hayGuardado = true;
     layout(); renderThumbs(); applySelection(); syncConfigUI(); updateTotal();
     if(savedWall) syncWallBar();
     dirty3D = true;
@@ -4108,11 +4121,13 @@ async function restoreDesign(saved){
   const st = store(); if(!st) return;
   const _q = new URLSearchParams(location.search);
   if(_q.get('foto') === '1') return;   // viene con foto nueva
-  if(_q.get('pared')) return;          // viene a una pared concreta
   let saved;
   try{ saved = await st.get(SAVE_KEY); }catch(e){ return; }
   if(!saved || !saved.items || !saved.items.length) return;
   if(Date.now() - (saved.at || 0) > SAVE_TTL){ clearDesign(); return; }
+  /* viene a un conjunto concreto (?pared=…): si es el mismo que tenía guardado (recargar, volver atrás, entrar otra
+     vez desde la ficha), vuelve tal cual sin preguntar; si es otro, se le ofrece retomar el suyo */
+  if(_q.get('pared') && saved.wall === _q.get('pared') && !POSTERS.some(p => p.srcImg)){ await restoreDesign(saved); return; }
   // desde el carrito de la cabecera: se recupera sin preguntar y, si lo pidió, se abre el pago
   if(_q.get('carrito') === '1' || _q.get('retomar') === '1'){
     await restoreDesign(saved);
