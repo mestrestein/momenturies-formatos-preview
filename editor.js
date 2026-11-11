@@ -3867,7 +3867,7 @@ function coValid(name){
     const v = (coEl('coEmail').value||'').trim();
     const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
     coEl('coEmail').classList.toggle('bad', !ok);
-    if(ok){ CO.mail = v; coMarkDone('mail', v); }
+    if(ok){ CO.mail = v; coMarkDone('mail', v); if(window.mmIdentificar) mmIdentificar(v); }   // Klaviyo (consent.js): solo con permiso de publicidad
     return ok;
   }
   if(name==='envio'){

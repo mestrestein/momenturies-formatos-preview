@@ -7,9 +7,14 @@
    - Las páginas llaman a window.mmTrack('Evento', {...}). Sin consentimiento no se manda nada.
    - La elección dura 6 meses; luego se vuelve a preguntar. Textos en inglés si la página está en inglés.
    - GA4: hueco preparado (vacío = sin Google Analytics). Al rellenarlo sale la casilla «Analítica» y va con Consent Mode v2.
-   Sustituye al consent.js del commit b4e96b7 (mismo nombre, estaba apagado sin ID). */
+   Sustituye al consent.js del commit b4e96b7 (mismo nombre, estaba apagado sin ID).
+   - Klaviyo (11-nov-2026): KLAVIYO = clave pública (Site ID, 6 caracteres) y KLAVIYO_LISTA = id de la lista de novedades.
+     Vacío = apagado. Su script (cookie __kla_id) va con el permiso de publicidad, igual que el píxel, y recibe
+     Viewed Product y Added to Cart. El alta en la lista (formulario «lanzamiento») NO depende de las cookies: la persona
+     da su correo a propósito; Klaviyo le manda el correo de confirmación (doble opt-in). */
 (function () {
   var PIXEL = '1917299959243159', GA4 = '', CLARITY = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
+  var KLAVIYO = 'XD3GkM', KLAVIYO_LISTA = 'SUUQzW', KLAVIYO_API = '2024-10-15';
   var path = location.pathname;
 
   var prueba = /[?&]fbtest=1(&|$)/.test(location.search);
@@ -72,10 +77,51 @@
     cola.splice(0).forEach(function (a) { fbq('track', a[0], a[1]); });
   }
 
+  /* ═════ KLAVIYO (apagado mientras KLAVIYO esté vacío) ═════ */
+  var klCargado = false;
+  function kl(accion, a, b) { if (!KLAVIYO || !activo) return; window._learnq = window._learnq || []; window._learnq.push(b === undefined ? [accion, a] : [accion, a, b]); }
+  function cargarKlaviyo() {
+    if (klCargado || !KLAVIYO || !activo) return;
+    klCargado = true;
+    var s = document.createElement('script'); s.async = true; s.src = 'https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=' + KLAVIYO; document.head.appendChild(s);
+    var vc = verContenido();
+    if (vc) kl('track', 'Viewed Product', { ProductName: vc.content_name, ProductID: vc.content_ids[0], Categories: [vc.content_category], Price: vc.value || null, URL: location.href });
+  }
+  /* los eventos de Meta que Klaviyo también quiere (nombres de Klaviyo/Shopify para que valgan sus plantillas de flujos) */
+  function aKlaviyo(evento, d) {
+    if (!klCargado) return;
+    if (evento === 'AddToCart') kl('track', 'Added to Cart', { $value: d.value, AddedItemProductName: d.content_name || (d.content_ids || []).join(', '),
+      AddedItemProductID: (d.content_ids || [])[0], AddedItemQuantity: d.num_items, ItemNames: d.content_ids || [], CheckoutURL: location.href, URL: location.href });
+  }
+  /* alta en la lista: con la API pública de Klaviyo, sin cookies (la persona escribe su correo y pulsa el botón) */
+  function suscribir(email, origen) {
+    if (!KLAVIYO || !KLAVIYO_LISTA || !activo || !email) return;
+    try {
+      fetch('https://a.klaviyo.com/client/subscriptions?company_id=' + KLAVIYO, {
+        method: 'POST', keepalive: true,
+        headers: { 'content-type': 'application/vnd.api+json', revision: KLAVIYO_API },
+        body: JSON.stringify({ data: { type: 'subscription', attributes: { custom_source: origen,
+          profile: { data: { type: 'profile', attributes: { email: email, properties: { Idioma: en ? 'en' : 'es' } } } } },
+          relationships: { list: { data: { type: 'list', id: KLAVIYO_LISTA } } } } })
+      }).catch(function () {});
+    } catch (e) {}
+    kl('identify', { $email: email });
+  }
+
+  /* correo del panel de pago (editor.js): con permiso de publicidad, Klaviyo sabe de quién es el carrito y puede
+     mandar el recordatorio si no termina. No lo apunta a la lista (eso solo con el formulario o la casilla de Shopify). */
+  window.mmIdentificar = function (email) {
+    var c = leer();
+    if (!activo || !c || !c.ads || !email) return;
+    cargarKlaviyo();
+    kl('identify', { $email: email });
+  };
+
   window.mmTrack = function (evento, datos) {
     var c = leer();
     if (!activo || !c || !c.ads) return false;
     if (cargado && window.fbq) fbq('track', evento, datos || {}); else cola.push([evento, datos || {}]);
+    aKlaviyo(evento, datos || {});
     return true;
   };
 
@@ -116,7 +162,11 @@
   /* Formularios: el aviso de apertura es un Lead y el de contacto un Contact */
   document.addEventListener('submit', function (e) {
     var f = e.target, nombre = f && f.getAttribute && f.getAttribute('name');
-    if (nombre === 'lanzamiento') mmTrack('Lead', { content_name: 'Aviso de apertura' });
+    if (nombre === 'lanzamiento') {
+      mmTrack('Lead', { content_name: 'Aviso de apertura' });
+      var em = f.querySelector('input[type="email"]');
+      suscribir(em && em.value.trim(), 'Web · aviso de lanzamiento');
+    }
     else if (nombre === 'contacto') mmTrack('Contact', {});
   }, true);
 
@@ -137,13 +187,13 @@
     p: 'We use the necessary ones so the site and the editor work. If you let us, also analytics, to improve the site, and Meta’s, to know which ads bring you here. Your call.',
     nec: ['Necessary', 'Your design, the cart and the language. The site doesn’t work without them.'],
     ana: ['Analytics', 'See how the site is used (pages, buttons, steps in the editor) to improve it. Never what you write or your photos.'],
-    ads: ['Advertising (Meta)', 'Measure which ads work and show you ours on Facebook and Instagram.'], link: 'Cookie settings'
+    ads: ['Advertising (Meta and Klaviyo)', 'Measure which ads work, show you ours on Facebook and Instagram and, if you gave us your email, remind you of what you left in the cart.'], link: 'Cookie settings'
   } : {
     t: 'Las cookies, en corto', mas: 'Más información', cfg: 'Configurar', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
     p: 'Usamos las necesarias para que la web y el editor funcionen. Si nos dejas, también las de analítica, para mejorar la web, y las de Meta, para saber qué anuncios te traen hasta aquí. Tú decides.',
     nec: ['Necesarias', 'Tu diseño, el carrito y el idioma. Sin ellas la web no funciona.'],
     ana: ['Analítica', 'Ver cómo se usa la web (páginas, botones, pasos del editor) para mejorarla. Nunca lo que escribes ni tus fotos.'],
-    ads: ['Publicidad (Meta)', 'Medir qué anuncios funcionan y enseñarte los nuestros en Facebook e Instagram.'], link: 'Configurar cookies'
+    ads: ['Publicidad (Meta y Klaviyo)', 'Medir qué anuncios funcionan, enseñarte los nuestros en Facebook e Instagram y, si nos diste tu correo, recordarte lo que dejaste en el carrito.'], link: 'Configurar cookies'
   };
   function fila(d, id) {
     return '<div class="row"><div><b>' + d[0] + '</b><span>' + d[1] + '</span></div>' +
@@ -189,10 +239,10 @@
     var antes = leer();
     guardar(ads, ana);
     if (caja) caja.style.display = 'none';
-    if (ads) cargarPixel();
+    if (ads) { cargarPixel(); cargarKlaviyo(); }
     if (ana) { cargarGA(); cargarClarity(); seguimiento(true); }
     // si retira un permiso con su script ya cargado, se recarga la página para quitarlo
-    if ((!ads && cargado) || (!ana && gaCargado)) location.reload();
+    if ((!ads && (cargado || klCargado)) || (!ana && gaCargado)) location.reload();
   }
   window.mmCookies = { abrir: function () { abrir(true); } };
 
@@ -219,7 +269,7 @@
     var c = leer();
     seguimiento(!!(c && c.ana));
     if (!c) return abrir(false);
-    if (c.ads) cargarPixel();
+    if (c.ads) { cargarPixel(); cargarKlaviyo(); }
     if (c.ana) { cargarGA(); cargarClarity(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inicio); else inicio();
