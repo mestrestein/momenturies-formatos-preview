@@ -133,6 +133,12 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .coupon{display:inline-flex;align-items:center;gap:10px;background:var(--terra-s);border:1.5px dashed var(--terra);border-radius:10px;padding:7px 8px 7px 12px;font-size:13.5px;font-weight:700;color:var(--brown)}
 .coupon code{font:900 13px/1 var(--sans);letter-spacing:1.5px;background:#fff;color:var(--terra);border-radius:6px;padding:7px 10px;cursor:pointer;border:0}
 .coupon code.ok{background:var(--green);color:#fff}
+.coupon button{font:900 13px/1 var(--sans);letter-spacing:.5px;background:#fff;color:var(--terra);border-radius:6px;padding:7px 10px;cursor:pointer;border:0}
+.cup-form{display:flex;gap:6px;margin:8px 0 0;max-width:380px}
+.cup-form[hidden],.cup-ok[hidden]{display:none}
+.cup-form input{flex:1;min-width:0;border:1.5px solid var(--terra);border-radius:8px;padding:10px 12px;font:14px var(--sans);color:var(--brown);background:#fff}
+.cup-form button{border:0;border-radius:8px;padding:10px 14px;font:700 14px var(--sans);background:#1a1a1a;color:#fff;cursor:pointer}
+.cup-ok{font-size:13px;line-height:1.45;color:var(--green);font-weight:600;margin:8px 0 0;max-width:380px}
 /* estrellas bajo el título (de prueba) */
 .info .rating5{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;font-weight:700;color:var(--ink2)}
 .info .rating5 .stars{font-size:18px}
@@ -583,7 +589,9 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   </div>
 
   <div class="info">
-    <div class="coupon">🏷️ −10 % en tu primer pedido <code id="cupon" title="Copiar código">HOLA10</code></div>
+    <div class="coupon">🏷️ −10 % en tu primer pedido <button type="button" id="cupon">Consíguelo</button></div>
+    <form name="lanzamiento" class="cup-form" id="cupForm" hidden><input type="email" required placeholder="Tu correo" aria-label="Tu correo para recibir el 10 %" autocomplete="email"><button type="submit">Enviar</button></form>
+    <p class="cup-ok" id="cupOk" hidden>✓ ¡Listo! Revisa tu correo y confirma tu suscripción: te llega tu código personal del 10 % (un solo uso).</p>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
     <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras. Dale vida a vuestro hogar en segundos con vuestros <b>cuadros metálicos premium, con colgado magnético incluido</b>. Fácil de instalar, sin herramientas, sin agujeros, con imán.</p>
@@ -863,7 +871,10 @@ const FLIP = 'Ver el dorso con dedicatoria';
 })();
 
 /* cupón de prueba: copiar al tocar */
-$('#cupon').onclick = e => { navigator.clipboard && navigator.clipboard.writeText('HOLA10'); e.target.textContent = '¡Copiado!'; e.target.classList.add('ok'); setTimeout(() => { e.target.textContent = 'HOLA10'; e.target.classList.remove('ok'); }, 1500); };
+/* Cupón: ya no hay código fijo. Te apuntas (consent.js da de alta en Klaviyo con el formulario «lanzamiento», doble confirmación)
+   y el correo de bienvenida trae un código personal HOLA-XXXXXX de un solo uso. */
+$('#cupon').onclick = () => { $('#cupForm').hidden = false; $('#cupForm input').focus(); };
+$('#cupForm').addEventListener('submit', e => { e.preventDefault(); $('#cupForm').hidden = true; $('#cupon').closest('.coupon').hidden = true; $('#cupOk').hidden = false; });
 
 /* ═════ VENTAJAS: de 4 en 4 ═════ */
 (function(){
