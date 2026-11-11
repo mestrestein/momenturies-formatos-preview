@@ -2609,9 +2609,9 @@ function photoQuality(p){
   return Math.min(cw.sw / W, cw.sh / H);
 }
 const LOWRES_MALA = 0.25;   // 9-nov (Marc): aviso solo con fotos muy muy pequeñas (< 75 ppp a su tamaño)
-/* 10-nov (Marc): alerta amarilla en las que se retocan antes de imprimir (no llegan a 300 ppp a su tamaño): encuadre y carrito.
+/* 10-nov (Marc): alerta amarilla en las que se retocan antes de imprimir (desde el 11-nov, las que no llegan a 250 ppp a su tamaño): encuadre y carrito.
    Texto en positivo («Retoque profesional incluido») para no perder la compra; el «?» explica que puede cambiar algún detalle. */
-const MEJORA_IA = 0.98;
+const MEJORA_IA = 250 / PRINT_DPI;   // 11-nov (Marc): 250 ppp mínimo, el mismo límite que el Vestuario (antes 0,98 ≈ 294 ppp)
 function mejoraDe(p){ if(!p || !p.srcImg) return null; const q = photoQuality(p); return q < LOWRES_MALA ? 'mala' : q < MEJORA_IA ? 'ia' : null; }
 function avisoIA(p){
   const m = mejoraDe(p); if(!m) return '';
@@ -2851,6 +2851,8 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
       {key:'_impresion', value: medida},
+      // 11-nov: ppp reales con el encuadre del cliente (zoom incluido): el Vestuario decide con esto si se retoca
+      {key:'_ppp', value: String(Math.round(photoQuality(p) * PRINT_DPI))},
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(window.mmVisitante && mmVisitante()) attributes.push({key:'_mm_v', value:mmVisitante()});   // para saber quién compró: nadie recibe un recordatorio tras pagar
