@@ -2,7 +2,7 @@
    La casa para caminar. La geometría y la luz salen de Blender (blender/momenturies-rooms/casa.py); aquí solo se pinta:
    color = textura × luz horneada + reflejo, igual que las habitaciones del editor. Unidades: cm. */
 (async function(){
-const VER = window.CASA_V || '7';
+const VER = window.CASA_V || '8';
 let HV = null;                       // 12-nov: los easter eggs (más abajo)
 const ZONAS = ['recibidor', 'pasillo', 'salon', 'cocina', 'dormitorio', 'despacho', 'terraza', 'bano', 'distribuidor', 'dormitorio2', 'bano2', 'biblioteca', 'vestidor', 'suite', 'bano_suite'];
 const NOMBRES = { recibidor:'Recibidor', pasillo:'Pasillo', salon:'Salón', cocina:'Cocina', dormitorio:'Dormitorio', despacho:'Despacho', terraza:'Terraza', bano:'Baño', distribuidor:'Planta alta', dormitorio2:'Dormitorio de invitados', bano2:'Baño de arriba', biblioteca:'Biblioteca', vestidor:'Vestidor', suite:'Dormitorio principal', bano_suite:'Baño principal' };
@@ -46,12 +46,15 @@ const VERT = `
   void main(){ vU0 = uv; vU1 = uv1; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz;
     vN = mat3(modelMatrix) * normal; gl_Position = projectionMatrix * viewMatrix * w; }`;
 const FRAG = `
-  uniform sampler2D map, lm, env; uniform vec3 color; uniform vec4 crop; uniform float rough, metal, spec, alpha, useMap, useLm, mapK, viva;
+  uniform sampler2D map, lm, env; uniform vec3 color; uniform vec4 crop; uniform float rough, metal, spec, alpha, useMap, useLm, mapK, viva, nevLuz, frio;
   varying vec2 vU0, vU1; varying vec3 vN, vP;
   float rnd(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
   void main(){
     vec3 a = color; if(useMap > .5) a *= texture2D(map, vU0 * crop.xy + crop.zw).rgb * mapK;
     vec3 L = useLm > .5 ? texture2D(lm, vU1).rgb * 4.0 : vec3(1.0);
+    /* nevera abierta: la luz de dentro lo aclara todo (el horneado es con la puerta cerrada) */
+    if(nevLuz > 0. && (frio > .5 || (vP.x > 366.6 && vP.x < 433.4 && vP.y > 65. && vP.y < 187. && vP.z > 636. && vP.z < 702.5)))
+      L = mix(L, min(L * 1.3 + vec3(.2, .22, .25), vec3(1.05)), nevLuz);
     if(mapK < 1.5) L = max(L, vec3(.82));                /* una foto nunca se queda a oscuras */
     if(viva > .5){ float g = dot(a, vec3(.3, .59, .11)); a = clamp(mix(vec3(g), a, 1.28) * 1.12, 0., 1.); L = vec3(1.); }   /* imanes: más vivos, sin sombra */
     vec3 V = normalize(cameraPosition - vP), N = normalize(vN); if(dot(N, V) < 0.0) N = -N;
@@ -67,7 +70,7 @@ const FRAG = `
     #include <colorspace_fragment>
     gl_FragColor.rgb += (rnd(gl_FragCoord.xy) - .5) / 255.;
   }`;
-const lmTex = {};
+const lmTex = {}, NEVLUZ = { value:0 };
 function material(m, zona, g, placas){
   const u = m.userData || {}, c = u.c || [1, 1, 1], hasLm = g !== 'glass', a = u.alpha == null ? 1 : u.alpha;
   const foto = /^foto_(\d+)/.exec(m.name || ''), p = foto && placas[+foto[1]];
@@ -77,7 +80,8 @@ function material(m, zona, g, placas){
     map:{ value:map }, useMap:{ value:map ? 1 : 0 }, mapK:{ value:p ? 1 : 2 }, viva:{ value:p && p.set === 'iman' ? 1 : 0 }, crop:{ value:crop },
     lm:{ value:hasLm ? bakedTexture(`${DIR}/${zona}/lm_${g}.webp?v=${VER}`) : null }, useLm:{ value:hasLm ? 1 : 0 },
     env:{ value:ENV }, color:{ value:new THREE.Color(c[0], c[1], c[2]) },
-    rough:{ value:u.rough == null ? .6 : u.rough }, metal:{ value:u.metal || 0 }, spec:{ value:u.spec == null ? .5 : u.spec }, alpha:{ value:a }
+    rough:{ value:u.rough == null ? .6 : u.rough }, metal:{ value:u.metal || 0 }, spec:{ value:u.spec == null ? .5 : u.spec }, alpha:{ value:a },
+    nevLuz:NEVLUZ, frio:{ value:0 }
   };
   if(p) p.un = un;
   return new THREE.ShaderMaterial({ vertexShader:VERT, fragmentShader:FRAG, uniforms:un, side:(u.ds || !hasLm || /^inox_seno/.test(m.name || '')) ? THREE.DoubleSide : THREE.FrontSide, transparent:a < 1, depthWrite:!(a < 1) });
@@ -134,7 +138,7 @@ function carga(z){
     const root = g.scene; root.scale.setScalar(100);
     root.traverse(o => { if(!o.isMesh) return;
       const u = o.material.userData || {}, nm = o.material.name;
-      o.material = material(o.material, z, u.lmg, datos.placas);
+      o.material = material(o.material, z, u.lmg, datos.placas); o.userData.mat = nm || '';
       const f = /^foto_(\d+)/.exec(nm || ''); if(f){ o.userData.placa = datos.placas[+f[1]]; fotos.push(o); }
       if(nm === 'espejo') espejos.push({ o, z });
     });
@@ -145,16 +149,17 @@ function carga(z){
 /* ── andar ── */
 const pos = { x:1235, z:120 }; let yaw = 2.84, pitch = -.06;
 const tecla = {}; let joy = { x:0, y:0 }, pinta = true, mover = null;
-/* agacharse (N mantenida / botón del móvil, que se queda puesto) y saltar (espacio / botón) */
+/* agacharse (12-nov, Marc: N o el botón lo ponen y lo quitan, no hay que mantener) y saltar (espacio / botón) */
 /* doble salto: un segundo impulso en el aire. TECHO = altura máxima de los ojos sobre el suelo (las plantas
    miden 300; así la cabeza no atraviesa el techo hacia la planta de arriba) */
-const AGACHA = 72, G = 980, VSALTO = 300, TECHO = 262; let agache = 0, agachaMovil = false, saltoY = 0, saltoV = 0, saltos = 0;
+const AGACHA = 72, G = 980, VSALTO = 300, TECHO = 262; let agache = 0, agachaOn = false, saltoY = 0, saltoV = 0, saltos = 0;
 function salta(){ if(saltos >= 2) return; saltoV = VSALTO * (agachado() ? .8 : 1) * (saltos ? .9 : 1); saltos++; pinta = true; HV && HV.salto(); }
-function agachado(){ return tecla.KeyN || agachaMovil; }
-addEventListener('keydown', e => { if(e.code === 'Space' && !e.repeat) salta(); tecla[e.code] = true; if(e.code === 'KeyN') pinta = true; if(/^(Key[WASD]|Arrow)/.test(e.code)){ vuelo = null; if(enFoco) ficha(null); } if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
+function agachado(){ return agachaOn; }
+function agacha(v = !agachaOn){ agachaOn = v; $('#bagacha').classList.toggle('on', v); $('#agachado').classList.toggle('ver', v && !MOVIL); pinta = true; }
+addEventListener('keydown', e => { if(e.code === 'Space' && !e.repeat) salta(); tecla[e.code] = true; if(e.code === 'KeyN' && !e.repeat) agacha(); if(/^(Key[WASD]|Arrow)/.test(e.code)){ vuelo = null; if(enFoco) ficha(null); } if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
 { const bS = $('#bsalta'), bA = $('#bagacha');
   bS.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); salta(); fueraAyuda(); });
-  bA.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); agachaMovil = !agachaMovil; bA.classList.toggle('on', agachaMovil); pinta = true; fueraAyuda(); }); }
+  bA.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); agacha(); fueraAyuda(); }); }
 addEventListener('keyup', e => { tecla[e.code] = false; });
 addEventListener('blur', () => { for(const k in tecla) tecla[k] = false; });
 function fueraAyuda(){ $('#ayuda').classList.add('fuera'); }
@@ -331,7 +336,7 @@ function ponPuntos(){
     _w.copy(g.c).project(camera);
     const mirando = _w.z < 1 && Math.abs(_w.x) < .7 && Math.abs(_w.y) < .8;
     const misma = g.sala === (salaEn(cam.x, cam.z, PISO) || {}).id;
-    const ve = !vuelo && g !== enFoco && (g.piso < 0 || g.piso === PISO) && misma && _v.z < 1 && Math.abs(_v.x) < 1 && Math.abs(_v.y) < 1 && mirando && dist < 430 && deFrente && visible(g.c.clone().addScaledVector(g.normal, 4));
+    const ve = !vuelo && g !== enFoco && (g.piso < 0 || g.piso === PISO) && misma && _v.z < 1 && Math.abs(_v.x) < 1 && Math.abs(_v.y) < 1 && mirando && dist < 430 && deFrente && !(g.set === 'iman' && HV && HV.nevAbierta) && visible(g.c.clone().addScaledVector(g.normal, 4));
     g.el.classList.toggle('ver', ve);
     if(ve){ g.el.style.transform = `translate(${(_v.x+1)/2*W}px,${(1-_v.y)/2*H}px)`; g.el.classList.remove('lejos'); }
   });
@@ -646,9 +651,9 @@ HV = (() => {
     const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(f0, T); f.frequency.exponentialRampToValueAtTime(f1, T + dur);
     const g = a.createGain(); g.gain.setValueAtTime(.0001, T); g.gain.exponentialRampToValueAtTime(vol, T + .1); g.gain.exponentialRampToValueAtTime(.0001, T + dur);
     s.connect(f).connect(g).connect(a.destination); s.start(T); }
-  function golpe(t0){ const a = ac(); if(!a) return; const T = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
+  function golpe(t0, vol = .8){ const a = ac(); if(!a) return; const T = a.currentTime + t0, o = a.createOscillator(), g = a.createGain();
     o.frequency.setValueAtTime(150, T); o.frequency.exponentialRampToValueAtTime(48, T + .16);
-    g.gain.setValueAtTime(.0001, T); g.gain.exponentialRampToValueAtTime(.8, T + .01); g.gain.exponentialRampToValueAtTime(.0001, T + .24);
+    g.gain.setValueAtTime(.0001, T); g.gain.exponentialRampToValueAtTime(vol, T + .01); g.gain.exponentialRampToValueAtTime(.0001, T + .24);
     o.connect(g).connect(a.destination); o.start(T); o.stop(T + .26); }
 
   /* texturas */
@@ -742,9 +747,45 @@ HV = (() => {
     ['sofa', new THREE.Box3(new THREE.Vector3(950, 0, 712), new THREE.Vector3(1052, 86, 948))],
   ];
   let tiradas = 0, sofaT = -1, viajes = 0, saltosArriba = 0, ultSalto = 0, escondido = 0;
+
+  /* ── la nevera (12-nov, Marc: «tiene que abrirse y verse el táper dentro»). La puerta de arriba viene aparte en el glb
+     (materiales nevera_puerta*) y se hornea cerrada con la luz de dentro encendida. Aquí se cuelga de su bisagra, con
+     los imanes que lleva pegados, y gira. Dentro, en la balda del medio, el táper de tapa azul con su pósit. ── */
+  const NEV = { x0:364, x1:436, y0:69, y1:188, zf:703.7, bisagra:new THREE.Vector3(434.7, 0, 703.7), max:1.5 };
+  let nev = null;
+  function montaNevera(){
+    const piv = new THREE.Group(); piv.position.copy(NEV.bisagra); scene.add(piv); scene.updateMatrixWorld(true);
+    const van = [], b = new THREE.Box3(), c = new THREE.Vector3();
+    scene.traverse(o => { if(!o.isMesh || o.parent === piv) return; const n = o.userData.mat || '';
+      if(/^nevera_puerta/.test(n)) van.push(o);
+      else if(/^(foto_|iman_placa)/.test(n)){ b.setFromObject(o); b.getCenter(c);
+        if(c.x > NEV.x0 && c.x < NEV.x1 && c.y > NEV.y0 && c.y < NEV.y1 && c.z > NEV.zf - 1 && c.z < NEV.zf + 3) van.push(o); } });
+    if(!van.some(o => o.userData.mat === 'nevera_puerta')){ scene.remove(piv); return; }     // un glb de antes, sin puerta suelta
+    van.forEach(o => { piv.attach(o); if(/^nevera_puerta_(forro|balda|junta|botella|leche|zumo|salsa|huevo)/.test(o.userData.mat) && o.material.uniforms) o.material.uniforms.frio.value = 1; });
+    /* el pósit, en la cara de delante del táper */
+    const nota = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({ color:'#f1ead2', toneMapped:false, map:lienzo(360, 360, (x, w, h) => {
+      const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#ffe680'); g.addColorStop(1, '#f7d64f'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+      x.fillStyle = 'rgba(0,0,0,.06)'; x.fillRect(0, 0, w, 34);
+      x.fillStyle = '#1f2a44'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      const mano = '"Segoe Print", "Bradley Hand", "Comic Sans MS", "Chalkboard SE", cursive';
+      x.font = `700 70px ${mano}`; x.fillText('NO ES', w/2, 120); x.fillText('TUYO.', w/2, 200);
+      x.strokeStyle = '#1f2a44'; x.lineWidth = 5; x.lineCap = 'round'; x.beginPath(); x.moveTo(80, 246); x.quadraticCurveTo(180, 236, 285, 250); x.stroke();
+      x.font = `400 30px ${mano}`; x.fillText('Firmado:', w/2, 288); x.fillText('tu compañero de piso', w/2, 324);
+    }) }));
+    nota.position.set(397, 139.6, 681.4); nota.rotation.z = .06; scene.add(nota);
+    const cocina = RAICES.cocina; if(cocina){ cocina.attach(piv); cocina.attach(nota); }   // se esconden con la cocina
+    nev = { piv, a:0, meta:0, visto:false, caja:new THREE.Box3() };
+  }
+  function abreNevera(abre = !(nev && nev.meta)){
+    if(!nev){ encontrado('nevera', { emoji:'🥡' }); return; }
+    if(abre === !!nev.meta) return; nev.meta = abre ? 1 : 0; pinta = true;
+    if(abre){ ruido(.32, 2400, 500, .22); ruido(1.6, 220, 160, .05, .25);                 // se despega la goma y zumba
+      if(!nev.visto){ nev.visto = true; setTimeout(() => encontrado('nevera', { emoji:'🥡' }), 900); } }
+    else { ruido(.18, 900, 140, .3, .32); setTimeout(() => golpe(0, .35), 320); }
+  }
   const _p = new THREE.Vector3(), _c = new THREE.Vector3();
   const accion = {
-    nevera(){ encontrado('nevera', { emoji:'🥡' }); },
+    nevera(){ abreNevera(); },
     retrete(){ tiradas++; ruido(2.2, 2600, 260, .5); ruido(1.2, 700, 120, .25, .9);
       encontrado('retrete', { emoji:'🚽', x:`Momento inolvidable n.º ${miles(4381 + tiradas)}` }); },
     sofa(){ sofaT = 0; ruido(.35, 500, 90, .35); encontrado('sofa', { emoji:'🛋️' }); },
@@ -754,7 +795,8 @@ HV = (() => {
 
   return {
     dy:0,
-    monta(){ montaEspejo(); },
+    monta(){ montaEspejo(); montaNevera(); },
+    get nevAbierta(){ return !!(nev && nev.a > .05); },
     piso(){ if(++viajes === 10) encontrado('escalera', { emoji:'🥵' }); },
     salto(){
       if(PISO !== 1 || enEscalera(pos.x, pos.z)) return;
@@ -766,6 +808,7 @@ HV = (() => {
       let mejor = null; const prueba = (d, f, p) => { if(d < 520 && (!mejor || d < mejor.d) && visible(p)) mejor = { d, f }; };
       IMANES.forEach(q => { if(q.g.visible && !q.fin && ray.ray.distanceSqToPoint(q.p) < 15*15) prueba(camera.position.distanceTo(q.p), () => coge(q), q.p); });
       CAJAS_HV.forEach(([id, b]) => { if(ray.ray.intersectBox(b, _p)) prueba(_p.distanceTo(camera.position), accion[id], _p.clone()); });
+      if(nev && nev.meta){ nev.caja.setFromObject(nev.piv); if(ray.ray.intersectBox(nev.caja, _p)) prueba(_p.distanceTo(camera.position), accion.nevera, _p.clone()); }
       [[cal, 'calendario'], [lienzoR, 'retrato']].forEach(([o, id]) => { const h = ray.intersectObject(o, false)[0]; if(h) prueba(h.distance, accion[id], h.point); });
       if(!mejor) return false;
       fueraAyuda(); mejor.f(); return true;
@@ -786,6 +829,15 @@ HV = (() => {
         pupilas.forEach(p => { const [x0, y0] = p.userData.o, dx = Math.max(-1, Math.min(1, (_c.x - x0)/z*1.6)), dy = Math.max(-1, Math.min(1, (_c.y - y0)/z*1.6));
           p.position.set(x0 + dx*1.25, y0 + dy*.55, .15); });
         const g = guino && performance.now() - guino < 500; pupilas[1].scale.y = g ? .12 : 1; }
+      /* la puerta de la nevera: va hacia abierta/cerrada con un poco de inercia; si te alejas, se cierra sola */
+      if(nev){
+        if(nev.meta && (PISO !== 0 || Math.hypot(pos.x - 400, pos.z - 720) > 340)) abreNevera(false);
+        NEVLUZ.value = Math.min(1, Math.max(0, nev.a*1.6));
+        const d = nev.meta - nev.a;
+        if(Math.abs(d) > .0005){ nev.a += d*(1 - Math.exp(-dt*(nev.meta ? 5.5 : 7))); const k = nev.a;
+          nev.piv.rotation.y = NEV.max*(k + (nev.meta ? .04*Math.sin(k*Math.PI) : 0)); pinta = true; }
+        else if(nev.a !== nev.meta){ nev.a = nev.meta; nev.piv.rotation.y = NEV.max*nev.a; pinta = true; }
+      }
       /* el sofá: se hunde y vuelve */
       if(sofaT >= 0){ sofaT += dt; this.dy = -30*Math.sin(Math.min(1, sofaT/1.7)*Math.PI); if(sofaT > 1.7){ sofaT = -1; this.dy = 0; } }
       /* agachado 4 s en el vestidor */
@@ -793,7 +845,7 @@ HV = (() => {
       if(s && s.id === 'vestidor' && agache > .9){ if(escondido >= 0 && (escondido += dt) > 4){ escondido = -1; encontrado('escondite', { emoji:'🙈' }); } }
       else escondido = 0;
     },
-    get hechos(){ return hechos.slice(); }, celebra(i = 0){ celebra(PREMIOS[i]); }, panel(){ abrePanel(); }, reinicia(){ fiesta.classList.remove('ver'); panel.classList.remove('ver'); hechos = []; guarda(); cuenta(); viajes = 0; saltosArriba = 0;
+    get hechos(){ return hechos.slice(); }, celebra(i = 0){ celebra(PREMIOS[i]); }, panel(){ abrePanel(); }, reinicia(){ if(nev){ nev.meta = nev.a = 0; NEVLUZ.value = 0; nev.visto = false; nev.piv.rotation.y = 0; } fiesta.classList.remove('ver'); panel.classList.remove('ver'); hechos = []; guarda(); cuenta(); viajes = 0; saltosArriba = 0;
       IMANES.forEach(q => { q.fin = 0; q.g.visible = true; q.g.scale.setScalar(1); q.g.children[0].material.opacity = 1; });
       if(esp){ esp.fin = 0; esp.g.visible = true; esp.g.scale.setScalar(1); esp.mascara.visible = true; } else montaEspejo(); },
   };
