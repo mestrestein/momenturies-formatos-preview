@@ -2,7 +2,7 @@
    La casa para caminar. La geometría y la luz salen de Blender (blender/momenturies-rooms/casa.py); aquí solo se pinta:
    color = textura × luz horneada + reflejo, igual que las habitaciones del editor. Unidades: cm. */
 (async function(){
-const VER = window.CASA_V || '9';
+const VER = window.CASA_V || '10';
 let HV = null;                       // 12-nov: los easter eggs (más abajo)
 const ZONAS = ['recibidor', 'pasillo', 'salon', 'cocina', 'dormitorio', 'despacho', 'terraza', 'bano', 'distribuidor', 'dormitorio2', 'bano2', 'biblioteca', 'vestidor', 'suite', 'bano_suite'];
 const NOMBRES = { recibidor:'Recibidor', pasillo:'Pasillo', salon:'Salón', cocina:'Cocina', dormitorio:'Dormitorio', despacho:'Despacho', terraza:'Terraza', bano:'Baño', distribuidor:'Planta alta', dormitorio2:'Dormitorio de invitados', bano2:'Baño de arriba', biblioteca:'Biblioteca', vestidor:'Vestidor', suite:'Dormitorio principal', bano_suite:'Baño principal' };
