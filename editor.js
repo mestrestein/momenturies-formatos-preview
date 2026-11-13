@@ -26,6 +26,12 @@
     <div class="fridge-map" id="fridgeMap" hidden title="Toca para ir a esa parte de la nevera"><svg viewBox="-36 -4 72 168" preserveAspectRatio="xMidYMid meet"></svg></div>
     <button type="button" class="fridge-add" id="fridgeAddBtn" hidden><span class="fridge-add-plus">+</span><span class="es">Añadir otro conjunto</span><span class="en">Add another set</span></button>
     <div class="pv-hint" id="pvHint"><span class="es">Arrastra para girar · rueda o pellizco para zoom · toca un cuadro para editarlo</span><span class="en">Drag to rotate · scroll or pinch to zoom · tap a print to edit it</span></div>
+    <!-- 13-nov · fotos sueltas en fila: flechas para recorrerla (también rueda/trackpad a los lados, deslizar y ← →) -->
+    <div class="pv-row" id="pvRow" hidden>
+      <button type="button" id="pvRowPrev" title="Anterior" aria-label="Foto anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <span id="pvRowPos"></span>
+      <button type="button" id="pvRowNext" title="Siguiente" aria-label="Foto siguiente"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
     <div class="pv-zoom" id="pvZoom">
       <button type="button" id="pvUndo" title="Deshacer" aria-label="Deshacer" hidden>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
@@ -652,6 +658,10 @@ const PIVOT_R = 3;
    position.x/y se queda fija: en animate() se reescala con (cZ-gz)/(BASEZ-gz) cada fotograma
    para que su posición en pantalla no cambie al acercar o alejar. */
 const camFrame = { x: 0, y: 0 };
+/* 13-nov (Marc): fotos sueltas, todas en UNA fila. Sin entorno se ven ~3 y la fila se recorre a los lados
+   (FREE_PAN = centro de lo que se ve, en unidades del grupo; FREE_RANGE = cuánto se puede mover a cada lado).
+   Con entorno se encuadra la fila entera. */
+let FREE_PAN = 0, FREE_RANGE = 0;
 
 const P_SHORT = 2.0, P_LONG = 2.0*Math.SQRT2, PD = 0.04, GAP = 0.42, GAP_CUADROS = GAP;   // lado corto/largo (ratio A4)
 /* unidades 3D por cm real (la Sobremesa S, 15,2cm de lado largo, mide P_LONG). Declarada aquí
@@ -1124,7 +1134,7 @@ function layout(){
      de la puerta (52 × 132 cm aprovechables) */
   const iman = enNevera() && POSTERS.every(p => p.ptype === 'nevera');
   const GAP = iman ? 1.5*CM : GAP_CUADROS;
-  let perRow = n <= 3 ? n : Math.ceil(n / Math.ceil(n / 4));
+  let perRow = iman ? (n <= 3 ? n : Math.ceil(n / Math.ceil(n / 4))) : n;   // 13-nov: cuadros sueltos, una sola fila
   if(iman && n > 4){
     const pw = Math.max(...POSTERS.map(baseW))/CM, ph = Math.max(...POSTERS.map(baseH))/CM;
     let cols = 4;
@@ -1155,6 +1165,14 @@ function layout(){
     });
   });
   COMP_U = { w: maxW, h: totalH };
+  /* 13-nov · sin entorno y con más de 3 en la fila: se encuadran ~3 y el resto se ve moviéndose a los lados */
+  FREE_RANGE = 0;
+  if(!iman && n > 3 && ROOM_CFG.mode === 'none' && !panelOpen){
+    const win = Math.min(maxW, (maxW - (n-1)*GAP) / n * 3 + 2*GAP);
+    FREE_RANGE = Math.max(0, (maxW - win) / 2);
+    FREE_PAN = Math.max(-FREE_RANGE, Math.min(FREE_RANGE, FREE_PAN));
+    fcx = FREE_PAN; maxW = win;
+  }
   /* Un cuadro suelto también puede verse en una habitación. Además de colocarla hay que
      ensanchar el encuadre como se hace con un conjunto (layoutWall): si no, la cámara sigue
      pegada al cuadro y la habitación se queda fuera de plano. */
@@ -1375,9 +1393,42 @@ function layout(){
     const sc = findScene(ROOM_CFG.scene), Hcm = (WALL ? WALL.height : totalH/CM);
     if(sc.verCm){ const C = neveraCentro(sc, WALL ? WALL.height : COMP_U.h/CM); FRIDGE_VIEW = { C, cy: C + fcy/CM, half: visH/2/s/CM }; }
   } else FRIDGE_VIEW = null;
+  syncRowNav();
   if(_panNow) return;
   applySelection();
 }
+/* 13-nov · recorrer la fila de fotos sueltas */
+function rowPanTo(x, directo){
+  FREE_PAN = Math.max(-FREE_RANGE, Math.min(FREE_RANGE, x));
+  if(directo){ _panNow = true; layout(); _panNow = false; } else layout();
+}
+function rowCur(){   // la foto más cerca del centro de lo que se ve
+  let b = 0, d = Infinity;
+  POSTERS.forEach((p, i) => { const k = Math.abs((p.baseX || 0) - FREE_PAN); if(k < d){ d = k; b = i; } });
+  return b;
+}
+function rowStep(dir){
+  if(!(FREE_RANGE > 0)) return false;
+  const i = Math.max(0, Math.min(POSTERS.length - 1, rowCur() + dir));
+  rowPanTo(POSTERS[i].baseX || 0);
+  return true;
+}
+function syncRowNav(){
+  const el = document.getElementById('pvRow'); if(!el) return;
+  const on = FREE_RANGE > 0 && !WALL && !panelOpen;
+  el.hidden = !on; if(!on) return;
+  document.getElementById('pvRowPos').textContent = (rowCur() + 1) + ' / ' + POSTERS.length;
+  document.getElementById('pvRowPrev').disabled = FREE_PAN <= -FREE_RANGE + 1e-3;
+  document.getElementById('pvRowNext').disabled = FREE_PAN >= FREE_RANGE - 1e-3;
+}
+document.getElementById('pvRowPrev').onclick = () => rowStep(-1);
+document.getElementById('pvRowNext').onclick = () => rowStep(1);
+window.addEventListener('keydown', e => {
+  if(!editorOpen || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+  const t = e.target; if(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+  if(document.querySelector('.mmodal.open')) return;
+  if(rowStep(e.key === 'ArrowLeft' ? -1 : 1)) e.preventDefault();
+});
 
 /* el póster que se está editando se centra (x:0,y:0); los demás se apartan a los
    lados en una sola fila (los que iban antes que él a la izquierda, los que iban
@@ -1387,6 +1438,7 @@ function applySelection(){
   const pos = {};
   if(editing && !WALL){
     const p0 = POSTERS[selected];
+    FREE_PAN = p0.baseX || 0;   // 13-nov: al cerrar el panel, la fila se queda en la foto que se editaba
     pos[selected] = {x:0, y:0};
     let leftX = -((baseW(p0)*(p0.sizeScale||1)*1.05)/2 + GAP);
     for(let i=selected-1; i>=0; i--){
@@ -1572,7 +1624,7 @@ function moveTextTo(mx,my){
 }
 
 /* pointer events con captura + pinch-zoom */
-let drag=false, apId=null, sx=0, sy=0, sRy=0, sRx=0, moved=0, sPan=0;
+let drag=false, apId=null, sx=0, sy=0, sRy=0, sRx=0, moved=0, sPan=0, sRow=0, rowTouch=false;
 let compDrag=null;                       // arrastre de la composición sobre la foto del cliente
 let pc=0, p1=null, p2=null, lpd=0;
 
@@ -1598,7 +1650,7 @@ canvas.addEventListener('pointerdown', e=>{
       }
     }
     hintEl.style.opacity='0';
-    apId=e.pointerId; sx=e.clientX; sy=e.clientY; sRy=tRy; sRx=tRx; moved=0; sPan=NEVERA_PAN||0;
+    apId=e.pointerId; sx=e.clientX; sy=e.clientY; sRy=tRy; sRx=tRx; moved=0; sPan=NEVERA_PAN||0; sRow=FREE_PAN; rowTouch=e.pointerType!=='mouse';
     p1={id:e.pointerId,x:e.clientX,y:e.clientY};
     if(textDrag){ moveTextTo(e.clientX,e.clientY); }
     else {
@@ -1642,6 +1694,12 @@ canvas.addEventListener('pointermove', e=>{
     _panNow = true; layout(); _panNow = false;
     return;
   }
+  /* 13-nov · con el dedo, a los lados se recorre la fila de fotos sueltas (la vista sigue al dedo) */
+  if(rowTouch && FREE_RANGE > 0 && FIT){
+    rowPanTo(sRow - (e.clientX - sx) * (FIT.visW / (stage.clientWidth || 1)) / FIT.s * (cZ / BASEZ), true);
+    tRx = Math.max(-.55, Math.min(.55, sRx + (e.clientY - sy)*.0065));
+    return;
+  }
   tRy = sRy+(e.clientX-sx)*.0105;
   tRx = Math.max(-.55,Math.min(.55,sRx+(e.clientY-sy)*.0065));
   if(isFlat()){ tRy = 0; tRx = 0; }                                                                                          // vista 2D: de frente y quieta
@@ -1670,6 +1728,13 @@ const up3d = e=>{
 
 canvas.addEventListener('wheel', e=>{
   if(e.cancelable)e.preventDefault();
+  /* 13-nov · trackpad o rueda a los lados (o Mayús + rueda): recorre la fila de fotos sueltas */
+  const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
+  if(dx && FREE_RANGE > 0 && FIT){
+    rowPanTo(FREE_PAN + dx * (FIT.visW / (stage.clientWidth || 1)) / FIT.s * (cZ / BASEZ), true);
+    return;
+  }
+  if(!e.deltaY) return;
   setZoom(tZ+(e.deltaY>0?.35:-.35));
 },{passive:false});
 

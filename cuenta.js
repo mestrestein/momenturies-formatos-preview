@@ -175,7 +175,6 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
               ${p.foto ? `<div class="ln-act"><button class="chip dark" data-ver="${i}">Ver en 3D</button><button class="chip" data-otra="${i}">Pedir otra igual</button>
                 <a class="chip" href="${esc(cld(p.foto, 'fl_attachment'))}" download>Descargar foto</a></div>` : ''}</div></div>`;
           }).join('')}
-          ${o.statusPageUrl && o.statusPageUrl !== '#' ? `<a class="c-link o-shop" href="${esc(o.statusPageUrl)}" target="_blank" rel="noopener">Ver el pedido en Shopify</a>` : ''}
         </details></article>`;
     }).join('') : vacio('Aún no hay pedidos', 'Cuando hagas tu primer pedido lo verás aquí, con su envío paso a paso.');
     $('#p-cuadros').innerHTML = PIEZAS.length ? `<div class="g-grid">${PIEZAS.map((p, i) => {

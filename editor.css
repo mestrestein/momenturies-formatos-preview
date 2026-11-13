@@ -22,9 +22,21 @@
 
 /* prueba de la bruma: sin ella, las barras de arriba y abajo no se funden en blanco */
 .sin-bruma .ed-top,.sin-bruma .ed-bottom{background:none}
-#pvStage.panel-open .pv-zoom{display:none}  /* el panel de edición tapa ese lado de la pantalla */
+#pvStage.panel-open .pv-zoom{display:none}
+/* 13-nov · fila de fotos sueltas: flechas a los lados, como un carrusel (la derecha, al lado del zoom) */
+.pv-row{position:absolute;inset:0;z-index:4;pointer-events:none}
+.pv-row[hidden]{display:none}
+.pv-row button{position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:var(--black);border:1.5px solid var(--gray2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.12);transition:opacity .2s,transform .15s}
+#pvRowPrev{left:16px} #pvRowNext{right:66px}
+.pv-row button:disabled{opacity:0;pointer-events:none}
+.pv-row button:active{transform:translateY(-50%) scale(.92)}
+.pv-row span{display:none}
+#pvStage.panel-open .pv-row{display:none}  /* el panel de edición tapa ese lado de la pantalla */
 @media(max-width:480px){
   .pv-zoom{right:10px;gap:6px}
+  .pv-row button{width:38px;height:38px} #pvRowPrev{left:10px} #pvRowNext{right:54px}
   .pv-zoom button{width:34px;height:34px}
   /* el texto de ayuda del visor 3D no cabe en una línea en móvil: se envuelve y se encoge en vez de recortarse */
   .pv-hint{white-space:normal;max-width:84vw;font-size:11px;letter-spacing:.6px;line-height:1.5;bottom:200px}
