@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>La casa Momenturies</title>
+<title>La casa Momenturies · dos plantas</title>
 <meta name="description" content="Pasea por una casa con los conjuntos de Momenturies colgados en cada habitación.">
 <meta name="robots" content="noindex">
 <style>
@@ -15,7 +15,7 @@ canvas#c.drag{cursor:grabbing}
 #plano svg{display:block;width:150px;height:auto}
 #plano rect.sala{fill:#fff;stroke:var(--linea);cursor:pointer}
 #plano rect.sala.on{fill:#ecdcc8}
-#plano text{font-size:44px;fill:var(--suave);pointer-events:none;text-anchor:middle}
+#plano text{font-size:64px;fill:var(--suave);pointer-events:none;text-anchor:middle}
 #ayuda{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(43,37,32,.82);color:#fff;font-size:13px;padding:9px 15px;border-radius:999px;white-space:nowrap;transition:opacity .5s;pointer-events:none}
 #ayuda.fuera{opacity:0}
 #ficha-viejo-no{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(340px,calc(100vw - 32px));background:var(--papel);border-radius:16px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.22);display:none}
@@ -35,7 +35,11 @@ canvas#c.drag{cursor:grabbing}
 #giro.on{background:var(--tinta);color:#fff}
 #giro svg{width:18px;height:18px}
 #stick i{position:absolute;left:40px;top:40px;width:50px;height:50px;border-radius:50%;background:var(--papel);box-shadow:0 2px 8px rgba(0,0,0,.25)}
-@media (pointer:coarse){#stick{display:block}#giro{display:flex}#ayuda{bottom:calc(186px + env(safe-area-inset-bottom));white-space:normal;width:min(300px,calc(100vw - 32px));text-align:center}}
+#acciones{position:fixed;right:16px;bottom:calc(92px + env(safe-area-inset-bottom));display:none;flex-direction:column;gap:12px}
+#acciones button{width:58px;height:58px;border:0;border-radius:50%;background:var(--papel);color:var(--tinta);display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.18);touch-action:none;-webkit-user-select:none;user-select:none}
+#acciones button svg{width:24px;height:24px}
+#acciones button:active,#acciones button.on{background:var(--tinta);color:#fff}
+@media (pointer:coarse){#stick{display:block}#giro{display:flex}#acciones{display:flex}#ayuda{bottom:calc(186px + env(safe-area-inset-bottom));white-space:normal;width:min(300px,calc(100vw - 32px));text-align:center}}
 @media (max-width:520px){#plano svg{width:112px}}
 @media (max-height:500px){#plano svg{width:84px}#plano{padding:6px}#top{padding:7px 13px;font-size:13px}#giro{padding:9px 13px}}
 html,body{-webkit-touch-callout:none}
@@ -65,6 +69,70 @@ body.enfoque #ayuda,body.enfoque #puntos,body.enfoque #plano{opacity:0;pointer-e
 #ficha button{position:absolute;right:8px;top:8px;border:0;background:none;font-size:22px;color:var(--suave);padding:6px 10px;cursor:pointer}
 #ficha button.seguir{position:static;display:block;width:100%;font-size:14px;font-weight:600;padding:12px 0 4px;color:var(--suave)}
 @media (pointer:coarse){#ficha{bottom:calc(16px + env(safe-area-inset-bottom))}body.enfoque #stick{opacity:0}}
+/* 12-nov: easter eggs (aviso de arriba y contador) */
+#hv{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));width:min(360px,calc(100vw - 32px));display:flex;gap:12px;align-items:flex-start;background:var(--papel);border-radius:16px;padding:14px 40px 14px 14px;box-shadow:0 10px 34px rgba(0,0,0,.25);z-index:4;
+  opacity:0;visibility:hidden;transform:translate(-50%,-12px);transition:opacity .3s,transform .4s cubic-bezier(.2,.8,.2,1),visibility .3s}
+#hv.ver{opacity:1;visibility:visible;transform:translate(-50%,0)}
+#hv i{font-style:normal;font-size:30px;line-height:1.1}
+#hv small{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acento)}
+#hv b{display:block;font-size:17px;line-height:1.25;margin-top:2px}
+#hv span{display:block;font-size:14px;color:var(--suave);line-height:1.4;margin-top:3px}
+#hv a{display:inline-block;margin-top:10px;background:var(--tinta);color:#fff;text-decoration:none;border-radius:10px;padding:9px 13px;font-size:13px;font-weight:600}
+#hv button{position:absolute;right:6px;top:6px;border:0;background:none;font-size:21px;color:var(--suave);padding:4px 10px;cursor:pointer}
+#hvc{position:fixed;left:16px;top:calc(58px + env(safe-area-inset-top));display:none;border:0;background:var(--papel);color:var(--tinta);border-radius:999px;padding:7px 13px;font:600 13px system-ui,-apple-system,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer}
+#hvc{gap:10px}
+#hvc.ver{display:flex}
+/* 12-nov: aviso de agachado (PC), abajo a la izquierda */
+#agachado{position:fixed;left:16px;bottom:calc(20px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:11px;background:rgba(32,28,24,.86);color:#fff;border-radius:14px;padding:10px 14px 10px 11px;box-shadow:0 6px 22px rgba(0,0,0,.25);font:13px/1.25 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:2}
+#agachado.ver{opacity:1;transform:none}
+#agachado svg{width:22px;height:22px;flex:none;padding:7px;border-radius:10px;background:rgba(255,255,255,.1)}
+#agachado b{display:block;font-weight:650;font-size:14px}
+#agachado small{color:rgba(255,255,255,.72);font-size:12px}
+#agachado kbd{display:inline-block;min-width:16px;text-align:center;font:700 11px/1 system-ui,sans-serif;color:var(--tinta);background:var(--papel);border-radius:5px;padding:3px 5px;margin:0 2px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+@media (pointer:coarse){#agachado{display:none}}
+@media (prefers-reduced-motion:reduce){#agachado{transition:none}}
+#hvc span+span{padding-left:10px;border-left:1px solid var(--linea)}
+#hvp{position:fixed;left:16px;top:calc(100px + env(safe-area-inset-top));width:min(320px,calc(100vw - 32px));background:var(--papel);border-radius:18px;padding:16px 16px 14px;box-shadow:0 14px 40px rgba(0,0,0,.28);z-index:5;opacity:0;visibility:hidden;transform:translateY(-8px);transition:.22s}
+#hvp.ver{opacity:1;visibility:visible;transform:none}
+#hvp .x{position:absolute;right:6px;top:6px;border:0;background:none;font-size:21px;color:var(--suave);padding:4px 10px;cursor:pointer}
+#hvp small{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acento)}
+#hvp>b{display:block;font-size:17px;margin-top:2px}
+#hvp .barra{position:relative;height:8px;border-radius:9px;background:rgba(43,37,32,.1);margin:14px 4px 6px}
+#hvp .barra i{position:absolute;left:0;top:0;bottom:0;border-radius:9px;background:linear-gradient(90deg,#e89a6b,var(--acento))}
+#hvp .barra em{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;border:2px solid rgba(43,37,32,.25);box-sizing:border-box}
+#hvp .barra em.si{background:var(--acento);border-color:#fff;box-shadow:0 0 0 2px var(--acento)}
+#hvp ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+#hvp li{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:8px 10px;font-size:13px;color:var(--suave)}
+#hvp li span{font-weight:800;color:var(--tinta);min-width:48px}
+#hvp li em{font-style:normal;flex:1}
+#hvp li i{font-style:normal;opacity:.6}
+#hvp li code{flex:1;font:700 14px ui-monospace,Consolas,monospace;letter-spacing:.06em;color:var(--acento)}
+#hvp li button{border:0;background:var(--tinta);color:#fff;border-radius:8px;padding:6px 10px;font:600 12px system-ui,sans-serif;cursor:pointer}
+#hvp .pi{font-size:13px;line-height:1.45;color:var(--suave);margin:12px 0 0}
+#hvp .pi b{color:var(--tinta)}
+#hvp .otra{border:0;background:none;color:var(--acento);font:600 13px system-ui,sans-serif;padding:6px 0 0;cursor:pointer}
+#hvp a{display:block;text-align:center;margin-top:12px;background:var(--acento);color:#fff;text-decoration:none;border-radius:12px;padding:11px;font-size:14px;font-weight:700}
+#fiesta{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(30,24,20,.45);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+#fiesta.ver{opacity:1;visibility:visible}
+#fiesta canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#fiesta .tarjeta{position:relative;z-index:1;width:min(380px,100%);background:var(--papel);border-radius:24px;padding:58px 24px 22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.4);transform:scale(.6) translateY(30px);opacity:0}
+#fiesta.ver .tarjeta{animation:salta .7s cubic-bezier(.2,1.6,.4,1) .1s forwards}
+@keyframes salta{to{transform:none;opacity:1}}
+#fiesta .medalla{position:absolute;left:50%;top:-46px;width:92px;height:92px;margin-left:-46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 24px system-ui,sans-serif;color:#fff;letter-spacing:-.02em;background:radial-gradient(circle at 35% 30%,#e89a6b,var(--acento) 60%,#8e4428);box-shadow:0 10px 26px rgba(178,97,63,.5),inset 0 -4px 0 rgba(0,0,0,.15);border:4px solid var(--papel)}
+#fiesta.ver .medalla{animation:gira 1.1s ease-out .35s both}
+@keyframes gira{0%{transform:rotateY(0) scale(.4)}60%{transform:rotateY(540deg) scale(1.15)}100%{transform:rotateY(720deg) scale(1)}}
+#fiesta.oro .medalla{background:radial-gradient(circle at 35% 30%,#fff1b8,#f2c14e 55%,#b8862a);color:#4a3410;box-shadow:0 10px 30px rgba(242,193,78,.6),inset 0 -4px 0 rgba(0,0,0,.12)}
+#fiesta small{display:block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acento)}
+#fiesta h2{margin:6px 0 6px;font-size:28px;line-height:1.1;letter-spacing:-.02em}
+#fiesta p{margin:0;font-size:15px;color:var(--suave);line-height:1.45}
+#fiesta .cod{display:flex;align-items:center;gap:8px;margin:18px 0 8px;padding:8px 8px 8px 16px;border:2px dashed var(--acento);border-radius:14px;background:#fff}
+#fiesta .cod code{flex:1;text-align:left;font:800 22px ui-monospace,Consolas,monospace;letter-spacing:.12em;color:var(--tinta)}
+#fiesta .cod button{border:0;background:var(--tinta);color:#fff;border-radius:10px;padding:10px 14px;font:600 13px system-ui,sans-serif;cursor:pointer}
+#fiesta .nota{display:block;font-size:13px;color:var(--suave)}
+#fiesta .bts{display:grid;gap:8px;margin-top:16px}
+#fiesta .bts a{background:var(--acento);color:#fff;text-decoration:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700}
+#fiesta .bts button{border:0;background:none;color:var(--tinta);font:600 14px system-ui,sans-serif;padding:8px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){#fiesta.ver .tarjeta{animation:none;transform:none;opacity:1}#fiesta.ver .medalla{animation:none}}
 </style></head>
 <body>
 <canvas id="c"></canvas>
@@ -72,12 +140,14 @@ body.enfoque #ayuda,body.enfoque #puntos,body.enfoque #plano{opacity:0;pointer-e
 <div id="plano"></div>
 <div id="stick"><i></i></div>
 <button id="giro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8"/></svg><span>Activar giroscopio</span></button>
+<div id="agachado" role="status" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v12M6 11l6 6 6-6"/><path d="M5 21h14"/></svg><div><b>Agachado</b><small>Pulsa <kbd>N</kbd> para levantarte</small></div></div>
+<div id="acciones"><button id="bagacha" type="button" aria-label="Agacharse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v12M6 11l6 6 6-6"/><path d="M5 21h14"/></svg></button><button id="bsalta" type="button" aria-label="Saltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7M6 13l6-6 6 6"/><path d="M5 3h14"/></svg></button></div>
 <div id="ayuda"></div>
 <div id="puntos"></div>
 <div id="ficha"><button aria-label="Cerrar">×</button><em></em><b></b><span></span><a href="#">Personalizar con mis fotos <span aria-hidden="true">→</span></a><button type="button" class="seguir">Seguir paseando</button></div>
 <div id="carga"><p>Abriendo la casa…</p><div id="barra"><i></i></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="gltf-loader.js"></script>
-<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Toca el + de un cuadro para verlo de cerca' : 'Anda con WASD o las flechas · Arrastra para mirar · Toca el + de un cuadro para verlo de cerca';</script>
-<script src="casa.js?v=cc8f40fc"></script>
+<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Botones de la derecha: agacharse (y levantarse) y saltar · Toca el + de un cuadro para verlo de cerca' : 'Anda con WASD o las flechas · Arrastra para mirar · Espacio salta · N agacharse/levantarse · Toca el + de un cuadro para verlo de cerca';</script>
+<script src="casa2.js?v=83ee1f64"></script>
 </body></html>
