@@ -259,7 +259,7 @@
 .crop-size-grid{margin-bottom:14px}
 
 /* encuadre dentro de su ventana */
-.crop-stagebox{margin:0 auto;border:1.5px solid var(--gray2);border-radius:8px;overflow:hidden;background:var(--gray);
+.crop-stagebox{position:relative;width:fit-content;margin:0 auto;border:1.5px solid var(--gray2);border-radius:8px;overflow:hidden;background:var(--gray);
   display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;max-width:100%}
 .crop-stagebox:active{cursor:grabbing}
 #cropCanvas{display:block;max-width:100%}
@@ -270,8 +270,11 @@
 .orient-btn.active{border-color:var(--black);background:var(--black);color:var(--white)}
 .crop-zoom-lbl{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--mid);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
 .crop-zoom-lbl input[type=range]{width:100%;accent-color:var(--black);cursor:pointer}
-.crop-reset{padding:9px;border:1.5px solid var(--gray2);border-radius:4px;background:none;color:var(--mid);font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s;font-family:var(--font-sans)}
-@media(hover:hover){.crop-reset:hover{border-color:var(--black);color:var(--black)}}
+/* 13-nov · «Centrar foto» encima de la foto, medio transparente, en la esquina de abajo a la derecha */
+.crop-reset{position:absolute;right:8px;bottom:8px;z-index:2;padding:6px 11px;border:none;border-radius:16px;
+  background:rgba(20,20,20,.45);color:#fff;font-size:11px;font-weight:600;letter-spacing:.2px;cursor:pointer;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:background .15s;font-family:var(--font-sans)}
+@media(hover:hover){.crop-reset:hover{background:rgba(20,20,20,.7)}}
 
 /* montaje del colgador (escena en iframe) */
 #hangerFrame{width:100%;height:min(420px,58vh);border:0;border-radius:12px;background:#0B0B0F;display:block}

@@ -250,7 +250,10 @@
 
     <div class="format-chips crop-format-chips" id="cropFormatChips"></div>
     <div class="size-grid crop-size-grid" id="cropSizeGrid"></div>
-    <div class="crop-stagebox" id="cropBox"><canvas id="cropCanvas"></canvas></div>
+    <!-- 13-nov (Marc): «Centrar foto» va encima de la foto, medio transparente en la esquina de abajo; como botón aparte
+         empujaba «Listo» fuera de la pantalla -->
+    <div class="crop-stagebox" id="cropBox"><canvas id="cropCanvas"></canvas>
+      <button type="button" class="crop-reset" id="cropReset"><span class="es">Centrar foto</span><span class="en">Center photo</span></button></div>
     <p class="crop-quality" id="cropQuality" hidden></p>
     <div class="crop-ctrl">
       <div class="orient-row">
@@ -258,7 +261,6 @@
         <button class="orient-btn" id="orientH" onclick="setOrientBtn('landscape')"><span class="es">Horizontal</span><span class="en">Landscape</span></button>
       </div>
       <label class="crop-zoom-lbl">Zoom<input type="range" id="cropZoom" min="100" max="300" value="100"></label>
-      <button class="crop-reset" id="cropReset"><span class="es">Centrar foto</span><span class="en">Center photo</span></button>
     </div>
     <button class="mm-done" id="cropDone"><span class="es">Listo</span><span class="en">Done</span></button>
   </div>
@@ -3391,6 +3393,7 @@ cropZoom.addEventListener('input', ()=>{
   p.crop.scale = (+cropZoom.value)/100;
   applyFrontTexture(selected); drawCropPreview();
 });
+document.getElementById('cropReset').addEventListener('pointerdown', e => e.stopPropagation());   // no empieza a arrastrar la foto
 document.getElementById('cropReset').addEventListener('click', ()=>{
   const p = POSTERS[selected]; if(!p||!p.srcImg) return;
   p.crop = {scale:1, fx:0, fy:0, cx:0.5, cy:0.5};
