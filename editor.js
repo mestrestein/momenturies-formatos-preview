@@ -1542,7 +1542,7 @@ function syncViewerHint(){
   const b = document.getElementById('pvBadge'), h = document.getElementById('pvHint');
   const mine = isMyWall();
   if(b) b.textContent = mine ? 'TU PARED · COLÓCALOS' : isFlat() ? '2D · DE FRENTE' : '3D · GÍRALO';
-  if(h && enNevera() && !isFlat()){ h.innerHTML = '<span class="es">Arrastra arriba y abajo para recorrer la nevera · toca un imán para poner tu foto</span><span class="en">Drag up and down to move along the fridge · tap a magnet to add your photo</span>'; return; }
+  if(h && enNevera() && !isFlat()){ h.innerHTML = '<span class="es">Toca un imán para poner tu foto · arrastra a los lados para girar la nevera</span><span class="en">Tap a magnet to add your photo · drag sideways to turn the fridge</span>'; return; }
   if(h) h.innerHTML = mine
     ? '<span class="es">Arrastra los cuadros para colocarlos · rueda o pellizco para acercarte · toca uno para editarlo</span><span class="en">Drag the prints to place them · scroll or pinch to zoom · tap one to edit it</span>'
     : isFlat()
@@ -1635,10 +1635,9 @@ canvas.addEventListener('pointermove', e=>{
     if(q) moveComposition(compDrag.ax + (q.x - compDrag.px), compDrag.ay + (q.y - compDrag.py));
     return;
   }
-  /* 24-oct · en la nevera, arriba/abajo recorre la puerta (como hacer scroll) y a los lados gira un poco */
+  /* 24-oct · en la nevera, a los lados gira un poco. 13-nov (Marc): arriba/abajo ya NO recorre la puerta (al hacer
+     scroll la nevera subía y bajaba y quedaba raro); se queda quieta en vertical */
   if(enNevera() && FIT && !isFlat()){
-    const cmPx = FIT.visH / (stage.clientHeight || 1) / FIT.s / CM * (cZ / BASEZ);
-    NEVERA_PAN = sPan + (e.clientY - sy) * cmPx;
     tRy = Math.max(-.5, Math.min(.5, sRy + (e.clientX - sx)*.006));
     _panNow = true; layout(); _panNow = false;
     return;
@@ -6612,7 +6611,7 @@ function applyWall(w, opts){
   if(nuevos >= 0) dropMagnets(nuevos);
   const hint = document.getElementById('pvHint');
   if(hint) hint.innerHTML = w.fridge
-    ? '<span class="es">Arrastra arriba y abajo para recorrer la nevera · toca un imán para poner tu foto</span><span class="en">Drag up and down to move along the fridge · tap a magnet to add your photo</span>'
+    ? '<span class="es">Toca un imán para poner tu foto · arrastra a los lados para girar la nevera</span><span class="en">Tap a magnet to add your photo · drag sideways to turn the fridge</span>'
     : ROOM_CFG.mode === 'photo'
     ? '<span class="es">Toca un cuadro para poner tu foto · arrastra para verlos en 3D</span><span class="en">Tap a print to add your photo · drag to see them in 3D</span>'
     : '<span class="es">Toca un cuadro para poner tu foto · arrastra para girar la pared</span><span class="en">Tap a print to add your photo · drag to rotate the wall</span>';
@@ -6773,8 +6772,13 @@ function syncTools(){
   const ts = document.getElementById('toolSize');
   if(ts){
     const mixto = wallMixed(WALL), vs = !WALL ? [] : mixto ? wallScales(WALL) : wallSizes(WALL);
-    ts.hidden = vs.length < 2;
-    editorRootEl.classList.toggle('ed-sized', vs.length > 1);
+    /* 13-nov (Marc): lo que ocupa se ve en TODOS los conjuntos (también los de una sola medida, como «Nuestra
+       historia»); los botones de talla, solo si hay más de una */
+    const conj = !!WALL && !WALL.fridge;
+    ts.hidden = !conj;
+    editorRootEl.classList.toggle('ed-sized', conj);
+    document.getElementById('edSizeSeg').hidden = vs.length < 2;
+    if(conj) document.getElementById('edSizeInfo').innerHTML = '<span class="es">Ocupa ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span><span class="en">Takes ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span>';
     if(vs.length > 1){
       document.getElementById('edSizeInfo').innerHTML = '<span class="es">Ocupa ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span><span class="en">Takes ' + Math.round(WALL.width) + ' × ' + Math.round(WALL.height) + ' cm</span>';
       const seg = document.getElementById('edSizeSeg'); seg.innerHTML = '';
@@ -6794,18 +6798,22 @@ const syncWallBar = syncTools;            // nombre viejo, lo llaman varios siti
 
 /* ── ventana de elección ── */
 let wallFilter = 'all';
+const WALL_NS = [{k:'2-3', es:'2-3'}, {k:'4-4', es:'4'}, {k:'5-5', es:'5'}, {k:'6-6', es:'6'}, {k:'7-8', es:'7-8'}, {k:'9-10', es:'9-10'}, {k:'11-99', es:'11 o más'}];
+const wallNIn = (w, k) => { const [a, b] = String(k).split('-').map(Number); return b ? w.n >= a && w.n <= b : true; };
 let wallPreferN = 0;   // >0: el cliente tiene N fotos y viene de «verlas juntas»: primero los de N cuadros
 function renderWallModal(){
   const fl = document.getElementById('wallFilters'), grid = document.getElementById('wallGrid');
   if(!fl || !grid) return;
   if(isFridgeMode()){ renderFridgeModal(fl, grid); return; }
-  /* 11-oct: el filtro es el hueco donde va (por el ancho que ocupa), no el nº de cuadros */
+  /* 13-nov (Marc): el filtro vuelve a ser el nº de cuadros, no el hueco (rincón, sofá…). Tramos para que no
+     salgan 16 botones: 2-3, 4, 5, 6, 7-8, 9-10 y 11 o más */
   fl.innerHTML = '';
-  [{k:'all'}].concat(HUECOS).forEach(h => {
+  [{k:'all'}].concat(WALL_NS).forEach(h => {
+    if(h.k !== 'all' && !WALLS.some(w => wallNIn(w, h.k))) return;
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'wall-filter' + (wallFilter === h.k ? ' active' : '');
     b.innerHTML = h.k === 'all' ? '<span class="es">Todas</span><span class="en">All</span>'
-      : '<span class="es">' + h.es + ' <i>' + h.esR + '</i></span><span class="en">' + h.en + ' <i>' + h.enR + '</i></span>';
+      : '<span class="es">' + h.es + ' <i>cuadros</i></span><span class="en">' + h.es + ' <i>prints</i></span>';
     b.onclick = () => { wallFilter = h.k; renderWallModal(); };
     fl.appendChild(b);
   });
@@ -6819,7 +6827,7 @@ function renderWallModal(){
   if(wallFilter === 'all') grid.appendChild(free);
   // primero las que se pueden pedir en su talla de siempre, luego las que solo quedan en otra, y las agotadas al final
   const orden = w => (wallInStock(w) ? (w.base ? 1 : 0) - (w.best ? .5 : 0) : 4) + (wallPreferN && w.n !== wallPreferN ? 2 : 0);   // 3-nov: los más vendidos delante
-  WALLS.map(w => wallForHueco(w, wallFilter)).filter(Boolean)
+  WALLS.filter(w => wallFilter === 'all' || wallNIn(w, wallFilter)).map(w => wallForHueco(w, 'all')).filter(Boolean)
     .sort((a, b) => orden(a) - orden(b)).forEach(w => {
     const b = document.createElement('button');
     const ok = wallInStock(w);
