@@ -59,7 +59,7 @@
   function seguimiento(ana) {
     var run = function () { if (!window.mmSeguimiento) return; if (ana) mmSeguimiento.activar(); else mmSeguimiento.anonimo(); };
     if (window.mmSeguimiento) return run();
-    var s = document.createElement('script'); s.src = 'seguimiento.js?v=1'; s.async = true; s.onload = run; document.head.appendChild(s);
+    var s = document.createElement('script'); s.src = 'seguimiento.js?v=2'; s.async = true; s.onload = run; document.head.appendChild(s);
   }
 
   /* ═════ PÍXEL ═════ */

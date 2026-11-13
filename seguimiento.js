@@ -76,17 +76,19 @@
         });
     }).catch(function () {});
   }
-  var banner = null;
+  /* 13-nov (Marc): sin cartel propio («¿Te avisamos…?»). Cuando se queda algo a medias, en su siguiente toque sale
+     directamente el permiso del navegador (Permitir / No permitir); los navegadores solo lo dejan pedir tras un toque.
+     Qué aviso le llega y cuándo se decide en staff, /panel/avisos. */
+  var pidiendo = false;
   function invita() {
-    if (banner || !soporta() || Notification.permission !== 'default' || ls('mm_push') ) return;
+    if (pidiendo || !soporta() || Notification.permission !== 'default' || ls('mm_push')) return;
     var no = +ls('mm_push_no') || 0; if (Date.now() - no < 60 * 864e5) return;
-    banner = document.createElement('div');
-    banner.setAttribute('role', 'dialog');
-    banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;max-width:360px;margin:0 auto;z-index:2147483000;background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.25);padding:14px 16px;font:14px/1.4 Inter,system-ui,sans-serif;color:#1a1a1a';
-    banner.innerHTML = '<b style="display:block;margin-bottom:2px">¿Te avisamos si se te queda a medias?</b><span style="color:#6b6560">Tu diseño queda guardado. Solo un recordatorio, sin más.</span><div style="display:flex;gap:8px;margin-top:10px"><button type="button" data-si style="flex:1;border:0;border-radius:999px;background:#1a1a1a;color:#fff;padding:9px;font:600 13px inherit;cursor:pointer">Sí, avisadme</button><button type="button" data-no style="border:0;background:none;color:#6b6560;padding:9px 10px;font:600 13px inherit;cursor:pointer">Ahora no</button></div>';
-    banner.querySelector('[data-si]').onclick = function () { banner.remove(); alta(); };
-    banner.querySelector('[data-no]').onclick = function () { banner.remove(); ls('mm_push_no', String(Date.now())); ev('aviso_no'); };
-    document.body.appendChild(banner);
+    pidiendo = true;
+    var pide = function () {
+      document.removeEventListener('pointerup', pide, true); document.removeEventListener('keyup', pide, true);
+      if (Notification.permission === 'default') alta().then(function () { if (!ls('mm_push')) ev('aviso_no'); });
+    };
+    document.addEventListener('pointerup', pide, true); document.addEventListener('keyup', pide, true);
   }
 
   /* API para las páginas */
