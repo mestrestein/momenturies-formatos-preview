@@ -2856,6 +2856,9 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       {key:'Colgador', value: MOUNTS[mountOf(p)] ? MOUNTS[mountOf(p)].label : mountOf(p)},
     ];
     if(window.mmVisitante && mmVisitante()) attributes.push({key:'_mm_v', value:mmVisitante()});   // para saber quién compró: nadie recibe un recordatorio tras pagar
+    /* 13-nov: el entorno donde lo diseñó, para que «Ver en 3D» de cuenta.html lo abra ahí (la pared propia no se guarda) */
+    const _ent = ROOM && !ROOM.custom ? ROOM.id : ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : '';
+    if(_ent) attributes.push({key:'_entorno', value:_ent});
     if(p.frontText && p.frontText.trim()) attributes.push({key:'Frase (frontal)', value:p.frontText.trim()});
     if(p.frontText2 && p.frontText2.trim()) attributes.push({key:'Frase 2 (frontal)', value:p.frontText2.trim()});
     if(p.backText2 && p.backText2.trim() && p.ptype !== 'nevera') attributes.push({key:'Frase 2 (dorso)', value:p.backText2.trim()});

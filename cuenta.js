@@ -100,8 +100,11 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   /* ── modelo ── */
   function pieza(li, o){
     const a = {}; (li.customAttributes || []).forEach(x => a[x.key] = x.value);
-    const tit = li.name || li.title || '', colg = /colgador/i.test(tit);
-    const tipo = /sobremesa/i.test(tit) ? 'sobremesa' : /im[aá]n/i.test(tit) && !colg ? 'iman' : 'cuadro';
+    const tit = li.name || li.title || '';
+    /* 13-nov: el tipo, por el TÍTULO del producto. li.name lleva la variante («Cuadro de aluminio - … / Imán premium»)
+       y el colgador «Imán» hacía pasar el cuadro por imán de nevera: el 3D abría la nevera */
+    const prod = li.title || tit, colg = /colgador/i.test(prod);
+    const tipo = /sobremesa/i.test(prod) ? 'sobremesa' : /^\s*im[aá]n\b/i.test(prod) && !colg ? 'iman' : 'cuadro';
     const foto = a._foto_frontal || (!colg && li.image && li.image.url) || '';
     let w = 0, h = 0, print = null;
     const m = (a._impresion || '').match(/([\d.,]+)\s*[×x]\s*([\d.,]+)\s*cm(?:.*?con\s*([\d.,]+)\s*mm)?/i);
@@ -219,7 +222,8 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
     try { await MOMENTURIES_PHOTO.put(await Promise.all(ps.map(aFile))); }
     catch(e){ $('#m-wait').textContent = 'No se ha podido cargar la foto.'; return; }
     marco.onload = () => { $('#m-wait').hidden = true; };
-    marco.src = DEST[ps[0].tipo] + '?foto=1&encuadre=0&formato=' + formato(ps[0]) + (extra || '');
+    const ent = ps[0].a._entorno;   // 13-nov: el entorno en que el cliente lo diseñó (lo guarda editor.js al pagar)
+    marco.src = DEST[ps[0].tipo] + '?foto=1&encuadre=0&formato=' + formato(ps[0]) + (extra || '') + (ent ? '&entorno=' + encodeURIComponent(ent) : '');
   }
   function cerrar(){ modal.hidden = true; marco.src = 'about:blank'; document.body.style.overflow = ''; if(antes) antes.focus(); }
   modal.addEventListener('click', e => { if(e.target.closest('[data-cerrar]')) cerrar(); });
