@@ -292,7 +292,7 @@
     enlaces();
     var c = leer();
     seguimiento(!!(c && c.ana));
-    if (!c) return abrir(false);
+    if (!c) return window.top === window ? abrir(false) : undefined;   // 13-nov: dentro de un iframe (3D de la cuenta) el aviso ya sale en la página de fuera
     aShopify(c); // quien eligió antes de esto (o en otra pestaña) también llega al checkout con su elección
     if (c.ads) { cargarPixel(); cargarKlaviyo(); }
     if (c.ana) { cargarGA(); cargarClarity(); }
