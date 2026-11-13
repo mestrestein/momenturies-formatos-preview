@@ -3736,6 +3736,8 @@ function openEditor(){
   syncTools(); syncViewerHint();   // la nevera del imán se pone sin pasar por setScene: rótulo de Entorno y ayuda
 }
 function closeEditor(){
+  /* 13-nov · dentro de la ventana «Ver en 3D» de la cuenta: Salir cierra la ventana, no deja la ficha dentro */
+  if(window.top !== window){ try{ parent.postMessage({ mm:'cerrar3d' }, location.origin); }catch(e){} }
   closePanel();
   editorEl.classList.remove('open');
   document.body.style.overflow = '';
@@ -6644,12 +6646,15 @@ function applyWall(w, opts){
   mmEv('conjunto', w.id + ' ' + w.name + (w.vk ? ' ' + w.vk : ''));
   const n = w.pieces.length;
   // sobran cuadros: se van primero los vacíos, y si no queda otra, los últimos
+  /* 13-nov · las fotos que no caben no se pierden: se apartan (FOTOS_FUERA) y vuelven al elegir un conjunto más
+     grande o al quitar el conjunto. Antes, 4 fotos + conjunto de 3 + quitarlo = 1 sola foto. */
   while(POSTERS.length > n){
     let i = POSTERS.findIndex(p => !p.srcImg && !p.pendingImg);
-    if(i < 0) i = POSTERS.length - 1;
+    if(i < 0){ i = POSTERS.length - 1; FOTOS_FUERA.push(POSTERS[i]); }
     disposePoster(i);
   }
-  while(POSTERS.length < n) createPoster();
+  while(POSTERS.length < n){ if(!volverFoto()) createPoster(); }
+  if(FOTOS_FUERA.length && !opts.quiet) setTimeout(() => toast(FOTOS_FUERA.length + (FOTOS_FUERA.length === 1 ? ' foto no cabe' : ' fotos no caben') + ' en este conjunto: las guardamos por si eliges otro o lo quitas'), 1800);
   /* al añadir un conjunto a la nevera, los imanes que ya había se quedan en su sitio (van primero) */
   if(!opts.keepOrder) matchPhotosToPieces(w);   // cada foto al hueco de su forma (vertical con vertical…)
   const nuevos = w.fridge && !_restoring ? (opts.keepOrder && WALL_PREV_N ? WALL_PREV_N : 0) : -1;
@@ -6789,21 +6794,31 @@ function arreglarEncuadre(w){
 }
 
 /* vuelve a la pared libre (rejilla automática); los cuadros y sus fotos se quedan */
+/* 13-nov · fotos apartadas por un conjunto más pequeño (ver applyWall) */
+const FOTOS_FUERA = [];
+function volverFoto(){
+  const p = FOTOS_FUERA.shift(); if(!p) return null;
+  group.add(p.rig); POSTERS.push(p);
+  return p;
+}
 function clearWall(){
   if(!WALL) return;
   /* 24-oct · nevera: al quitar el conjunto quedan sueltos los imanes con foto (o uno vacío) */
   if(WALL.fridge){
     /* se quedan los que tienen foto, en filas dentro de la puerta; si ninguno la tiene, uno solo vacío */
+    while(volverFoto());
     const conFoto = POSTERS.filter(p => p.srcImg || p.pendingImg), keep = conFoto.length ? conFoto : [POSTERS[0]];
     for(let i = POSTERS.length - 1; i >= 0; i--) if(!keep.includes(POSTERS[i])) disposePoster(i);
     const p0 = POSTERS[0];
     if(!p0.srcImg){ applyProductSize(p0, defSizeOf(PRODUCTS.nevera)); setOrientation(p0, 'portrait'); }   // el de partida: XS
     selected = 0; NEVERA_PAN = 0;
   } else {
-    /* 4-nov: al quitar el conjunto se vuelve a un solo cuadro: el primero con foto, o el primero */
-    const keep = POSTERS.find(p => p.srcImg || p.pendingImg) || POSTERS[0];
-    for(let i = POSTERS.length - 1; i >= 0; i--) if(POSTERS[i] !== keep) disposePoster(i);
-    selected = 0;
+    /* 4-nov: al quitar el conjunto quedaba un solo cuadro. 13-nov (Marc): se quedan TODAS las fotos, en fila
+       (también las que no cabían en el conjunto); si no hay ninguna, un cuadro vacío */
+    while(volverFoto());
+    const conFoto = POSTERS.filter(p => p.srcImg || p.pendingImg), keep = conFoto.length ? conFoto : [POSTERS[0]];
+    for(let i = POSTERS.length - 1; i >= 0; i--) if(!keep.includes(POSTERS[i])) disposePoster(i);
+    selected = 0; FREE_PAN = 0;
   }
   WALL = null;
   editorRootEl.classList.remove('ed-wall');

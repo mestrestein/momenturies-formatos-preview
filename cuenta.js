@@ -227,6 +227,7 @@ const CONSULTA = `query { customer { firstName emailAddress{emailAddress}
   function cerrar(){ modal.hidden = true; marco.src = 'about:blank'; document.body.style.overflow = ''; if(antes) antes.focus(); }
   modal.addEventListener('click', e => { if(e.target.closest('[data-cerrar]')) cerrar(); });
   addEventListener('keydown', e => { if(e.key === 'Escape' && !modal.hidden) cerrar(); });
+  addEventListener('message', e => { if(e.origin === location.origin && e.data && e.data.mm === 'cerrar3d' && !modal.hidden) cerrar(); });   // «Salir» del editor de dentro
   const ver = p => abrir(p.etiqueta, 'Pedido ' + p.o.name, [p]);
   const pared = s => abrir(s.nombre, num(s.W) + '×' + num(s.H) + ' cm · ' + s.ps.length + ' piezas', s.ps, s.id && !DEMO ? '&pared=' + encodeURIComponent(s.id) : '');
 
