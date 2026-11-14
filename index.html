@@ -1394,7 +1394,10 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 .cm1{position:relative;min-height:640px;display:flex;align-items:flex-end;color:#fff;background:#1d1a17 center/cover;overflow:hidden}
 .cm1::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,16,12,.82) 0%,rgba(20,16,12,.55) 38%,rgba(20,16,12,0) 68%),linear-gradient(180deg,rgba(20,16,12,0) 55%,rgba(20,16,12,.45))}
 .cm1{background-position:center}
-.cm1 .c{position:relative;width:100%;padding-bottom:64px}
+.cm1 .c{position:relative;z-index:2;width:100%;padding-bottom:64px}
+.cm1::before{z-index:1}
+.cm1 .cm-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity .8s}
+.cm1 .cm-vid.va{opacity:1}
 .cm1 .s-tag{color:#f0c7b2}.cm1 .s-tag::before{background:#f0c7b2}
 .cm1 .s-h2{color:#fff;max-width:640px}
 .cm1 .s-lead{color:rgba(255,255,255,.86);max-width:560px}
@@ -1772,7 +1775,10 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 
 <!-- LA CASA MOMENTURIES -->
 <!-- opción 1 (Cine: la casa a todo el ancho) de casa-opciones.html; generado por _casa_seccion.py -->
-<section class="cm cm1" id="casa" data-bg="fotos/casa-portada/salon-cine.webp"><div class="c">
+<section class="cm cm1" id="casa" data-bg="fotos/casa-portada/casa-recorrido.webp">
+  <!-- 14-nov: vídeo de fondo andando por la casa (clips por habitación, en bucle). Se carga al acercarse; con «reducir movimiento» se queda la foto -->
+  <video class="cm-vid" muted loop playsinline preload="none" aria-hidden="true" data-v16="fotos/casa-portada/casa-recorrido-16x9.mp4" data-v9="fotos/casa-portada/casa-recorrido-9x16.mp4" data-poster-movil="fotos/casa-portada/casa-recorrido-movil.webp"></video>
+  <div class="c">
   <p class="s-tag">La casa Momenturies</p>
   <h2 class="s-h2">Pasa, estás en <em>tu casa</em>.</h2>
   <p class="s-lead">Una casa entera con nuestros cuadros colgados en cada habitación. Anda por ella, acércate a lo que te guste y hazlo con tus fotos.</p>
@@ -2347,5 +2353,13 @@ function combiSlide(dir){
 <script src="preguntas.js?v=d1e00445"></script>
 <script src="portada.js?v=9577501c"></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
+<script>/* 14-nov: el vídeo de la casa (horizontal en PC, vertical en el móvil) solo se baja cuando la sección está cerca */
+(function(){var v=document.querySelector('.cm1 .cm-vid');if(!v||!('IntersectionObserver' in window))return;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var s=v.closest('section'),movil=s.offsetHeight>s.offsetWidth;   /* sección más alta que ancha (móvil): el vertical */
+if(movil)s.setAttribute('data-bg',v.getAttribute('data-poster-movil'));
+var io=new IntersectionObserver(function(e){e.forEach(function(x){
+  if(x.isIntersecting){if(!v.src){v.src=v.getAttribute(movil?'data-v9':'data-v16');v.addEventListener('playing',function(){v.classList.add('va')},{once:true});}v.play().catch(function(){});}
+  else if(v.src)v.pause();});},{rootMargin:'300px 0px'});io.observe(v);})();</script>
 </body>
 </html>
