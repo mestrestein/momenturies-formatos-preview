@@ -1450,10 +1450,10 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 @media (max-width:900px){
   .cm{padding:64px 0}.cm .c{padding:0 16px}
   .cm1{min-height:560px;background-position:88% center}.cm1 .c{padding-bottom:40px}.cm1::before{background:linear-gradient(180deg,rgba(20,16,12,.1) 20%,rgba(20,16,12,.85) 75%)}
-  /* 14-nov (Marc): en el móvil el vídeo va arriba entero (4:5, grabado para el móvil) y el texto debajo, sin taparlo */
+  /* 14-nov (Marc): en el móvil el vídeo va arriba entero (vertical 9:16, grabado para el móvil, con la interfaz de la casa) y el texto debajo, sin taparlo */
   @media (max-width:640px){.cm1{display:block;min-height:0;padding:0 0 48px;background-image:none!important}.cm1::before{display:none}
-    .cm1 .cm-vid{position:relative;display:block;height:auto;aspect-ratio:4/5;opacity:1;background:#1d1a17;-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent);mask-image:linear-gradient(180deg,#000 80%,transparent)}
-    .cm1 .c{margin-top:-28px;padding-bottom:0}}
+    .cm1 .cm-vid{position:relative;display:block;height:auto;aspect-ratio:9/16;opacity:1;background:#1d1a17}
+    .cm1 .c{padding-top:30px;padding-bottom:0}}
   .cm2 .c{grid-template-columns:1fr;gap:40px}.cm-tel{width:230px;order:2}.cm-tel .cm-de{display:none}
   .cm-salas{grid-template-columns:1fr 1fr;grid-template-rows:240px 150px 150px}.cm-salas a:first-child{grid-column:span 2;grid-row:auto}
   .cm-vent{aspect-ratio:4/5}
@@ -1779,9 +1779,9 @@ footer{background:#080808;color:var(--white);padding:72px 0 40px;border-top:1px 
 
 <!-- LA CASA MOMENTURIES -->
 <!-- opción 1 (Cine: la casa a todo el ancho) de casa-opciones.html; generado por _casa_seccion.py -->
-<section class="cm cm1" id="casa" data-bg="fotos/casa-portada/casa-recorrido.webp">
-  <!-- 14-nov: vídeo de fondo andando por la casa (clips por habitación, en bucle). Se carga al acercarse; con «reducir movimiento» se queda la foto -->
-  <video class="cm-vid" muted loop playsinline preload="none" aria-hidden="true" data-v16="fotos/casa-portada/casa-recorrido-16x9.mp4" data-v45="fotos/casa-portada/casa-recorrido-4x5.mp4" data-poster-movil="fotos/casa-portada/casa-recorrido-movil.webp"></video>
+<section class="cm cm1" id="casa" data-bg="fotos/casa-portada/casa-momenturies-pc.webp">
+  <!-- 14-nov: vídeo andando por la casa con su interfaz (como el de Aitor): salón, dormitorio, despacho, cocina, escalera y biblioteca. Se carga al acercarse; con «reducir movimiento» se queda la foto -->
+  <video class="cm-vid" muted loop playsinline preload="none" aria-hidden="true" data-v16="fotos/casa-portada/casa-momenturies-pc.mp4" data-v9="fotos/casa-portada/casa-momenturies-movil.mp4" data-poster-movil="fotos/casa-portada/casa-momenturies-movil.webp"></video>
   <div class="c">
   <p class="s-tag">La casa Momenturies</p>
   <h2 class="s-h2">Pasa, estás en <em>tu casa</em>.</h2>
@@ -2360,10 +2360,10 @@ function combiSlide(dir){
 <script>/* 14-nov: el vídeo de la casa (horizontal en PC, vertical en el móvil) solo se baja cuando la sección está cerca */
 (function(){var v=document.querySelector('.cm1 .cm-vid');if(!v||!('IntersectionObserver' in window))return;
 if(matchMedia('(prefers-reduced-motion: reduce)').matches){if(matchMedia('(max-width:640px)').matches)v.poster=v.getAttribute('data-poster-movil');return;}
-var movil=matchMedia('(max-width:640px)').matches;   /* móvil: el 4:5 arriba, con su foto mientras carga */
+var movil=matchMedia('(max-width:640px)').matches;   /* móvil: el vertical arriba, con su foto mientras carga */
 if(movil)v.poster=v.getAttribute('data-poster-movil');
 var io=new IntersectionObserver(function(e){e.forEach(function(x){
-  if(x.isIntersecting){if(!v.src){v.src=v.getAttribute(movil?'data-v45':'data-v16');v.addEventListener('playing',function(){v.classList.add('va')},{once:true});}v.play().catch(function(){});}
+  if(x.isIntersecting){if(!v.src){v.src=v.getAttribute(movil?'data-v9':'data-v16');v.addEventListener('playing',function(){v.classList.add('va')},{once:true});}v.play().catch(function(){});}
   else if(v.src)v.pause();});},{rootMargin:'300px 0px'});io.observe(v);})();</script>
 </body>
 </html>
