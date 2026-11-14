@@ -3,7 +3,7 @@
 export default function(api){
   const { THREE, scene, camera } = api;
   const raiz = api.RAICES && api.RAICES.bano_suite; if(!raiz) return;
-  const P = new THREE.Vector3(1150, 358.3, 985);
+  const P = new THREE.Vector3(1150, 346.3, 985)   /* 14-nov: el agua baja 12 cm (bañera hueca) */;
 
   const amarillo = new THREE.MeshStandardMaterial({ color:'#ffd21f', roughness:.35 });
   const naranja = new THREE.MeshStandardMaterial({ color:'#ff8a1c', roughness:.4 });

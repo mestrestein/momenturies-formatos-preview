@@ -140,7 +140,7 @@ body.enfoque #ayuda,body.enfoque #puntos,body.enfoque #plano{opacity:0;pointer-e
 <div id="plano"></div>
 <div id="stick"><i></i></div>
 <button id="giro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8"/></svg><span>Activar giroscopio</span></button>
-<div id="agachado" role="status" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v12M6 11l6 6 6-6"/><path d="M5 21h14"/></svg><div><b>Agachado</b><small>Pulsa <kbd>N</kbd> para levantarte</small></div></div>
+<div id="agachado" role="status" aria-live="polite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v12M6 11l6 6 6-6"/><path d="M5 21h14"/></svg><div><b>Agachado</b><small>Pulsa <kbd>C</kbd> para levantarte</small></div></div>
 <div id="acciones"><button id="bagacha" type="button" aria-label="Agacharse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v12M6 11l6 6 6-6"/><path d="M5 21h14"/></svg></button><button id="bsalta" type="button" aria-label="Saltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7M6 13l6-6 6 6"/><path d="M5 3h14"/></svg></button></div>
 <div id="ayuda"></div>
 <div id="puntos"></div>
@@ -148,6 +148,6 @@ body.enfoque #ayuda,body.enfoque #puntos,body.enfoque #plano{opacity:0;pointer-e
 <div id="carga"><p>Abriendo la casa…</p><div id="barra"><i></i></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="gltf-loader.js"></script>
-<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Botones de la derecha: agacharse (y levantarse) y saltar · Toca el + de un cuadro para verlo de cerca' : 'Anda con WASD o las flechas · Arrastra para mirar · Espacio salta · N agacharse/levantarse · Toca el + de un cuadro para verlo de cerca';</script>
-<script src="casa2.js?v=ea47f0b3"></script>
+<script>document.getElementById('ayuda').textContent = matchMedia('(pointer:coarse)').matches ? 'Dedo izquierdo: anda · Dedo derecho: mira · Botones de la derecha: agacharse (y levantarse) y saltar · Toca el + de un cuadro para verlo de cerca' : 'Anda con WASD o las flechas · Arrastra para mirar · Espacio salta · C agacharse/levantarse · Toca el + de un cuadro para verlo de cerca';</script>
+<script src="casa2.js?v=d65857b9"></script>
 </body></html>

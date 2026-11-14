@@ -2,7 +2,7 @@
    La casa para caminar. La geometría y la luz salen de Blender (blender/momenturies-rooms/casa.py); aquí solo se pinta:
    color = textura × luz horneada + reflejo, igual que las habitaciones del editor. Unidades: cm. */
 (async function(){
-const VER = window.CASA_V || '11';
+const VER = window.CASA_V || '12';   // 14-nov: 12 (salón y baños de arriba rehorneados, patito)
 let HV = null;                       // 12-nov: los easter eggs (más abajo)
 const ZONAS = ['recibidor', 'pasillo', 'salon', 'cocina', 'dormitorio', 'despacho', 'terraza', 'bano', 'distribuidor', 'dormitorio2', 'bano2', 'biblioteca', 'vestidor', 'suite', 'bano_suite'];
 const NOMBRES = { recibidor:'Recibidor', pasillo:'Pasillo', salon:'Salón', cocina:'Cocina', dormitorio:'Dormitorio', despacho:'Despacho', terraza:'Terraza', bano:'Baño', distribuidor:'Planta alta', dormitorio2:'Dormitorio de invitados', bano2:'Baño de arriba', biblioteca:'Biblioteca', vestidor:'Vestidor', suite:'Dormitorio principal', bano_suite:'Baño principal' };
@@ -149,14 +149,14 @@ function carga(z){
 /* ── andar ── */
 const pos = { x:1235, z:120 }; let yaw = 2.84, pitch = -.06;
 const tecla = {}; let joy = { x:0, y:0 }, pinta = true, mover = null;
-/* agacharse (12-nov, Marc: N o el botón lo ponen y lo quitan, no hay que mantener) y saltar (espacio / botón) */
+/* agacharse (12-nov, Marc: C (14-nov; antes N) o el botón lo ponen y lo quitan, no hay que mantener) y saltar (espacio / botón) */
 /* doble salto: un segundo impulso en el aire. TECHO = altura máxima de los ojos sobre el suelo (las plantas
    miden 300; así la cabeza no atraviesa el techo hacia la planta de arriba) */
 const AGACHA = 72, G = 980, VSALTO = 300, TECHO = 262; let agache = 0, agachaOn = false, saltoY = 0, saltoV = 0, saltos = 0;
 function salta(){ if(saltos >= 2) return; saltoV = VSALTO * (agachado() ? .8 : 1) * (saltos ? .9 : 1); saltos++; pinta = true; HV && HV.salto(); }
 function agachado(){ return agachaOn; }
 function agacha(v = !agachaOn){ agachaOn = v; $('#bagacha').classList.toggle('on', v); $('#agachado').classList.toggle('ver', v && !MOVIL); pinta = true; }
-addEventListener('keydown', e => { if(e.code === 'Space' && !e.repeat) salta(); tecla[e.code] = true; if(e.code === 'KeyN' && !e.repeat) agacha(); if(/^(Key[WASD]|Arrow)/.test(e.code)){ vuelo = null; if(enFoco) ficha(null); } if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
+addEventListener('keydown', e => { if(e.code === 'Space' && !e.repeat) salta(); tecla[e.code] = true; if(e.code === 'KeyC' && !e.repeat) agacha(); if(/^(Key[WASD]|Arrow)/.test(e.code)){ vuelo = null; if(enFoco) ficha(null); } if(/Arrow|Space/.test(e.code)) e.preventDefault(); fueraAyuda(); });
 { const bS = $('#bsalta'), bA = $('#bagacha');
   bS.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); salta(); fueraAyuda(); });
   bA.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); agacha(); fueraAyuda(); }); }
@@ -606,6 +606,18 @@ const fuera = (() => {
       [[-170, 260, 560, .3], [-200, 940, 640, -.5], [-120, 1330, 520, 2.4], [1490, 230, 600, 1.1], [1520, 1010, 540, 3.3], [1470, 1360, 600, .9], [170, -420, 620, 4.4], [1470, -520, 560, 5.2], [520, -640, 500, 2.0]]
         .forEach(([x, z, H, f]) => {
           if(Math.hypot(x - CX, z - CZ) > borde(Math.atan2(z - CZ, x - CX)) - 40) return;
+          /* 14-nov (Marc: ramas en el vestidor, el dormitorio de invitados y el pasillo): si alguna hoja cae dentro de la casa,
+             la palmera se aparta hacia fuera (sin salirse del césped) y se inclina hacia el jardín */
+          const dentro = (px, py, pz) => (px > -14 && px < 1314 && pz > -14 && pz < 1074 && py < 640) || (px > 440 && px < 1314 && pz > 1060 && pz < 1300 && py < 430);
+          const choca = (x, z, f) => { const ln = H*.16, tx = x + Math.cos(f)*ln, tz = z + Math.sin(f)*ln, ty = -4 + H;
+            for(let j = 0; j < 10; j++){ const a = j/10*Math.PI*2 + f, L = 230 + 40*Math.sin(j*2.1 + f);
+              for(let s = .1; s <= 1.001; s += .1) for(const sd of [-.5, 0, .5]){ const w = 52*Math.sin(Math.PI*Math.min(1, s*1.05))**.6, r = s*L;
+                if(dentro(tx + Math.cos(a)*r - Math.sin(a)*sd*w, ty + 10 + r*.5 - r*r/L*1.05, tz + Math.sin(a)*r + Math.cos(a)*sd*w)) return true; } }
+            return false; };
+          { const fx = Math.atan2(z - CZ, x - CX); let k = 0;
+            if(choca(x, z, f)) f = fx;
+            while(choca(x, z, f) && k++ < 30){ const nx = x + Math.cos(fx)*15, nz = z + Math.sin(fx)*15;
+              if(Math.hypot(nx - CX, nz - CZ) > borde(Math.atan2(nz - CZ, nx - CX)) - 40) break; x = nx; z = nz; } }
           const lean = new THREE.Vector3(Math.cos(f), 0, Math.sin(f)).multiplyScalar(H*.16);
           const pts = [0, .35, .7, 1].map(k => new THREE.Vector3(x + lean.x*k*k, -4 + H*k, z + lean.z*k*k));
           const curva = new THREE.CatmullRomCurve3(pts), gt = new THREE.TubeGeometry(curva, 10, 12, 7, false), P = gt.attributes.position;
@@ -660,7 +672,7 @@ const fuera = (() => {
       add(gv, mCristal);
       add(new THREE.BoxGeometry(272, 9, W - 22), mCrema, -92, 191, 0);                                         // techo
       [[-22, 9], [-128, 9], [-222, 12]].forEach(([x, w]) => add(new THREE.BoxGeometry(w, 62, W - 30), mCrema, x, 158, 0));   // montantes
-      { const a = add(new THREE.BoxGeometry(80, 7, W - 30), mCrema, 78, 157, 0, 0, 0, Math.atan2(60, 68)); }       // marco del parabrisas
+      [-1, 1].forEach(s => add(new THREE.BoxGeometry(92, 7, 8), mCrema, 78, 156, s*(W/2 - 24), 0, 0, -Math.atan2(60, 68)));   // montantes del parabrisas (14-nov: antes una placa que cruzaba la luna)
       /* parachoques, rejilla, aletas */
       add(new THREE.BoxGeometry(18, 26, W + 6), mNegro, 242, 50, 0); add(new THREE.BoxGeometry(18, 26, W + 6), mNegro, -242, 50, 0);
       add(new THREE.BoxGeometry(6, 44, 112), mNegro, 240, 88, 0);
