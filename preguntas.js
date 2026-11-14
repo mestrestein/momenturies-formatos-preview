@@ -180,7 +180,7 @@
 
     /* ─── PRODUCCIÓN Y ENVÍO ─── */
     ['envio', 1, '¿Cuánto tarda en llegar?',
-      '<ul><li><b>Producción:</b> de 24 a 72 h.</li><li><b>Envío</b> (después de la producción): <b>de 2 a 7 días laborables</b> en España, de 4 a 10 a la Unión Europea y de 7 a 15 al resto de destinos.</li></ul>'
+      '<ul><li><b>Producción:</b> de 24 a 72 h.</li><li><b>Envío</b> (después de la producción): <b>de 5 a 8 días laborables</b>, vaya donde vaya.</li></ul>'
       + '<p>Antes de pagar verás el plazo y el precio exactos.</p>'],
     ['envio', 0, '¿Cuánto cuesta el envío?',
       '<p><b>Gratis a partir de 60 €</b> en todos los destinos. Por debajo: 5 € en la España peninsular; 7 € en Baleares, Canarias, Ceuta y Melilla; 9,99 € a la Unión Europea (Portugal incluido) y 14,90 € al resto de destinos. Tienes el detalle en <a href="envios.html">Envíos y devoluciones</a>.</p>'],
@@ -353,7 +353,7 @@
         G('¿Se ve el imán una vez colgado?'),
         G('¿Tus cuadros se despegan o se caen? Así lo solucionas'),
         ['pedido', 1, '¿Cuánto tarda en llegar?',
-          '<p>Como no se personaliza, <b>sale en 24 a 72 h</b>. El envío tarda <b>de 2 a 7 días laborables</b> en España, de 4 a 10 a la Unión Europea y de 7 a 15 al resto de destinos. Antes de pagar verás el plazo y el precio exactos.</p>'],
+          '<p>Como no se personaliza, <b>sale en 24 a 72 h</b>. El envío tarda <b>de 5 a 8 días laborables</b>, vaya donde vaya. Antes de pagar verás el plazo y el precio exactos.</p>'],
         ['pedido', 0, '¿Cuánto cuesta el envío?', G('¿Cuánto cuesta el envío?')[3]],
         ['pedido', 0, '¿Enviáis fuera de España?', G('¿Enviáis fuera de España?')[3]],
         G('¿Cómo puedo pagar?'),

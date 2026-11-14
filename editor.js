@@ -3845,10 +3845,10 @@ if(_urlType && PRODUCTS[_urlType]){
    Las tarifas de envío de abajo son las mismas que tiene la tienda en Shopify: si se cambian
    allí, hay que cambiarlas aquí. */
 const SHIPPING = {
-  ES:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'2-7 días laborables', days:'2-7 working days', price:5.00, free:60} ],
-  ESI: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'2-7 días laborables', days:'2-7 working days', price:7.00, free:60} ],
-  EU:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'4-10 días laborables', days:'4-10 working days', price:9.99, free:60} ],
-  INT: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'7-15 días laborables', days:'7-15 working days', price:14.90, free:60} ],
+  ES:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'5-8 días laborables', days:'5-8 working days', price:5.00, free:60} ],
+  ESI: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'5-8 días laborables', days:'5-8 working days', price:7.00, free:60} ],
+  EU:  [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'5-8 días laborables', days:'5-8 working days', price:9.99, free:60} ],
+  INT: [ {id:'std', es:'Envío estándar', en:'Standard shipping', dias:'5-8 días laborables', days:'5-8 working days', price:14.90, free:60} ],
 };
 const ENVIO_INT = ['US','GB','CH','NO','CA','AU','JP','KR','AE','IL','HK','SG','MY','NZ','AR'];
 const eur = n => n.toFixed(2).replace('.', ',') + '€';
