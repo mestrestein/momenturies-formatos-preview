@@ -2,7 +2,7 @@
    La casa para caminar. La geometría y la luz salen de Blender (blender/momenturies-rooms/casa.py); aquí solo se pinta:
    color = textura × luz horneada + reflejo, igual que las habitaciones del editor. Unidades: cm. */
 (async function(){
-const VER = window.CASA_V || '10';
+const VER = window.CASA_V || '11';
 let HV = null;                       // 12-nov: los easter eggs (más abajo)
 const ZONAS = ['recibidor', 'pasillo', 'salon', 'cocina', 'dormitorio', 'despacho', 'terraza', 'bano', 'distribuidor', 'dormitorio2', 'bano2', 'biblioteca', 'vestidor', 'suite', 'bano_suite'];
 const NOMBRES = { recibidor:'Recibidor', pasillo:'Pasillo', salon:'Salón', cocina:'Cocina', dormitorio:'Dormitorio', despacho:'Despacho', terraza:'Terraza', bano:'Baño', distribuidor:'Planta alta', dormitorio2:'Dormitorio de invitados', bano2:'Baño de arriba', biblioteca:'Biblioteca', vestidor:'Vestidor', suite:'Dormitorio principal', bano_suite:'Baño principal' };
@@ -412,6 +412,7 @@ function ajustaCalidad(dt){
 }
 /* ── Lo de fuera: flotadores con la marca en el mar, el logo hinchable, un globo y una avioneta con pancarta.
    No se hornea: luz propia (cielo + sol) y se mueve solo. Todo dentro del cilindro del cielo (r 5200 en 530,650). */
+let ISLA = null;
 const fuera = (() => {
   const TERRA = '#c2613a', NEGRO = '#1a1a1a', CREMA = '#f6f1e7', MAR = -300;
   scene.add(new THREE.HemisphereLight('#e4eef8', '#6f8590', 2.1));
@@ -521,6 +522,198 @@ const fuera = (() => {
       cab.geometry.setFromPoints([c0, c1]);
     });
   }
+
+  /* ── 13-nov (Marc): «que por fuera se vea como una isla, no en medio del agua; un todoterreno con la marca, muy guay».
+     Isla baja alrededor de la casa (césped), roca, playa con espuma y agua turquesa hacia la orilla; palmeras, rocas,
+     el camino de la entrada y el todoterreno. Todo del visor (no se hornea) y fundido por material: pocas llamadas de dibujo. ── */
+  const fundir = (objs, extra = {}) => {          /* junta mallas del mismo material en una sola (ya colocadas) */
+    const por = new Map();
+    objs.forEach(o => { o.updateMatrixWorld(true); const k = o.material; if(!por.has(k)) por.set(k, []); por.get(k).push(o); });
+    const out = [];
+    por.forEach((lista, m) => {
+      const P = [], N = [], U = [], C = []; let conColor = lista.every(o => o.geometry.attributes.color);
+      lista.forEach(o => { let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); g.applyMatrix4(o.matrixWorld);
+        if(!g.attributes.normal) g.computeVertexNormals();
+        const n = g.attributes.position.count; P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array);
+        U.push(...(g.attributes.uv ? g.attributes.uv.array : new Float32Array(n*2)));
+        if(conColor) C.push(...g.attributes.color.array); });
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2)); if(conColor) g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
+      g.computeBoundingSphere(); const mm = new THREE.Mesh(g, m); Object.assign(mm, extra); out.push(mm);
+    });
+    return out;
+  };
+  {
+    const CX = 650, CZ = 650, SEG = 128, mar = -300;
+    const ond = a => .5*Math.sin(a*3 + 1.3) + .3*Math.sin(a*7 + .4) + .2*Math.sin(a*13 + 2.1);
+    /* borde del césped en la dirección a (desde el centro de la casa): el rectángulo de la casa más un margen.
+       Al norte, sitio para el camino y el coche; al sur, poco (la terraza mira al mar); a los lados, jardín */
+    const borde = a => { const dx = Math.cos(a), dz = Math.sin(a), t = Math.min(dx ? 664/Math.abs(dx) : 1e9, dz ? 660/Math.abs(dz) : 1e9);
+      const n = Math.max(0, -dz), s = Math.max(0, dz); return t + 300 + 430*n*n - 150*s*s + 42*ond(a); };
+    const PERFIL = [            /* [metros más allá del borde, altura, color] */
+      [-90, -4, '#7f9d55'], [0, -4, '#86a35a'], [32, -13, '#8f9862'], [85, -110, '#a38c71'], [150, -246, '#8b7762'],
+      [190, -286, '#cdb991'], [330, -297.5, '#ead9b5'], [420, -306, '#cbb68e'], [640, -365, '#ad9a74'] ];
+    const altura = (x, z) => { const a = Math.atan2(z - CZ, x - CX), d = Math.hypot(x - CX, z - CZ) - borde(a);
+      if(d <= PERFIL[0][0]) return -4;
+      for(let i = 1; i < PERFIL.length; i++){ const [d0, y0] = PERFIL[i-1], [d1, y1] = PERFIL[i]; if(d <= d1) return y0 + (y1 - y0)*(d - d0)/(d1 - d0); }
+      return PERFIL[PERFIL.length-1][1]; };
+    ISLA = { altura, borde, CX, CZ, punto:(a, k) => { const r = borde(a) + k, x = CX + Math.cos(a)*r, z = CZ + Math.sin(a)*r; return new THREE.Vector3(x, altura(x, z), z); } };
+
+    /* el terreno: un abanico de anillos (centro + 9 anillos × 128) */
+    { const pos = [CX, -4, CZ], col = [], idx = [], c0 = new THREE.Color('#7f9d55'); col.push(c0.r, c0.g, c0.b);
+      const tmp = new THREE.Color();
+      for(let r = 0; r < PERFIL.length; r++) for(let k = 0; k < SEG; k++){
+        const a = k/SEG*Math.PI*2, R = borde(a) + PERFIL[r][0], v = .94 + .12*Math.sin(k*1.7 + r*2.3)*Math.sin(k*.53 + r);
+        pos.push(CX + Math.cos(a)*R, PERFIL[r][1], CZ + Math.sin(a)*R); tmp.set(PERFIL[r][2]).multiplyScalar(v); col.push(tmp.r, tmp.g, tmp.b); }
+      for(let k = 0; k < SEG; k++) idx.push(0, 1 + (k+1)%SEG, 1 + k);
+      for(let r = 0; r < PERFIL.length - 1; r++) for(let k = 0; k < SEG; k++){
+        const a = 1 + r*SEG + k, b = 1 + r*SEG + (k+1)%SEG, c = a + SEG, d = b + SEG; idx.push(a, b, c, b, d, c); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      g.setIndex(idx); g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors:true, roughness:.96, metalness:0 })); scene.add(m); }
+
+    /* el agua: de la orilla al horizonte, turquesa cerca y del azul de la foto del cielo lejos (sin niebla: casa con la foto) */
+    { const R = [300, 380, 520, 820, 1500], LEJOS = [2600, 3800, 5150], COL = ['#56bcc2', '#47aec0', '#3797b6', '#2c82aa', '#2a76a0', '#286c96', '#276891', '#26668d'];
+      const pos = [], col = [], idx = [], tmp = new THREE.Color(), n = R.length + LEJOS.length;
+      for(let r = 0; r < n; r++) for(let k = 0; k < SEG; k++){ const a = k/SEG*Math.PI*2, D = r < R.length ? borde(a) + R[r] : LEJOS[r - R.length];
+        pos.push(CX + Math.cos(a)*D, mar, CZ + Math.sin(a)*D); tmp.set(COL[r]); col.push(tmp.r, tmp.g, tmp.b); }
+      for(let r = 0; r < n - 1; r++) for(let k = 0; k < SEG; k++){ const a = r*SEG + k, b = r*SEG + (k+1)%SEG; idx.push(a, b, a + SEG, b, b + SEG, a + SEG); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      g.setIndex(idx); g.computeVertexNormals();
+      const agua = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors:true, roughness:.14, metalness:.05, fog:false })); scene.add(agua);
+      /* espuma en la orilla: una franja blanca que va y viene */
+      const pe = [], ip = [], ue = [];
+      for(let k = 0; k <= SEG; k++){ const a = k/SEG*Math.PI*2, b = borde(a);
+        [[340, 0], [378, 1]].forEach(([o, v]) => { pe.push(CX + Math.cos(a)*(b + o), mar + .6, CZ + Math.sin(a)*(b + o)); ue.push(k/8, v); }); }
+      for(let k = 0; k < SEG; k++){ const a = k*2; ip.push(a, a+2, a+1, a+1, a+2, a+3); }
+      const ge = new THREE.BufferGeometry(); ge.setAttribute('position', new THREE.Float32BufferAttribute(pe, 3)); ge.setAttribute('uv', new THREE.Float32BufferAttribute(ue, 2)); ge.setIndex(ip);
+      const tx = lienzo(256, 64, (x, w, h) => { const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.35, 'rgba(255,255,255,.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
+        x.globalCompositeOperation = 'destination-out'; for(let i = 0; i < 70; i++){ x.fillStyle = `rgba(0,0,0,${.3 + Math.random()*.5})`; x.beginPath(); x.ellipse(Math.random()*w, Math.random()*h, 4 + Math.random()*14, 2 + Math.random()*5, 0, 0, 7); x.fill(); } });
+      tx.wrapS = THREE.RepeatWrapping;
+      const esp = new THREE.Mesh(ge, new THREE.MeshBasicMaterial({ map:tx, transparent:true, depthWrite:false, toneMapped:false, opacity:.75, fog:false })); scene.add(esp);
+      anim.push(t => { tx.offset.x = t*.01; esp.material.opacity = .55 + .25*Math.sin(t*.8); }); }
+
+    /* palmeras: tronco con anillos y hojas de canvas; todas en dos mallas */
+    { const texT = lienzo(64, 256, (x, w, h) => { x.fillStyle = '#8c7155'; x.fillRect(0, 0, w, h);
+        for(let i = 0; i < 22; i++){ x.fillStyle = i % 2 ? 'rgba(60,42,28,.45)' : 'rgba(205,180,140,.25)'; x.fillRect(0, i*h/22, w, h/44); } });
+      texT.wrapS = texT.wrapT = THREE.RepeatWrapping;
+      const texH = lienzo(512, 128, (x, w, h) => { x.strokeStyle = '#4c6b2e'; x.lineWidth = 6; x.beginPath(); x.moveTo(0, h/2); x.lineTo(w, h/2); x.stroke();
+        for(let i = 6; i < w; i += 9){ const l = 58*Math.sin(Math.PI*Math.min(1, i/w*1.05))**.7, c = ['#5f8a37', '#4f7a2e', '#6c9640'][i % 3];
+          x.strokeStyle = c; x.lineWidth = 5; x.beginPath(); x.moveTo(i, h/2); x.lineTo(i + 16, h/2 - l); x.moveTo(i, h/2); x.lineTo(i + 16, h/2 + l); x.stroke(); } });
+      const mT = new THREE.MeshStandardMaterial({ map:texT, roughness:.95 }), mH = new THREE.MeshStandardMaterial({ map:texH, roughness:.8, side:THREE.DoubleSide, alphaTest:.5, transparent:false });
+      const piezas = [];
+      [[-170, 260, 560, .3], [-200, 940, 640, -.5], [-120, 1330, 520, 2.4], [1490, 230, 600, 1.1], [1520, 1010, 540, 3.3], [1470, 1360, 600, .9], [170, -420, 620, 4.4], [1470, -520, 560, 5.2], [520, -640, 500, 2.0]]
+        .forEach(([x, z, H, f]) => {
+          if(Math.hypot(x - CX, z - CZ) > borde(Math.atan2(z - CZ, x - CX)) - 40) return;
+          const lean = new THREE.Vector3(Math.cos(f), 0, Math.sin(f)).multiplyScalar(H*.16);
+          const pts = [0, .35, .7, 1].map(k => new THREE.Vector3(x + lean.x*k*k, -4 + H*k, z + lean.z*k*k));
+          const curva = new THREE.CatmullRomCurve3(pts), gt = new THREE.TubeGeometry(curva, 10, 12, 7, false), P = gt.attributes.position;
+          for(let i = 0; i < P.count; i++){ const ring = Math.floor(i/8), t = ring/10, c = curva.getPointAt(t), k = 1 - .45*t;
+            P.setXYZ(i, c.x + (P.getX(i) - c.x)*k, P.getY(i), c.z + (P.getZ(i) - c.z)*k); }
+          const uv = gt.attributes.uv; for(let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i)*H/60);
+          gt.computeVertexNormals(); piezas.push(new THREE.Mesh(gt, mT));
+          const top = pts[3];
+          for(let j = 0; j < 10; j++){ const a = j/10*Math.PI*2 + f, L = 230 + 40*Math.sin(j*2.1 + f), gh = new THREE.PlaneGeometry(1, 1, 10, 1), Q = gh.attributes.position;
+            for(let i = 0; i < Q.count; i++){ const s = Q.getX(i) + .5, side = Q.getY(i), w = 52*Math.sin(Math.PI*Math.min(1, s*1.05))**.6;
+              const r = s*L, y = top.y + 10 + r*.5 - r*r/L*1.05;
+              Q.setXYZ(i, top.x + Math.cos(a)*r - Math.sin(a)*side*w, y + Math.abs(side)*w*.18, top.z + Math.sin(a)*r + Math.cos(a)*side*w); }
+            gh.computeVertexNormals(); piezas.push(new THREE.Mesh(gh, mH)); }
+          const coco = new THREE.Mesh(new THREE.SphereGeometry(8, 8, 6), new THREE.MeshStandardMaterial({ color:'#5b4630', roughness:.7 }));
+          [[9, 0], [-6, 8], [-4, -9]].forEach(([dx, dz]) => { const c = coco.clone(); c.position.set(top.x + dx, top.y - 2, top.z + dz); piezas.push(c); });
+        });
+      fundir(piezas).forEach(m => scene.add(m)); }
+
+    /* rocas en el pie del acantilado y en la playa */
+    { const g = new THREE.DodecahedronGeometry(1, 0), m = new THREE.MeshStandardMaterial({ color:'#8e7c67', roughness:.95, flatShading:true });
+      const R = [], q = new THREE.Quaternion(), e = new THREE.Euler(), M = new THREE.Matrix4();
+      for(let i = 0; i < 26; i++){ const a = i/26*Math.PI*2 + .37*Math.sin(i*5.3), k = 140 + 70*((i*37) % 10)/10, p = ISLA.punto(a, k), s = 28 + ((i*53) % 9)*7;
+        e.set(i, i*1.7, i*.6); q.setFromEuler(e); M.compose(new THREE.Vector3(p.x, p.y + s*.25, p.z), q, new THREE.Vector3(s*1.3, s*.8, s)); R.push(M.clone()); }
+      const im = new THREE.InstancedMesh(g, m, R.length); R.forEach((mm, i) => im.setMatrixAt(i, mm)); scene.add(im); }
+
+    /* el camino de la entrada (grava), de la puerta de la calle al aparcamiento */
+    { const curva = new THREE.CatmullRomCurve3([[1222, 4], [1222, -150], [1120, -330], [880, -440], [600, -450]].map(([x, z]) => new THREE.Vector3(x, -2.6, z)));
+      const N = 40, pos = [], uv = [], idx = [];
+      for(let i = 0; i <= N; i++){ const t = i/N, p = curva.getPointAt(t), d = curva.getTangentAt(t), n = new THREE.Vector3(-d.z, 0, d.x), w = i > N*.62 ? 330 : 190;
+        [-1, 1].forEach(s => { pos.push(p.x + n.x*w/2*s, -2.6, p.z + n.z*w/2*s); uv.push((s + 1)/2, t*12); }); }
+      for(let i = 0; i < N; i++){ const a = i*2; idx.push(a, a+1, a+2, a+1, a+3, a+2); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+      const tx = lienzo(128, 128, (x, w, h) => { x.fillStyle = '#d9cdb4'; x.fillRect(0, 0, w, h);
+        for(let i = 0; i < 900; i++){ const c = 150 + Math.random()*90 | 0; x.fillStyle = `rgba(${c},${c - 12},${c - 30},.55)`; x.fillRect(Math.random()*w, Math.random()*h, 1 + Math.random()*2.5, 1 + Math.random()*2.5); } });
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map:tx, roughness:.95, side:THREE.DoubleSide })); scene.add(m); }
+
+    /* ── el todoterreno de la marca: crema, terracota y negro, con baca, tabla de surf, faros redondos, rueda de repuesto
+       con el logo y la marca en las puertas. Mira hacia el oeste, aparcado al final del camino. ── */
+    { const g = new THREE.Group(), L = 460, W = 196;
+      const M = (c, r = .45, mt = 0, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({ color:c, roughness:r, metalness:mt }, extra));
+      const mCrema = M(CREMA, .32, .1), mNegro = M('#1c1c1c', .55), mGoma = M('#1a1a1a', .92), mLlanta = M('#8a6a3c', .35, .7), mCristal = M('#1d2427', .06, .5), mCromo = M('#d9d6cf', .18, .9);
+      const add = (geo, m, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); g.add(o); return o; };
+      /* carrocería: perfil lateral con los pasos de rueda, extruido a lo ancho */
+      const sh = new THREE.Shape(); sh.moveTo(-232, 42); sh.lineTo(-200, 42); sh.absarc(-150, 42, 50, Math.PI, 0, true); sh.lineTo(100, 42); sh.absarc(150, 42, 50, Math.PI, 0, true);
+      sh.lineTo(234, 42); sh.lineTo(238, 98); sh.lineTo(229, 121); sh.lineTo(112, 127); sh.lineTo(-232, 127); sh.lineTo(-237, 66); sh.closePath();
+      const gc = new THREE.ExtrudeGeometry(sh, { depth:W - 24, bevelEnabled:true, bevelThickness:9, bevelSize:7, bevelSegments:3, curveSegments:14 }); gc.translate(0, 0, -(W - 24)/2);
+      add(gc, mCrema);
+      /* la parte de los cristales y el techo */
+      const sv = new THREE.Shape(); sv.moveTo(112, 126); sv.lineTo(44, 186); sv.lineTo(-224, 188); sv.lineTo(-231, 126); sv.closePath();
+      const gv = new THREE.ExtrudeGeometry(sv, { depth:W - 40, bevelEnabled:true, bevelThickness:4, bevelSize:3, bevelSegments:2 }); gv.translate(0, 0, -(W - 40)/2);
+      add(gv, mCristal);
+      add(new THREE.BoxGeometry(272, 9, W - 22), mCrema, -92, 191, 0);                                         // techo
+      [[-22, 9], [-128, 9], [-222, 12]].forEach(([x, w]) => add(new THREE.BoxGeometry(w, 62, W - 30), mCrema, x, 158, 0));   // montantes
+      { const a = add(new THREE.BoxGeometry(80, 7, W - 30), mCrema, 78, 157, 0, 0, 0, Math.atan2(60, 68)); }       // marco del parabrisas
+      /* parachoques, rejilla, aletas */
+      add(new THREE.BoxGeometry(18, 26, W + 6), mNegro, 242, 50, 0); add(new THREE.BoxGeometry(18, 26, W + 6), mNegro, -242, 50, 0);
+      add(new THREE.BoxGeometry(6, 44, 112), mNegro, 240, 88, 0);
+      [-1, 1].forEach(s => { [150, -150].forEach(x => { const f = add(new THREE.TorusGeometry(53, 6.5, 6, 18, Math.PI), mNegro, x, 42, s*(W/2 + 3)); });
+        add(new THREE.BoxGeometry(170, 6, 16), mNegro, 0, 36, s*(W/2 + 8));                                    // estribo
+        add(new THREE.BoxGeometry(9, 12, 16), mNegro, 112, 132, s*(W/2 + 10));                                 // retrovisor
+        add(new THREE.CylinderGeometry(12, 12, 5, 20), M('#fffbea', .2, 0, { emissive:'#fff6d8', emissiveIntensity:.9 }), 241, 96, s*70, 0, 0, Math.PI/2);   // faros
+        add(new THREE.TorusGeometry(12.5, 2, 6, 20), mCromo, 243, 96, s*70, 0, Math.PI/2, 0);
+        add(new THREE.BoxGeometry(4, 6, 14), M('#e8901d', .3, 0, { emissive:'#a85a10', emissiveIntensity:.5 }), 240, 70, s*78);
+        add(new THREE.BoxGeometry(4, 22, 12), M('#b82a22', .3, 0, { emissive:'#6a120e', emissiveIntensity:.6 }), -240, 104, s*84); });
+      /* ruedas todoterreno con llanta bronce */
+      [[150, 1], [150, -1], [-150, 1], [-150, -1]].forEach(([x, s]) => { const z = s*(W/2 - 16);
+        add(new THREE.CylinderGeometry(40, 40, 30, 26), mGoma, x, 40, z, Math.PI/2);
+        add(new THREE.TorusGeometry(40, 4.5, 6, 26), mGoma, x, 40, z + s*14);
+        add(new THREE.CylinderGeometry(24, 24, 31.5, 14), mLlanta, x, 40, z, Math.PI/2);
+        add(new THREE.CylinderGeometry(7, 7, 33, 10), mNegro, x, 40, z, Math.PI/2); });
+      /* rueda de repuesto atrás, con la funda de la marca */
+      add(new THREE.CylinderGeometry(39, 39, 28, 26), mGoma, -262, 112, 0, 0, 0, Math.PI/2);
+      { const t = lienzo(512, 512, (x, w, h) => { x.fillStyle = CREMA; x.beginPath(); x.arc(w/2, h/2, w/2, 0, 7); x.fill(); x.strokeStyle = TERRA; x.lineWidth = 26; x.beginPath(); x.arc(w/2, h/2, w/2 - 22, 0, 7); x.stroke();
+          marca(x, w/2 - 105, h/2 - 150, 8); palabra(x, 'MOMENTURIES', w/2, h*.79, 46, NEGRO, .14); });
+        add(new THREE.CircleGeometry(36, 32), new THREE.MeshStandardMaterial({ map:t, roughness:.5 }), -276.5, 112, 0, 0, -Math.PI/2, 0); }
+      /* baca con barra de luces, bidón y tabla de surf */
+      [-1, 1].forEach(s => add(new THREE.BoxGeometry(280, 5, 5), mNegro, -92, 200, s*82));
+      [-200, -130, -60, 10].forEach(x => add(new THREE.BoxGeometry(5, 5, 170), mNegro, x, 200, 0));
+      add(new THREE.BoxGeometry(10, 12, 150), mNegro, 42, 204, 0);
+      for(let i = 0; i < 6; i++) add(new THREE.BoxGeometry(2, 7, 16), M('#fffdf2', .2, 0, { emissive:'#fff7df', emissiveIntensity:.8 }), 47.5, 204, -55 + i*22);
+      { const t = lienzo(512, 64, (x, w, h) => { x.fillStyle = CREMA; x.fillRect(0, 0, w, h); x.fillStyle = TERRA; x.fillRect(0, h*.36, w, h*.28); x.fillStyle = NEGRO; x.fillRect(w*.47, 0, 6, h); });
+        const s = add(new THREE.SphereGeometry(1, 20, 10), new THREE.MeshStandardMaterial({ map:t, roughness:.3 }), -100, 210, -30); s.scale.set(125, 4, 24); }
+      add(new THREE.BoxGeometry(34, 44, 18), M('#3f5a3a', .6), -175, 225, 50);                                   // bidón
+      /* snorkel */
+      add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(200, 70, 100), new THREE.Vector3(150, 120, 100), new THREE.Vector3(70, 182, 92), new THREE.Vector3(66, 196, 90)]), 10, 5, 8, false), mNegro);
+      /* la marca en las dos puertas y una franja terracota a lo largo */
+      { const t = lienzo(1024, 340, (x, w, h) => { marca(x, 30, 40, 9.5); palabra(x, 'MOMENTURIES', w*.6, h*.36, 96, NEGRO, .12);
+          x.fillStyle = TERRA; x.font = `600 40px system-ui, -apple-system, 'Segoe UI', sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Tus momentos, en tu pared', w*.6, h*.64);
+          x.fillStyle = '#5c544a'; x.font = `500 30px system-ui, sans-serif`; x.fillText('momenturies.com', w*.6, h*.86); });
+        const mL = new THREE.MeshStandardMaterial({ map:t, transparent:true, roughness:.35 });
+        const mF = M(TERRA, .4);
+        [-1, 1].forEach(s => { add(new THREE.PlaneGeometry(196, 65), mL, -6, 82, s*95.6, 0, s > 0 ? 0 : Math.PI, 0);
+          add(new THREE.BoxGeometry(460, 7, 1), mF, 2, 118, s*95.4); }); }
+      /* matrículas (27-11: el Black Friday) */
+      { const t = lienzo(520, 112, (x, w, h) => { x.fillStyle = '#f7f7f2'; x.fillRect(0, 0, w, h); x.fillStyle = '#1f4fb4'; x.fillRect(0, 0, 54, h); x.fillStyle = '#ffd400'; x.font = '700 22px sans-serif'; x.textAlign = 'center'; x.fillText('E', 27, 92);
+          x.fillStyle = '#111'; x.font = '700 84px "DIN Alternate", "Arial Narrow", Arial, sans-serif'; x.textBaseline = 'middle'; x.fillText('2711 BFR', 290, 60); x.strokeStyle = '#111'; x.lineWidth = 4; x.strokeRect(2, 2, w - 4, h - 4); });
+        const mm = new THREE.MeshStandardMaterial({ map:t, roughness:.4 });
+        add(new THREE.PlaneGeometry(52, 11.2), mm, 251.5, 54, 0, 0, Math.PI/2, 0); add(new THREE.PlaneGeometry(52, 11.2), mm, -251.5, 66, 0, 0, -Math.PI/2, 0); }
+      /* sombra suave debajo (para que pise el suelo) */
+      const sombra = new THREE.Mesh(new THREE.PlaneGeometry(560, 290), new THREE.MeshBasicMaterial({ transparent:true, depthWrite:false, toneMapped:false,
+        map:lienzo(256, 128, (x, w, h) => { const r = x.createRadialGradient(w/2, h/2, 4, w/2, h/2, w/2); r.addColorStop(0, 'rgba(0,0,0,.55)'); r.addColorStop(.6, 'rgba(0,0,0,.28)'); r.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = r; x.save(); x.scale(1, h/w); x.fillRect(0, 0, w, w); x.restore(); }) }));
+      sombra.rotation.x = -Math.PI/2; sombra.position.y = .4; g.add(sombra);
+      const partes = g.children.filter(o => o !== sombra);
+      const fund = fundir(partes); partes.forEach(o => g.remove(o)); fund.forEach(o => g.add(o));
+      g.position.set(800, -2.6, -430); g.rotation.y = Math.PI - .1; scene.add(g); }
+  }
+
   return t => { anim.forEach(f => f(t)); pinta = true; };
 })();
 
@@ -529,7 +722,6 @@ const fuera = (() => {
    Lista y sitios: blender/momenturies-rooms/PENDIENTE_casa2_noche_11nov.md ── */
 HV = (() => {
   /* 12-nov (Marc): tres premios, creados en Shopify (una vez por cliente, no se suman a otros descuentos) */
-  const PREMIOS = [ { n:5, pc:10, code:'CASA10' }, { n:10, pc:15, code:'CASA15' }, { n:14, pc:20, code:'CASA20' } ];
   const LISTA = [   // id, título, texto, pista
     ['espejo', 'Lo que solo ve el espejo', 'Estaba justo detrás de ti. Solo se veía en el reflejo.', 'Mírate en el espejo del baño de abajo. ¿Qué tienes detrás?'],
     ['iman_cocina', 'Imán en lo alto', 'Alguien lo dejó encima de los armarios de la cocina.', 'En la cocina hay algo encima de los armarios altos. Salta (dos veces).'],
@@ -538,15 +730,24 @@ HV = (() => {
     ['iman_invitados', 'Imán perdido', 'Debajo del escritorio, donde acaba todo lo que se cae.', 'Agáchate en el dormitorio de invitados.'],
     ['iman_lampara', 'Imán en la lámpara', 'Solo se ve desde arriba.', 'Asómate a la barandilla de arriba y mira la lámpara del recibidor.'],
     ['nevera', 'El táper prohibido', '«No es tuyo.» Firmado: tu compañero de piso.', 'Abre la nevera de la cocina.'],
-    ['retrete', 'Momento inolvidable', '', 'Tira de la cadena en el baño de abajo.'],
+    ['retrete', 'Momento inolvidable', '', 'Abre el váter del baño de abajo… y tira de la cadena.'],
     ['sofa', 'El sofá te atrapa', 'Uff… cinco minutitos más.', 'Siéntate en el sofá del salón.'],
     ['calendario', 'Apuntado', '27 de noviembre: Black Friday en Momenturies. ¿Lo tienes apuntado?', 'Mira el calendario del despacho.'],
-    ['escalera', '¿Estás bien?', 'Llevas 10 viajes por la escalera. Bebe un poco de agua.', 'Sube y baja la escalera. Muchas veces.'],
+    ['escalera', '¿Estás bien?', 'Llevas 5 viajes por la escalera. Bebe un poco de agua.', 'Sube y baja la escalera. Varias veces.'],
     ['retrato', 'El retrato que te mira', '¿Qué miras? Él también te mira a ti.', 'En la biblioteca hay alguien que no te quita ojo.'],
     ['vecino', 'El vecino de abajo', '¡TOC, TOC, TOC! «¿Se puede saber qué hacéis ahí arriba?»', 'Arriba, salta sin parar.'],
-    ['escondite', 'El mejor escondite', 'Aquí no te encuentra nadie.', 'Agáchate un rato en el vestidor.'],
+    ['tele', 'Hay algo en la tele', 'Esta noche, en todas las cadenas: tus fotos.', 'En el salón hay una tele antigua. ¿Funcionará?'],
+    ['botella', 'Mensaje en una botella', '«Tus fotos merecen salir del móvil.»', 'Desde la terraza, mira bien la orilla de la playa.'],
+    ['patito', 'Cuac', 'El patito de la bañera tiene muy buen oído.', 'En la bañera del baño principal hay alguien.'],
+    ['gaviota', 'Te ha visto', 'La gaviota ya no te deja ni una patata frita.', 'En la terraza hay alguien en la barandilla. Acércate despacio.'],
   ];
   const TOTAL = LISTA.length, INFO = Object.fromEntries(LISTA.map(([id, t, x, p]) => [id, { t, x, p }])), CLAVE = 'momenturies_casa2_huevos';
+  /* 13-nov (Marc): cuatro premios. CASAIMAN y CASAREGALO se pueden usar juntos (imán + sobremesa de regalo) */
+  const PREMIOS = [
+    { n:4, code:'CASA10', m:'−10%', c:'−10 %', t:'un 10 % de descuento' },
+    { n:8, code:'CASAIMAN', m:'🧲', c:'Imán de regalo', t:'un imán de regalo con tu compra' },
+    { n:12, code:'CASA20', m:'−20%', c:'−20 %', t:'un 20 % de descuento' },
+    { n:TOTAL, code:'CASAREGALO', m:'🎁', c:'Sobremesa de regalo', t:'un cuadro de sobremesa de regalo con tu compra (se suma al imán de regalo, CASAIMAN)' } ];
   let hechos = [];
   try{ hechos = JSON.parse(localStorage.getItem(CLAVE) || '[]').filter(k => INFO[k]); }catch(_){ hechos = []; }
   const guarda = () => { try{ localStorage.setItem(CLAVE, JSON.stringify(hechos)); }catch(_){} };
@@ -579,8 +780,8 @@ HV = (() => {
     panel.innerHTML = `<button type="button" class="x" aria-label="Cerrar">×</button><small>Easter eggs</small><b>${hechos.length} de ${TOTAL} encontrados</b>
       <div class="barra"><i style="width:${hechos.length/TOTAL*100}%"></i>${PREMIOS.map(q => `<em style="left:${q.n/TOTAL*100}%" class="${hechos.length >= q.n ? 'si' : ''}"></em>`).join('')}</div>
       <ul>${PREMIOS.map(q => hechos.length >= q.n
-        ? `<li class="si"><span>−${q.pc} %</span><code>${q.code}</code><button type="button" data-c="${q.code}">Copiar</button></li>`
-        : `<li><span>−${q.pc} %</span><em>Encuentra ${q.n === TOTAL ? 'los ' + TOTAL : q.n}</em><i>🔒</i></li>`).join('')}</ul>
+        ? `<li class="si"><span>${q.c}</span><code>${q.code}</code><button type="button" data-c="${q.code}">Copiar</button></li>`
+        : `<li><span>${q.c}</span><em>Encuentra ${q.n === TOTAL ? 'los ' + TOTAL : q.n}</em><i>🔒</i></li>`).join('')}</ul>
       ${f.length ? `<p class="pi"><b>Pista:</b> ${f[pista++ % f.length][3]}</p><button type="button" class="otra">Otra pista</button>` : '<p class="pi">¡Los tienes todos! Usa el mejor código en la tienda.</p>'}
       ${ganados().length ? '<a href="index.html">Ir a la tienda</a>' : ''}`;
     panel.classList.add('ver');
@@ -622,12 +823,12 @@ HV = (() => {
       o.connect(g); g.connect(a.destination); o.start(T + d); o.stop(T + d + 1); }); }
   function celebra(q){
     const t = fiesta.querySelector('.tarjeta'), ult = q.n === TOTAL, sg = PREMIOS.find(k => k.n > q.n);
-    t.querySelector('.medalla').textContent = `−${q.pc}%`;
+    t.querySelector('.medalla').textContent = q.m;
     t.querySelector('small').textContent = ult ? `Los ${TOTAL} easter eggs` : `${q.n} de ${TOTAL} easter eggs`;
     t.querySelector('h2').textContent = ult ? '¡Los has encontrado todos!' : '¡Enhorabuena!';
-    t.querySelector('p').textContent = `Has conseguido un ${q.pc} % de descuento en Momenturies.`;
+    t.querySelector('p').textContent = `Has conseguido ${q.t} en Momenturies.`;
     t.querySelector('code').textContent = q.code;
-    t.querySelector('.nota').textContent = sg ? `Sigue buscando: con ${sg.n === TOTAL ? 'los ' + TOTAL : sg.n} consigues el ${sg.pc} %.` : 'El premio más gordo. Un uso por cliente.';
+    t.querySelector('.nota').textContent = sg ? `Sigue buscando: con ${sg.n === TOTAL ? 'los ' + TOTAL : sg.n} consigues ${sg.t}.` : 'El premio más gordo. Un uso por cliente.';
     const b = t.querySelector('.cod button'); b.textContent = 'Copiar'; b.onclick = () => copia(q.code, b);
     const sb = t.querySelector('.sigue'); sb.textContent = ult ? 'Seguir paseando' : 'Seguir buscando'; sb.onclick = () => fiesta.classList.remove('ver');
     fiesta.classList.toggle('oro', ult);
@@ -637,7 +838,7 @@ HV = (() => {
   function encontrado(id, o = {}){
     const e = INFO[id], nuevo = !ya(id);
     if(nuevo){ hechos.push(id); guarda(); cuenta(); }
-    const sg = siguiente(), falta = sg ? ` · ${sg.n - hechos.length} para el ${sg.pc} %` : '';
+    const sg = siguiente(), falta = sg ? ` · ${sg.n - hechos.length} para el siguiente premio` : '';
     aviso({ emoji:o.emoji, t:o.t || e.t, x:o.x != null ? o.x : e.x, link:o.link, sub:nuevo ? `${hechos.length}/${TOTAL} encontrados${falta}` : 'Este ya lo tenías' });
     const q = nuevo && PREMIOS.find(k => k.n === hechos.length);
     if(q) setTimeout(() => celebra(q), 2600);
@@ -746,7 +947,7 @@ HV = (() => {
     ['retrete', new THREE.Box3(new THREE.Vector3(1238, 0, 856), new THREE.Vector3(1300, 116, 904))],
     ['sofa', new THREE.Box3(new THREE.Vector3(950, 0, 712), new THREE.Vector3(1052, 86, 948))],
   ];
-  let tiradas = 0, sofaT = -1, viajes = 0, saltosArriba = 0, ultSalto = 0, escondido = 0;
+  let tiradas = 0, sofaT = -1, viajes = 0, saltosArriba = 0, ultSalto = 0;
 
   /* ── la nevera (12-nov, Marc: «tiene que abrirse y verse el táper dentro»). La puerta de arriba viene aparte en el glb
      (materiales nevera_puerta*) y se hornea cerrada con la luz de dentro encendida. Aquí se cuelga de su bisagra, con
@@ -784,6 +985,14 @@ HV = (() => {
     else { ruido(.18, 900, 140, .3, .32); setTimeout(() => golpe(0, .35), 320); }
   }
   const _p = new THREE.Vector3(), _c = new THREE.Vector3();
+  /* 13-nov: lo que ven los módulos de casa2-huevos/ (ver blender/momenturies-rooms/GUIA_AGENTES_13nov.md) */
+  const EXT = { toque:[], tick:[], reinicia:[] }, MODULOS = ['vater', 'tele', 'botella', 'patito', 'gaviota'];
+  const API = { THREE, scene, camera, pos, RAICES, salas, salaEn, datos, VER, MARCA, encontrado, ya, aviso, ruido, golpe, ac, lienzo, halo, miles,
+    get ISLA(){ return ISLA; }, get PISO(){ return PISO; }, pinta(){ pinta = true; },
+    toque(f){ EXT.toque.push(f); }, tick(f){ EXT.tick.push(f); }, reinicia(f){ EXT.reinicia.push(f); },
+    /* 14-nov: grupo dentro de la habitación que deshace su transformación (los glb vienen en metros, escala 100): lo que se mete aquí va en cm de mundo y se oculta con la sala */
+    mundo(z){ const r = RAICES[z]; if(!r) return null; if(!r.userData.mundo){ const m = new THREE.Group(); r.updateMatrixWorld(true); m.applyMatrix4(r.matrixWorld.clone().invert()); r.add(m); r.userData.mundo = m; } return r.userData.mundo; },
+    quitaCaja(id){ const i = CAJAS_HV.findIndex(c => c[0] === id); if(i >= 0) CAJAS_HV.splice(i, 1); } };
   const accion = {
     nevera(){ abreNevera(); },
     retrete(){ tiradas++; ruido(2.2, 2600, 260, .5); ruido(1.2, 700, 120, .25, .9);
@@ -795,17 +1004,20 @@ HV = (() => {
 
   return {
     dy:0,
-    monta(){ montaEspejo(); montaNevera(); },
+    /* 13-nov: cada huevo nuevo vive en su archivo (casa2-huevos/<nombre>.js, export default function(api){…}) */
+    monta(){ montaEspejo(); montaNevera();
+      return Promise.all(MODULOS.map(n => import(`./casa2-huevos/${n}.js?v=${VER}`).then(m => m.default(API)).catch(e => console.warn('huevo', n, e)))); },
     get nevAbierta(){ return !!(nev && nev.a > .05); },
-    piso(){ if(++viajes === 10) encontrado('escalera', { emoji:'🥵' }); },
+    piso(){ if(++viajes === 5) encontrado('escalera', { emoji:'🥵' }); },
     salto(){
       if(PISO !== 1 || enEscalera(pos.x, pos.z)) return;
       const n = performance.now(); if(n - ultSalto > 4000) saltosArriba = 0; ultSalto = n;
-      if(++saltosArriba === 15){ [0, .32, .64].forEach(golpe); setTimeout(() => encontrado('vecino', { emoji:'🔨' }), 900); }
+      if(++saltosArriba === 10){ [0, .32, .64].forEach(t0 => golpe(t0)); setTimeout(() => encontrado('vecino', { emoji:'🔨' }), 900); }
     },
     /* un toque: lo más cercano de lo que tenga easter egg, si está a mano y no hay pared por medio */
     toque(ray){
-      let mejor = null; const prueba = (d, f, p) => { if(d < 520 && (!mejor || d < mejor.d) && visible(p)) mejor = { d, f }; };
+      let mejor = null; const prueba = (d, f, p, lejos) => { if(d < (lejos || 520) && (!mejor || d < mejor.d) && (lejos || visible(p))) mejor = { d, f }; };
+      EXT.toque.forEach(fn => { const r = fn(ray); if(r) prueba(r.d, r.f, r.p, r.lejos); });
       IMANES.forEach(q => { if(q.g.visible && !q.fin && ray.ray.distanceSqToPoint(q.p) < 15*15) prueba(camera.position.distanceTo(q.p), () => coge(q), q.p); });
       CAJAS_HV.forEach(([id, b]) => { if(ray.ray.intersectBox(b, _p)) prueba(_p.distanceTo(camera.position), accion[id], _p.clone()); });
       if(nev && nev.meta){ nev.caja.setFromObject(nev.piv); if(ray.ray.intersectBox(nev.caja, _p)) prueba(_p.distanceTo(camera.position), accion.nevera, _p.clone()); }
@@ -840,12 +1052,10 @@ HV = (() => {
       }
       /* el sofá: se hunde y vuelve */
       if(sofaT >= 0){ sofaT += dt; this.dy = -30*Math.sin(Math.min(1, sofaT/1.7)*Math.PI); if(sofaT > 1.7){ sofaT = -1; this.dy = 0; } }
-      /* agachado 4 s en el vestidor */
-      const s = salaEn(pos.x, pos.z);
-      if(s && s.id === 'vestidor' && agache > .9){ if(escondido >= 0 && (escondido += dt) > 4){ escondido = -1; encontrado('escondite', { emoji:'🙈' }); } }
-      else escondido = 0;
+      /* los huevos de los módulos (casa2-huevos/*.js) */
+      EXT.tick.forEach(f => { try{ f(dt, t); }catch(e){ console.warn(e); } });
     },
-    get hechos(){ return hechos.slice(); }, celebra(i = 0){ celebra(PREMIOS[i]); }, panel(){ abrePanel(); }, reinicia(){ if(nev){ nev.meta = nev.a = 0; NEVLUZ.value = 0; nev.visto = false; nev.piv.rotation.y = 0; } fiesta.classList.remove('ver'); panel.classList.remove('ver'); hechos = []; guarda(); cuenta(); viajes = 0; saltosArriba = 0;
+    get hechos(){ return hechos.slice(); }, celebra(i = 0){ celebra(PREMIOS[i]); }, panel(){ abrePanel(); }, reinicia(){ EXT.reinicia.forEach(f => f()); if(nev){ nev.meta = nev.a = 0; NEVLUZ.value = 0; nev.visto = false; nev.piv.rotation.y = 0; } fiesta.classList.remove('ver'); panel.classList.remove('ver'); hechos = []; guarda(); cuenta(); viajes = 0; saltosArriba = 0;
       IMANES.forEach(q => { q.fin = 0; q.g.visible = true; q.g.scale.setScalar(1); q.g.children[0].material.opacity = 1; });
       if(esp){ esp.fin = 0; esp.g.visible = true; esp.g.scale.setScalar(1); esp.mascara.visible = true; } else montaEspejo(); },
   };
@@ -858,7 +1068,7 @@ requestAnimationFrame(bucle);
 await carga('recibidor');
 await Promise.all(ZONAS.slice(1).map(carga));
 hazGrupos();
-HV.monta();
+await HV.monta();
 const espera = () => { let n = 0; datos.placas.forEach(p => { if(encuadra(p)) n++; }); pinta = true; if(n < datos.placas.length) setTimeout(espera, 300); };
 espera();
 $('#carga').classList.add('fuera');
