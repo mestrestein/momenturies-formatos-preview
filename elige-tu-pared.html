@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Elige tu pared · Momenturies</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" href="favicon.ico"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"/>
+<link rel="stylesheet" href="pdp.css?v=4e3ce808">
+<style>
+  /* Página sin enlazar (13/14-nov-2026): composiciones de prueba T01-T09 para un pedido concreto.
+     Cada tarjeta abre el editor con cuadro.html?pared=T0n (pruebas-conjuntos.js). No va en el menú ni en el sitemap. */
+  body{background:#f6f3ee;margin:0;font-family:Inter,system-ui,sans-serif;color:#1a1a1a}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 16px 60px}
+  .logo{display:block;font-weight:700;letter-spacing:.14em;font-size:13px;text-transform:uppercase;color:#1a1a1a;text-decoration:none;margin-bottom:28px}
+  h1{font-family:var(--font-serif,Georgia,serif);font-size:clamp(26px,4vw,38px);margin:0 0 8px;font-weight:600}
+  .lead{font-size:15.5px;line-height:1.6;color:#555;max-width:640px;margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+  .card{background:#fff;border-radius:14px;padding:18px;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .pared{background:#efe9df;border-radius:10px;height:230px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:18px;margin-bottom:14px}
+  .pared svg{width:100%;height:100%;overflow:visible}
+  .cod{font-size:12px;font-weight:600;color:#999;letter-spacing:.08em}
+  .card h2{font-size:17px;margin:2px 0 4px}
+  .med{font-size:13.5px;color:#666;margin:0 0 14px;line-height:1.5}
+  .btn{margin-top:auto;display:block;text-align:center;background:#1a1a1a;color:#fff;text-decoration:none;font-weight:600;font-size:14.5px;padding:13px;border-radius:999px}
+  .btn:hover{background:#000}
+  .ley{font-size:12.5px;color:#888;margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="logo" href="index.html">Momenturies</a>
+  <h1>Elige tu pared</h1>
+  <p class="lead">Nueve composiciones de seis cuadros, dibujadas a escala. Elige la que más te guste: se abre el editor con esa pared, pones tus fotos y haces el pedido desde ahí.</p>
+  <div class="grid" id="grid"></div>
+  <p class="ley">Las medidas son de los cuadros, sin contar el espacio entre ellos salvo en el total. Los cuadros van colgados con imán: podrás cambiar las fotos de sitio cuando quieras.</p>
+</div>
+<script>
+(function(){
+  // Copia de TESTS de pruebas-conjuntos.js (si se cambia allí, cambiar aquí).
+  var TAM = { C30:[30,30], C15:[15,15], R24:[18,24], S:[10,15], M:[21,29.7], L:[25.5,36], XL:[30.5,43.1] };
+  var TESTS = {
+    T01: { name: 'Todo Futsides',             p: [['M',4.5,6.3],['C15',42.75,21],['L',72.75,0],['C30',0,41],['XL',35,41],['C30',70.5,41]] },
+    T02: { name: 'XL abajo',                  p: [['M',0,6.3],['C30',26,6],['L',61,0],['C15',5.75,41],['XL',25.75,41],['C15',61.25,41]] },
+    T03: { name: 'Cruz XL',                   p: [['C15',0,15],['C30',23,0],['C15',61,15],['S',4.75,38],['XL',22.75,38],['S',61.25,38]] },
+    T04: { name: 'Pirámide',                  p: [['C15',3,9],['R24',32,0],['C15',65.75,9],['M',0,29],['C30',26,29],['L',61,29]] },
+    T05: { name: 'Diagonal',                  p: [['C30',0,0],['R24',36,6],['C15',60,15],['M',0,36],['L',27,36],['C30',58.5,36]] },
+    T06: { name: 'Columnas, grandes arriba',  p: [['C30',0,0],['M',35,0],['C30',61,0],['S',10,35],['C15',38,34.7],['S',71,35]] },
+    T07: { name: 'Columnas cruzadas',         p: [['S',10,0],['M',35,0],['S',71,0],['C30',0,20],['C15',38,34.7],['C30',61,20]] },
+    T08: { name: 'Cruz central',              p: [['M',0,7.15],['C30',26,7],['C15',62.5,0],['R24',61,20],['C30',84,7],['L',119,4]] },
+    T09: { name: 'Horizonte XL',              p: [['C15',0,28.1],['R24',20,19.1],['C30',43,13.1],['XL',78,0],['C30',113.5,13.1],['S',148.5,28.1]] }
+  };
+  function cm(n){ return (Math.round(n*10)/10).toString().replace('.', ','); }
+  var grid = document.getElementById('grid'), html = '';
+  Object.keys(TESTS).forEach(function(id){
+    var t = TESTS[id], W = 0, H = 0, rects = '', cuenta = {};
+    t.p.forEach(function(q){
+      var s = TAM[q[0]], x = q[1], y = q[2];
+      W = Math.max(W, x + s[0]); H = Math.max(H, y + s[1]);
+      var k = cm(s[0]) + '×' + cm(s[1]); cuenta[k] = (cuenta[k] || 0) + 1;
+      rects += '<rect x="'+x+'" y="'+y+'" width="'+s[0]+'" height="'+s[1]+'" rx="0.6" fill="url(#al)" stroke="#8d8d8d" stroke-width="0.35"/>' +
+               '<text x="'+(x+s[0]/2)+'" y="'+(y+s[1]/2)+'" font-size="'+Math.max(2.6, Math.min(s[0],s[1])/5.5)+'" text-anchor="middle" dominant-baseline="middle" fill="#666" font-family="Inter,sans-serif">'+cm(s[0])+'×'+cm(s[1])+'</text>';
+    });
+    var lista = Object.keys(cuenta).map(function(k){ return (cuenta[k] > 1 ? cuenta[k] + ' de ' : '1 de ') + k; }).join(' · ');
+    html += '<div class="card"><div class="pared"><svg viewBox="-2 -2 '+(W+4)+' '+(H+4)+'" preserveAspectRatio="xMidYMid meet">' +
+      '<defs><linearGradient id="al" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbfbfb"/><stop offset=".55" stop-color="#dedede"/><stop offset="1" stop-color="#c9c9c9"/></linearGradient></defs>' +
+      rects + '</svg></div>' +
+      '<div class="cod">'+id+'</div><h2>'+t.name+'</h2>' +
+      '<p class="med">Total '+cm(W)+' × '+cm(H)+' cm<br>'+lista+' cm</p>' +
+      '<a class="btn" href="cuadro.html?pared='+id+'">Elegir esta pared</a></div>';
+  });
+  grid.innerHTML = html;
+})();
+</script>
+</body>
+</html>
