@@ -5,6 +5,7 @@
    - Eventos de esta web: PageView, ViewContent, CustomizeProduct, AddToCart, Lead y Contact.
      InitiateCheckout y Purchase los manda Shopify (canal Facebook & Instagram): aquí NO, para no contarlos dos veces.
    - Las páginas llaman a window.mmTrack('Evento', {...}). Sin consentimiento no se manda nada.
+   - VERSION 2 (16-nov-2026): entra Google Analytics en «Analítica», así que se vuelve a preguntar a todos.
    - La elección dura 6 meses; luego se vuelve a preguntar. Textos en inglés si la página está en inglés.
    - GA4: hueco preparado (vacío = sin Google Analytics). Al rellenarlo sale la casilla «Analítica» y va con Consent Mode v2.
    Sustituye al consent.js del commit b4e96b7 (mismo nombre, estaba apagado sin ID).
@@ -13,7 +14,7 @@
      Viewed Product y Added to Cart. El alta en la lista (formulario «lanzamiento») NO depende de las cookies: la persona
      da su correo a propósito; Klaviyo le manda el correo de confirmación (doble opt-in). */
 (function () {
-  var PIXEL = '1917299959243159', GA4 = 'G-S59KRN2H2Q', CLARITY = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
+  var PIXEL = '1917299959243159', GA4 = 'G-S59KRN2H2Q', CLARITY = '', KEY = 'mm_cookies', VERSION = 2, DURA = 182 * 864e5;
   var KLAVIYO = 'XD3GkM', KLAVIYO_LISTA = 'SUUQzW', KLAVIYO_API = '2024-10-15';
   var path = location.pathname;
 
@@ -183,17 +184,17 @@
     '@media(max-width:520px){.mmck{left:10px;right:10px;bottom:10px;max-width:none;padding:18px 16px 14px}}';
   var en = (document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'es').slice(0, 2) === 'en';
   var T = en ? {
-    t: 'Cookies, in short', mas: 'More information', cfg: 'Settings', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
-    p: 'We use the necessary ones so the site and the editor work. If you let us, also analytics, to improve the site, and Meta’s, to know which ads bring you here. Your call.',
-    nec: ['Necessary', 'Your design, the cart and the language. The site doesn’t work without them.'],
-    ana: ['Analytics', 'See how the site is used (pages, buttons, steps in the editor) to improve it. Never what you write or your photos.'],
-    ads: ['Advertising (Meta and Klaviyo)', 'Measure which ads work, show you ours on Facebook and Instagram and, if you gave us your email, remind you of what you left in the cart.'], link: 'Cookie settings'
+    t: 'May we use cookies?', mas: 'Cookie policy', cfg: 'Choose', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
+    p: 'The necessary ones make the site and the editor work. The rest help us improve the site and see which ads work. You choose, and you can change it any time from the footer.',
+    nec: ['Necessary', 'They keep your design, the cart and the language.'],
+    ana: ['Analytics (ours and Google Analytics)', 'How many people visit and how they use the site, so we can improve it. Never what you write or your photos.'],
+    ads: ['Advertising (Meta and Klaviyo)', 'See which ads work and, if you gave us your email, remind you of what you left in the cart.'], link: 'Cookie settings'
   } : {
-    t: 'Las cookies, en corto', mas: 'Más información', cfg: 'Configurar', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
-    p: 'Usamos las necesarias para que la web y el editor funcionen. Si nos dejas, también las de analítica, para mejorar la web, y las de Meta, para saber qué anuncios te traen hasta aquí. Tú decides.',
-    nec: ['Necesarias', 'Tu diseño, el carrito y el idioma. Sin ellas la web no funciona.'],
-    ana: ['Analítica', 'Ver cómo se usa la web (páginas, botones, pasos del editor) para mejorarla. Nunca lo que escribes ni tus fotos.'],
-    ads: ['Publicidad (Meta y Klaviyo)', 'Medir qué anuncios funcionan, enseñarte los nuestros en Facebook e Instagram y, si nos diste tu correo, recordarte lo que dejaste en el carrito.'], link: 'Configurar cookies'
+    t: '¿Nos dejas usar cookies?', mas: 'Política de cookies', cfg: 'Elegir', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
+    p: 'Las necesarias hacen que la web y el editor funcionen. Las demás nos ayudan a mejorar la web y a saber qué anuncios funcionan. Tú eliges, y puedes cambiarlo cuando quieras desde el pie de la página.',
+    nec: ['Necesarias', 'Guardan tu diseño, el carrito y el idioma.'],
+    ana: ['Analítica (nuestra y Google Analytics)', 'Cuántas personas entran y cómo usan la web, para mejorarla. Nunca lo que escribes ni tus fotos.'],
+    ads: ['Publicidad (Meta y Klaviyo)', 'Saber qué anuncios funcionan y, si nos diste tu correo, recordarte lo que dejaste en el carrito.'], link: 'Configurar cookies'
   };
   function fila(d, id) {
     return '<div class="row"><div><b>' + d[0] + '</b><span>' + d[1] + '</span></div>' +
