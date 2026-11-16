@@ -5,6 +5,7 @@
    - Eventos de esta web: PageView, ViewContent, CustomizeProduct, AddToCart, Lead y Contact.
      InitiateCheckout y Purchase los manda Shopify (canal Facebook & Instagram): aquí NO, para no contarlos dos veces.
    - Las páginas llaman a window.mmTrack('Evento', {...}). Sin consentimiento no se manda nada.
+   - GA4 (16-nov-2026, tarde): embudo de compra, formularios y pasos del personalizador también van a GA4 (ver cargarGA).
    - VERSION 2 (16-nov-2026): entra Google Analytics en «Analítica», así que se vuelve a preguntar a todos.
    - La elección dura 6 meses; luego se vuelve a preguntar. Textos en inglés si la página está en inglés.
    - GA4: hueco preparado (vacío = sin Google Analytics). Al rellenarlo sale la casilla «Analítica» y va con Consent Mode v2.
@@ -41,12 +42,60 @@
     window.gtag = window.gtag || function () { dataLayer.push(arguments); };
     gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
   }
+  /* 16-nov: GA4 recibe también el embudo (view_item, add_to_cart, view_cart, remove_from_cart, begin_checkout), los
+     formularios (generate_lead, contact) y cada paso del personalizador (editor_*: foto, formato, talla, color…).
+     Solo con la analítica aceptada. add_shipping_info, add_payment_info y purchase los manda el píxel de GA4 del
+     checkout de Shopify (Ajustes → Eventos de clientes), no esta web: así no se cuentan dos veces.
+     La cookie _ga va en .momenturies.com para que checkout.momenturies.com siga la misma visita. */
+  var gaCola = [], ultimoCarrito = null;
   function cargarGA() {
     if (gaCargado || !GA4 || !activo) return;
     gaCargado = true;
     gtag('consent', 'update', { analytics_storage: 'granted' });
     var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4; document.head.appendChild(s);
-    gtag('js', new Date()); gtag('config', GA4);
+    gtag('js', new Date());
+    gtag('config', GA4, { cookie_domain: 'momenturies.com', linker: { domains: ['momenturies.com', 'checkout.momenturies.com'] } });
+    var vc = verContenido();
+    if (vc) gtag('event', 'view_item', { currency: 'EUR', value: vc.value || 0, items: [{ item_id: vc.content_ids[0], item_name: vc.content_name, item_category: vc.content_category, price: vc.value || undefined }] });
+    gaCola.splice(0).forEach(function (a) { gtag('event', a[0], a[1]); });
+  }
+  /* manda un evento a GA4 si hay permiso de analítica (si GA aún no ha cargado, espera en la cola) */
+  function ga(evento, params) {
+    var c = leer();
+    if (!GA4 || !activo || !c || !c.ana) return false;
+    if (gaCargado) gtag('event', evento, params || {}); else gaCola.push([evento, params || {}]);
+    return true;
+  }
+  /* los eventos de Meta, con nombre y forma de GA4 */
+  function aGA(evento, d) {
+    if (evento === 'AddToCart') {
+      var ids = d.content_ids || [], n = d.num_items || 1;
+      var items = ids.map(function (id) { return { item_id: id, item_name: d.content_name || nombreDe(id), quantity: ids.length === 1 ? n : 1 }; });
+      ultimoCarrito = { currency: 'EUR', value: d.value || 0, items: items };
+      return ga('add_to_cart', ultimoCarrito);
+    }
+    if (evento === 'CustomizeProduct') return ga('customize_product', { item_id: (d.content_ids || [])[0], item_name: d.content_name });
+    if (evento === 'Lead') return ga('generate_lead', { lead_source: d.content_name || 'web' });
+    if (evento === 'Contact') return ga('contact', {});
+    return ga(String(evento).toLowerCase(), {});
+  }
+  function nombreDe(id) {
+    for (var k in PAGINAS) if (PAGINAS[k][1] === id) return PAGINAS[k][0];
+    return { metal: 'Cuadro de aluminio', madera: 'Sobremesa de aluminio', nevera: 'Imán de nevera' }[id] || id;
+  }
+  /* pasos del personalizador (editor.js → mmEvento): además de la analítica propia, a GA4 */
+  var PASOS = { carrito: 'view_cart', quitar_del_carrito: 'remove_from_cart', checkout: 'begin_checkout' };
+  function envolverEvento() {
+    var orig = window.mmEvento;
+    if (!orig || orig.conGA) return;
+    window.mmEvento = function (t, d) {
+      try { orig(t, d); } catch (e) {}
+      var nombre = PASOS[t];
+      if (nombre === 'begin_checkout' || nombre === 'view_cart') ga(nombre, ultimoCarrito || { currency: 'EUR' });
+      else if (nombre) ga(nombre, { currency: 'EUR' });
+      else ga('editor_' + String(t).replace(/[^a-z0-9_]/gi, '_').slice(0, 30), d == null ? {} : { detalle: String(d).slice(0, 100) });
+    };
+    window.mmEvento.conGA = true;
   }
 
   /* Clarity (grabaciones y mapas de calor): solo con la analítica aceptada; se enciende poniendo el id arriba */
@@ -58,7 +107,7 @@
   }
   /* analítica propia (seguimiento.js): se carga siempre; sin permiso solo cuenta la página, de forma anónima */
   function seguimiento(ana) {
-    var run = function () { if (!window.mmSeguimiento) return; if (ana) mmSeguimiento.activar(); else mmSeguimiento.anonimo(); };
+    var run = function () { envolverEvento(); if (!window.mmSeguimiento) return; if (ana) mmSeguimiento.activar(); else mmSeguimiento.anonimo(); };
     if (window.mmSeguimiento) return run();
     var s = document.createElement('script'); s.src = 'seguimiento.js?v=2'; s.async = true; s.onload = run; document.head.appendChild(s);
   }
@@ -118,9 +167,12 @@
     kl('identify', { $email: email });
   };
 
+  /* Meta y Klaviyo con el permiso de publicidad; GA4 con el de analítica. true si alguno lo ha recibido */
   window.mmTrack = function (evento, datos) {
     var c = leer();
-    if (!activo || !c || !c.ads) return false;
+    if (!activo || !c) return false;
+    var enGA = aGA(evento, datos || {});
+    if (!c.ads) return enGA;
     if (cargado && window.fbq) fbq('track', evento, datos || {}); else cola.push([evento, datos || {}]);
     aKlaviyo(evento, datos || {});
     return true;
