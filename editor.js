@@ -2825,6 +2825,39 @@ async function uploadPosterArt(p){
   return {frontUrl, backUrl, originalUrl, cropUrl, medida};
 }
 
+/* 16-nov (Marc): con un conjunto puesto, una imagen de SU pared (sus fotos colocadas a escala, con frases y
+   todo) para el correo de después de la compra (Klaviyo P1 lee la propiedad _pared_imagen del pedido).
+   Plana y a escala, no una captura del 3D: sale igual en cualquier móvil y no depende de dónde esté la cámara. */
+async function wallImageBlob(){
+  if(!(WALL && WALL.pieces && WALL.pieces.length > 1)) return null;
+  const pcs = WALL.pieces.map((pc, i) => ({pc, p: POSTERS[i]})).filter(o => o.p && o.p.srcImg && cuenta(o.p));
+  if(pcs.length < 2) return null;
+  await Promise.all(pcs.map(o => decoReady(o.p).catch(() => {})));
+  const W = 1200, M = 90;   // ancho del correo a 2x y aire alrededor
+  const k = (W - 2*M) / WALL.width;
+  const H = Math.round(Math.min(WALL.height*k + 2*M, 1600));
+  const kk = Math.min(k, (H - 2*M) / WALL.height);   // si es muy alta, encoge para caber
+  const ox = (W - WALL.width*kk) / 2, oy = (H - WALL.height*kk) / 2;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = WALL.fridge ? '#e9ecee' : '#efe9e1'; x.fillRect(0, 0, W, H);
+  for(const {pc, p} of pcs){
+    const px = Math.round(ox + pc.x*kk), py = Math.round(oy + pc.y*kk);
+    const pw = Math.round(pc.w*kk), ph = Math.round(pc.h*kk);
+    x.save();
+    x.shadowColor = 'rgba(40,30,20,.28)'; x.shadowBlur = 18; x.shadowOffsetY = 8;
+    x.fillStyle = '#fff'; x.fillRect(px, py, pw, ph);
+    x.restore();
+    const f = buildFrontCanvas(p, pw*2, ph*2);   // a 2x y reducido: las frases salen finas
+    x.drawImage(f, px, py, pw, ph);
+    f.width = f.height = 0;
+    x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = 1; x.strokeRect(px + .5, py + .5, pw - 1, ph - 1);   // canto del aluminio
+  }
+  const blob = await canvasToBlob(c, 0.86);
+  c.width = c.height = 0;
+  return blob;
+}
+
 /* 6-nov: los archivos de impresión se preparan y suben EN SEGUNDO PLANO al abrir el carrito, uno detrás
    de otro, y «Finalizar compra» reutiliza lo ya subido. Antes todo empezaba al pulsar (~6 s por cuadro
    con fotos pequeñas, bastante más con fotos de móvil). Si el cuadro cambia después, la huella cambia y
@@ -2909,6 +2942,10 @@ async function shopifySelectShipping(cart, shipId){
 
 async function checkoutWithShopify(buyerIdentity, shipId){
   const lines = [];
+  /* la imagen de la pared para el correo es un extra: si falla, el pedido sigue igual */
+  const paredUrl = await wallImageBlob()
+    .then(b => b ? uploadToCloudinary(b, `pared-${Date.now()}.jpg`) : null)
+    .catch(e => { console.warn('[Momenturies] Imagen de la pared sin subir:', e.message); return null; });
   for(const p of POSTERS){
     if(!cuenta(p)) continue;   // las quitadas del carrito (en gris) no van al pedido
     const variantId = variantIdOf(p);
@@ -2947,6 +2984,9 @@ async function checkoutWithShopify(buyerIdentity, shipId){
       const nPz = WALL.pieces.length, kPz = POSTERS.indexOf(p) + 1;
       attributes.push({key:'Conjunto', value:`${WALL.name} (${WALL.id}) · ${cm(WALL.width)} × ${cm(WALL.height)} cm`});
       attributes.push({key:'Sitio en el conjunto', value:`${kPz} de ${nPz}`});
+      // solo en la primera línea del conjunto: el correo la enseña una vez
+      if(paredUrl && !lines.some(l => l.attributes.some(a => a.key === '_pared_imagen')))
+        attributes.push({key:'_pared_imagen', value:paredUrl});
     }
     if(CO.verMejora && mejoraDe(p)) attributes.push({key:'Ver la foto retocada antes de imprimir', value:'Sí'});
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
