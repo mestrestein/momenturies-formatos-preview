@@ -13,7 +13,7 @@
      Viewed Product y Added to Cart. El alta en la lista (formulario «lanzamiento») NO depende de las cookies: la persona
      da su correo a propósito; Klaviyo le manda el correo de confirmación (doble opt-in). */
 (function () {
-  var PIXEL = '1917299959243159', GA4 = '', CLARITY = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
+  var PIXEL = '1917299959243159', GA4 = 'G-S59KRN2H2Q', CLARITY = '', KEY = 'mm_cookies', VERSION = 1, DURA = 182 * 864e5;
   var KLAVIYO = 'XD3GkM', KLAVIYO_LISTA = 'SUUQzW', KLAVIYO_API = '2024-10-15';
   var path = location.pathname;
 
