@@ -184,17 +184,17 @@
     '@media(max-width:520px){.mmck{left:10px;right:10px;bottom:10px;max-width:none;padding:18px 16px 14px}}';
   var en = (document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'es').slice(0, 2) === 'en';
   var T = en ? {
-    t: 'May we use cookies?', mas: 'Cookie policy', cfg: 'Choose', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
-    p: 'The necessary ones make the site and the editor work. The rest help us improve the site and see which ads work. You choose, and you can change it any time from the footer.',
-    nec: ['Necessary', 'They keep your design, the cart and the language.'],
-    ana: ['Analytics (ours and Google Analytics)', 'How many people visit and how they use the site, so we can improve it. Never what you write or your photos.'],
-    ads: ['Advertising (Meta and Klaviyo)', 'See which ads work and, if you gave us your email, remind you of what you left in the cart.'], link: 'Cookie settings'
+    t: 'Privacy settings', mas: 'Cookie policy', cfg: 'Settings', guardar: 'Save', si: 'Accept', no: 'Reject', fij: 'Always on',
+    p: 'We use our own and third-party cookies. The necessary ones make the site and the editor work. With your consent, we also use analytics cookies (our own and Google Analytics) to improve the site, and advertising cookies (Meta and Klaviyo) to measure our ads. You can accept them, reject them or choose which ones under “Settings”, and change your decision at any time. More information in our',
+    nec: ['Necessary', 'They make the site, the editor and the cart work.'],
+    ana: ['Analytics (our own and Google Analytics)', 'They measure how many people visit the site and how they use it, so we can improve it. They don’t collect what you write or your photos.'],
+    ads: ['Advertising (Meta and Klaviyo)', 'They measure how well our ads work and, if you gave us your email, let us remind you of what you left in the cart.'], link: 'Cookie settings'
   } : {
-    t: '¿Nos dejas usar cookies?', mas: 'Política de cookies', cfg: 'Elegir', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
-    p: 'Las necesarias hacen que la web y el editor funcionen. Las demás nos ayudan a mejorar la web y a saber qué anuncios funcionan. Tú eliges, y puedes cambiarlo cuando quieras desde el pie de la página.',
-    nec: ['Necesarias', 'Guardan tu diseño, el carrito y el idioma.'],
-    ana: ['Analítica (nuestra y Google Analytics)', 'Cuántas personas entran y cómo usan la web, para mejorarla. Nunca lo que escribes ni tus fotos.'],
-    ads: ['Publicidad (Meta y Klaviyo)', 'Saber qué anuncios funcionan y, si nos diste tu correo, recordarte lo que dejaste en el carrito.'], link: 'Configurar cookies'
+    t: 'Configuración de privacidad', mas: 'Política de cookies', cfg: 'Configurar', guardar: 'Guardar', si: 'Aceptar', no: 'Rechazar', fij: 'Siempre activas',
+    p: 'Usamos cookies propias y de terceros. Las necesarias hacen funcionar la web y el editor. Con tu consentimiento, usamos también cookies de analítica (propia y Google Analytics) para mejorar la web, y de publicidad (Meta y Klaviyo) para medir nuestros anuncios. Puedes aceptarlas, rechazarlas o elegir cuáles en «Configurar», y cambiar tu decisión en cualquier momento. Más información en nuestra',
+    nec: ['Necesarias', 'Permiten el funcionamiento de la web, el editor y el carrito.'],
+    ana: ['Analítica (propia y Google Analytics)', 'Miden cuántas personas visitan la web y cómo la usan, para mejorarla. No recogen lo que escribes ni tus fotos.'],
+    ads: ['Publicidad (Meta y Klaviyo)', 'Miden la eficacia de nuestros anuncios y, si nos has dado tu correo, permiten recordarte lo que dejaste en el carrito.'], link: 'Configurar cookies'
   };
   function fila(d, id) {
     return '<div class="row"><div><b>' + d[0] + '</b><span>' + d[1] + '</span></div>' +
@@ -209,7 +209,7 @@
       caja.className = 'mmck';
       caja.setAttribute('role', 'dialog');
       caja.setAttribute('aria-label', T.t);
-      caja.innerHTML = '<b class="t">' + T.t + '</b><p>' + T.p + ' <a href="cookies.html">' + T.mas + '</a></p>' +
+      caja.innerHTML = '<b class="t">' + T.t + '</b><p>' + T.p + ' <a href="cookies.html">' + T.mas + '</a>.</p>' +
         '<div class="op">' + fila(T.nec) + fila(T.ana, 'mmckAna') + fila(T.ads, 'mmckAds') + '</div>' +
         '<div class="bs"><button type="button" data-a="no">' + T.no + '</button><button type="button" data-a="si">' + T.si + '</button>' +
         '<button type="button" class="cf" data-a="cfg">' + T.cfg + '</button></div>';
