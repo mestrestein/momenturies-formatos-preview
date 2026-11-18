@@ -1947,8 +1947,27 @@ const fileInput = document.getElementById('fileInput');
 let pickMode = 'replace';
 
 const mmEv = (t, d) => { if(window.mmEvento) window.mmEvento(t, d); };   // 4-nov · pasos del editor para el Vestuario (nunca textos ni fotos)
+/* 18-nov (Marc): las fotos HEIC del iPhone no se abrían en Chrome de Windows/Android: salía «Foto aplicada ✓» y el
+   hueco seguía vacío. Si el navegador no sabe abrirla (Safari sí), se pasa a JPG aquí mismo con heic-to (libheif
+   actual: heic2any no abre las HEIC de los iPhone nuevos), que solo se descarga entonces (~3 MB). Lo que llega a la
+   tienda es ese JPG. */
+const esHeic = f => /^image\/hei[cf]/i.test(f.type || '') || /\.hei[cf]$/i.test(f.name || '');
+let _heicTo = null;
+function cargarHeicTo(){
+  return _heicTo || (_heicTo = new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/heic-to@1.6.6/dist/iife/heic-to.js';
+    s.onload = () => window.HeicTo ? ok(window.HeicTo) : ko(new Error('heic-to'));
+    s.onerror = () => { _heicTo = null; ko(new Error('heic-to')); };
+    document.head.appendChild(s);
+  }));
+}
+async function heicAJpg(f){
+  const b = await (await cargarHeicTo())({ blob: f, type: 'image/jpeg', quality: 0.95 });
+  return new File([b], (f.name || 'foto').replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
+}
 function ingestFiles(files, mode){
-  const imgs = Array.from(files||[]).filter(f=>f.type && f.type.indexOf('image/')===0);
+  const imgs = Array.from(files||[]).filter(f=>(f.type && f.type.indexOf('image/')===0) || esHeic(f));
   if(!imgs.length) return;
   mmEv('foto', imgs.length + (mode === 'replace' ? ' (cambia)' : ''));
   _userEdited = true;
@@ -1969,7 +1988,7 @@ function ingestFiles(files, mode){
     const auto = !(mode==='replace' && k===0);   // el cliente no eligió el hueco: se puede mover al de su forma
     p.file = file;         // el archivo original: es lo que se guarda y lo que irá a imprenta
     p.pendingImg = true;   // reserva síncrona (la carga es async)
-    const url = URL.createObjectURL(file);
+    let url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = ()=>{
       p.pendingImg=false;
@@ -1993,7 +2012,21 @@ function ingestFiles(files, mode){
       // aquí no hace falta preguntar: se queda rápido, como pidió Marc.
       if(!WALL && i===selected && !fit) openCropModal();
     };
-    img.onerror = ()=>{ p.pendingImg=false; URL.revokeObjectURL(url); };
+    const noSeAbre = ()=>{
+      p.pendingImg=false; if(p.file === file) p.file = null;
+      toast('No hemos podido abrir esa foto. Prueba con otra en JPG o PNG');
+      if(WALL) syncWallBar();
+    };
+    img.onerror = ()=>{
+      URL.revokeObjectURL(url);
+      if(!esHeic(file) || file.type === 'image/jpeg'){ noSeAbre(); return; }
+      toast('Preparando la foto del iPhone…');
+      heicAJpg(file).then(jpg => {
+        if(POSTERS.indexOf(p) < 0 || p.file !== file){ p.pendingImg = false; return; }   // ya la ha cambiado o quitado
+        file = jpg; p.file = jpg;
+        url = URL.createObjectURL(jpg); img.src = url;   // vuelve a img.onload; si tampoco se abre, noSeAbre
+      }).catch(noSeAbre);
+    };
     img.src = url;
   });
   setTimeout(syncSuggest, 300);
