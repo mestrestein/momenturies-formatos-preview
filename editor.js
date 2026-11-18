@@ -157,7 +157,7 @@
     <div class="edp-row2">
       <button class="edp-photo" id="edpPhoto"><span class="es">Cambiar foto</span><span class="en">Change photo</span></button>
       <button class="edp-photo" id="edpCrop" style="display:none"><span class="es">Encuadre</span><span class="en">Crop</span></button>
-      <button class="edp-photo" id="edpSwap" style="display:none"><span class="es">Cambiar de sitio</span><span class="en">Swap places</span></button>
+      <button class="edp-photo" id="edpSwap" style="display:none"><span class="es">Posición</span><span class="en">Position</span></button>
     </div>
 
     <p class="config-label" id="ptypeLabel"><span class="es">Producto</span><span class="en">Product</span></p>
