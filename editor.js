@@ -1947,8 +1947,27 @@ const fileInput = document.getElementById('fileInput');
 let pickMode = 'replace';
 
 const mmEv = (t, d) => { if(window.mmEvento) window.mmEvento(t, d); };   // 4-nov · pasos del editor para el Vestuario (nunca textos ni fotos)
+/* 18-nov (Marc): las fotos HEIC del iPhone no se abrían en Chrome de Windows/Android: salía «Foto aplicada ✓» y el
+   hueco seguía vacío. Si el navegador no sabe abrirla (Safari sí), se pasa a JPG aquí mismo con heic-to (libheif
+   actual: heic2any no abre las HEIC de los iPhone nuevos), que solo se descarga entonces (~3 MB). Lo que llega a la
+   tienda es ese JPG. */
+const esHeic = f => /^image\/hei[cf]/i.test(f.type || '') || /\.hei[cf]$/i.test(f.name || '');
+let _heicTo = null;
+function cargarHeicTo(){
+  return _heicTo || (_heicTo = new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/heic-to@1.6.6/dist/iife/heic-to.js';
+    s.onload = () => window.HeicTo ? ok(window.HeicTo) : ko(new Error('heic-to'));
+    s.onerror = () => { _heicTo = null; ko(new Error('heic-to')); };
+    document.head.appendChild(s);
+  }));
+}
+async function heicAJpg(f){
+  const b = await (await cargarHeicTo())({ blob: f, type: 'image/jpeg', quality: 0.95 });
+  return new File([b], (f.name || 'foto').replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
+}
 function ingestFiles(files, mode){
-  const imgs = Array.from(files||[]).filter(f=>f.type && f.type.indexOf('image/')===0);
+  const imgs = Array.from(files||[]).filter(f=>(f.type && f.type.indexOf('image/')===0) || esHeic(f));
   if(!imgs.length) return;
   mmEv('foto', imgs.length + (mode === 'replace' ? ' (cambia)' : ''));
   _userEdited = true;
@@ -1969,7 +1988,7 @@ function ingestFiles(files, mode){
     const auto = !(mode==='replace' && k===0);   // el cliente no eligió el hueco: se puede mover al de su forma
     p.file = file;         // el archivo original: es lo que se guarda y lo que irá a imprenta
     p.pendingImg = true;   // reserva síncrona (la carga es async)
-    const url = URL.createObjectURL(file);
+    let url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = ()=>{
       p.pendingImg=false;
@@ -1993,7 +2012,21 @@ function ingestFiles(files, mode){
       // aquí no hace falta preguntar: se queda rápido, como pidió Marc.
       if(!WALL && i===selected && !fit) openCropModal();
     };
-    img.onerror = ()=>{ p.pendingImg=false; URL.revokeObjectURL(url); };
+    const noSeAbre = ()=>{
+      p.pendingImg=false; if(p.file === file) p.file = null;
+      toast('No hemos podido abrir esa foto. Prueba con otra en JPG o PNG');
+      if(WALL) syncWallBar();
+    };
+    img.onerror = ()=>{
+      URL.revokeObjectURL(url);
+      if(!esHeic(file) || file.type === 'image/jpeg'){ noSeAbre(); return; }
+      toast('Preparando la foto del iPhone…');
+      heicAJpg(file).then(jpg => {
+        if(POSTERS.indexOf(p) < 0 || p.file !== file){ p.pendingImg = false; return; }   // ya la ha cambiado o quitado
+        file = jpg; p.file = jpg;
+        url = URL.createObjectURL(jpg); img.src = url;   // vuelve a img.onload; si tampoco se abre, noSeAbre
+      }).catch(noSeAbre);
+    };
     img.src = url;
   });
   setTimeout(syncSuggest, 300);
@@ -2940,8 +2973,11 @@ async function shopifySelectShipping(cart, shipId){
   }catch(e){ console.warn('[Momenturies] No se pudo marcar el envío:', e.message); }
 }
 
-async function checkoutWithShopify(buyerIdentity, shipId){
-  const lines = [];
+/* 19-nov · las líneas del pedido (variante + atributos de cada cuadro) con sus archivos ya subidos. La usan el pago
+   (checkoutWithShopify) y el cambio de un pedido ya hecho (?cambio=, ver CAMBIAR UN PEDIDO YA HECHO).
+   originales: la foto original subida de cada cuadro (uid → URL), para guardar el diseño del pedido. */
+async function lineasPedido(){
+  const lines = [], originales = {};
   /* la imagen de la pared para el correo es un extra: si falla, el pedido sigue igual */
   const paredUrl = await wallImageBlob()
     .then(b => b ? uploadToCloudinary(b, `pared-${Date.now()}.jpg`) : null)
@@ -2951,6 +2987,7 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
     const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await prepararArte(p);
+    if(originalUrl && p.uid) originales[p.uid] = originalUrl;
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
       {key:'_impresion', value: medida},
@@ -2992,6 +3029,33 @@ async function checkoutWithShopify(buyerIdentity, shipId){
     lines.push({merchandiseId: variantId, quantity: 1, attributes});
   }
   if(!lines.length) throw new Error('Sube al menos una foto primero');
+  return {lines, originales};
+}
+
+/* 19-nov · el diseño entero (lo mismo que se guarda en el navegador) con la foto original de cada cuadro ya en la
+   tienda (fotoRef), para que el enlace de cambios pueda reabrir el pedido tal cual */
+async function disenoParaPedido(originales){
+  await saveDesign();
+  const st = store(), saved = st && await st.get(SAVE_KEY);
+  if(!saved || !saved.items || !saved.items.length) return null;
+  const datos = JSON.parse(JSON.stringify(Object.assign({}, saved, { resumen:undefined, cuenta:undefined })));
+  for(const it of datos.items){
+    it.thumb = null;
+    it.fotoRef = it.photo ? (originales[it.uid] || (_cambioRefs && _cambioRefs[it.uid]) || null) : null;
+  }
+  return datos;
+}
+
+async function checkoutWithShopify(buyerIdentity, shipId){
+  const {lines, originales} = await lineasPedido();
+  /* 19-nov (Marc): el diseño se guarda en el Vestuario y cada línea lleva su código (_diseno): así, si una foto sale
+     baja, el correo puede llevar un enlace para cambiarla. Es un extra: si falla, el pedido sigue igual */
+  const codigo = await disenoParaPedido(originales)
+    .then(d => d && fetch(DISENOS_BASE + '/subidas/cambio/diseno', { method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ datos:d, pagina:location.pathname.split('/').pop() || 'cuadro.html' }) }).then(r => r.ok ? r.json() : null))
+    .then(j => j && j.codigo)
+    .catch(e => { console.warn('[Momenturies] Diseño del pedido sin guardar:', e.message); return null; });
+  if(codigo) for(const l of lines) l.attributes.push({key:'_diseno', value:codigo});
   const cart = await shopifyCreateCart(lines, buyerIdentity);
   await shopifySelectShipping(cart, shipId);
   return cart.checkoutUrl;
@@ -3694,7 +3758,7 @@ function updateTotal(){
   if(el) el.innerHTML = ' · ' + (pct ? '<s>' + precioTxt(bruto) + '</s> ' : '') + precioTxt(total);
   const lb = document.getElementById('cartLabel');
   if(lb) lb.innerHTML = conFoto.length
-    ? '<span class="es">Añadir al carrito</span><span class="en">Add to cart</span>'
+    ? (CAMBIO ? '<span class="es">Guardar cambios</span><span class="en">Save changes</span>' : '<span class="es">Añadir al carrito</span><span class="en">Add to cart</span>')
     : '<span class="es">Sube tu foto</span><span class="en">Upload your photo</span>';
 }
 
@@ -4022,6 +4086,7 @@ function coBuyerIdentity(){
 }
 
 function openCheckout(){
+  if(CAMBIO){ cambioGuardar(); return; }   // 19-nov: cambiando un pedido ya pagado, no hay carrito ni pago
   mmEv('carrito', POSTERS.filter(q => q.srcImg).length + ' piezas');
   if(window.mmEstado) mmEstado('carrito', POSTERS.filter(q => q.srcImg).length + ' piezas');
   const items = POSTERS.filter(p=>p.srcImg);
@@ -4243,6 +4308,7 @@ async function restoreDesign(saved){
   const _q = new URLSearchParams(location.search);
   if(_q.get('foto') === '1') return;   // viene con foto nueva
   if(_q.get('diseno')) return;         // abre un diseño de la cuenta (abrirDisenoCuenta)
+  if(_q.get('cambio')) return;         // 19-nov · cambia un pedido ya hecho (abrirCambioPedido)
   let saved;
   try{ saved = await st.get(SAVE_KEY); }catch(e){ return; }
   if(!saved || !saved.items || !saved.items.length) return;
@@ -4436,6 +4502,120 @@ setTimeout(async function abrirDisenoCuenta(){   // en el siguiente turno: el re
   }catch(e){
     if(e.sesion){ toast('Entra en tu cuenta para abrir tus diseños'); pedirCuenta(); return; }
     toast('No se ha podido abrir el diseño: ' + e.message);
+  }
+}, 0);
+
+/* ═══════════ CAMBIAR UN PEDIDO YA HECHO (19-nov-2026, Marc) ═══════════
+   cuadro.html?cambio=<pedido>.<firma>: el enlace lo hace el Vestuario (src/cambios-pedido.ts) y va en el correo de la
+   foto mejorada. Abre el pedido como se pagó (o como quedó en el último cambio) y el botón del carrito pasa a
+   «Guardar cambios». Puede cambiar fotos (con el mismo aviso de calidad de siempre) o la combinación:
+     · mismo precio → no pasa por el pago · más caro → paga solo la diferencia en Shopify
+     · más barato → se le devuelve la diferencia (la aprueba un socio)
+   Vale hasta que el pedido se manda a la impresora, se archiva o se envía. */
+var CAMBIO = null, _cambioRefs = null;
+async function apiCambio(accion, cuerpo){
+  const r = await fetch(DISENOS_BASE + '/subidas/cambio/' + accion, { method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(Object.assign({ t:CAMBIO.t }, cuerpo || {})) });
+  if(accion === 'foto'){ if(!r.ok) throw new Error('No se pudo bajar una foto'); return r.blob(); }
+  const j = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(j.error || 'Algo ha fallado');
+  return j;
+}
+function barraCambio(pedido){
+  document.querySelectorAll('.cambio-barra').forEach(x => x.remove());
+  const b = document.createElement('div');
+  b.className = 'cambio-barra';
+  b.style.cssText = 'position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:10050;max-width:calc(100% - 32px);background:#111;color:#fff;padding:9px 16px;border-radius:99px;font:600 13.5px/1.35 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.25);text-align:center';
+  b.innerHTML = '<span class="es">Estás cambiando tu pedido ' + pedido + '. Cambia lo que quieras y pulsa «Guardar cambios».</span><span class="en">You are changing your order ' + pedido + '. Change anything and press “Save changes”.</span>';
+  document.body.appendChild(b);
+}
+async function cambioGuardar(){
+  const btn = document.getElementById('addToCart');
+  if(btn) btn.disabled = true;
+  try{
+    toast('Preparando tus cuadros…');
+    const {lines, originales} = await lineasPedido();
+    const piezas = lines.map(l => ({ variantId:l.merchandiseId, attrs:l.attributes }));
+    const pre = await apiCambio('presupuesto', { piezas });
+    const d = pre.diferencia;
+    const html = d > 0
+      ? `<h3>Tu pedido nuevo cuesta ${eur(d)} más</h3><p>Pagaste ${eur(pre.pagado)} y con los cambios son ${eur(pre.nuevo)}. Al confirmar te llevamos a pagar solo la diferencia.</p>`
+      : d < 0
+        ? `<h3>Tu pedido nuevo cuesta ${eur(-d)} menos</h3><p>Pagaste ${eur(pre.pagado)} y con los cambios son ${eur(pre.nuevo)}. Te devolvemos ${eur(-d)} a tu tarjeta en unos días.</p>`
+        : `<h3>¿Guardamos los cambios?</h3><p>${pre.mismosProductos ? 'Son los mismos cuadros, solo cambian las fotos.' : 'Cuesta lo mismo que pagaste.'} No tienes que pagar nada.</p>`;
+    hojaCuenta(html + '<p>Imprimiremos tu pedido con estos cambios.</p>',
+      [[d > 0 ? 'Confirmar y pagar ' + eur(d) : 'Guardar cambios', 'cuenta-hoja-si', () => cambioConfirmar(piezas, originales)],
+       ['Seguir cambiando', 'cuenta-hoja-no', null]]);
+  }catch(e){
+    console.warn('[Momenturies] Cambio de pedido:', e);
+    toast('No se ha podido preparar el cambio: ' + e.message);
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+async function cambioConfirmar(piezas, originales){
+  toast('Guardando los cambios…');
+  try{
+    const datos = await disenoParaPedido(originales);
+    const r = await apiCambio('guardar', { piezas, datos, pagina:location.pathname.split('/').pop() || 'cuadro.html' });
+    mmEv('cambio_pedido', CAMBIO.pedido + ' ' + r.estado);
+    await clearDesign();   // lo del navegador era el pedido: no tiene que salir como «diseño sin terminar»
+    if(r.pagoUrl){ location.href = r.pagoUrl; return; }
+    const msg = r.estado === 'pendiente_pago' ? 'Te hemos mandado un correo para pagar la diferencia. En cuanto esté pagada, lo imprimimos.'
+      : r.estado === 'devolucion_pendiente' ? `Te devolvemos ${eur(-r.diferencia)} a tu tarjeta en unos días.`
+      : r.estado === 'revisar' ? 'Te escribimos enseguida por la diferencia de precio.'
+      : 'Imprimiremos tu pedido con estos cambios.';
+    hojaCuenta(`<h3>¡Cambios guardados!</h3><p>${msg}</p><p>Si quieres cambiar algo más, vuelve a abrir el enlace del correo mientras no lo hayamos impreso.</p>`,
+      [['Vale', 'cuenta-hoja-si', null]]);
+  }catch(e){
+    console.warn('[Momenturies] Guardar cambio de pedido:', e);
+    toast('No se han podido guardar los cambios: ' + e.message);
+  }
+}
+setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como abrirDisenoCuenta
+  const t = new URLSearchParams(location.search).get('cambio');
+  if(!t) return;
+  CAMBIO = { t };
+  openEditor();
+  toast('Abriendo tu pedido…');
+  try{
+    const r = await apiCambio('abrir');
+    CAMBIO.pedido = r.pedido;
+    if(!r.abierto){
+      CAMBIO = null;
+      hojaCuenta(`<h3>Pedido ${r.pedido}</h3><p>${r.motivo}</p>`,
+        r.pagoUrl ? [['Pagar la diferencia', 'cuenta-hoja-si', () => { location.href = r.pagoUrl; }], ['Cerrar', 'cuenta-hoja-no', null]] : [['Vale', 'cuenta-hoja-si', null]]);
+      updateTotal();
+      return;
+    }
+    const datos = r.datos, aqui = location.pathname.split('/').pop() || 'cuadro.html';
+    if(datos.pagina && datos.pagina !== aqui){ location.replace(datos.pagina + location.search); return; }
+    delete datos.pagina;
+    const st = store();
+    if(!st) throw new Error('tu navegador no deja guardar fotos (¿modo privado?). Ábrelo en otro navegador');
+    const refs = {}, conFoto = datos.items.filter(it => it.fotoRef);
+    let n = 0;
+    for(const it of conFoto){
+      toast('Cargando tus fotos… ' + (++n) + ' de ' + conFoto.length);
+      const blob = await apiCambio('foto', { ref:it.fotoRef });
+      it.photo = 'photo:' + it.uid;
+      refs[it.uid] = it.fotoRef;
+      await st.put(it.photo, await fotoABytes(new File([blob], 'foto-' + it.uid, { type:blob.type || 'image/jpeg' })));
+    }
+    datos.at = Date.now();
+    datos.cuenta = null;
+    await st.put(SAVE_KEY, datos);
+    _savedBlobs = new Set(Object.keys(refs));
+    _cambioRefs = refs;
+    await restoreDesign(datos);
+    barraCambio(r.pedido);
+    updateTotal();
+    toast('Aquí está tu pedido ' + r.pedido + (r.nombre ? ', ' + r.nombre : ''));
+  }catch(e){
+    console.warn('[Momenturies] Abrir pedido para cambiarlo:', e);
+    CAMBIO = null;
+    updateTotal();
+    hojaCuenta(`<h3>No hemos podido abrir tu pedido</h3><p>${String(e.message || e)}</p><p>Si sigue sin abrirse, respóndenos al correo y te ayudamos.</p>`, [['Vale', 'cuenta-hoja-si', null]]);
   }
 }, 0);
 
