@@ -4620,6 +4620,7 @@ setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como 
     _savedBlobs = new Set(Object.keys(refs));
     _cambioRefs = refs;
     await restoreDesign(datos);
+    if(datos.entorno && !datos.scene){ try{ aplicarEntorno(datos.entorno); }catch(e){ console.warn('[Momenturies] Entorno del pedido:', e); } }
     barraCambio(r.pedido);
     updateTotal();
     toast('Aquí está tu pedido ' + r.pedido + (r.nombre ? ', ' + r.nombre : ''));
@@ -7338,8 +7339,9 @@ window.MOMENTURIES_openWall = function(id, k){
    entorno (antes iban a pared2d.html): ?entorno=<id de foto> pone esa foto, en su versión vertical u
    horizontal según la pantalla. Las paredes lisas (pared-beige/blanca/gris) solo existen en 2D: aquí
    se quedan sin entorno, con la composición sola. */
-(function roomEntry(){
-  const e = new URLSearchParams(location.search).get('entorno'); if(!e) return;
+/* 20-nov · también lo usa el enlace de cambios: el pedido se abre en el entorno donde se diseñó (_entorno) */
+function aplicarEntorno(e){
+  if(!e) return;
   if(!/^pared-/.test(e)) ROOM_BY_USER = true;
   if(e === 'geo'){ setScene('salon'); return; }
   const r = PHOTO_ROOMS.find(x => x.id === e);
@@ -7358,7 +7360,8 @@ window.MOMENTURIES_openWall = function(id, k){
   /* con conjunto, un id que ya no existe no manda al 3D: la mejor foto para ese conjunto */
   if(WALL && !SCENES.some(s => s.id === e)){ const ok = bestRoomFor(WALL); if(ok){ setRoom(ok); return; } }
   setScene(e);
-})();
+}
+(function roomEntry(){ aplicarEntorno(new URLSearchParams(location.search).get('entorno')); })();
 
 
 /* ═══════════ ENTORNOS: selector + "VER EN MI PARED" ═══════════ */
