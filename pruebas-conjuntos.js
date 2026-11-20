@@ -2,9 +2,12 @@
    No salen en ninguna lista de la web: solo se añaden a MOMENTURIES_WALLS cuando la URL lleva ?pared=T01, T02…
    y solo ese. Se abre con cuadro.html?pared=T01. Va cargado DESPUÉS de paredes.js y ANTES de editor.js.
    Medidas en cm, origen arriba a la izquierda. Para añadir uno: nueva entrada en TESTS con [pieza, x, y]. */
+/* 21-nov · también window.MOMENTURIES_pruebaConjunto('T01'): lo usa el enlace de cambios (editor.js) para añadirlo sin
+   recargar la página con ?pared= (era un segundo de más y se veía primero otro entorno) */
 (function(){
-  var id = (new URLSearchParams(location.search).get('pared') || '').toUpperCase();
-  if(!/^T\d{2}$/.test(id) || !window.MOMENTURIES_WALLS || !window.MOMENTURIES_FORMAT_SIZES) return;
+function anadir(id){
+  id = String(id || '').toUpperCase();
+  if(!/^T\d{2}$/.test(id) || !window.MOMENTURIES_WALLS || !window.MOMENTURIES_FORMAT_SIZES) return false;
 
   // pieza → [formato, talla] de la web
   var K = {
@@ -26,8 +29,8 @@
     T08: { name: 'Prueba · Cruz central',           gap: 5, p: [['M',0,7.15],['C30',26,7],['C15',62.5,0],['R24',61,20],['C30',84,7],['L',119,4]] },
     T09: { name: 'Prueba · Horizonte XL',           gap: 5, p: [['C15',0,28.1],['R24',20,19.1],['C30',43,13.1],['XL',78,0],['C30',113.5,13.1],['S',148.5,28.1]] }
   };
-  var t = TESTS[id]; if(!t) return;
-  if(window.MOMENTURIES_WALLS.some(function(w){ return w.id === id; })) return;
+  var t = TESTS[id]; if(!t) return false;
+  if(window.MOMENTURIES_WALLS.some(function(w){ return w.id === id; })) return true;
 
   var SZ = window.MOMENTURIES_FORMAT_SIZES, SI = window.MOMENTURIES_SIZE_INFO || {};
   var CODE = { cuadrado: 'C', clasico: 'K', retrato: 'R' };
@@ -48,4 +51,8 @@
     note: 'Conjunto de prueba.', soldOut: false, n: pieces.length, width: W, height: H,
     counts: counts, gap: t.gap, price: Math.round(price * 100) / 100, pieces: pieces, best: false, test: true
   });
+  return true;
+}
+window.MOMENTURIES_pruebaConjunto = anadir;
+anadir(new URLSearchParams(location.search).get('pared'));
 })();

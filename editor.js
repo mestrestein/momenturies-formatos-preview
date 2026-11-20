@@ -2827,7 +2827,10 @@ async function originalBlob(p){
 
 /* imágenes finales de impresión (a PRINT_DPI, no al tamaño reducido del visor 3D), la original
    y la dedicatoria, subidas a la vez */
-async function uploadPosterArt(p){
+/* 21-nov: separado en dos (pintar / subir) para que, con varios cuadros, el siguiente se pinte mientras el anterior
+   sube. Pintar va de uno en uno (memoria del móvil); las subidas se solapan. */
+async function uploadPosterArt(p){ return subirPosterArt(await renderPosterArt(p)); }
+async function renderPosterArt(p){
   await decoReady(p);
   const t = Date.now();
   const print = buildPrintCanvas(p);
@@ -2845,6 +2848,9 @@ async function uploadPosterArt(p){
   const backBlob = backCanvas ? await pngConDpi(await new Promise(res => backCanvas.toBlob(res, 'image/png')), PRINT_DPI) : null;
   const orig = await originalBlob(p);
   const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
+  return {t, print:{dpi:print.dpi, cm:print.cm}, W, H, frontBlob, cropBlob, backBlob, orig, ext};
+}
+async function subirPosterArt({t, print, W, H, frontBlob, cropBlob, backBlob, orig, ext}){
   const [frontUrl, backUrl, originalUrl, cropUrl] = await Promise.all([
     uploadToCloudinary(frontBlob, `impresion-${t}.jpg`),
     backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.png`) : null,
@@ -2900,7 +2906,7 @@ let artCola = Promise.resolve();
 function huellaArte(p){
   const o = {};
   for(const [k, v] of Object.entries(p)){
-    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize') continue;
+    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize' || k === 'price') continue;
     if(v == null || typeof v !== 'object' && typeof v !== 'function') o[k] = v;
   }
   o.img = p.srcImg ? p.srcImg.src.slice(0, 120) + p.srcImg.naturalWidth + 'x' + p.srcImg.naturalHeight : '';
@@ -2912,15 +2918,36 @@ function prepararArte(p){
   if(hay && hay.huella === huella) return hay.promesa;
   // de uno en uno: en el móvil dos lienzos de impresión a la vez pueden quedarse sin memoria
   // si el cuadro cambia mientras espera turno, se sube como esté; la huella vieja no casará y al pagar se rehace
-  const promesa = artCola.then(() => uploadPosterArt(p));
-  artCola = promesa.catch(() => {});
+  const pintado = artCola.then(() => renderPosterArt(p));
+  artCola = pintado.catch(() => {});
+  const promesa = pintado.then(subirPosterArt);
   promesa.catch(() => { if(ART_CACHE.get(clave)?.promesa === promesa) ART_CACHE.delete(clave); });
   ART_CACHE.set(clave, {huella, promesa});
   return promesa;
 }
 function prepararCarrito(){
   if(!(SHOPIFY.domain && SHOPIFY.storefrontToken)) return;
-  POSTERS.filter(cuenta).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
+  POSTERS.filter(cuenta).filter(q => !archivosReutilizables(q)).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
+}
+/* 21-nov (Marc: «que empiecen a cargarse una vez se suben»): cuando el cliente lleva unos segundos sin tocar nada y el
+   diseño está completo, los archivos de impresión se preparan y suben solos. Al pagar (o guardar el cambio) ya están,
+   salvo lo que haya cambiado después (la huella lo detecta y solo se rehace eso). */
+var _prepT = null;
+function programarPreparacion(){
+  clearTimeout(_prepT);
+  if(_restoring || (window.MOMENTURIES_EDITOR||{}).vista) return;
+  _prepT = setTimeout(() => {
+    if(typeof POSTERS === 'undefined') return;
+    const conFoto = POSTERS.filter(cuenta);
+    if(!conFoto.length || (WALL && conFoto.length < POSTERS.filter(vivo).length)) return;   // conjunto a medias: aún no
+    const ir = () => prepararCarrito();
+    if(window.requestIdleCallback) requestIdleCallback(ir, {timeout:3000}); else ir();
+  }, 4000);
+}
+/* 21-nov · en un cambio de pedido, el cuadro que el cliente no ha tocado conserva los archivos que ya tiene el pedido
+   (el Vestuario los manda al abrir): no se pinta ni se sube nada otra vez */
+function archivosReutilizables(p){
+  return CAMBIO && p._archivos && p._archivos._foto_frontal && p._huellaAbierta === huellaArte(p) ? p._archivos : null;
 }
 
 function variantIdOf(p){
@@ -2978,16 +3005,27 @@ async function shopifySelectShipping(cart, shipId){
    originales: la foto original subida de cada cuadro (uid → URL), para guardar el diseño del pedido. */
 async function lineasPedido(){
   const lines = [], originales = {};
-  /* la imagen de la pared para el correo es un extra: si falla, el pedido sigue igual */
-  const paredUrl = await wallImageBlob()
+  /* 21-nov: todo empieza a la vez (antes la imagen de la pared iba primero y luego cada cuadro, uno detrás de otro).
+     En un cambio de pedido, los cuadros sin tocar reutilizan sus archivos y no se sube nada de ellos. */
+  const piezasP = POSTERS.filter(cuenta);   // las quitadas del carrito (en gris) no van al pedido
+  const reus = piezasP.map(archivosReutilizables);
+  const artes = piezasP.map((p, i) => {
+    const a = reus[i];
+    const pr = a ? Promise.resolve({frontUrl:a._foto_frontal, backUrl:a._dedicatoria_imagen || null, originalUrl:a._foto_original || null, cropUrl:a._foto_recorte || null, medida:a._impresion || '', reutilizado:true}) : prepararArte(p);
+    pr.catch(() => {});
+    return pr;
+  });
+  /* la imagen de la pared para el correo es un extra: si falla, el pedido sigue igual. Sin nada cambiado, la de antes */
+  const paredAntes = reus.length && reus.every(Boolean) ? (reus.find(a => a._pared_imagen) || {})._pared_imagen : null;
+  const paredUrl = await (paredAntes ? Promise.resolve(paredAntes) : wallImageBlob()
     .then(b => b ? uploadToCloudinary(b, `pared-${Date.now()}.jpg`) : null)
-    .catch(e => { console.warn('[Momenturies] Imagen de la pared sin subir:', e.message); return null; });
-  for(const p of POSTERS){
-    if(!cuenta(p)) continue;   // las quitadas del carrito (en gris) no van al pedido
+    .catch(e => { console.warn('[Momenturies] Imagen de la pared sin subir:', e.message); return null; }));
+  for(const [i, p] of piezasP.entries()){
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
-    const {frontUrl, backUrl, originalUrl, cropUrl, medida} = await prepararArte(p);
-    if(originalUrl && p.uid) originales[p.uid] = originalUrl;
+    const {frontUrl, backUrl, originalUrl, cropUrl, medida, reutilizado} = await artes[i];
+    // reutilizado: el diseño guarda la foto que se ve (la mejorada, si la hay) y la original aparte (disenoParaPedido)
+    if(originalUrl && p.uid && !reutilizado) originales[p.uid] = originalUrl;
     const attributes = [
       {key:'_foto_frontal', value: frontUrl},
       {key:'_impresion', value: medida},
@@ -3042,6 +3080,8 @@ async function disenoParaPedido(originales){
   for(const it of datos.items){
     it.thumb = null;
     it.fotoRef = it.photo ? (originales[it.uid] || (_cambioRefs && _cambioRefs[it.uid]) || null) : null;
+    const pp = POSTERS.find(q => q.uid === it.uid), a = pp && !originales[it.uid] && archivosReutilizables(pp);
+    if(a && a._foto_original) it.fotoOriginal = a._foto_original;   // para emparejarlo con su línea al volver a abrirlo
   }
   return datos;
 }
@@ -3768,6 +3808,7 @@ function updateTotal(){
   if(lb) lb.innerHTML = conFoto.length
     ? (CAMBIO ? '<span class="es">Guardar cambios</span><span class="en">Save changes</span>' : '<span class="es">Añadir al carrito</span><span class="en">Add to cart</span>')
     : '<span class="es">Sube tu foto</span><span class="en">Upload your photo</span>';
+  programarPreparacion();
 }
 
 function selectPoster(i){ selected=i; renderThumbs(); applySelection(); syncConfigUI(); }
@@ -4580,16 +4621,32 @@ async function cambioConfirmar(piezas, originales){
     toast('No se han podido guardar los cambios: ' + e.message);
   }
 }
+/* 21-nov (Marc: «tarda mucho y primero sale un entorno que no es»): mientras se abre, una tapa con el progreso; debajo
+   se ponen ya el conjunto y el entorno del pedido (así su foto carga mientras bajan las del cliente), y las fotos
+   bajan a la vez, no una detrás de otra */
+function tapaCambio(txt){
+  let t = document.getElementById('cambioTapa');
+  if(txt == null){ if(t){ t.style.opacity = '0'; setTimeout(() => t.remove(), 250); } return; }
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'cambioTapa';
+    t.style.cssText = 'position:fixed;inset:0;z-index:10040;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:#f3eee7;color:#1a1a1a;font:600 15px/1.4 system-ui,sans-serif;text-align:center;transition:opacity .25s';
+    t.innerHTML = '<style>@keyframes cambioGiro{to{transform:rotate(360deg)}}</style><div style="width:34px;height:34px;border:3px solid rgba(0,0,0,.12);border-top-color:#1a1a1a;border-radius:50%;animation:cambioGiro .8s linear infinite"></div><div class="cambio-tapa-txt"></div>';
+    document.body.appendChild(t);
+  }
+  t.querySelector('.cambio-tapa-txt').textContent = txt;
+}
 setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como abrirDisenoCuenta
   const t = new URLSearchParams(location.search).get('cambio');
   if(!t) return;
   CAMBIO = { t };
+  tapaCambio('Abriendo tu pedido…');
   openEditor();
-  toast('Abriendo tu pedido…');
   try{
     const r = await apiCambio('abrir');
     CAMBIO.pedido = r.pedido;
     if(!r.abierto){
+      tapaCambio(null);
       CAMBIO = null;
       hojaCuenta(`<h3>Pedido ${r.pedido}</h3><p>${r.motivo}</p>`,
         r.pagoUrl ? [['Pagar la diferencia', 'cuenta-hoja-si', () => { location.href = r.pagoUrl; }], ['Cerrar', 'cuenta-hoja-no', null]] : [['Vale', 'cuenta-hoja-si', null]]);
@@ -4598,36 +4655,64 @@ setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como 
     }
     const datos = r.datos, aqui = location.pathname.split('/').pop() || 'cuadro.html';
     if(datos.pagina && datos.pagina !== aqui){ location.replace(datos.pagina + location.search); return; }
-    /* 20-nov · los conjuntos de prueba (T01…) solo existen con ?pared= en la URL (pruebas-conjuntos.js) */
-    if(datos.wall && !findWall(datos.wall) && /^T\d{2}$/.test(datos.wall) && !new URLSearchParams(location.search).get('pared')){
-      location.replace(location.pathname + location.search + '&pared=' + datos.wall); return;
+    /* 20-nov · los conjuntos de prueba (T01…) solo existen con ?pared= en la URL (pruebas-conjuntos.js). 21-nov: se
+       añaden aquí mismo, sin recargar; recargar queda solo para una página vieja sin MOMENTURIES_pruebaConjunto */
+    if(datos.wall && !findWall(datos.wall) && /^T\d{2}$/.test(datos.wall)){
+      if(window.MOMENTURIES_pruebaConjunto) window.MOMENTURIES_pruebaConjunto(datos.wall);
+      if(!findWall(datos.wall) && !new URLSearchParams(location.search).get('pared')){
+        location.replace(location.pathname + location.search + '&pared=' + datos.wall); return;
+      }
     }
+    /* el conjunto y el entorno del pedido, ya (debajo de la tapa) */
+    let sala = null;
+    try{
+      const base = !datos.fridgeWall && datos.wall && findWall(datos.wall);
+      if(base){ _restoring = true; applyWall(wallAt(base, datos.wallSize), {quiet:true}); }
+      _restoring = false;
+      if(datos.entorno && !datos.scene){ aplicarEntorno(datos.entorno); sala = ROOM; }
+    }catch(e){ _restoring = false; console.warn('[Momenturies] Conjunto o entorno del pedido:', e); }
     CAMBIO.pagado = r.pagado;
     CAMBIO.factor = r.factor;
     delete datos.pagina;
     const st = store();
     if(!st) throw new Error('tu navegador no deja guardar fotos (¿modo privado?). Ábrelo en otro navegador');
-    const refs = {}, conFoto = datos.items.filter(it => it.fotoRef);
+    const refs = {}, conFoto = datos.items.filter(it => it.fotoRef), cola = conFoto.slice();
     let n = 0;
-    for(const it of conFoto){
-      toast('Cargando tus fotos… ' + (++n) + ' de ' + conFoto.length);
-      const blob = await apiCambio('foto', { ref:it.fotoRef });
-      it.photo = 'photo:' + it.uid;
-      refs[it.uid] = it.fotoRef;
-      await st.put(it.photo, await fotoABytes(new File([blob], 'foto-' + it.uid, { type:blob.type || 'image/jpeg' })));
-    }
+    tapaCambio('Cargando tus fotos… 0 de ' + conFoto.length);
+    const bajar = async () => {
+      while(cola.length){
+        const it = cola.shift();
+        const blob = await apiCambio('foto', { ref:it.fotoRef });
+        it.photo = 'photo:' + it.uid;
+        refs[it.uid] = it.fotoRef;
+        await st.put(it.photo, await fotoABytes(new File([blob], 'foto-' + it.uid, { type:blob.type || 'image/jpeg' })));
+        tapaCambio('Cargando tus fotos… ' + (++n) + ' de ' + conFoto.length);
+      }
+    };
+    await Promise.all(Array.from({ length:Math.min(4, conFoto.length) }, bajar));   // 4 a la vez
+    const archivos = {};
+    for(const it of datos.items){ if(it.archivos) archivos[it.uid] = it.archivos; delete it.archivos; }
     datos.at = Date.now();
     datos.cuenta = null;
     await st.put(SAVE_KEY, datos);
     _savedBlobs = new Set(Object.keys(refs));
     _cambioRefs = refs;
     await restoreDesign(datos);
-    if(datos.entorno && !datos.scene){ try{ aplicarEntorno(datos.entorno); }catch(e){ console.warn('[Momenturies] Entorno del pedido:', e); } }
+    /* el entorno: el que ya se puso arriba (si al montar el conjunto se cambió, se vuelve a él sin el viaje de cámara) */
+    try{
+      if(sala && ROOM !== sala) setRoom(sala, true);
+      else if(!sala && datos.entorno && !datos.scene) aplicarEntorno(datos.entorno);
+    }catch(e){ console.warn('[Momenturies] Entorno del pedido:', e); }
+    /* lo que el pedido ya tiene subido de cada cuadro: si no se toca, se reutiliza al guardar */
+    for(const p of POSTERS) if(p.uid && archivos[p.uid]){ p._archivos = archivos[p.uid]; p._huellaAbierta = huellaArte(p); }
     barraCambio(r.pedido);
     updateTotal();
+    tapaCambio(null);
     toast('Aquí está tu pedido ' + r.pedido + (r.nombre ? ', ' + r.nombre : ''));
   }catch(e){
     console.warn('[Momenturies] Abrir pedido para cambiarlo:', e);
+    tapaCambio(null);
+    _restoring = false;
     CAMBIO = null;
     updateTotal();
     hojaCuenta(`<h3>No hemos podido abrir tu pedido</h3><p>${String(e.message || e)}</p><p>Si sigue sin abrirse, respóndenos al correo y te ayudamos.</p>`, [['Vale', 'cuenta-hoja-si', null]]);
