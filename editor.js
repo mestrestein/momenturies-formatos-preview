@@ -3758,7 +3758,8 @@ function updateTotal(){
   /* 20-nov (Marc): cambiando un pedido ya pagado, el botón dice si sale más caro, más barato o igual que lo que pagó
      (lo exacto lo da el Vestuario al pulsar «Guardar cambios») */
   if(el && CAMBIO && CAMBIO.pagado != null){
-    const d = Math.round((total - CAMBIO.pagado)*100)/100;
+    /* lo de tarifa por lo que de verdad pagó (factor: con un código del 20 %, 0,8; en un pedido a 0 €, 0), igual que el Vestuario */
+    const d = Math.round((total * (CAMBIO.factor != null ? CAMBIO.factor : 1) - CAMBIO.pagado)*100)/100;
     el.innerHTML = ' · ' + (Math.abs(d) < 0.01 ? '<span class="es">mismo precio</span><span class="en">same price</span>'
       : d > 0 ? '+' + precioTxt(d) + ' <span class="es">más</span><span class="en">more</span>'
       : precioTxt(-d) + ' <span class="es">menos</span><span class="en">less</span>');
@@ -4602,6 +4603,7 @@ setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como 
       location.replace(location.pathname + location.search + '&pared=' + datos.wall); return;
     }
     CAMBIO.pagado = r.pagado;
+    CAMBIO.factor = r.factor;
     delete datos.pagina;
     const st = store();
     if(!st) throw new Error('tu navegador no deja guardar fotos (¿modo privado?). Ábrelo en otro navegador');
