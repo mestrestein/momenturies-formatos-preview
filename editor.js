@@ -3755,7 +3755,14 @@ function updateTotal(){
   const t = PACK_TIERS.find(t=>piezas.length>=t.n), pct = t ? t.pct : 0;
   const total = Math.round((bruto - Math.round(bruto*pct)/100)*100)/100;
   const el = document.getElementById('cartTotal');
-  if(el) el.innerHTML = ' · ' + (pct ? '<s>' + precioTxt(bruto) + '</s> ' : '') + precioTxt(total);
+  /* 20-nov (Marc): cambiando un pedido ya pagado, el botón dice si sale más caro, más barato o igual que lo que pagó
+     (lo exacto lo da el Vestuario al pulsar «Guardar cambios») */
+  if(el && CAMBIO && CAMBIO.pagado != null){
+    const d = Math.round((total - CAMBIO.pagado)*100)/100;
+    el.innerHTML = ' · ' + (Math.abs(d) < 0.01 ? '<span class="es">mismo precio</span><span class="en">same price</span>'
+      : d > 0 ? '+' + precioTxt(d) + ' <span class="es">más</span><span class="en">more</span>'
+      : precioTxt(-d) + ' <span class="es">menos</span><span class="en">less</span>');
+  } else if(el) el.innerHTML = ' · ' + (pct ? '<s>' + precioTxt(bruto) + '</s> ' : '') + precioTxt(total);
   const lb = document.getElementById('cartLabel');
   if(lb) lb.innerHTML = conFoto.length
     ? (CAMBIO ? '<span class="es">Guardar cambios</span><span class="en">Save changes</span>' : '<span class="es">Añadir al carrito</span><span class="en">Add to cart</span>')
@@ -4590,6 +4597,11 @@ setTimeout(async function abrirCambioPedido(){   // en el siguiente turno, como 
     }
     const datos = r.datos, aqui = location.pathname.split('/').pop() || 'cuadro.html';
     if(datos.pagina && datos.pagina !== aqui){ location.replace(datos.pagina + location.search); return; }
+    /* 20-nov · los conjuntos de prueba (T01…) solo existen con ?pared= en la URL (pruebas-conjuntos.js) */
+    if(datos.wall && !findWall(datos.wall) && /^T\d{2}$/.test(datos.wall) && !new URLSearchParams(location.search).get('pared')){
+      location.replace(location.pathname + location.search + '&pared=' + datos.wall); return;
+    }
+    CAMBIO.pagado = r.pagado;
     delete datos.pagina;
     const st = store();
     if(!st) throw new Error('tu navegador no deja guardar fotos (¿modo privado?). Ábrelo en otro navegador');
