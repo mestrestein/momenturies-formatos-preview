@@ -179,6 +179,9 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .pay li svg{display:block;height:18px;width:auto}
 /* packs (estilo bundle) */
 .packs-ref{margin:-8px 0 12px;text-align:center;font-size:12.5px;color:var(--mid)}
+.packs-bul{list-style:none;margin:12px 0 0;padding:0;font-size:14px;color:var(--brown)}
+.packs-bul li{display:flex;align-items:center;justify-content:center;gap:8px}
+.packs-bul li::before{content:'✓';color:#2f7d4f;font-weight:900}
 .opt .ahorra{color:#2f7d4f;font-weight:700}
 .packs-h{display:flex;align-items:center;gap:12px;margin:30px 0 14px;font-size:14px;font-weight:900;letter-spacing:.3px;color:var(--brown)}
 .packs-h::before,.packs-h::after{content:'';flex:1;height:1px;background:var(--line)}
@@ -592,6 +595,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <form name="lanzamiento" class="cup-form" id="cupForm" hidden><input type="email" required placeholder="Tu correo" aria-label="Tu correo para recibir el 10 %" autocomplete="email"><button type="submit">Enviar</button></form>
     <p class="cup-ok" id="cupOk" hidden>✓ ¡Listo! Revisa tu correo y confirma tu suscripción: te llega tu código personal del 10 % (un solo uso).</p>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
+    <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras. Dale vida a vuestro hogar en segundos con vuestros <b>cuadros metálicos premium, con colgado magnético incluido</b>. Fácil de instalar, sin herramientas, sin agujeros, con imán.</p>
     <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
 
@@ -599,6 +603,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <p class="packs-ref">Precios basados en el tamaño clásico M (21×29,7 cm)</p>
     <button type="button" class="packs-tam" id="tamAbrir">Consulta tamaños y precios disponibles</button>
     <div id="packs"></div>
+    <ul class="packs-bul"><li>Sin pagar el sobrecoste del enmarcado</li></ul>
 
     <div class="qfaq">
       <details><summary>¿Qué es un cuadro metálico con colgado magnético?</summary><div class="a">Tu foto impresa en alta definición directamente sobre aluminio, lista para colgar sin herramientas.
