@@ -2842,7 +2842,7 @@ function subirOriginal(p){
   return pr;
 }
 function adelantarOriginal(p){
-  if(!(SHOPIFY.domain && SHOPIFY.storefrontToken) || !CLOUDINARY.cloudName || _restoring || (window.MOMENTURIES_EDITOR||{}).vista) return;
+  if(!(SHOPIFY.domain && SHOPIFY.storefrontToken) || _restoring || (window.MOMENTURIES_EDITOR||{}).vista) return;
   const ir = () => { if(POSTERS.indexOf(p) >= 0 && p.srcImg) subirOriginal(p).catch(e => console.warn('[Momenturies] Original en segundo plano:', e.message)); };
   if(window.requestIdleCallback) requestIdleCallback(ir, {timeout:4000}); else setTimeout(ir, 1500);
 }
