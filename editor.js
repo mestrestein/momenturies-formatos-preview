@@ -2004,6 +2004,7 @@ function ingestFiles(files, mode){
       if(i===selected) syncConfigUI();
       if(WALL) syncWallBar();
       updateTotal();   // con una foto más cambia el total (y el tramo de descuento)
+      adelantarOriginal(p);
       URL.revokeObjectURL(url);
       // Como en Mixtiles: nada más elegir la foto se pregunta el formato y el encuadre en la
       // misma pantalla — antes la foto se aplicaba en silencio con el formato que hubiera
@@ -2825,11 +2826,32 @@ async function originalBlob(p){
   return canvasToBlob(c, 0.95);
 }
 
+/* 21-nov (Marc: «que empiecen a cargarse una vez se suben»): la foto original del cliente no depende del recorte ni
+   de las frases, así que se sube nada más ponerla (en un rato libre) y al pagar ya está. Una vez por foto: si la cambia,
+   la nueva es otra imagen y se sube la nueva. Si falla, se reintenta al pagar. */
+const ORIG_CACHE = new WeakMap();
+function subirOriginal(p){
+  const img = p.srcImg;
+  if(!img) return Promise.resolve(null);
+  let pr = ORIG_CACHE.get(img);
+  if(!pr){
+    pr = originalBlob(p).then(orig => uploadToCloudinary(orig, `original-${Date.now()}.${orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg'}`));
+    pr.catch(() => { if(ORIG_CACHE.get(img) === pr) ORIG_CACHE.delete(img); });
+    ORIG_CACHE.set(img, pr);
+  }
+  return pr;
+}
+function adelantarOriginal(p){
+  if(!(SHOPIFY.domain && SHOPIFY.storefrontToken) || !CLOUDINARY.cloudName || _restoring || (window.MOMENTURIES_EDITOR||{}).vista) return;
+  const ir = () => { if(POSTERS.indexOf(p) >= 0 && p.srcImg) subirOriginal(p).catch(e => console.warn('[Momenturies] Original en segundo plano:', e.message)); };
+  if(window.requestIdleCallback) requestIdleCallback(ir, {timeout:4000}); else setTimeout(ir, 1500);
+}
+
 /* imágenes finales de impresión (a PRINT_DPI, no al tamaño reducido del visor 3D), la original
    y la dedicatoria, subidas a la vez */
 /* 21-nov: separado en dos (pintar / subir) para que, con varios cuadros, el siguiente se pinte mientras el anterior
    sube. Pintar va de uno en uno (memoria del móvil); las subidas se solapan. */
-async function uploadPosterArt(p){ return subirPosterArt(await renderPosterArt(p)); }
+async function uploadPosterArt(p){ return subirPosterArt(await renderPosterArt(p), p); }
 async function renderPosterArt(p){
   await decoReady(p);
   const t = Date.now();
@@ -2838,25 +2860,30 @@ async function renderPosterArt(p){
   print.canvas.width = print.canvas.height = 0;   // libera memoria en el móvil antes del siguiente
   const {W,H} = printDimsPx(p);
   /* 6-nov: el recorte = el mismo archivo de impresión (medida + sangrado) pero solo la foto, sin frases,
-     fecha ni dibujos, por si hay que rehacer el texto */
-  const rec = buildPrintCanvas(Object.assign({}, p, {frontText:'', frontText2:'', frontDate:'', frontDeco:null}));
-  const cropBlob = await jpgConDpi(await canvasToBlob(rec.canvas, 0.98), rec.dpi);
-  rec.canvas.width = rec.canvas.height = 0;
+     fecha ni dibujos, por si hay que rehacer el texto.
+     21-nov: si el cuadro no lleva frase, fecha ni dibujo, el recorte saldría idéntico al de impresión: no se pinta
+     ni se sube otra vez, y _foto_recorte lleva el mismo archivo */
+  const sinExtras = !p.frontText && !p.frontText2 && !p.frontDate && !p.frontDeco;
+  let cropBlob = null;
+  if(!sinExtras){
+    const rec = buildPrintCanvas(Object.assign({}, p, {frontText:'', frontText2:'', frontDate:'', frontDeco:null}));
+    cropBlob = await jpgConDpi(await canvasToBlob(rec.canvas, 0.98), rec.dpi);
+    rec.canvas.width = rec.canvas.height = 0;
+  }
   /* 6-nov: el dorso va en PNG transparente a la medida final exacta (sin sangrado). Antes era JPG
      y lo transparente salía NEGRO */
   const backCanvas = buildBackCanvas(p, W, H);
   const backBlob = backCanvas ? await pngConDpi(await new Promise(res => backCanvas.toBlob(res, 'image/png')), PRINT_DPI) : null;
-  const orig = await originalBlob(p);
-  const ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
-  return {t, print:{dpi:print.dpi, cm:print.cm}, W, H, frontBlob, cropBlob, backBlob, orig, ext};
+  return {t, print:{dpi:print.dpi, cm:print.cm}, W, H, frontBlob, cropBlob, backBlob, sinExtras};
 }
-async function subirPosterArt({t, print, W, H, frontBlob, cropBlob, backBlob, orig, ext}){
+async function subirPosterArt({t, print, W, H, frontBlob, cropBlob, backBlob, sinExtras}, p){
+  const subeFrente = uploadToCloudinary(frontBlob, `impresion-${t}.jpg`);
   const [frontUrl, backUrl, originalUrl, cropUrl] = await Promise.all([
-    uploadToCloudinary(frontBlob, `impresion-${t}.jpg`),
+    subeFrente,
     backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.png`) : null,
-    // la original es un extra: si no sube, el pedido sigue con el archivo de impresión
-    uploadToCloudinary(orig, `original-${t}.${ext}`).catch(e => { console.warn('[Momenturies] Original sin subir:', e.message); return null; }),
-    uploadToCloudinary(cropBlob, `recorte-${t}.jpg`).catch(e => { console.warn('[Momenturies] Recorte sin subir:', e.message); return null; }),
+    // la original es un extra: si no sube, el pedido sigue con el archivo de impresión. Suele estar ya subida (subirOriginal)
+    subirOriginal(p).catch(e => { console.warn('[Momenturies] Original sin subir:', e.message); return null; }),
+    sinExtras ? subeFrente : uploadToCloudinary(cropBlob, `recorte-${t}.jpg`).catch(e => { console.warn('[Momenturies] Recorte sin subir:', e.message); return null; }),
   ]);
   const cmTxt = a => a.map(n => n.toFixed(1).replace('.', ',')).join('×');
   const medida = `${cmTxt(print.cm)} cm (con ${BLEED_MM} mm de sangrado) a ${print.dpi} ppp`
@@ -2903,10 +2930,26 @@ async function wallImageBlob(){
    se vuelve a hacer. frontSize/backSize los recalcula el propio pintado: no cuentan. */
 const ART_CACHE = new Map();
 let artCola = Promise.resolve();
+/* 21-nov: en segundo plano, cada cuadro se pinta cuando el cliente lleva un momento sin tocar la pantalla (pintar a
+   300 ppp ocupa el móvil unos instantes y no debe notarse mientras diseña). Al pagar o guardar (PRISA) no se espera */
+let ULTIMO_TOQUE = 0, PRISA = false;
+['pointerdown','keydown','wheel','touchstart'].forEach(ev => addEventListener(ev, () => { ULTIMO_TOQUE = Date.now(); }, {passive:true, capture:true}));
+function esperarCalma(){
+  return new Promise(res => {
+    const mira = () => {
+      if(PRISA) return res();
+      const falta = ULTIMO_TOQUE + 1500 - Date.now();
+      if(falta > 0) return setTimeout(mira, falta + 50);
+      if(window.requestIdleCallback) requestIdleCallback(() => (PRISA || Date.now() - ULTIMO_TOQUE >= 1500) ? res() : mira(), {timeout:2000});
+      else res();
+    };
+    mira();
+  });
+}
 function huellaArte(p){
   const o = {};
   for(const [k, v] of Object.entries(p)){
-    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize' || k === 'price') continue;
+    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize' || k === 'price' || k === 'flatK') continue;   // flatK: animación del 3D, no sale en la impresión
     if(v == null || typeof v !== 'object' && typeof v !== 'function') o[k] = v;
   }
   o.img = p.srcImg ? p.srcImg.src.slice(0, 120) + p.srcImg.naturalWidth + 'x' + p.srcImg.naturalHeight : '';
@@ -2918,9 +2961,9 @@ function prepararArte(p){
   if(hay && hay.huella === huella) return hay.promesa;
   // de uno en uno: en el móvil dos lienzos de impresión a la vez pueden quedarse sin memoria
   // si el cuadro cambia mientras espera turno, se sube como esté; la huella vieja no casará y al pagar se rehace
-  const pintado = artCola.then(() => renderPosterArt(p));
+  const pintado = artCola.then(esperarCalma).then(() => renderPosterArt(p));
   artCola = pintado.catch(() => {});
-  const promesa = pintado.then(subirPosterArt);
+  const promesa = pintado.then(r => subirPosterArt(r, p));
   promesa.catch(() => { if(ART_CACHE.get(clave)?.promesa === promesa) ART_CACHE.delete(clave); });
   ART_CACHE.set(clave, {huella, promesa});
   return promesa;
@@ -2938,9 +2981,8 @@ function programarPreparacion(){
   if(_restoring || (window.MOMENTURIES_EDITOR||{}).vista) return;
   _prepT = setTimeout(() => {
     if(typeof POSTERS === 'undefined') return;
-    const conFoto = POSTERS.filter(cuenta);
-    if(!conFoto.length || (WALL && conFoto.length < POSTERS.filter(vivo).length)) return;   // conjunto a medias: aún no
-    const ir = () => prepararCarrito();
+    if(!POSTERS.some(cuenta)) return;
+    const ir = () => prepararCarrito();   // cada cuadro con foto, aunque el conjunto esté a medias
     if(window.requestIdleCallback) requestIdleCallback(ir, {timeout:3000}); else ir();
   }, 4000);
 }
@@ -3004,6 +3046,10 @@ async function shopifySelectShipping(cart, shipId){
    (checkoutWithShopify) y el cambio de un pedido ya hecho (?cambio=, ver CAMBIAR UN PEDIDO YA HECHO).
    originales: la foto original subida de cada cuadro (uid → URL), para guardar el diseño del pedido. */
 async function lineasPedido(){
+  PRISA = true;   // lo que estaba esperando un rato libre, ya
+  try{ return await lineasPedidoYa(); } finally { PRISA = false; }
+}
+async function lineasPedidoYa(){
   const lines = [], originales = {};
   /* 21-nov: todo empieza a la vez (antes la imagen de la pared iba primero y luego cada cuadro, uno detrás de otro).
      En un cambio de pedido, los cuadros sin tocar reutilizan sus archivos y no se sube nada de ellos. */
@@ -4347,6 +4393,9 @@ async function restoreDesign(saved){
     dirty3D = true;
   }catch(e){ console.warn('Momenturies: no se ha podido recuperar el diseño', e); }
   _restoring = false;
+  /* 21-nov: un diseño recuperado (el cliente vuelve a la página) también se va preparando solo. En un cambio de pedido
+     no: ahí los cuadros sin tocar ya tienen sus archivos, y lo que cambie lo prepara programarPreparacion */
+  if(!CAMBIO){ POSTERS.forEach(q => { if(q.srcImg) adelantarOriginal(q); }); programarPreparacion(); }
   openEditor();
   syncTools(); syncViewerHint();
 }
