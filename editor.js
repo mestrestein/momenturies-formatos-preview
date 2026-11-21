@@ -3123,6 +3123,9 @@ async function disenoParaPedido(originales){
   const st = store(), saved = st && await st.get(SAVE_KEY);
   if(!saved || !saved.items || !saved.items.length) return null;
   const datos = JSON.parse(JSON.stringify(Object.assign({}, saved, { resumen:undefined, cuenta:undefined })));
+  /* 21-nov: el entorno va dentro del diseño (antes solo en las líneas del pedido): un cambio de pedido se vuelve a abrir
+     en el entorno donde se guardó */
+  if(!datos.entorno){ const ent = ROOM && !ROOM.custom ? ROOM.id : ROOM_CFG.mode === 'geo' ? ROOM_CFG.scene : ''; if(ent) datos.entorno = ent; }
   for(const it of datos.items){
     it.thumb = null;
     it.fotoRef = it.photo ? (originales[it.uid] || (_cambioRefs && _cambioRefs[it.uid]) || null) : null;
