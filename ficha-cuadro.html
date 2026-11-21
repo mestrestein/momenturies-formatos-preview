@@ -808,22 +808,29 @@ GAL.forEach((g,i) => {
     s.className = 'slide v3d'; s.id = 'v3d';
     s.innerHTML = `<iframe id="vis3d" data-src="visor.html?p=metal&img=fotos/stock/1474552226712-600x800.webp&ded=Para%20ti%2C%20siempre" title="Vista 3D del producto"></iframe><span class="hint">↔ Arrastra para girarlo</span><button type="button" class="flip" id="flip">Ver el dorso con dedicatoria</button>`;
   } else {
-    s.className = 'slide'; s.style.backgroundImage = `url(${g.img})`;
+    /* 21-nov: solo las primeras fotos se piden al entrar; el resto, al terminar de cargar la página o al acercarse
+       (antes el móvil bajaba las 10, ~1,6 MB, a la vez que lo que se ve) */
+    s.className = 'slide'; if(i <= 3) s.style.backgroundImage = `url(${g.img})`; else s.dataset.bg = g.img;
     s.setAttribute('role','img'); s.setAttribute('aria-label', g.cap);
     if(!g.txt) s.innerHTML = `<span class="cap">${g.cap}</span>`;
   }
   slides.appendChild(s);
   const b = document.createElement('button'); b.type = 'button';
-  b.style.backgroundImage = `url(${g.thumb || g.img})`; b.setAttribute('aria-label', g.cap);
+  /* miniatura de 240 px (fotos/pdp/mini/, misma foto recortada igual que el botón): antes era la foto grande entera */
+  b.style.backgroundImage = `url(${g.thumb || g.img.replace('fotos/pdp/', 'fotos/pdp/mini/')})`; b.setAttribute('aria-label', g.cap);
   if(g.t === '3d' || g.t === 'esc') b.innerHTML = `<span class="t3d">${g.t === '3d' ? '3D' : 'ESCENA'}</span>`;
   b.onclick = () => goSlide(i);
   thumbs.appendChild(b);
 });
 let cur = 0;
-function goSlide(i){ i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
+const ponFoto = j => { const s = slides.children[j]; if(s && s.dataset.bg){ s.style.backgroundImage = `url(${s.dataset.bg})`; delete s.dataset.bg; } };
+const ponTodas = () => [...slides.children].forEach((s, j) => ponFoto(j));
+if(document.readyState === 'complete') setTimeout(ponTodas, 0); else addEventListener('load', ponTodas, { once:true });
+function goSlide(i){ ponFoto((i + GAL.length) % GAL.length); i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
 function markSlide(){
   if(Math.round(slides.scrollLeft / slides.clientWidth) === 1){ const e = document.querySelector('.esc-f'); if(e && !e.src) e.src = e.dataset.src; }
   cur = Math.round(slides.scrollLeft / slides.clientWidth);
+  ponFoto(cur); ponFoto(cur + 1); ponFoto(cur + 2);
   [...thumbs.children].forEach((b,j) => b.classList.toggle('on', j === cur));
   $('#count').textContent = (cur + 1) + ' / ' + GAL.length;
   /* mueve solo la tira de miniaturas (scrollIntoView arrastraría también la página) */
@@ -974,11 +981,17 @@ const ROOMS = [
 (function(){
   const tabs = $('#roomTabs'), strip = $('#roomStrip');
   tabs.innerHTML = ROOMS.map((r,i) => `<button type="button" data-i="${i}">${r[1]}</button>`).join('');
-  strip.innerHTML = ROOMS.map((r,i) => `<button type="button" data-i="${i}" style="background-image:url(fotos/pdp/lugar-${r[0]}.jpg)" aria-label="${r[1]}"></button>`).join('');
+  /* 21-nov: miniaturas de 240 px (antes, las 9 fotos grandes, ~1,5 MB, al entrar en la ficha) */
+  strip.innerHTML = ROOMS.map((r,i) => `<button type="button" data-i="${i}" style="background-image:url(fotos/pdp/mini/lugar-${r[0]}.webp)" aria-label="${r[1]}"></button>`).join('');
   const show = i => { const r = ROOMS[i]; $('#roomBig').style.backgroundImage = `url(fotos/pdp/lugar-${r[0]}.jpg)`; $('#roomTit').textContent = r[2]; $('#roomTxt').textContent = r[3]; $('#roomTip').innerHTML = r[4];
     [tabs, strip].forEach(el => [...el.children].forEach((b,j) => b.classList.toggle('on', j === i))); };
   [tabs, strip].forEach(el => el.addEventListener('click', e => { const b = e.target.closest('button'); if(b) show(+b.dataset.i); }));
+  /* la foto grande, cuando la sección se acerca a la pantalla (está muy abajo) */
   show(0);
+  const big = $('#roomBig'), foto = big.style.backgroundImage; big.style.backgroundImage = '';
+  const poner = () => { if(!big.style.backgroundImage) big.style.backgroundImage = foto; };
+  if('IntersectionObserver' in window){ const io = new IntersectionObserver(es => { if(es[0].isIntersecting){ poner(); io.disconnect(); } }, { rootMargin:'1200px 0px' }); io.observe(big); }
+  else poner();
 })();
 
 /* ═════ COMBINACIONES ═════ */

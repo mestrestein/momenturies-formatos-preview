@@ -29,8 +29,18 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
   const T = 9000, TV = 13000;                   // la diapositiva del vídeo dura más: se ven varias habitaciones
   let i = 0, timer = 0, visible = true;
   const dur = k => med[k].querySelector('video') ? TV : T;
+  /* 21-nov: las diapositivas que aún no se ven llevan data-src/data-srcset/data-poster. Aunque estén transparentes,
+     están «en pantalla» y el móvil las bajaba a la vez que la primera (más de 1 MB), que tardaba mucho más en salir.
+     Se bajan al terminar de cargar la página, antes de que les toque; y si alguien pasa antes, en ese momento */
+  const cargar = m => {
+    m.querySelectorAll('img[data-src]').forEach(im => { if(im.dataset.srcset){ im.srcset = im.dataset.srcset; delete im.dataset.srcset; } im.src = im.dataset.src; delete im.dataset.src; });
+    const v = m.querySelector('video[data-poster]'); if(v){ v.poster = v.dataset.poster; delete v.dataset.poster; }
+  };
+  const cargarTodas = () => med.forEach(cargar);
+  if(document.readyState === 'complete') setTimeout(cargarTodas, 0); else addEventListener('load', cargarTodas, { once:true });
   function ir(k){
     i = (k + txt.length) % txt.length;
+    cargar(med[i]);
     txt.forEach((t, j) => { t.classList.toggle('on', j === i); t.setAttribute('aria-hidden', j === i ? 'false' : 'true'); });
     med.forEach((m, j) => {
       m.classList.toggle('on', j === i);
