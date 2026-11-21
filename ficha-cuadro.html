@@ -794,7 +794,7 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   <a class="btn cta-main" href="cuadro.html">Diseña tu pared →</a>
 </dialog>
 
-<div class="sticky" id="sticky"><div class="t"><span id="stTit">4 cuadros · Melodía suave</span><b id="stPr">101,97 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
+<div class="sticky" id="sticky"><div class="t"><span id="stTit">1 cuadro</span><b id="stPr">29,99 €</b></div><a class="btn" id="stCta" href="cuadro.html">Diseña tu pared →</a></div>
 
 <script>
 /* ── interruptor de reseñas: false = se marcan como «Ejemplo» ── */
@@ -902,7 +902,8 @@ const PACKS = [
 PACKS.forEach(p => p.tit = p.n + (p.n > 1 ? ' cuadros' : ' cuadro'));
 PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; } });
 const packsEl = $('#packs');
-let sel = 'W85';
+/* 21-nov: no se preselecciona nada; sin elegir, los botones abren el personalizador con 1 cuadro */
+let sel = null;
 function renderPacks(){
   /* 3-nov: cada opción en una línea (n.º de cuadros + «colgado magnético incluido» en pequeño);
      al elegirla se despliega con su composición en una casa y de cerca */
@@ -928,6 +929,7 @@ function choose(id){
   $('#stTit').textContent = p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro';
   $('#stPr').textContent = eur(p.price);
   $('#stCta').href = p.href; $('#stCta').textContent = p.cta;
+  $('#ctaMain').href = p.href;
 }
 packsEl.addEventListener('click', e => {
   const sw = e.target.closest('.sw button');
@@ -935,7 +937,7 @@ packsEl.addEventListener('click', e => {
   const o = e.target.closest('.opt'); if(o && o.dataset.id !== sel) choose(o.dataset.id);
 });
 packsEl.addEventListener('keydown', e => { const o = e.target.closest('.opt'); if(o && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); choose(o.dataset.id); } });
-choose(sel);
+renderPacks();
 
 /* barra fija: aparece cuando las ofertas se salen de la pantalla */
 new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe(packsEl);
