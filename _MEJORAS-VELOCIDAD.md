@@ -24,7 +24,7 @@ Este archivo empieza por `_`, así que no se ve en la web.
 | 4 | 21-nov | `b0a3e58` | Arreglo del 3: la foto original se sube al ponerla también en momenturies.com (allí las fotos van a Archivos de Shopify) | editor.js + versión en 4 páginas | Parche del servidor comprobado |
 | 5 | 21-nov | `d992a80` | Portada: las diapositivas que no se ven se bajan al terminar de cargar. Ficha del Cuadro: miniaturas de 240 px y fotos grandes al cargar o al acercarse (1,9 MB → 0,6 MB al entrar) | portada.js, index.html, momenturies.html, ficha-cuadro.html, fotos/pdp/mini/ | Web real: diapositivas y miniaturas bien, sin errores |
 | 6 | 21-nov | `70f37e3` | Ficha del Cuadro: el visor 3D se carga cuando el cliente hace algo; mientras, imagen fija idéntica sacada del visor | ficha-cuadro.html, fotos/pdp/visor-cuadro.webp | Web real: imagen fija → 3D al tocar; «Ver el dorso» antes de cargar también gira |
-| 7 | 21-nov | `fed0142` | Enlace de cambios: el entorno se guarda dentro del diseño (fallo encontrado en las pruebas: #1004 abría en otro entorno) | editor.js + versión en 4 páginas | Parche del servidor comprobado |
+| 7 | 21-nov | `fed0142` | Enlace de cambios: el entorno se guarda dentro del diseño (fallo encontrado en las pruebas: #1004 abría en otro entorno) | editor.js + versión en 4 páginas | Web real: #1004 abre en Dormitorio oscuro desde el principio |
 
 Lo que **no** se ha tocado: calidad de impresión (JPG 0,98 a 300 ppp), aspecto, precios, textos.
 
@@ -34,7 +34,7 @@ Lo que **no** se ha tocado: calidad de impresión (JPG 0,98 a 300 ppp), aspecto,
 |---|---|---|---|
 | 20-nov | `2f14575` | Enlace de cambios: factor de descuento pagado | `git revert` + desplegar |
 | 21-nov | `f262ba4` | Enlace de cambios: manda los archivos que ya tiene cada cuadro del pedido | `git revert` + desplegar |
-| 21-nov | `fcee0c0` | Enlace de cambios: un pedido con un cambio ya guardado se abre en el entorno de la compra | `git revert` + desplegar |
+| 21-nov | `fcee0c0` | Enlace de cambios: un pedido con un cambio ya guardado se abre en el entorno de la compra (desplegado 21-nov) | `git revert` + desplegar |
 | 21-nov | `0d9baf1`, `0231a01`, `2c5ceb7` | PageSpeed cada mañana: portada, ficha del Cuadro y editor, en móvil y ordenador | quitar URLS_VELOCIDAD en wrangler.jsonc + desplegar |
 
 ## Medidas de PageSpeed (móvil / ordenador)
@@ -42,3 +42,4 @@ Lo que **no** se ha tocado: calidad de impresión (JPG 0,98 a 300 ppp), aspecto,
 | Fecha | Portada | Ficha del Cuadro | Editor (cuadro.html) | Nota |
 |---|---|---|---|---|
 | 21-nov mañana | 69 / 91 | 40 / 60 | 41 / 54 | antes de publicar 5 y 6 |
+| 21-nov mediodía | 70 / 99 | 80 / 98 | 41 / 52 | con todo publicado |
