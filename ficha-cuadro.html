@@ -23,8 +23,7 @@
   - Página independiente: todo el CSS y el JS van aquí dentro. Fotos nuevas en fotos/pdp/.
   - Packs: los precios salen de la tabla PACKS (abajo, en el <script>). Mismo cálculo que
     editor.js: suma de tallas × (100 - % de PACK_TIERS). Si cambia un precio, cambiarlo ahí.
-  - Reseñas: RESENAS_REALES = false → todas las reseñas y la nota salen marcadas como «Ejemplo».
-    NO publicar con reseñas inventadas: cambiar por reseñas reales y poner true.
+  - Reseñas: quitadas (21-nov, MOM-32) hasta tener reseñas reales; se volverán a programar en código.
   - Solo español por ahora (falta la versión EN).
 -->
 <style>
@@ -593,7 +592,6 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <form name="lanzamiento" class="cup-form" id="cupForm" hidden><input type="email" required placeholder="Tu correo" aria-label="Tu correo para recibir el 10 %" autocomplete="email"><button type="submit">Enviar</button></form>
     <p class="cup-ok" id="cupOk" hidden>✓ ¡Listo! Revisa tu correo y confirma tu suscripción: te llega tu código personal del 10 % (un solo uso).</p>
     <h1>Cuadro metálico premium<small>Colgado magnético, sin agujeros</small></h1>
-    <div class="rating5"><span class="stars">★★★★★</span> 5/5 · <span>128 reseñas</span></div>
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras. Dale vida a vuestro hogar en segundos con vuestros <b>cuadros metálicos premium, con colgado magnético incluido</b>. Fácil de instalar, sin herramientas, sin agujeros, con imán.</p>
     <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
 
@@ -630,11 +628,6 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
         <li aria-label="PayPal"><span style="font-style:italic"><span style="color:#003087">Pay</span><span style="color:#009cde">Pal</span></span></li>
         <li aria-label="Shop Pay" style="background:#5a31f4;border-color:#5a31f4;color:#fff">shop Pay</li>
       </ul>
-    </div>
-
-    <div class="mini-rev">
-      <div class="av" style="background-image:url(fotos/stock/1544005313-160x160.webp)"></div>
-      <div><p>«Lo colgué en el pasillo en un minuto y al mes lo cambié al salón. Ni un agujero. Las fotos se ven mejor que en el móvil.»</p><b>Marta · Valencia <span class="demo-tag">Ejemplo</span></b></div>
     </div>
   </div>
 </div></section>
@@ -748,25 +741,6 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
   </div>
   <div class="center" style="margin-top:46px"><a class="btn w" href="#comprar">Elegir el mío →</a></div>
 </div></section>
-
-<!-- ═════════════════ 7 · REGALO A LOS TUYOS ═════════════════ -->
-<section class="sec" id="regalos"><div class="c">
-  <div class="center"><p class="tag">Un regalo a los tuyos</p><h2 class="h2">¿Para quién es?</h2><p class="lead">Lo que nos cuentan quienes ya lo han regalado. <span class="demo-tag">Reseñas de ejemplo</span></p></div>
-  <div class="who-tabs" id="whoTabs"></div>
-  <div class="who">
-    <div class="im" id="whoImg"></div>
-    <div><h3 id="whoTit"></h3><p class="idea" id="whoIdea"></p><div id="whoRevs"></div><a class="btn" style="margin-top:20px" href="cuadro.html">Crear su regalo →</a></div>
-  </div>
-</div></section>
-
-<!-- ═════════════════ 8 · POR MOTIVO ═════════════════ -->
-<section class="sec why" id="motivos">
-  <div class="c" style="display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap">
-    <div><p class="tag">Regalos con motivo</p><h2 class="h2">«Se lo regalé<br>por <em>su boda</em>…»</h2><p class="lead">Cada cuadro tiene detrás una historia. Estas son algunas. <span class="demo-tag">Ejemplo</span></p></div>
-    <div class="row-nav"><button type="button" data-why="-1" aria-label="Anterior">←</button><button type="button" data-why="1" aria-label="Siguiente">→</button></div>
-  </div>
-  <div class="why-row" id="whyRow"></div>
-</section>
 
 <!-- ═════════════════ 9 · FAQ ═════════════════ -->
 <section class="sec" id="faq"><div class="c faq-wrap">
@@ -1014,53 +988,6 @@ $('#comboGrid').innerHTML = COMBOS.map(([w,n,name],i) => `
     <div class="im" data-bg="fotos/pdp/combo-${w}.webp"><span class="n">${n} cuadros · ${n >= 4 ? '-20 %' : '-15 %'}</span></div>
     <div class="tx"><div><b>${name}</b><small>Ábrela en el editor</small></div><span>Probar →</span></div>
   </a>`).join('');
-
-/* ═════ REGALO A LOS TUYOS ═════  (reseñas de EJEMPLO: cambiar por reales) */
-const WHO = [
-  ['hijos','Familia con hijos','Los peques crecen más rápido que las fotos que imprimes. Una pared con sus etapas, que vas cambiando cada año.',
-    [['Laura','Sevilla','Hice una pared con una foto de cada año de mis hijas. Cada cumple cambiamos una y es ya una tradición en casa.'],['Javier','Bilbao','Sin agujeros en la habitación de los niños, que ya tenía bastantes. Lo colgaron ellos solos.']]],
-  ['pareja','Pareja','Vuestro viaje, la pedida o una foto de cualquier domingo. Para el aniversario o porque sí.',
-    [['Carla','Madrid','Le regalé nuestras cuatro fotos favoritas del viaje a Italia por el aniversario. Lloró al leer la dedicatoria de detrás.'],['Pablo','Zaragoza','Pensaba que sería un póster más, pero el aluminio se ve muy premium. Ahora es lo primero que ve la gente al entrar.']]],
-  ['abuelos','Abuelos','Lo que más ilusión les hace: ver a los nietos cada día. Y sin que nadie tenga que subirse a una escalera con el taladro.',
-    [['Elena','Murcia','Mi abuela no tiene móvil. Ahora tiene a sus seis nietos en el salón y se los enseña a todas las vecinas.'],['Rubén','Valladolid','Lo mejor fue que no hizo falta hacer agujeros en su casa. Mi abuelo lo colgó él solo.']]],
-  ['padres','Padres','Para el Día de la Madre, del Padre o simplemente para decir gracias. Esa foto antigua que tanto les gusta, por fin en la pared.',
-    [['Nuria','Barcelona','Escaneé una foto de su boda y se la regalé a mis padres por sus 35 años. La dedicatoria detrás fue lo que más les emocionó.']]],
-  ['mascota','Mascota','Porque también es de la familia. Su mejor cara, en grande, donde todos la vean.',
-    [['Andrea','Málaga','Un cuadro de Toby en la entrada. Él no lo sabe, pero es el rey de la casa.'],['Sergio','Alicante','Le regalé a mi hermana un trío de su gata. Los colores quedan increíbles en el aluminio.']]],
-  ['amigos','Amigos','El viaje de fin de carrera, la boda de la cuadrilla, ese verano. Un regalo de grupo que siempre acierta.',
-    [['Irene','Granada','Hicimos un regalo entre siete amigas con fotos de los últimos diez años. Ahora quieren uno todas.']]],
-  ['hermanos','Hermanos','Las fotos de cuando erais pequeños, al lado de las de ahora. Un regalo que da para muchas risas.',
-    [['Marcos','Oviedo','Le regalé a mi hermano una foto nuestra de pequeños y otra igual de ahora. La tiene en el despacho.']]],
-];
-(function(){
-  const tabs = $('#whoTabs');
-  tabs.innerHTML = WHO.map((w,i) => `<button type="button" class="chipbtn" data-i="${i}">${w[1]}</button>`).join('');
-  const show = i => { const w = WHO[i];
-    $('#whoImg').style.backgroundImage = `url(fotos/combis/quien-${w[0]}.webp)`; $('#whoTit').textContent = 'Para ' + w[1].toLowerCase(); $('#whoIdea').textContent = w[2];
-    $('#whoRevs').innerHTML = w[3].map(r => `<div class="rev"><div class="top"><span class="stars">★★★★★</span><span class="ver">Compra verificada</span><span class="demo-tag">Ejemplo</span></div><p>«${r[2]}»</p><b>${r[0]} <small>· ${r[1]}</small></b></div>`).join('');
-    [...tabs.children].forEach((b,j) => b.classList.toggle('on', j === i)); };
-  tabs.addEventListener('click', e => { const b = e.target.closest('button'); if(b) show(+b.dataset.i); });
-  show(0);
-})();
-
-/* ═════ POR MOTIVO ═════  (reseñas de EJEMPLO) */
-const WHY = [
-  ['boda','Boda','Se lo regalé a mi hermana por su boda: tres fotos del día y la dedicatoria con la fecha detrás. Ahora presiden su salón.','Cristina','Toledo'],
-  ['nacimiento','Nacimiento','Cuando nació nuestro hijo, mis suegros nos regalaron su primera foto en grande. Es lo más bonito del cuarto.','Álvaro','Pamplona'],
-  ['aniversario','Aniversario','Diez años juntos, diez fotos. Una por año. Le dejé la pared montada de sorpresa mientras estaba fuera.','Lucía','Valencia'],
-  ['comunion','Comunión','Para la comunión de mi sobrina: su foto con los abuelos. No es un regalo más de los que acaban en un cajón.','Rocío','Córdoba'],
-  ['navidad','Navidad','El amigo invisible de la familia: la foto de todos en la cena del año pasado. Ganó por goleada.','Daniel','Santander'],
-  ['jubilacion','Jubilación','Sus compañeros le regalamos a Pepe una composición con fotos de sus 30 años en la empresa. Se emocionó muchísimo.','Marta','Logroño'],
-  ['graduacion','Graduación','Mi hija acabó Medicina y le regalé su foto con la orla. Se la llevó al piso de estudiantes y se cuelga sin agujeros.','Carmen','Salamanca'],
-  ['padres-madres','Día de la Madre','Una foto de mi madre con mis hijos. Me dijo que es el regalo que más le ha gustado en años.','Ana','A Coruña'],
-  ['viaje','Un viaje','Volvimos de Japón con 2.000 fotos en el móvil. Ahora seis de ellas están en el pasillo y las miramos cada día.','Hugo','Madrid'],
-  ['cumple','Cumpleaños','Para los 40 de mi pareja, una foto de cada década. Fue el regalo de la fiesta.','Silvia','Palma'],
-];
-(function(){
-  const row = $('#whyRow');
-  row.innerHTML = WHY.map(w => `<article class="why-card"><div class="im" style="background-image:url(fotos/combis/mom-${w[0]}.webp)"><span>${w[1]}</span></div><div class="bd"><span class="stars">★★★★★</span><p class="q">«${w[2]}»</p><div class="who2">${w[3]}<small>${w[4]} · <span class="demo-tag">Ejemplo</span></small></div></div></article>`).join('');
-  document.querySelectorAll('[data-why]').forEach(b => b.onclick = () => row.scrollBy({left: +b.dataset.why * (row.children[0].offsetWidth + 18)}));
-})();
 
 /* ═════ LA DIFERENCIA: los puntos de la foto abren su globo (igual que la portada) ═════ */
 (function(){
