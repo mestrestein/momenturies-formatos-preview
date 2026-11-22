@@ -813,7 +813,9 @@ GAL.forEach((g,i) => {
   } else {
     /* 21-nov: solo las primeras fotos se piden al entrar; el resto, al terminar de cargar la página o al acercarse
        (antes el móvil bajaba las 10, ~1,6 MB, a la vez que lo que se ve) */
-    s.className = 'slide'; if(i <= 3) s.style.backgroundImage = `url(${g.img})`; else s.dataset.bg = g.img;
+    /* 22-nov: data-foto y no data-bg: lazy-bg.js también vigila data-bg y, cuando ponFoto ya lo había quitado,
+       pintaba url(null) y la foto grande salía en gris al pulsar la miniatura */
+    s.className = 'slide'; if(i <= 3) s.style.backgroundImage = `url(${g.img})`; else s.dataset.foto = g.img;
     s.setAttribute('role','img'); s.setAttribute('aria-label', g.cap);
     if(!g.txt) s.innerHTML = `<span class="cap">${g.cap}</span>`;
   }
@@ -826,7 +828,7 @@ GAL.forEach((g,i) => {
   thumbs.appendChild(b);
 });
 let cur = 0;
-const ponFoto = j => { const s = slides.children[j]; if(s && s.dataset.bg){ s.style.backgroundImage = `url(${s.dataset.bg})`; delete s.dataset.bg; } };
+const ponFoto = j => { const s = slides.children[j]; if(s && s.dataset.foto){ s.style.backgroundImage = `url(${s.dataset.foto})`; delete s.dataset.foto; } };
 const ponTodas = () => [...slides.children].forEach((s, j) => ponFoto(j));
 if(document.readyState === 'complete') setTimeout(ponTodas, 0); else addEventListener('load', ponTodas, { once:true });
 function goSlide(i){ ponFoto((i + GAL.length) % GAL.length); i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
