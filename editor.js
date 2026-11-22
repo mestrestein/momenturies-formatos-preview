@@ -1888,7 +1888,7 @@ function pickPoster(clientX,clientY){
 }
 
 /* ═══════════ BUCLE 3D: solo con el editor abierto; en reposo, 0 renders ═══════════ */
-let editorOpen=false, raf3d=0, needResize=true;
+let editorOpen=false, raf3d=0, needResize=true, shadersListos=false;
 if(window.ResizeObserver){ try{ new ResizeObserver(()=>{ if(editorOpen) needResize=true; }).observe(stage); }catch(_){} }
 window.addEventListener('resize', ()=>{ if(editorOpen) needResize=true; });
 
@@ -3934,7 +3934,15 @@ function openEditor(){
   document.body.style.overflow = 'hidden';
   editorOpen = true; needResize = true; dirty3D = true;
   resize3D();                      // encuadre correcto ya en el primer fotograma
-  if(!raf3d) animate();
+  /* 22-nov · velocidad: la primera vez, los shaders se compilan en segundo plano (KHR_parallel_shader_compile)
+     antes del primer render; antes el primer render esperaba a la tarjeta gráfica y bloqueaba la página ~0,5-1 s
+     en un móvil. Si tarda más de 2,5 s o falla, se dibuja igual (como antes) */
+  if(!shadersListos && renderer.compileAsync){
+    shadersListos = true;
+    let hecho = false; const seguir = () => { if(hecho) return; hecho = true; if(editorOpen && !raf3d){ dirty3D = true; animate(); } };
+    try{ renderer.compileAsync(scene, camera).then(seguir, seguir); }catch(e){ seguir(); }
+    setTimeout(seguir, 2500);
+  } else if(!raf3d) animate();
   syncTools(); syncViewerHint();   // la nevera del imán se pone sin pasar por setScene: rótulo de Entorno y ayuda
 }
 function closeEditor(){
