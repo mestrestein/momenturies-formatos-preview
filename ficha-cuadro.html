@@ -790,15 +790,16 @@ const $ = s => document.querySelector(s);
 /* 4-nov: orden de Aitor (producto → móvil → calidad → colgado → regalo → pared).
    txt:true = la imagen ya lleva su texto, sin etiqueta encima */
 const GAL = [
+  /* 22-nov (Aitor): primero la foto del colgado, antes del 3D; «sin taladro» pasa a su antiguo hueco */
+  {img:'fotos/pdp/gen-colgado-segundos-v2.webp', cap:'Cuadro metálico HD con colgado magnético'},
   {t:'3d', cap:'Gíralo: así es por delante y por detrás', thumb:'fotos/stock/1474552226712-300x420.webp'},
   {t:'esc', cap:'Así se cuelga: solo con el imán', thumb:'fotos/pdp/escena-colgado-cuadro.webp', src:'colgador-scene.html?colgador=iman-pared&poster=fotos/stock/1474552226712-600x800.webp'},
   {img:'fotos/pdp/lugar-salon.webp', cap:'Míralo en tu casa antes de comprar'},
   {img:'fotos/pdp/combo-W31.webp', cap:'Elige tu combinación favorita'},
   {img:'fotos/pdp/gen-momento-movil-pared.webp', cap:'Del momento al móvil, del móvil a tu pared', txt:true},
   {img:'fotos/pdp/gen-metal-vs-tradicional.webp', cap:'Cuadro metálico HD frente a póster tradicional', txt:true},
-  {img:'fotos/pdp/gen-colgado-segundos-v2.webp', cap:'Colgado magnético en segundos'},
-  {img:'fotos/pdp/gen-mueve-intercambia.webp', cap:'Muévelo e intercámbialo cuando quieras'},
   {img:'fotos/pdp/comparativa.webp', cap:'Sin taladro, sin clavos, sin agujeros'},
+  {img:'fotos/pdp/gen-mueve-intercambia.webp', cap:'Muévelo e intercámbialo cuando quieras'},
   {img:'fotos/pdp/gen-quita-sin-danos.webp', cap:'Retíralo sin daños'},
   {img:'fotos/pdp/gen-regalo-cajon.webp', cap:'El regalo que no acaba en un cajón'},
   {img:'fotos/pdp/gen-pared-con-los-tuyos.webp', cap:'Crea tu pared con los tuyos'},
@@ -833,7 +834,7 @@ const ponTodas = () => [...slides.children].forEach((s, j) => ponFoto(j));
 if(document.readyState === 'complete') setTimeout(ponTodas, 0); else addEventListener('load', ponTodas, { once:true });
 function goSlide(i){ ponFoto((i + GAL.length) % GAL.length); i = (i + GAL.length) % GAL.length; slides.scrollTo({left: i * slides.clientWidth}); }
 function markSlide(){
-  if(Math.round(slides.scrollLeft / slides.clientWidth) === 1){ const e = document.querySelector('.esc-f'); if(e && !e.src) e.src = e.dataset.src; }
+  if(Math.round(slides.scrollLeft / slides.clientWidth) === GAL.findIndex(g => g.t === 'esc')){ const e = document.querySelector('.esc-f'); if(e && !e.src) e.src = e.dataset.src; }
   cur = Math.round(slides.scrollLeft / slides.clientWidth);
   ponFoto(cur); ponFoto(cur + 1); ponFoto(cur + 2);
   [...thumbs.children].forEach((b,j) => b.classList.toggle('on', j === cur));
