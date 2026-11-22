@@ -134,13 +134,30 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
   if(COMBIS.length < 2) return;
 
   /* la galería y las cuatro piezas de la pared */
+  /* 22-nov: las piezas se crean vacías y las fotos (~25) se piden solo cuando la demo está cerca;
+     antes se pedían al abrir la portada y competían con la foto grande (LCP 10 s en móvil) */
   const gal = $('.g', vGal);
-  gal.innerHTML = GAL.map(src => `<i style="background-image:url(${src})"></i>`).join('');
+  gal.innerHTML = GAL.map(() => '<i></i>').join('');
   const thumbs = $$('i', gal), barra = $('.barra', vGal);
-  wallEl.innerHTML = FOTOS.map(f => `<i style="background-image:url(${f})"></i>`).join('');
+  wallEl.innerHTML = FOTOS.map(() => '<i></i>').join('');
   const piezas = $$('i', wallEl);
-  card.querySelector('.frente').style.backgroundImage = `url(${FOTOS[0]})`;
-  $$('.cf-ok .caja i', demo).forEach((c, k) => c.style.backgroundImage = `url(${FOTOS[k]})`);
+  let conFotos = false;
+  function fotos(){
+    if(conFotos) return; conFotos = true;
+    thumbs.forEach((i, k) => i.style.backgroundImage = `url(${GAL[k]})`);
+    piezas.forEach((i, k) => i.style.backgroundImage = `url(${FOTOS[k]})`);
+    card.querySelector('.frente').style.backgroundImage = `url(${FOTOS[0]})`;
+    $$('.cf-ok .caja i', demo).forEach((c, k) => c.style.backgroundImage = `url(${FOTOS[k]})`);
+    ROOMS.forEach(r => { const im = new Image(); im.src = `fotos/portada-nueva/${r.id}.webp`; });
+  }
+  /* en móvil la demo empieza justo debajo del pliegue: además de estar cerca, se espera a que la página
+     termine de cargar (la foto grande primero). Si el cliente llega antes a la demo, mostrar() las pide ya */
+  const trasCargar = () => {
+    if(!('IntersectionObserver' in window)) return fotos();
+    const cerca = new IntersectionObserver(es => { if(es[0].isIntersecting){ cerca.disconnect(); fotos(); } }, { rootMargin:'900px 0px' });
+    cerca.observe(demo);
+  };
+  if(document.readyState === 'complete') trasCargar(); else addEventListener('load', trasCargar, { once:true });
 
   let roomK = 0, combiK = 0;
   function colocar(){
@@ -169,7 +186,6 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
     const sig = capaB ? imgA : imgB; sig.src = src;
     sig.onload = () => { imgB.style.opacity = capaB ? 0 : 1; capaB = !capaB; };
   }
-  ROOMS.forEach(r => { const im = new Image(); im.src = `fotos/portada-nueva/${r.id}.webp`; });
 
   function chips(lista, on){ chipsEl.innerHTML = lista.map((t, k) => `<span class="${k === on ? 'on' : ''}">${t}</span>`).join(''); return $$('span', chipsEl); }
   function toca(el){
@@ -227,7 +243,7 @@ $$('video[data-src]').forEach(v => ioVid ? ioVid.observe(v) : verVideo(v));
   const dots = $$('button', dotsEl);
   let paso = 0, corriendo = false, visible = false;
   function mostrar(k){
-    parar(); paso = k; const p = PASOS[k];
+    fotos(); parar(); paso = k; const p = PASOS[k];
     tit.classList.add('cambia');
     setTimeout(() => { $('em', tit).textContent = k + 1; $('span', tit).textContent = p.corto || p.t; tit.classList.remove('cambia'); }, 200);
     demo.style.setProperty('--cf-t', p.ms + 'ms');

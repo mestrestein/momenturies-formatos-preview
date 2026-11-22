@@ -21,7 +21,8 @@
 <!-- rendimiento: la tipografía no bloquea el primer render; las fotos de stock viven en fotos/stock/ (WebP a 2x, localizadas 11-sep-2026) -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="preload" as="image" href="fotos/portada-nueva/hero-sin-clavos-iman-v2.webp" fetchpriority="high"/>
+<!-- 22-nov velocidad: el preload pide la misma versión que el <img> (antes bajaba la de 1402 px y el móvil luego la de 960: dos veces) -->
+<link rel="preload" as="image" href="fotos/portada-nueva/hero-sin-clavos-iman-v2.webp" imagesrcset="fotos/portada-nueva/hero-sin-clavos-iman-v2-960.webp 960w, fotos/portada-nueva/hero-sin-clavos-iman-v2.webp 1402w" imagesizes="100vw" fetchpriority="high"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'"/>
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"/></noscript>
 
@@ -2334,7 +2335,7 @@ function combiSlide(dir){
 <script src="fotos/ensueno/ensueno-fotos.js?v=22388ab1"></script>
 <script src="fotos/entornos/entornos.js?v=23c2a392"></script>
 <script src="preguntas.js?v=0d363e14"></script>
-<script src="portada.js?v=bc3dfdd5"></script>
+<script src="portada.js?v=f6db22eb"></script>
 <script src="lazy-bg.js?v=c4bf2642" defer></script>
 <script>/* 14-nov: el vídeo de la casa (horizontal en PC, vertical en el móvil) solo se baja cuando la sección está cerca */
 (function(){var v=document.querySelector('.cm1 .cm-vid');if(!v||!('IntersectionObserver' in window))return;
