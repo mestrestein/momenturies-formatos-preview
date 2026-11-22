@@ -25,6 +25,8 @@ Este archivo empieza por `_`, así que no se ve en la web.
 | 5 | 21-nov | `d992a80` | Portada: las diapositivas que no se ven se bajan al terminar de cargar. Ficha del Cuadro: miniaturas de 240 px y fotos grandes al cargar o al acercarse (1,9 MB → 0,6 MB al entrar) | portada.js, index.html, momenturies.html, ficha-cuadro.html, fotos/pdp/mini/ | Web real: diapositivas y miniaturas bien, sin errores |
 | 6 | 21-nov | `70f37e3` | Ficha del Cuadro: el visor 3D se carga cuando el cliente hace algo; mientras, imagen fija idéntica sacada del visor | ficha-cuadro.html, fotos/pdp/visor-cuadro.webp | Web real: imagen fija → 3D al tocar; «Ver el dorso» antes de cargar también gira |
 | 7 | 21-nov | `fed0142` | Enlace de cambios: el entorno se guarda dentro del diseño (fallo encontrado en las pruebas: #1004 abría en otro entorno) | editor.js + versión en 4 páginas | Web real: #1004 abre en Dormitorio oscuro desde el principio |
+| 8 | 22-nov | `6166605` | Portada: el preload de la foto grande pide la misma versión que el img (960 px en móvil); antes se bajaba también la de 1402 px (en la web real tardaba 10 s) | index.html, momenturies.html | Sin publicar |
+| 9 | 22-nov | (este) | Portada: las ~23 fotos de la demo «De tu galería a tu pared» se piden al terminar de cargar la página y con la demo cerca (o al arrancar la demo), no al abrir. En la web real empezaban a los 2,2 s, mientras aún bajaba la foto grande | portada.js + versión en index.html y momenturies.html | Local, móvil: 0 fotos de la demo antes del load, demo igual al bajar, sin errores. Sin publicar |
 
 Lo que **no** se ha tocado: calidad de impresión (JPG 0,98 a 300 ppp), aspecto, precios, textos.
 
