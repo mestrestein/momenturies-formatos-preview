@@ -2752,6 +2752,18 @@ async function uploadToCloudinary(blob, filename){
   return j.secure_url;
 }
 
+/* 24-nov: un corte de la conexión del móvil no puede tumbar el pago: cada archivo se reintenta hasta 2 veces. El aviso
+   de «demasiadas subidas» del servidor no se reintenta (no serviría) */
+async function subirArchivo(blob, filename){
+  for(let n = 0; ; n++){
+    try{ return await uploadToCloudinary(blob, filename); }
+    catch(e){
+      if(n >= 2 || /Demasiadas|pesa demasiado|Solo im/.test(e.message || '')) throw e;
+      await new Promise(res => setTimeout(res, 600 * (n + 1)));
+    }
+  }
+}
+
 /* Archivo para sublimar: la medida final más BLEED_MM por lado. El corte (justo lo que vio el
    cliente, con su frase y su fecha) va en el centro. El sangrado se rellena con la parte de la
    foto que quedó fuera del recorte y, donde ya no hay más foto, con el borde reflejado: nunca blanco.
@@ -2835,7 +2847,7 @@ function subirOriginal(p){
   if(!img) return Promise.resolve(null);
   let pr = ORIG_CACHE.get(img);
   if(!pr){
-    pr = originalBlob(p).then(orig => uploadToCloudinary(orig, `original-${Date.now()}.${orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg'}`));
+    pr = originalBlob(p).then(orig => subirArchivo(orig, `original-${Date.now()}.${orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg'}`));
     pr.catch(() => { if(ORIG_CACHE.get(img) === pr) ORIG_CACHE.delete(img); });
     ORIG_CACHE.set(img, pr);
   }
@@ -2877,13 +2889,13 @@ async function renderPosterArt(p){
   return {t, print:{dpi:print.dpi, cm:print.cm}, W, H, frontBlob, cropBlob, backBlob, sinExtras};
 }
 async function subirPosterArt({t, print, W, H, frontBlob, cropBlob, backBlob, sinExtras}, p){
-  const subeFrente = uploadToCloudinary(frontBlob, `impresion-${t}.jpg`);
+  const subeFrente = subirArchivo(frontBlob, `impresion-${t}.jpg`);
   const [frontUrl, backUrl, originalUrl, cropUrl] = await Promise.all([
     subeFrente,
-    backBlob ? uploadToCloudinary(backBlob, `dedicatoria-${t}.png`) : null,
+    backBlob ? subirArchivo(backBlob, `dedicatoria-${t}.png`) : null,
     // la original es un extra: si no sube, el pedido sigue con el archivo de impresión. Suele estar ya subida (subirOriginal)
     subirOriginal(p).catch(e => { console.warn('[Momenturies] Original sin subir:', e.message); return null; }),
-    sinExtras ? subeFrente : uploadToCloudinary(cropBlob, `recorte-${t}.jpg`).catch(e => { console.warn('[Momenturies] Recorte sin subir:', e.message); return null; }),
+    sinExtras ? subeFrente : subirArchivo(cropBlob, `recorte-${t}.jpg`).catch(e => { console.warn('[Momenturies] Recorte sin subir:', e.message); return null; }),
   ]);
   const cmTxt = a => a.map(n => n.toFixed(1).replace('.', ',')).join('×');
   const medida = `${cmTxt(print.cm)} cm (con ${BLEED_MM} mm de sangrado) a ${print.dpi} ppp`
@@ -2933,11 +2945,12 @@ let artCola = Promise.resolve();
 /* 21-nov: en segundo plano, cada cuadro se pinta cuando el cliente lleva un momento sin tocar la pantalla (pintar a
    300 ppp ocupa el móvil unos instantes y no debe notarse mientras diseña). Al pagar o guardar (PRISA) no se espera */
 let ULTIMO_TOQUE = 0, PRISA = false;
+const carritoAbierto = () => { const c = document.getElementById('coRoot'); return !!c && c.classList.contains('open'); };   // 24-nov: en el carrito ya no se diseña, no hay a qué esperar
 ['pointerdown','keydown','wheel','touchstart'].forEach(ev => addEventListener(ev, () => { ULTIMO_TOQUE = Date.now(); }, {passive:true, capture:true}));
 function esperarCalma(){
   return new Promise(res => {
     const mira = () => {
-      if(PRISA) return res();
+      if(PRISA || carritoAbierto()) return res();
       const falta = ULTIMO_TOQUE + 1500 - Date.now();
       if(falta > 0) return setTimeout(mira, falta + 50);
       if(window.requestIdleCallback) requestIdleCallback(() => (PRISA || Date.now() - ULTIMO_TOQUE >= 1500) ? res() : mira(), {timeout:2000});
@@ -2946,31 +2959,124 @@ function esperarCalma(){
     mira();
   });
 }
-function huellaArte(p){
+/* 24-nov: la huella lleva SOLO lo que sale impreso. Antes llevaba todos los datos sueltos del cuadro y se saltaba los
+   objetos: el ENCUADRE (p.crop) no contaba, así que reencuadrar una foto ya preparada no la rehacía y se habría impreso
+   el encuadre viejo; y cosas que no se imprimen (darle la vuelta en 3D) obligaban a subirla otra vez. */
+function huellaArte(p, idFoto){
   const o = {};
-  for(const [k, v] of Object.entries(p)){
-    if(k[0] === '_' || k === 'thumb' || k === 'frontSize' || k === 'backSize' || k === 'price' || k === 'flatK') continue;   // flatK: animación del 3D, no sale en la impresión
-    if(v == null || typeof v !== 'object' && typeof v !== 'function') o[k] = v;
+  for(const k of Object.keys(p).sort()){
+    if(!/^(front|back)[A-Z]/.test(k) && !/^(ptype|format|sizeKey|orient|mount)$/.test(k)) continue;
+    if(k === 'frontSize' || k === 'backSize') continue;   // los recalcula el propio pintado
+    const v = p[k];
+    if(v == null || v === '' || typeof v === 'object' || typeof v === 'function') continue;
+    o[k] = v;
   }
-  o.img = p.srcImg ? p.srcImg.src.slice(0, 120) + p.srcImg.naturalWidth + 'x' + p.srcImg.naturalHeight : '';
+  const c = p.crop || {};
+  o.crop = [c.scale || 1].concat(c.cx == null ? ['f', c.fx || 0, c.fy || 0] : [c.cx, c.cy]);
+  o.img = idFoto || (p.srcImg ? p.srcImg.src.slice(0, 120) + p.srcImg.naturalWidth + 'x' + p.srcImg.naturalHeight : '');
   return JSON.stringify(o);
 }
+/* el cuadro tal como está en este momento: pintar tarda, y lo que el cliente toque mientras tanto no puede colarse a medias */
+function instantanea(p){ return Object.assign({}, p, { crop: Object.assign({}, p.crop) }); }
 function prepararArte(p){
   const clave = p.uid || POSTERS.indexOf(p), huella = huellaArte(p);
   const hay = ART_CACHE.get(clave);
   if(hay && hay.huella === huella) return hay.promesa;
+  const entrada = { huella };
   // de uno en uno: en el móvil dos lienzos de impresión a la vez pueden quedarse sin memoria
-  // si el cuadro cambia mientras espera turno, se sube como esté; la huella vieja no casará y al pagar se rehace
-  const pintado = artCola.then(esperarCalma).then(() => renderPosterArt(p));
+  const pintado = artCola.then(esperarCalma).then(() => {
+    /* si mientras esperaba turno ha cambiado y ya hay otra preparación más nueva, esta no se pinta ni se sube */
+    if(ART_CACHE.get(clave) !== entrada) throw new Error('sustituido');
+    const foto = instantanea(p);
+    entrada.huella = huellaArte(foto);   // lo que de verdad se pinta
+    return renderPosterArt(foto).then(r => ({ r, foto }));
+  });
   artCola = pintado.catch(() => {});
-  const promesa = pintado.then(r => subirPosterArt(r, p));
-  promesa.catch(() => { if(ART_CACHE.get(clave)?.promesa === promesa) ART_CACHE.delete(clave); });
-  ART_CACHE.set(clave, {huella, promesa});
+  const promesa = entrada.promesa = pintado.then(({ r, foto }) => subirPosterArt(r, foto)).then(res => {
+    recordarArte(p, entrada, res);
+    return res;
+  });
+  promesa.catch(() => { if(ART_CACHE.get(clave) === entrada) ART_CACHE.delete(clave); });
+  ART_CACHE.set(clave, entrada);
   return promesa;
 }
+/* los archivos del cuadro tal como está AHORA: si cambió mientras se preparaba, se prepara otra vez */
+async function arteAlDia(p){
+  for(let n = 0; ; n++){
+    const clave = p.uid || POSTERS.indexOf(p);
+    let res, err = null;
+    try{ res = await prepararArte(p); }catch(e){ err = e; }
+    const e = ART_CACHE.get(clave);
+    if(!err && e && e.huella === huellaArte(p)) return res;
+    if(n >= 4) throw err || new Error('el diseño ha cambiado mientras se preparaba, vuelve a intentarlo');
+    if(err && err.message !== 'sustituido') throw err;
+  }
+}
+
+/* 24-nov · lo ya subido se recuerda en el navegador (48 h): si el cliente recarga, vuelve más tarde o paga desde el
+   carrito de la cabecera en otra página, no se pinta ni se sube todo otra vez. Solo vale si la foto es exactamente la
+   misma (huella SHA-256 del archivo) y el diseño no ha cambiado. */
+const ARTE_KEY = 'arte', ARTE_TTL = 48 * 3600e3, FOTO_ID = new WeakMap();
+let arteGuarda = Promise.resolve();
+function idFoto(p){
+  if(!p.file || !p.srcImg || !(window.crypto && crypto.subtle)) return Promise.resolve(null);
+  let pr = FOTO_ID.get(p.file);
+  if(!pr){
+    pr = p.file.arrayBuffer().then(b => crypto.subtle.digest('SHA-256', b))
+      .then(h => Array.from(new Uint8Array(h), x => x.toString(16).padStart(2, '0')).join('')).catch(() => null);
+    FOTO_ID.set(p.file, pr);
+  }
+  return pr;
+}
+function recordarArte(p, entrada, res){
+  const st = store();
+  if(!st || CAMBIO || !p.uid || !p.file) return;
+  const foto = instantanea(p);
+  if(huellaArte(foto) !== entrada.huella) return;   // ya ha cambiado: esto no vale
+  arteGuarda = arteGuarda.then(async () => {
+    const id = await idFoto(foto);
+    if(!id) return;
+    const todo = (await st.get(ARTE_KEY)) || {};
+    for(const k of Object.keys(todo)) if(Date.now() - (todo[k].at || 0) > ARTE_TTL) delete todo[k];
+    todo[p.uid] = { at: Date.now(), h: huellaArte(foto, id), res };
+    await st.put(ARTE_KEY, todo);
+  }).catch(() => {});
+}
+async function recuperarArte(){
+  const st = store();
+  if(!st || CAMBIO) return;
+  try{
+    const todo = (await st.get(ARTE_KEY)) || {};
+    for(const p of POSTERS){
+      const g = p.srcImg && p.uid && todo[p.uid];
+      if(!g || Date.now() - (g.at || 0) > ARTE_TTL || !g.res || !g.res.frontUrl || !g.res.originalUrl) continue;
+      const id = await idFoto(p);
+      if(!id || huellaArte(p, id) !== g.h) continue;
+      ART_CACHE.set(p.uid, { huella: huellaArte(p), promesa: Promise.resolve(g.res) });
+      ORIG_CACHE.set(p.srcImg, Promise.resolve(g.res.originalUrl));
+    }
+  }catch(e){ /* sin recuerdo: se prepara como siempre */ }
+}
+
+/* 24-nov · la imagen de la pared (para el correo) también se prepara al abrir el carrito, no al pagar */
+let PARED_CACHE = null;
+function prepararPared(){
+  if(!(WALL && WALL.pieces && WALL.pieces.length > 1)) return Promise.resolve(null);
+  const huella = WALL.id + '|' + WALL.width + 'x' + WALL.height + '|' + POSTERS.map(p => cuenta(p) ? huellaArte(p) : '-').join('|');
+  if(PARED_CACHE && PARED_CACHE.huella === huella) return PARED_CACHE.promesa;
+  const e = { huella };
+  e.promesa = wallImageBlob().then(b => b ? subirArchivo(b, `pared-${Date.now()}.jpg`) : null);
+  e.promesa.catch(() => { if(PARED_CACHE === e) PARED_CACHE = null; });
+  PARED_CACHE = e;
+  return e.promesa;
+}
+/* lo que es un extra (imagen del correo, copia del diseño) no puede hacer esperar al cliente más de esto */
+const comoMucho = (pr, ms) => Promise.race([pr, new Promise(res => setTimeout(() => res(null), ms))]);
 function prepararCarrito(){
   if(!(SHOPIFY.domain && SHOPIFY.storefrontToken)) return;
-  POSTERS.filter(cuenta).filter(q => !archivosReutilizables(q)).forEach(q => prepararArte(q).catch(e => console.warn('[Momenturies] Preparando en segundo plano:', e.message)));
+  const avisa = e => { if(e.message !== 'sustituido') console.warn('[Momenturies] Preparando en segundo plano:', e.message); };
+  POSTERS.filter(cuenta).filter(q => !archivosReutilizables(q)).forEach(q => prepararArte(q).catch(avisa));
+  if(carritoAbierto() && !CAMBIO) prepararPared().catch(avisa);
 }
 /* 21-nov (Marc: «que empiecen a cargarse una vez se suben»): cuando el cliente lleva unos segundos sin tocar nada y el
    diseño está completo, los archivos de impresión se preparan y suben solos. Al pagar (o guardar el cambio) ya están,
@@ -3055,17 +3161,19 @@ async function lineasPedidoYa(){
      En un cambio de pedido, los cuadros sin tocar reutilizan sus archivos y no se sube nada de ellos. */
   const piezasP = POSTERS.filter(cuenta);   // las quitadas del carrito (en gris) no van al pedido
   const reus = piezasP.map(archivosReutilizables);
+  esperaPaso(0, piezasP.length);
+  let hechas = 0;
   const artes = piezasP.map((p, i) => {
     const a = reus[i];
-    const pr = a ? Promise.resolve({frontUrl:a._foto_frontal, backUrl:a._dedicatoria_imagen || null, originalUrl:a._foto_original || null, cropUrl:a._foto_recorte || null, medida:a._impresion || '', reutilizado:true}) : prepararArte(p);
-    pr.catch(() => {});
+    const pr = a ? Promise.resolve({frontUrl:a._foto_frontal, backUrl:a._dedicatoria_imagen || null, originalUrl:a._foto_original || null, cropUrl:a._foto_recorte || null, medida:a._impresion || '', reutilizado:true}) : arteAlDia(p);
+    pr.then(() => esperaPaso(++hechas, piezasP.length), () => {});
     return pr;
   });
   /* la imagen de la pared para el correo es un extra: si falla, el pedido sigue igual. Sin nada cambiado, la de antes */
   const paredAntes = reus.length && reus.every(Boolean) ? (reus.find(a => a._pared_imagen) || {})._pared_imagen : null;
-  const paredUrl = await (paredAntes ? Promise.resolve(paredAntes) : wallImageBlob()
-    .then(b => b ? uploadToCloudinary(b, `pared-${Date.now()}.jpg`) : null)
-    .catch(e => { console.warn('[Momenturies] Imagen de la pared sin subir:', e.message); return null; }));
+  const paredPr = paredAntes ? Promise.resolve(paredAntes) : prepararPared().catch(e => { console.warn('[Momenturies] Imagen de la pared sin subir:', e.message); return null; });
+  await Promise.all(artes);
+  const paredUrl = await comoMucho(paredPr, 5000);
   for(const [i, p] of piezasP.entries()){
     const variantId = variantIdOf(p);
     if(!variantId) throw new Error(`Falta el variantId de Shopify para ${prodOf(p).name} ${p.sizeKey}${p.ptype==='metal' ? ' / '+mountOf(p) : ''}`);
@@ -3136,14 +3244,22 @@ async function disenoParaPedido(originales){
 }
 
 async function checkoutWithShopify(buyerIdentity, shipId){
-  const {lines, originales} = await lineasPedido();
   /* 19-nov (Marc): el diseño se guarda en el Vestuario y cada línea lleva su código (_diseno): así, si una foto sale
-     baja, el correo puede llevar un enlace para cambiarla. Es un extra: si falla, el pedido sigue igual */
-  const codigo = await disenoParaPedido(originales)
+     baja, el correo puede llevar un enlace para cambiarla. Es un extra: si falla, el pedido sigue igual.
+     24-nov: solo necesita las fotos originales, así que se guarda mientras terminan los archivos de impresión */
+  const piezasD = POSTERS.filter(cuenta);
+  const disenoPr = Promise.all(piezasD.map(p => subirOriginal(p).catch(() => null))).then(urls => {
+      const originales = {};
+      piezasD.forEach((p, i) => { if(urls[i] && p.uid) originales[p.uid] = urls[i]; });
+      return disenoParaPedido(originales);
+    })
     .then(d => d && fetch(DISENOS_BASE + '/subidas/cambio/diseno', { method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ datos:d, pagina:location.pathname.split('/').pop() || 'cuadro.html' }) }).then(r => r.ok ? r.json() : null))
     .then(j => j && j.codigo)
     .catch(e => { console.warn('[Momenturies] Diseño del pedido sin guardar:', e.message); return null; });
+  const {lines} = await lineasPedido();
+  esperaPaso(-1);
+  const codigo = await comoMucho(disenoPr, 6000);
   if(codigo) for(const l of lines) l.attributes.push({key:'_diseno', value:codigo});
   const cart = await shopifyCreateCart(lines, buyerIdentity);
   await shopifySelectShipping(cart, shipId);
@@ -4191,6 +4307,59 @@ function coBuyerIdentity(){
   return id;
 }
 
+/* 24-nov (Marc): si pagar (o guardar un cambio) tarda más de 2 segundos, pantalla con mensajes que van cambiando y el
+   avance de verdad (fotos listas de las que son). Si va rápido, ni se ve. */
+const ESPERA = { t:null, rot:null, hechas:0, total:0, cerrando:false };
+const ESPERA_TXT = [
+  ['Creando tu momento perfecto…', 'Creating your perfect moment…'],
+  ['Cuidando cada detalle de tus fotos…', 'Taking care of every detail…'],
+  ['Preparándolas en alta definición…', 'Preparing them in high definition…'],
+  ['Pronto, de tu galería a tu pared…', 'Soon, from your gallery to your wall…'],
+];
+function esperaPaso(hechas, total){
+  if(hechas < 0) ESPERA.cerrando = true; else { ESPERA.cerrando = false; ESPERA.hechas = hechas; ESPERA.total = total; }
+  esperaPinta();
+}
+function esperaPinta(){
+  const h = document.getElementById('coEspera'); if(!h) return;
+  const n = ESPERA.total || 1, pct = ESPERA.cerrando ? 96 : Math.round(6 + 84 * ESPERA.hechas / n);
+  h.querySelector('.co-esp-barra i').style.width = pct + '%';
+  h.querySelector('.co-esp-barra').setAttribute('aria-valuenow', pct);
+  h.querySelector('.co-esp-sub').innerHTML = ESPERA.cerrando || ESPERA.hechas >= n
+    ? '<span class="es">Cargando tu pedido…</span><span class="en">Loading your order…</span>'
+    : '<span class="es">Subiendo tus fotos: ' + ESPERA.hechas + ' de ' + n + '</span><span class="en">Uploading your photos: ' + ESPERA.hechas + ' of ' + n + '</span>';
+}
+function esperaAbrir(){
+  esperaCerrar();
+  ESPERA.hechas = 0; ESPERA.total = 0; ESPERA.cerrando = false;
+  ESPERA.t = setTimeout(() => {
+    const h = document.createElement('div');
+    h.id = 'coEspera'; h.className = 'co-espera'; h.setAttribute('role', 'status'); h.setAttribute('aria-live', 'polite');
+    h.innerHTML = '<div class="co-esp-caja"><div class="co-esp-marco"><i></i></div><p class="co-esp-txt"></p>'
+      + '<div class="co-esp-barra" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div><p class="co-esp-sub"></p>'
+      + '<p class="co-esp-nota"><span class="es">No cierres esta página</span><span class="en">Please keep this page open</span></p></div>';
+    document.body.appendChild(h);
+    const txt = h.querySelector('.co-esp-txt');
+    let k = 0;
+    const pon = () => { const m = ESPERA_TXT[k++ % ESPERA_TXT.length]; txt.innerHTML = '<span class="es">' + m[0] + '</span><span class="en">' + m[1] + '</span>'; };
+    pon(); esperaPinta();
+    requestAnimationFrame(() => h.classList.add('ver'));
+    ESPERA.rot = setInterval(() => { txt.classList.add('cambia'); setTimeout(() => { pon(); txt.classList.remove('cambia'); }, 260); }, 2600);
+  }, 2000);
+}
+function esperaCerrar(){
+  clearTimeout(ESPERA.t); clearInterval(ESPERA.rot);
+  const h = document.getElementById('coEspera'); if(h) h.remove();
+}
+/* al abrir el carrito se deja abierta la conexión con la tienda y con la página de pago */
+function preconectarPago(){
+  if(preconectarPago.hecho || !SHOPIFY.domain) return;
+  preconectarPago.hecho = true;
+  [['https://' + SHOPIFY.domain, true], ['https://shopify-staged-uploads.storage.googleapis.com', true], ['https://checkout.momenturies.com', false]].forEach(([u, cors]) => {
+    const l = document.createElement('link'); l.rel = 'preconnect'; l.href = u; if(cors) l.crossOrigin = 'anonymous'; document.head.appendChild(l);
+  });
+}
+
 function openCheckout(){
   if(CAMBIO){ cambioGuardar(); return; }   // 19-nov: cambiando un pedido ya pagado, no hay carrito ni pago
   mmEv('carrito', POSTERS.filter(q => q.srcImg).length + ' piezas');
@@ -4198,10 +4367,11 @@ function openCheckout(){
   const items = POSTERS.filter(p=>p.srcImg);
   if(!items.length){ toast('Sube al menos una foto primero'); return; }
   coRenderShip(); coRenderSum();
-  prepararCarrito();
   const next = !CO.mail ? 'mail' : (!CO.envio ? 'envio' : '');
   coOpen(next);
   coEl('coRoot').classList.add('open');
+  preconectarPago();
+  prepararCarrito();   // 24-nov: con el carrito ya abierto, sin esperar a que el cliente deje de tocar
   document.body.style.overflow = 'hidden';
 }
 function closeCheckout(){
@@ -4229,19 +4399,22 @@ function closeCheckout(){
   coEl('coZip').addEventListener('input', ()=>{ coRenderShip(); coRenderSum(); });   // Baleares, Canarias, Ceuta y Melilla van por el C.P.
   const payHtml = coEl('coPay').innerHTML;
   // al volver atrás desde la página de pago, el botón vuelve a estar listo
-  window.addEventListener('pageshow', e=>{ if(e.persisted){ const b = coEl('coPay'); b.disabled = false; b.innerHTML = payHtml; } });
+  window.addEventListener('pageshow', e=>{ if(e.persisted){ esperaCerrar(); const b = coEl('coPay'); b.disabled = false; b.classList.remove('ocupado'); b.innerHTML = payHtml; } });
   coEl('coPay').addEventListener('click', async ()=>{
     if(SHOPIFY.domain && SHOPIFY.storefrontToken){
       const btn = coEl('coPay');
       btn.disabled = true;
+      btn.classList.add('ocupado');
       btn.innerHTML = '<span class="es">Preparando pedido…</span><span class="en">Preparing order…</span>';
+      esperaAbrir();
       try{
         mmEv('checkout'); if(window.mmEstado) mmEstado('checkout', POSTERS.filter(q => q.srcImg).length + ' piezas');
         window.location.href = await checkoutWithShopify(null, null);   // correo, dirección y envío, en el pago de Shopify
       }catch(err){
         console.error(err);
+        esperaCerrar();
         toast('No se ha podido crear el pedido: ' + err.message);
-        btn.disabled = false; btn.innerHTML = payHtml;
+        btn.disabled = false; btn.classList.remove('ocupado'); btn.innerHTML = payHtml;
       }
       return;
     }
@@ -4291,6 +4464,7 @@ function scheduleSave(){
   if((window.MOMENTURIES_EDITOR||{}).vista || _restoring || !store() || typeof POSTERS === 'undefined') return;
   clearTimeout(_saveT);
   _saveT = setTimeout(saveDesign, 700);
+  programarPreparacion();   // 24-nov: reencuadrar o cambiar una frase también vuelve a prepararlo en segundo plano (antes, solo si cambiaba el total)
 }
 
 async function saveDesign(){
@@ -4338,6 +4512,7 @@ async function clearDesign(){
     const saved = await st.get(SAVE_KEY);
     if(saved && saved.items) for(const it of saved.items) if(it.photo) await st.del(it.photo);
     await st.del(SAVE_KEY);
+    await st.del(ARTE_KEY);
     if(_savedBlobs) _savedBlobs.clear();
     _cuentaVin = null;
   }catch(e){}
@@ -4406,7 +4581,7 @@ async function restoreDesign(saved){
   _restoring = false;
   /* 21-nov: un diseño recuperado (el cliente vuelve a la página) también se va preparando solo. En un cambio de pedido
      no: ahí los cuadros sin tocar ya tienen sus archivos, y lo que cambie lo prepara programarPreparacion */
-  if(!CAMBIO){ POSTERS.forEach(q => { if(q.srcImg) adelantarOriginal(q); }); programarPreparacion(); }
+  if(!CAMBIO){ await recuperarArte(); POSTERS.forEach(q => { if(q.srcImg) adelantarOriginal(q); }); programarPreparacion(); }
   openEditor();
   syncTools(); syncViewerHint();
 }
@@ -4643,9 +4818,12 @@ async function cambioGuardar(){
   if(btn) btn.disabled = true;
   try{
     toast('Preparando tus cuadros…');
+    esperaAbrir();
     const {lines, originales} = await lineasPedido();
+    esperaPaso(-1);
     const piezas = lines.map(l => ({ variantId:l.merchandiseId, attrs:l.attributes }));
     const pre = await apiCambio('presupuesto', { piezas });
+    esperaCerrar();
     const d = pre.diferencia;
     const html = d > 0
       ? `<h3>Tu pedido nuevo cuesta ${eur(d)} más</h3><p>Pagaste ${eur(pre.pagado)} y con los cambios son ${eur(pre.nuevo)}. Al confirmar te llevamos a pagar solo la diferencia.</p>`
@@ -4659,6 +4837,7 @@ async function cambioGuardar(){
     console.warn('[Momenturies] Cambio de pedido:', e);
     toast('No se ha podido preparar el cambio: ' + e.message);
   }finally{
+    esperaCerrar();
     if(btn) btn.disabled = false;
   }
 }

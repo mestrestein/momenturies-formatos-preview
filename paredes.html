@@ -34,6 +34,10 @@
   .ens-bar-in{max-width:1240px;margin:0 auto;padding:12px 40px;display:flex;flex-direction:column;gap:9px}
   .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
   .ens-row::-webkit-scrollbar{display:none}
+  /* 24-nov: sitio reservado mientras el script pinta filtros y conjuntos (antes el pie salía arriba y saltaba: CLS 0,47 en móvil) */
+  .ens-row{min-height:34px}
+  .ens-count:empty::before{content:'\00a0'}
+  .ens-grid:empty{min-height:160vh}
   .ens-row small{flex:0 0 auto;width:92px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light)}
   .ens-row button{flex:0 0 auto;border:1px solid var(--gray2);background:#fff;border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);white-space:nowrap;transition:background .15s,border-color .15s}
   .ens-row button:hover{border-color:#aaa}
