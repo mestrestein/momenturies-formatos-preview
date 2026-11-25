@@ -60,7 +60,7 @@
     moderno: ['Geometría, formas orgánicas y degradados: diseños propios para espacios actuales.', 'Geometry, organic shapes and gradients: our own designs for contemporary spaces.'],
     minimal: ['Pocas formas y mucha calma. Diseños propios que combinan con todo.', 'Few shapes, lots of calm. Our own designs that go with everything.']
   };
-  var SIZE_TXT = { XL: '30×40', L: '24×32', M: '18×24' };
+  var SIZE_TXT = { XL: '30×40', L: '24×32', M: '18×24', S: '12×16' };
 
   var OBRAS = (window.MOMENTURIES_OBRAS || []).map(function (o) { o.own = false; return o; });
   var DIS = (window.MOMENTURIES_DISENOS || { list: [] }).list;
