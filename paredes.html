@@ -24,7 +24,7 @@
 <style>
   /* paredes-ensueno.html (9-nov): todos los conjuntos, de los mejores al resto, cada uno colgado en
      habitaciones distintas (fotos/ensueno, fotos/_build_ensueno_fotos.py). Se filtra por número de
-     cuadros y por tipo de habitación; cada foto entra en el editor con ese conjunto y esa habitación.
+     cuadros, por lugar (los grupos del editor) y por estilo; cada foto entra en el editor con ese conjunto y esa habitación.
      Se genera con _build_paredes_ensueno.py desde _paredes_ensueno_tpl.html: no editar a mano. */
   .ens-head{max-width:1240px;margin:0 auto;padding:44px 40px 6px}
   .ens-kick{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin:0 0 12px}
@@ -34,6 +34,9 @@
   .ens-bar-in{max-width:1240px;margin:0 auto;padding:12px 40px;display:flex;flex-direction:column;gap:9px}
   .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
   .ens-row::-webkit-scrollbar{display:none}
+  .ens-row[hidden]{display:none}
+  .ens-row button small{width:auto;margin-left:5px;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:inherit;opacity:.55}
+  .ens-empty a{color:var(--black);font-weight:600}
   /* 24-nov: sitio reservado mientras el script pinta filtros y conjuntos (antes el pie salía arriba y saltaba: CLS 0,47 en móvil) */
   .ens-row{min-height:34px}
   .ens-count:empty::before{content:'\00a0'}
@@ -137,11 +140,12 @@
   <p class="ens-lead"><span class="es">¿Quedará bien en casa? ¿Mejor en el salón, en el pasillo o en la cocina? ¿Qué tamaños elijo? ¿Y si pido varios y luego la combinación no convence?<br><strong style="color:var(--ink,#1c1c1c)">Dudas lógicas, solución fácil.</strong> Desde el móvil y sin moverte del sofá: sube tus fotos, elige la pared y prueba entre cientos de combinaciones o crea la tuya. Lo ves colgado antes de comprarlo.</span><span class="en">Will it look good at home? Living room, hallway or kitchen? Which sizes? What if I order several and the combination doesn't work?<br><strong style="color:var(--ink,#1c1c1c)">Fair questions, easy answer.</strong> From your phone, without leaving the sofa: upload your photos, pick the wall and try hundreds of combinations or create your own. See it on the wall before you buy.</span></p>
 </section>
 
-<!-- FILTROS: número de cuadros y tipo de habitación (los botones los pinta el script) -->
+<!-- FILTROS: número de cuadros, lugar (los mismos grupos que el editor) y estilo (los botones los pinta el script) -->
 <div class="ens-bar" id="ensBar">
   <div class="ens-bar-in">
     <div class="ens-row" id="fN" role="group"><small><span class="es">Cuadros</span><span class="en">Prints</span></small></div>
     <div class="ens-row" id="fT" role="group"><small><span class="es">Lugar</span><span class="en">Place</span></small></div>
+    <div class="ens-row" id="fS" role="group" hidden><small><span class="es">Estilo</span><span class="en">Style</span></small></div>
   </div>
 </div>
 <p class="ens-count" id="ensCount" aria-live="polite"></p>
@@ -162,6 +166,7 @@
 
 <script src="paredes.js?v=1e9df1aa"></script>
 <script src="fotos/ensueno/ensueno-fotos.js?v=22388ab1"></script>
+<script src="fotos/entornos/entornos.js?v=23c2a392"></script>
 <script>
 (function(){
   'use strict';
@@ -181,48 +186,115 @@
     .sort(function(a, b){ return rank(a.w) - rank(b.w) || a.i - b.i; })
     .map(function(x){ return x.w; });
 
+  /* 27-nov (Aitor): LUGAR = los mismos grupos y nombres que el selector de entorno del editor (GRUPOS_ENTORNO en
+     editor.js, sin neveras ni estanterías) y el grupo de cada foto sale de su `cat` en fotos/entornos/entornos.js.
+     Debajo, ESTILO: cada escena tiene el suyo (en el editor va en el nombre: «Comedor rústico», «Escalera nórdica»...). */
   var TYPES = [
-    {k:'salon', es:'Salón', en:'Living room'}, {k:'dormitorio', es:'Dormitorio', en:'Bedroom'},
-    {k:'comedor', es:'Comedor', en:'Dining room'}, {k:'aparador', es:'Aparador y cómoda', en:'Sideboard'},
-    {k:'escalera', es:'Escalera', en:'Stairs'}, {k:'rincon', es:'Rincón y escritorio', en:'Nook and desk'}
+    {k:'salon', es:'Salones', en:'Living rooms', one:{es:'Salón', en:'Living room'}},
+    {k:'cocina', es:'Cocinas', en:'Kitchens', one:{es:'Cocina', en:'Kitchen'}, try:'cocina-marfil'},
+    {k:'comedor', es:'Comedores', en:'Dining rooms', one:{es:'Comedor', en:'Dining room'}},
+    {k:'aparador', es:'Aparadores', en:'Sideboards', one:{es:'Aparador', en:'Sideboard'}},
+    {k:'dormitorio', es:'Habitaciones', en:'Bedrooms', one:{es:'Dormitorio', en:'Bedroom'}},
+    {k:'despacho', es:'Escritorios', en:'Desks', one:{es:'Escritorio', en:'Desk'}},
+    {k:'pasillo', es:'Pasillo', en:'Hallway', one:{es:'Pasillo', en:'Hallway'}},
+    {k:'escalera', es:'Escalera', en:'Staircase', one:{es:'Escalera', en:'Staircase'}}
   ];
-  /* mismo reparto que TYPE() de fotos/_build_ensueno_fotos.py */
+  var STYLES = [
+    {k:'moderno', es:'Moderno', en:'Modern'}, {k:'minimalista', es:'Minimalista', en:'Minimalist'},
+    {k:'nordico', es:'Nórdico', en:'Scandinavian'}, {k:'rustico', es:'Rústico', en:'Rustic'},
+    {k:'mediterraneo', es:'Mediterráneo', en:'Mediterranean'}, {k:'clasico', es:'Clásico', en:'Classic'},
+    {k:'midcentury', es:'Mid-century', en:'Mid-century'}
+  ];
+  /* estilo de cada escena (por el nombre que tiene en el editor y por cómo es la foto) */
+  var STYLE_OF = {
+    'sofa-lino':'nordico', 'sofa-terracota':'mediterraneo', 'sofa-esquinero':'moderno', 'salon-lino':'rustico',
+    'salon-luz':'moderno', 'salon-cuero':'clasico', 'rincon-taburete':'minimalista',
+    'cocina-marfil':'clasico', 'cocina-roble-claro':'nordico', 'cocina-marmol-negro':'moderno', 'cocina-mediterranea':'mediterraneo',
+    'cocina-retro':'midcentury', 'cocina-country-verde':'rustico', 'rincon-cocina':'mediterraneo',
+    'comedor-rustico':'rustico', 'comedor-midcentury':'midcentury', 'comedor-moderno':'moderno', 'comoda-aparador':'nordico',
+    'aparador-clasico':'clasico', 'aparador-elegante':'clasico', 'aparador-moderno':'minimalista', 'aparador-lujo':'moderno',
+    'aparador-banco':'rustico', 'aparador-cestas':'mediterraneo',
+    'dormitorio-boucle':'moderno', 'dormitorio-mediterraneo':'mediterraneo', 'dormitorio-clasico2':'clasico', 'dormitorio-oscuro':'moderno',
+    'comoda-cama':'nordico', 'comoda-cajonera':'nordico', 'rincon-mesita':'nordico',
+    'despacho-gaming':'moderno', 'despacho-clasico':'clasico', 'despacho-nordico2':'nordico', 'despacho-nogal':'midcentury',
+    'rincon-escritorio':'mediterraneo', 'comoda-escritorio':'nordico',
+    'rincon-banco':'mediterraneo', 'sofa-consola-larga':'minimalista', 'movil-consola':'minimalista',
+    'escalera-clasica':'clasico', 'escalera-clasica-elegante':'clasico', 'escalera-nordica-tv':'nordico', 'escalera-nordica-consola':'nordico',
+    'escalera-rustica':'rustico', 'escalera-rustica-baranda':'rustico', 'escalera-moderna-negra':'moderno'
+  };
+  var CAT = {};
+  (window.MOMENTURIES_ROOMS || []).forEach(function(r){ CAT[r.id] = r.cat; if(r.group && !CAT[r.group]) CAT[r.group] = r.cat; });
+  /* lugar de una foto: el del editor; si una escena nueva aún no está en entornos.js, por su nombre */
   var typeOf = function(r){
+    if(CAT[r]) return CAT[r];
     if(/^(salon|sofa)/.test(r)) return 'salon';
+    if(/^cocina/.test(r)) return 'cocina';
     if(/^dormitorio/.test(r) || r === 'comoda-cama') return 'dormitorio';
     if(/^comedor/.test(r)) return 'comedor';
     if(/^escalera/.test(r)) return 'escalera';
-    if(/^rincon/.test(r) || r === 'comoda-escritorio') return 'rincon';
+    if(/^(rincon-escritorio|despacho|comoda-escritorio)/.test(r)) return 'despacho';
     return 'aparador';
   };
+  var styleOf = function(r){ return STYLE_OF[r] || STYLE_OF[r.replace(/-vert$/, '')] || ''; };
   var tName = function(k){ for(var i = 0; i < TYPES.length; i++) if(TYPES[i].k === k) return TYPES[i]; };
+  var sName = function(k){ for(var i = 0; i < STYLES.length; i++) if(STYLES[i].k === k) return STYLES[i]; };
+  /* etiqueta de la foto: «Salón · Nórdico» */
+  var label = function(r){
+    var t = tName(typeOf(r)), s = sName(styleOf(r)), one = t ? t.one : {es:'', en:''};
+    return s ? {es: one.es + ' · ' + s.es, en: one.en + ' · ' + s.en} : one;
+  };
+  var match = function(r){ return (!state.t || typeOf(r) === state.t) && (!state.s || styleOf(r) === state.s); };
+  /* fotos de todos los conjuntos que se enseñan (para contar y para saber qué estilos hay en cada lugar) */
+  var ALLR = [];
+  list.forEach(function(w){ PH[w.id].forEach(function(r){ if(ALLR.indexOf(r) < 0) ALLR.push(r); }); });
   var NS = [
     {k:'', es:'Todos', en:'All'}, {k:'2-3', es:'2 o 3', en:'2 or 3'}, {k:'4-6', es:'4 a 6', en:'4 to 6'},
     {k:'7-9', es:'7 a 9', en:'7 to 9'}, {k:'10-99', es:'10 o más', en:'10 or more'}
   ];
-  var state = {n:'', t:''};
+  var state = {n:'', t:'', s:''};
   var grid = document.getElementById('ensGrid'), count = document.getElementById('ensCount'), bar = document.getElementById('ensBar');
 
+  /* cuántos conjuntos salen con este valor de filtro (respetando los otros dos) */
+  function countWith(key, k){
+    var o = {n: state.n, t: state.t, s: state.s}; o[key] = k;
+    if(key === 't') o.s = '';
+    return list.filter(function(w){ return passes(w, o); }).length;
+  }
   function chips(el, items, key){
+    el.querySelectorAll('button').forEach(function(b){ b.remove(); });
     items.forEach(function(o){
       var b = document.createElement('button');
       b.type = 'button'; b.dataset.k = o.k; b.innerHTML = esen(o);
       b.addEventListener('click', function(){
-        state[key] = o.k; sync(); render();
+        state[key] = o.k;
+        if(key === 't') state.s = '';           // otro lugar → estilo desde «Todos»
+        sync(); render();
         // si ya se había bajado, volver al principio de la lista (la barra se queda pegada arriba)
         if(window.scrollY > bar.offsetTop) window.scrollTo({top: bar.offsetTop - 60, behavior:'smooth'});
       });
       el.appendChild(b);
     });
   }
+  var fS = document.getElementById('fS');
   chips(document.getElementById('fN'), NS, 'n');
-  chips(document.getElementById('fT'), [{k:'', es:'Todas', en:'All'}].concat(TYPES), 't');
+  chips(document.getElementById('fT'), [{k:'', es:'Todos', en:'All'}].concat(TYPES), 't');
+  /* estilos: solo los que hay en el lugar elegido */
+  function styleChips(){
+    var here = STYLES.filter(function(s){ return ALLR.some(function(r){ return styleOf(r) === s.k && (!state.t || typeOf(r) === state.t); }); });
+    if(state.s && !here.some(function(s){ return s.k === state.s; })) state.s = '';
+    fS.hidden = !here.length;
+    chips(fS, [{k:'', es:'Todos', en:'All'}].concat(here), 's');
+  }
 
   function sync(){
-    [['fN','n'], ['fT','t']].forEach(function(p){
-      document.querySelectorAll('#' + p[0] + ' button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.k === state[p[1]] ? 'true' : 'false'); });
+    styleChips();
+    [['fN','n'], ['fT','t'], ['fS','s']].forEach(function(p){
+      document.querySelectorAll('#' + p[0] + ' button').forEach(function(b){
+        b.setAttribute('aria-pressed', b.dataset.k === state[p[1]] ? 'true' : 'false');
+        if(p[0] !== 'fN' && b.dataset.k){ var c = countWith(p[1], b.dataset.k); b.insertAdjacentHTML('beforeend', '<small>' + c + '</small>'); }
+      });
     });
-    var h = [state.n && 'cuadros=' + state.n, state.t && 'habitacion=' + state.t].filter(Boolean).join('&');
+    var h = [state.n && 'cuadros=' + state.n, state.t && 'lugar=' + state.t, state.s && 'estilo=' + state.s].filter(Boolean).join('&');
     try { history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch(e){}
   }
 
@@ -245,11 +317,12 @@
     if(!mixed(base)) return versions(base);
     var st = steps(base); return st.length ? st.map(function(d){ return d ? at(base, (d > 0 ? '+' : '') + d) : base; }) : [base];
   };
-  /* orden de las fotos: la habitación que se estaba viendo, luego la del filtro, luego el resto */
+  /* orden de las fotos: la que se estaba viendo, luego la del filtro (lugar y estilo), luego el resto */
   function roomsOf(w, keep){
     var rooms = (PH[keyOf(w)] || []).slice();
     var first = function(test){ var m = rooms.filter(test); rooms = m.concat(rooms.filter(function(r){ return !test(r); })); };
     if(state.t) first(function(r){ return typeOf(r) === state.t; });
+    if(state.t || state.s) first(match);
     if(keep && rooms.indexOf(keep) > 0) first(function(r){ return r === keep; });
     return rooms;
   }
@@ -271,10 +344,10 @@
     el.innerHTML = '<a class="ens-media" href="' + link(rooms[0]) + '">'
       + '<img src="' + src(rooms[0]) + '" alt="' + w.name + '" width="1400" height="1050" loading="lazy" decoding="async">'
       + (best ? '<span class="ens-rank">' + esen({es:'De los favoritos', en:'A favourite'}) + '</span>' : '')
-      + '<span class="ens-room">' + esen(tName(typeOf(rooms[0]))) + '</span>'
+      + '<span class="ens-room">' + esen(label(rooms[0])) + '</span>'
       + '<span class="ens-go">' + esen({es:'Entrar y poner mis fotos', en:'Step in, add my photos'}) + ' &rarr;</span></a>'
       + (rooms.length > 1 ? '<div class="ens-thumbs">' + rooms.map(function(r, i){
-          var t = tName(typeOf(r));
+          var t = label(r);
           return '<button type="button" data-r="' + r + '" aria-pressed="' + (i ? 'false' : 'true') + '" aria-label="' + t.es + '" title="' + t.es + '"><img src="' + src(r) + '" alt="" loading="lazy" decoding="async"></button>';
         }).join('') + '</div>' : '')
       + '<div class="ens-info"><div><b>' + w.name + '</b><div class="ens-meta">' + w.n + ' ' + esen({es:'cuadros', en:'prints'}) + ' · ' + esen({es:'ocupa ', en:'covers '}) + Math.round(w.width) + ' × ' + Math.round(w.height) + ' cm</div></div>'
@@ -285,7 +358,7 @@
       b.addEventListener('click', function(){
         cur = b.dataset.r;
         el.querySelectorAll('.ens-thumbs button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-        img.src = src(cur); a.href = link(cur); tag.innerHTML = esen(tName(typeOf(cur)));
+        img.src = src(cur); a.href = link(cur); tag.innerHTML = esen(label(cur));
       });
     });
     // otro tamaño: la tarjeta se vuelve a pintar con sus medidas, su precio y sus fotos, en la misma habitación
@@ -299,29 +372,40 @@
     return el;
   }
 
+  function passes(w, o){
+    var lo = 0, hi = 99;
+    if(o.n){ var s = o.n.split('-'); lo = +s[0]; hi = +s[1]; }
+    if(w.n < lo || w.n > hi) return false;
+    // con lugar o estilo, solo los que tienen foto que cumpla los dos (y esa sale primero)
+    return !(o.t || o.s) || PH[w.id].some(function(r){ return (!o.t || typeOf(r) === o.t) && (!o.s || styleOf(r) === o.s); });
+  }
   function render(){
     grid.innerHTML = '';
-    var lo = 0, hi = 99, shown = 0;
-    if(state.n){ var s = state.n.split('-'); lo = +s[0]; hi = +s[1]; }
+    var shown = 0;
     list.forEach(function(w){
-      if(w.n < lo || w.n > hi) return;
-      // con filtro de habitación, solo los que tienen foto en una de ese tipo (y esa sale primero)
-      if(state.t && !PH[w.id].some(function(r){ return typeOf(r) === state.t; })) return;
+      if(!passes(w, state)) return;
       grid.appendChild(card(w, w.best || FIRST.indexOf(w.id) >= 0));
       shown++;
     });
     count.innerHTML = esen({es: shown + (shown === 1 ? ' conjunto' : ' conjuntos'), en: shown + (shown === 1 ? ' set' : ' sets')});
     if(!shown){
-      grid.innerHTML = '<div class="ens-empty">' + esen({es:'No hay conjuntos con esos filtros.', en:'No sets match those filters.'}) + '<br><button type="button">' + esen({es:'Quitar filtros', en:'Clear filters'}) + '</button></div>';
-      grid.querySelector('button').addEventListener('click', function(){ state = {n:'', t:''}; sync(); render(); });
+      var T = state.t && tName(state.t), noPhotos = T && !ALLR.some(function(r){ return typeOf(r) === state.t; });
+      grid.innerHTML = '<div class="ens-empty">' + (noPhotos
+        ? esen({es:'Aún no tenemos fotos de conjuntos en ' + T.es.toLowerCase() + '. <a href="cuadro.html?entorno=' + (T.try || '') + '">Pruébalo en el editor</a>: elige la que más se parezca a la tuya y cuelga el conjunto que quieras.',
+                en:'No set photos in ' + T.en.toLowerCase() + ' yet. <a href="cuadro.html?entorno=' + (T.try || '') + '">Try it in the editor</a>: pick the one closest to yours and hang any set.'})
+        : esen({es:'No hay conjuntos con esos filtros.', en:'No sets match those filters.'}))
+        + '<br><button type="button">' + esen({es:'Quitar filtros', en:'Clear filters'}) + '</button></div>';
+      grid.querySelector('.ens-empty button').addEventListener('click', function(){ state = {n:'', t:'', s:''}; sync(); render(); });
     }
   }
 
-  /* filtros desde la dirección, para poder enlazarlos: paredes.html#cuadros=4-6&habitacion=salon */
+  /* filtros desde la dirección, para poder enlazarlos: paredes.html#cuadros=4-6&lugar=salon&estilo=nordico
+     (los enlaces viejos con habitacion= siguen valiendo; rincon pasó a despacho) */
   location.hash.replace(/^#/, '').split('&').forEach(function(kv){
     var p = kv.split('=');
     if(p[0] === 'cuadros' && NS.some(function(o){ return o.k === p[1]; })) state.n = p[1];
-    if(p[0] === 'habitacion' && tName(p[1])) state.t = p[1];
+    if(p[0] === 'habitacion' || p[0] === 'lugar'){ var k = p[1] === 'rincon' ? 'despacho' : p[1]; if(tName(k)) state.t = k; }
+    if(p[0] === 'estilo' && sName(p[1])) state.s = p[1];
   });
   sync(); render();
 })();
