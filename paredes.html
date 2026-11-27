@@ -35,7 +35,6 @@
   .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
   .ens-row::-webkit-scrollbar{display:none}
   .ens-row[hidden]{display:none}
-  .ens-row button small{width:auto;margin-left:5px;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;color:inherit;opacity:.55}
   .ens-empty a{color:var(--black);font-weight:600}
   /* 24-nov: sitio reservado mientras el script pinta filtros y conjuntos (antes el pie salía arriba y saltaba: CLS 0,47 en móvil) */
   .ens-row{min-height:34px}
@@ -254,12 +253,6 @@
   var state = {n:'', t:'', s:''};
   var grid = document.getElementById('ensGrid'), count = document.getElementById('ensCount'), bar = document.getElementById('ensBar');
 
-  /* cuántos conjuntos salen con este valor de filtro (respetando los otros dos) */
-  function countWith(key, k){
-    var o = {n: state.n, t: state.t, s: state.s}; o[key] = k;
-    if(key === 't') o.s = '';
-    return list.filter(function(w){ return passes(w, o); }).length;
-  }
   function chips(el, items, key){
     el.querySelectorAll('button').forEach(function(b){ b.remove(); });
     items.forEach(function(o){
@@ -291,7 +284,6 @@
     [['fN','n'], ['fT','t'], ['fS','s']].forEach(function(p){
       document.querySelectorAll('#' + p[0] + ' button').forEach(function(b){
         b.setAttribute('aria-pressed', b.dataset.k === state[p[1]] ? 'true' : 'false');
-        if(p[0] !== 'fN' && b.dataset.k){ var c = countWith(p[1], b.dataset.k); b.insertAdjacentHTML('beforeend', '<small>' + c + '</small>'); }
       });
     });
     var h = [state.n && 'cuadros=' + state.n, state.t && 'lugar=' + state.t, state.s && 'estilo=' + state.s].filter(Boolean).join('&');
