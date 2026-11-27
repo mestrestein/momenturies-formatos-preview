@@ -777,3 +777,20 @@ button,a,label,input,select,textarea,summary,[role=button],[data-quitar],[data-r
 .cuenta-hoja-btns button{width:100%;padding:13px 16px;border-radius:999px;font:700 14.5px var(--font-sans);cursor:pointer;touch-action:manipulation}
 .cuenta-hoja-si{background:var(--black);color:#fff;border:0}
 .cuenta-hoja-no{background:#fff;color:var(--black);border:1.5px solid var(--gray2)}
+
+/* 24-nov · espera al pagar (a partir de 2 s) */
+.co-pay.ocupado:disabled{opacity:.75;cursor:progress}
+.co-espera{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;padding:28px;background:#f3eee7;opacity:0;transition:opacity .25s;text-align:center}
+.co-espera.ver{opacity:1}
+.co-esp-caja{width:min(340px,100%)}
+.co-esp-marco{width:74px;height:98px;margin:0 auto 26px;border-radius:5px;background:#fff;box-shadow:0 12px 30px rgba(60,40,20,.18);overflow:hidden;animation:coFlota 2.6s ease-in-out infinite}
+.co-esp-marco i{display:block;width:100%;height:100%;background:linear-gradient(115deg,#e6d8c6 30%,#fbf6ee 48%,#d9c5ac 66%);background-size:260% 100%;animation:coBrilla 1.9s linear infinite}
+.co-esp-txt{margin:0 0 18px;font-size:19px;line-height:1.35;font-weight:700;color:#1a1a1a;min-height:52px;display:flex;align-items:center;justify-content:center;transition:opacity .25s}
+.co-esp-txt.cambia{opacity:0}
+.co-esp-barra{height:6px;border-radius:99px;background:rgba(60,40,20,.12);overflow:hidden}
+.co-esp-barra i{display:block;height:100%;width:6%;border-radius:99px;background:#4a2e1a;transition:width .5s}
+.co-esp-sub{margin:12px 0 0;font-size:13.5px;font-weight:600;color:#5c5148}
+.co-esp-nota{margin:6px 0 0;font-size:12px;color:#85796d}
+@keyframes coFlota{50%{transform:translateY(-7px)}}
+@keyframes coBrilla{from{background-position:130% 0}to{background-position:-130% 0}}
+@media(prefers-reduced-motion:reduce){.co-esp-marco,.co-esp-marco i{animation:none}}

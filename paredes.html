@@ -34,6 +34,10 @@
   .ens-bar-in{max-width:1240px;margin:0 auto;padding:12px 40px;display:flex;flex-direction:column;gap:9px}
   .ens-row{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none}
   .ens-row::-webkit-scrollbar{display:none}
+  /* 24-nov: sitio reservado mientras el script pinta filtros y conjuntos (antes el pie salía arriba y saltaba: CLS 0,47 en móvil) */
+  .ens-row{min-height:34px}
+  .ens-count:empty::before{content:'\00a0'}
+  .ens-grid:empty{min-height:160vh}
   .ens-row small{flex:0 0 auto;width:92px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--light)}
   .ens-row button{flex:0 0 auto;border:1px solid var(--gray2);background:#fff;border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);color:var(--black);white-space:nowrap;transition:background .15s,border-color .15s}
   .ens-row button:hover{border-color:#aaa}
@@ -130,14 +134,14 @@
 <section class="ens-head">
   <p class="ens-kick"><span class="es">Ideas para tu pared</span><span class="en">Ideas for your wall</span></p>
   <h1><span class="es">Paredes de ensueño</span><span class="en">Dream walls</span></h1>
-  <p class="ens-lead"><span class="es">Todos nuestros conjuntos colgados en casas de verdad, empezando por los que más gustan. Toca la habitación que te guste y entras en ella con ese conjunto puesto, listo para tus fotos.</span><span class="en">All our sets hung in real homes, starting with the favourites. Tap the room you like and you step into it with that set on the wall, ready for your photos.</span></p>
+  <p class="ens-lead"><span class="es">¿Quedará bien en casa? ¿Mejor en el salón, en el pasillo o en la cocina? ¿Qué tamaños elijo? ¿Y si pido varios y luego la combinación no convence?<br><strong style="color:var(--ink,#1c1c1c)">Dudas lógicas, solución fácil.</strong> Desde el móvil y sin moverte del sofá: sube tus fotos, elige la pared y prueba entre cientos de combinaciones o crea la tuya. Lo ves colgado antes de comprarlo.</span><span class="en">Will it look good at home? Living room, hallway or kitchen? Which sizes? What if I order several and the combination doesn't work?<br><strong style="color:var(--ink,#1c1c1c)">Fair questions, easy answer.</strong> From your phone, without leaving the sofa: upload your photos, pick the wall and try hundreds of combinations or create your own. See it on the wall before you buy.</span></p>
 </section>
 
 <!-- FILTROS: número de cuadros y tipo de habitación (los botones los pinta el script) -->
 <div class="ens-bar" id="ensBar">
   <div class="ens-bar-in">
     <div class="ens-row" id="fN" role="group"><small><span class="es">Cuadros</span><span class="en">Prints</span></small></div>
-    <div class="ens-row" id="fT" role="group"><small><span class="es">Habitación</span><span class="en">Room</span></small></div>
+    <div class="ens-row" id="fT" role="group"><small><span class="es">Lugar</span><span class="en">Place</span></small></div>
   </div>
 </div>
 <p class="ens-count" id="ensCount" aria-live="polite"></p>
