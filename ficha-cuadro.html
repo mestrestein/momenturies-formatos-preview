@@ -503,6 +503,18 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
 
 /* 6-nov: consulta de tamaños (FAQ y pop-up) */
 .info .cta-main{margin-top:18px}
+/* 27-nov: selector de tamaño */
+.tallas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.talla{position:relative;border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:14px 8px 12px;text-align:center;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .2s,box-shadow .2s,background .2s}
+.talla:hover{border-color:#cbbfae}
+.talla.on{border-color:var(--brown);box-shadow:0 0 0 1px var(--brown),0 12px 30px rgba(74,46,26,.12);background:#fffaf4}
+.talla b{display:block;font-size:24px;font-weight:900;font-style:italic;color:var(--brown);line-height:1}
+.talla .med{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-top:4px}
+.talla .des{display:block;font-size:11.5px;color:var(--mid);margin-top:6px}
+.talla .des strong{color:var(--brown)}
+.talla .bs{position:absolute;left:50%;top:-9px;transform:translateX(-50%);white-space:nowrap;background:var(--terra);color:#fff;font-size:9.5px;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:6px;padding:3px 7px}
+#packsWrap{animation:entra .35s var(--ease)}
+#packsWrap .packs-h{margin-top:18px}
 .packs-tam{display:block;margin:-6px auto 14px;padding:4px 8px;border:0;background:none;font:inherit;font-size:12.5px;color:var(--mid);text-align:center;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .packs-tam:hover{color:var(--ink)}
 .tam{width:100%;border-collapse:collapse;font-size:13.5px;color:var(--ink2)}
@@ -602,10 +614,15 @@ footer a{color:rgba(255,255,255,.8);text-decoration:none;margin-right:16px}
     <p class="sub"><b>Convierte vuestras fotos favoritas en realidad</b>: elígelas, mira cómo quedan en casa y con la combinación que quieras. Dale vida a vuestro hogar en segundos con vuestros <b>cuadros metálicos premium, con colgado magnético incluido</b>. Fácil de instalar, sin herramientas, sin agujeros, con imán.</p>
     <a class="btn cta-main" id="ctaMain" href="cuadro.html">Diseña tu pared →</a>
 
-    <div class="packs-h">Uno queda bien · varios quedan mejor</div>
-    <p class="packs-ref">Precios basados en el tamaño clásico M (21×29,7 cm)</p>
+    <!-- 27-nov (Aitor): primero el tamaño (S, M, XL del clásico) y, al elegirlo, se despliegan sus ofertas -->
+    <div class="packs-h">Elige tu tamaño</div>
+    <div class="tallas" id="tallas"></div>
     <button type="button" class="packs-tam" id="tamAbrir">Consulta tamaños y precios disponibles</button>
-    <div id="packs"></div>
+    <div id="packsWrap" hidden>
+      <div class="packs-h">Uno queda bien · varios quedan mejor</div>
+      <p class="packs-ref" id="packsRef"></p>
+      <div id="packs"></div>
+    </div>
     <ul class="packs-bul"><li>Sin pagar el sobrecoste del enmarcado</li></ul>
 
     <div class="qfaq">
@@ -791,12 +808,12 @@ const $ = s => document.querySelector(s);
    txt:true = la imagen ya lleva su texto, sin etiqueta encima */
 const GAL = [
   /* 22-nov (Aitor): primero la foto del colgado, antes del 3D; «sin taladro» pasa a su antiguo hueco */
-  {img:'fotos/pdp/gen-colgado-segundos-v2.webp', cap:'Cuadro metálico HD con colgado magnético'},
+  {img:'fotos/pdp/gen-colgado-segundos-v2.webp', cap:'Cuadro metálico HD con colgado magnético', pos:'center 12%'}, /* 27-nov: la foto es 4:5; centrada arriba para que no se corte el cuadro */
   {t:'3d', cap:'Gíralo: así es por delante y por detrás', thumb:'fotos/stock/1474552226712-300x420.webp'},
   {t:'esc', cap:'Así se cuelga: solo con el imán', thumb:'fotos/pdp/escena-colgado-cuadro.webp', src:'colgador-scene.html?colgador=iman-pared&poster=fotos/stock/1474552226712-600x800.webp'},
   {img:'fotos/pdp/lugar-salon.webp', cap:'Míralo en tu casa antes de comprar'},
   {img:'fotos/pdp/combo-W31.webp', cap:'Elige tu combinación favorita'},
-  {img:'fotos/pdp/gen-momento-movil-pared.webp', cap:'Del momento al móvil, del móvil a tu pared', txt:true},
+  {img:'fotos/pdp/gen-momento-movil-pared-v2.webp', cap:'Del momento al móvil, del móvil a tu pared', txt:true}, /* 27-nov: versión nueva de Canva (P1-009) */
   {img:'fotos/pdp/gen-metal-vs-tradicional.webp', cap:'Cuadro metálico HD frente a póster tradicional', txt:true},
   {img:'fotos/pdp/comparativa.webp', cap:'Sin taladro, sin clavos, sin agujeros'},
   {img:'fotos/pdp/gen-mueve-intercambia.webp', cap:'Muévelo e intercámbialo cuando quieras'},
@@ -805,7 +822,7 @@ const GAL = [
   {img:'fotos/pdp/gen-pared-con-los-tuyos.webp', cap:'Crea tu pared con los tuyos'},
   /* 26-nov (Aitor): seis creativos 1:1 de los anuncios, después de los que había */
   {img:'fotos/pdp/gen-te-lo-han-dado-todo.webp', cap:'El regalo para quien te lo ha dado todo'},
-  {img:'fotos/pdp/gen-fotos-no-son-para-el-carrete.webp', cap:'Tus fotos, fuera del móvil y en tu pared'},
+  {img:'fotos/pdp/gen-fotos-no-son-para-el-carrete-v2.webp', cap:'Tus fotos, fuera del móvil y en tu pared'},
   {img:'fotos/pdp/gen-despiece-iman.webp', cap:'Colgado con imán: sin taladro ni clavos'},
   {img:'fotos/pdp/gen-tu-casa-decide.webp', cap:'Míralo en tu pared desde el móvil'},
   {img:'fotos/pdp/gen-sin-marco-sin-cristal.webp', cap:'Aluminio HD: sin marco ni cristal'},
@@ -824,6 +841,7 @@ GAL.forEach((g,i) => {
     /* 22-nov: data-foto y no data-bg: lazy-bg.js también vigila data-bg y, cuando ponFoto ya lo había quitado,
        pintaba url(null) y la foto grande salía en gris al pulsar la miniatura */
     s.className = 'slide'; if(i <= 3) s.style.backgroundImage = `url(${g.img})`; else s.dataset.foto = g.img;
+    if(g.pos) s.style.backgroundPosition = g.pos;
     s.setAttribute('role','img'); s.setAttribute('aria-label', g.cap);
     if(!g.txt) s.innerHTML = `<span class="cap">${g.cap}</span>`;
   }
@@ -902,6 +920,13 @@ $('#cupForm').addEventListener('submit', e => { e.preventDefault(); $('#cupForm'
 const TIERS = [{n:5,pct:20},{n:3,pct:15},{n:2,pct:10}];
 const pct = n => (TIERS.find(t => n >= t.n) || {pct:0}).pct;
 const KM = 29.99; // 4-nov: la referencia de precios y fotos es el clásico M, 21×29,7
+/* 27-nov (Aitor): tres tamaños del clásico para comparar; mismas composiciones en todos. Precios de FORMATS (editor.js) */
+const TALLAS = [
+  {k:'S', d:'10×15 cm', unit:19.99},
+  {k:'M', d:'21×29,7 cm', unit:KM, best:true},
+  {k:'XL', d:'30,5×43,1 cm', unit:59.99},
+];
+let talla = null;
 const PACKS = [
   {id:'1', n:1, sub:'Tu foto favorita, sola', price:KM, href:'cuadro.html', img:'fotos/pdp/pack-UNO-cerca.webp', alt:'fotos/pdp/pack-UNO-casa.webp', cta:'Diseña tu pared →'},
   {id:'W83', n:2, name:'Dos clásicos', gross:2*KM, href:'cuadro.html?pared=W83', img:'fotos/pdp/pack-W83-cerca.webp', alt:'fotos/pdp/pack-W83-casa.webp'},
@@ -911,7 +936,32 @@ const PACKS = [
   {id:'W87', n:9, name:'Nueve clásicos', gross:9*KM, href:'cuadro.html?pared=W87', img:'fotos/pdp/pack-W87-cerca.webp', alt:'fotos/pdp/pack-W87-casa.webp', badge:'Mejor precio', terra:true},
 ];
 PACKS.forEach(p => p.tit = p.n + (p.n > 1 ? ' cuadros' : ' cuadro'));
-PACKS.forEach(p => { if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; } });
+PACKS.forEach(p => { p.base = p.href; });
+/* precios y enlaces del tamaño elegido (la talla viaja al personalizador con &talla=) */
+function ponTalla(t){
+  PACKS.forEach(p => {
+    p.gross = p.n > 1 ? p.n * t.unit : 0;
+    if(p.gross){ p.pct = pct(p.n); p.price = Math.round(p.gross * (100 - p.pct)) / 100; p.save = Math.round((p.gross - p.price) * 100) / 100; p.cta = 'Diseña tu pared →'; }
+    else { p.price = t.unit; }
+    p.href = t.k === 'M' || p.n === 1 ? p.base : p.base + '&talla=' + t.k;
+  });
+}
+const tallasEl = $('#tallas');
+function renderTallas(){
+  tallasEl.innerHTML = TALLAS.map(t => `
+    <button type="button" class="talla ${talla && t.k === talla.k ? 'on' : ''}" data-k="${t.k}" aria-pressed="${!!(talla && t.k === talla.k)}">
+      ${t.best ? '<span class="bs">Best selling</span>' : ''}
+      <b>${t.k}</b><span class="med">${t.d}</span><span class="des">desde <strong>${eur(t.unit)}</strong></span>
+    </button>`).join('');
+}
+tallasEl.addEventListener('click', e => {
+  const b = e.target.closest('.talla'); if(!b) return;
+  talla = TALLAS.find(t => t.k === b.dataset.k); ponTalla(talla); sel = null;
+  $('#packsRef').textContent = `Precios del tamaño ${talla.k} (${talla.d}), con las mismas composiciones`;
+  $('#packsWrap').hidden = false; renderTallas(); renderPacks();
+  $('#stTit').textContent = `1 cuadro · ${talla.k}`; $('#stPr').textContent = eur(talla.unit);
+});
+ponTalla(TALLAS[1]); renderTallas();
 const packsEl = $('#packs');
 /* 21-nov: no se preselecciona nada; sin elegir, los botones abren el personalizador con 1 cuadro */
 let sel = null;
@@ -937,7 +987,7 @@ function renderPacks(){
 function choose(id){
   sel = id; renderPacks();
   const p = PACKS.find(x => x.id === id);
-  $('#stTit').textContent = p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro';
+  $('#stTit').textContent = (p.n > 1 ? `${p.n} cuadros · ${p.name}` : '1 cuadro') + (talla ? ` · ${talla.k}` : '');
   $('#stPr').textContent = eur(p.price);
   $('#stCta').href = p.href; $('#stCta').textContent = p.cta;
   $('#ctaMain').href = p.href;
@@ -951,7 +1001,7 @@ packsEl.addEventListener('keydown', e => { const o = e.target.closest('.opt'); i
 renderPacks();
 
 /* barra fija: aparece cuando las ofertas se salen de la pantalla */
-new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe(packsEl);
+new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe(tallasEl);
 
 /* ═════ TAMAÑOS Y PRECIOS ═════
    Copia a mano de FORMATS en editor.js: si cambia un precio o una medida, cambiarlo también aquí. */
