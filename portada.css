@@ -27,7 +27,10 @@
 .hx-m img,.hx-m video{width:100%;height:100%;object-fit:cover;object-position:var(--p,50% 50%);display:block}
 .hx-m img{transform:scale(1.06);transition:transform 7.5s linear}
 .hx-m.on img{transform:scale(1)}
-.hx-prod{font-size:12px;line-height:1.5;color:#8a8279;font-weight:500;max-width:440px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08)}
+/* 27-nov (Aitor): que se entienda rápido qué es: el producto en grande y el beneficio debajo, más pequeño */
+.hx-prod{display:flex;flex-direction:column;gap:2px;line-height:1.25;max-width:460px;padding-top:12px;border-top:1px solid rgba(0,0,0,.1)}
+.hx-prod b{font-size:clamp(16px,1.2vw,19px);font-weight:800;color:var(--black);letter-spacing:-.01em}
+.hx-prod span{font-size:13px;font-weight:500;color:#7d766d}
 .hx-t p.sub.fuerte{font-weight:700;color:var(--black);margin-top:-8px}
 /* barra de diapositivas: cada ángulo con su nombre y una línea que se llena */
 .hx-nav{position:absolute;left:max(40px,calc((100vw - 1320px)/2 + 40px));bottom:30px;display:flex;gap:22px;z-index:3}
@@ -56,7 +59,9 @@
   .hx-t{gap:calc(10px * var(--k,1))}
   .hx-tag{font-size:calc(11px * var(--k,1))}
   .hx-t p.sub.fuerte{margin-top:calc(-6px * var(--k,1))}
-  .hx-prod{font-size:calc(11.5px * var(--k,1));padding-top:calc(10px * var(--k,1))}
+  .hx-prod{gap:calc(2px * var(--k,1));padding-top:calc(10px * var(--k,1))}
+  .hx-prod b{font-size:calc(16px * var(--k,1))}
+  .hx-prod span{font-size:calc(12.5px * var(--k,1))}
   .hx-t h1,.hx-t .h1{font-size:calc(clamp(27px,8vw,38px) * var(--k,1))}
   .hx-t p.sub{font-size:calc(14.5px * var(--k,1));line-height:1.45}
   .hx-cta{width:100%;justify-content:center;padding:calc(16px * var(--k,1)) 22px;font-size:calc(15.5px * var(--k,1))}
@@ -67,7 +72,7 @@
   .hx-arr{inset:0;bottom:auto;right:auto;height:100%;width:100%;justify-content:space-between;align-items:center;padding:0 8px;pointer-events:none}
   .hx-arr button{pointer-events:auto;width:30px;height:30px;font-size:19px;line-height:1;padding:0 0 2px;display:grid;place-items:center;background:rgba(255,255,255,.42);color:rgba(20,20,20,.75);box-shadow:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-tap-highlight-color:transparent}
   .hx-arr button:active{background:rgba(255,255,255,.75)}
-  .hx.apretado .hx-prod{display:none}
+  .hx.apretado .hx-prod span{display:none}   /* pantallas muy bajas: se queda el producto, fuera el beneficio */
 }
 
 /* ═════ CÓMO FUNCIONA: el móvil hace el pedido entero, paso a paso ═════ */
