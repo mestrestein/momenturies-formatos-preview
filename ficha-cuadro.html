@@ -210,8 +210,10 @@ body:not(.resenas-reales) :is(.info .rating,.mini-rev,#regalos,#motivos,.resena-
 .prev{display:grid;grid-template-columns:1fr;gap:10px}
 .cta-arriba{display:flex;align-items:center;justify-content:center;width:100%;margin:12px 0 2px}
 .prev .pic{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/10;background:#eee center/cover}
-.prev .sw{position:absolute;left:10px;top:10px;display:flex;gap:6px}
-.prev .sw button{border:0;border-radius:999px;font-size:12px;font-weight:700;padding:6px 11px;background:rgba(255,255,255,.88);cursor:pointer}
+/* 27-nov: los botones van debajo de la foto (antes tapaban la composición) y la vista de casa se acerca a la pared */
+.prev .pic.casa{background-size:150%;background-position:center 26%}
+.prev .sw{display:flex;gap:6px;justify-content:center}
+.prev .sw button{border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:700;padding:6px 11px;background:#fff;cursor:pointer}
 .prev .sw button.on{background:var(--ink);color:#fff}
 .prev .meta{display:block;font-size:12px;line-height:1.5;color:var(--ink2);text-align:center}
 .prev .meta span+span::before{content:' · ';color:var(--mid);font-weight:400}
@@ -979,7 +981,7 @@ function renderPacks(){
       <div class="more">
         <a class="btn cta-arriba" href="${p.href}">${p.cta}</a>
         <div class="prev">
-          <div class="pic" style="background-image:url(${p.alt})"><div class="sw"><button type="button" class="on" data-img="${p.alt}">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div></div>
+          <div class="pic casa" style="background-image:url(${p.alt})"></div><div class="sw"><button type="button" class="on" data-img="${p.alt}" data-casa="1">En una casa</button><button type="button" data-img="${p.img}">${p.n > 1 ? 'La composición' : 'De cerca'}</button></div>
         </div>
       </div>
     </div>`).join('');
@@ -994,11 +996,13 @@ function choose(id){
 }
 packsEl.addEventListener('click', e => {
   const sw = e.target.closest('.sw button');
-  if(sw){ e.stopPropagation(); const pic = sw.closest('.pic'); pic.style.backgroundImage = `url(${sw.dataset.img})`; pic.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === sw)); return; }
+  if(sw){ e.stopPropagation(); const pic = sw.closest('.prev').querySelector('.pic'); pic.style.backgroundImage = `url(${sw.dataset.img})`; pic.classList.toggle('casa', !!sw.dataset.casa); sw.parentNode.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === sw)); return; }
   const o = e.target.closest('.opt'); if(o && o.dataset.id !== sel) choose(o.dataset.id);
 });
 packsEl.addEventListener('keydown', e => { const o = e.target.closest('.opt'); if(o && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); choose(o.dataset.id); } });
 renderPacks();
+/* 27-nov (Aitor): al entrar, M (el más vendido) ya elegido y con sus ofertas abiertas */
+tallasEl.querySelector('.talla[data-k="M"]').click();
 
 /* barra fija: aparece cuando las ofertas se salen de la pantalla */
 new IntersectionObserver(([en]) => $('#sticky').classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0)).observe(tallasEl);
