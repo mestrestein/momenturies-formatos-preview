@@ -307,7 +307,9 @@
   var SHOPIFY = { storefrontToken: '', checkout: 'checkout.momenturies.com', raiz: 'momenturies.com' }, SHOP_KEY = 'mm_cookies_shop';
   function aShopify(c) {
     if (!activo || prueba || !SHOPIFY.storefrontToken || !c) return;
-    try { if (localStorage.getItem(SHOP_KEY) === String(c.t)) return; } catch (e) {}
+    /* 28-nov (Aitor): si la cookie _tracking_consent se ha perdido, se vuelve a mandar aunque ya se mandara antes;
+       sin ella el pago no ve el permiso y Shopify no avisa a Meta de «Iniciar compra» ni de «Compra» */
+    try { if (localStorage.getItem(SHOP_KEY) === String(c.t) && /(^|;\s*)_tracking_consent=/.test(document.cookie)) return; } catch (e) {}
     var enviar = function () {
       var cp = window.Shopify && window.Shopify.customerPrivacy;
       if (!cp || !cp.setTrackingConsent) return;
